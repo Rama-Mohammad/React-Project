@@ -111,6 +111,9 @@ function App() {
           </ul>
         </div>
       </section>
+      <h1 className="text-3xl font-bold text-red-600 underline">
+      Tailwind is Working!
+    </h1>
 
       <div className="ticks"></div>
       <section id="spacer"></section>
