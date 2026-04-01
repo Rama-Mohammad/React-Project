@@ -1,0 +1,74 @@
+import FeatureCard from "../home/FeatureCard";
+import { faCoins, faPlay, faUsers, faLightbulb, faStar } from "@fortawesome/free-solid-svg-icons";
+
+const FeaturesSection = () => {
+  return (
+    <section className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <p className="text-blue-500 text-sm font-semibold uppercase tracking-wider mb-4 text-center">
+          Everything included
+        </p>
+
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6 text-center">
+          Built for learning, built for giving
+        </h2>
+
+        <p className="text-center text-gray-600 max-w-2xl mx-auto mb-12">
+          Every feature on the platform exists to make peer-to-peer sessions more productive, trustworthy, and rewarding.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <FeatureCard
+            category="Core System"
+            icon={faCoins}
+            bgImage="/images/core_system.png"
+            title="Credit-Based Economy"
+            description="Every help session runs on credits — no cash, no awkward payment. Earn by helping, spend to get help."
+          />
+
+          <FeatureCard
+            category="Built-in Tools"
+            icon={faPlay}
+            bgImage="/images/full_session.png"
+            title="Full Live Session Room"
+            description="Video, chat, file sharing, collaborative notes, quizzes, and code worksheets — all in one place."
+          />
+
+          <FeatureCard
+            category="Safety"
+            icon={faUsers}
+            bgImage="/images/trust.png"
+            title="Trust & Accountability"
+            description="Ratings, reviews, and mutual-confirm completions ensure both sides stay accountable and honest."
+          />
+
+          <FeatureCard
+            category="Community"
+            icon={faUsers}
+            bgImage="/images/group_sessions.png"
+            title="Group Sessions"
+            description="Host or join group learning sessions. Gallery view, mentions, per-person or collaborative tools."
+          />
+
+          <FeatureCard
+            category="Knowledge"
+            icon={faLightbulb}
+            bgImage="/images/skills.png"
+            title="340+ Skills Available"
+            description="From programming to music theory, cooking to tax filing — the community covers it all."
+          />
+
+          <FeatureCard
+            category="Analytics"
+            icon={faStar}
+            bgImage="/images/progress.png"
+            title="Progress Dashboard"
+            description="Track your sessions, credits earned and spent, skills taught and learned — all with rich analytics."
+          />
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default FeaturesSection;
