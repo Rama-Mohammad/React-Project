@@ -27,7 +27,6 @@ const MiniSessionCard: React.FC<MiniSessionCardProps> = ({ sessions, onJoinSessi
                   {format(session.scheduledTime, 'p')}
                 </p>
                 <Button
-                  size="sm"
                   onClick={() => onJoinSession(session.id)}
                   className="mt-2"
                 >

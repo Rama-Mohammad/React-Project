@@ -17,7 +17,6 @@ const CreditBalanceCard: React.FC<CreditBalanceCardProps> = ({ balance, onViewHi
         </div>
         <Button
           variant="ghost"
-          size="sm"
           onClick={onViewHistory}
           className="text-white hover:bg-white/20"
         >
