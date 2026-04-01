@@ -1,31 +1,9 @@
-import React from 'react';
+import type { PropsWithChildren } from 'react';
 
-type BadgeVariant = 'high' | 'medium' | 'low' | 'default' | 'success' | 'warning' | 'error';
-
-interface BadgeProps {
-  children: React.ReactNode;
-  variant?: BadgeVariant;
-  className?: string;
+interface Props extends PropsWithChildren {
+  tone?: 'neutral' | 'success' | 'warning' | 'danger';
 }
 
-const Badge: React.FC<BadgeProps> = ({ children, variant = 'default', className = '' }) => {
-  const variants = {
-    high: 'bg-red-100 text-red-800',
-    medium: 'bg-yellow-100 text-yellow-800',
-    low: 'bg-green-100 text-green-800',
-    default: 'bg-gray-100 text-gray-800',
-    success: 'bg-green-100 text-green-800',
-    warning: 'bg-yellow-100 text-yellow-800',
-    error: 'bg-red-100 text-red-800',
-  };
-
-  return (
-    <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${variants[variant]} ${className}`}
-    >
-      {children}
-    </span>
-  );
-};
-
-export default Badge;
+export default function Badge({ tone = 'neutral', children }: Props) {
+  return <span className={`badge badge-${tone}`}>{children}</span>;
+}
