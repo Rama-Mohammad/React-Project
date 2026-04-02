@@ -1,8 +1,22 @@
-import { createBrowserRouter, Link } from "react-router-dom";
+import { useEffect } from "react";
+import { createBrowserRouter, Link, Outlet, useLocation } from "react-router-dom";
 import Explore from "../pages/Explore";
 import Dashboard from "../pages/Dashboard";
 import Tutorial from "../pages/Tutorial";
-import Profile from "../pages/Profile";
+import Home from "../pages/Home";
+import RequestDetails from "../pages/RequestDetails";
+import RequestHelper from "../pages/RequestHelper";
+import SkillHelpers from "../pages/SkillHelpers";
+
+function ScrollToTopLayout() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [pathname]);
+
+  return <Outlet />;
+}
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -21,27 +35,48 @@ function PlaceholderPage({ title }: { title: string }) {
 
 export const router = createBrowserRouter([
   {
-    path: "/",
-    element: <Explore />,
-  },
-  {
-    path: "/explore",
-    element: <Explore />,
-  },
-  {
-    path: "/dashboard",
-    element: <Dashboard />,
-  },
-  {
-    path: "/tutorial",
-    element: <Tutorial />,
-  },
-  {
-    path: "/sessions",
-    element: <PlaceholderPage title="Sessions" />,
-  },
-  {
-    path: "/profile",
-    element: <Profile />,
+    element: <ScrollToTopLayout />,
+    children: [
+      {
+        path: "/",
+        element: <Home />,
+      },
+      {
+        path: "/home",
+        element: <Home />,
+      },
+      {
+        path: "/explore",
+        element: <Explore />,
+      },
+      {
+        path: "/requests/:requestId",
+        element: <RequestDetails />,
+      },
+      {
+        path: "/helpers/:helperId/request",
+        element: <RequestHelper />,
+      },
+      {
+        path: "/skills/:skillId/helpers",
+        element: <SkillHelpers />,
+      },
+      {
+        path: "/dashboard",
+        element: <Dashboard />,
+      },
+      {
+        path: "/tutorial",
+        element: <Tutorial />,
+      },
+      {
+        path: "/sessions",
+        element: <PlaceholderPage title="Sessions" />,
+      },
+      {
+        path: "/profile",
+        element: <PlaceholderPage title="Profile" />,
+      },
+    ],
   },
 ]);

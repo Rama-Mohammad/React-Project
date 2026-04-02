@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Badge from '../common/Badge';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faFolder,

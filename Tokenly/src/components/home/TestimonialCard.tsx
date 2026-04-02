@@ -11,27 +11,23 @@ type TestimonialCardProps = {
 const TestimonialCard = ({ quote, name, title, rating }: TestimonialCardProps) => {
   const renderStars = () => {
     return [...Array(5)].map((_, i) => (
-      <FontAwesomeIcon key={i} icon={faStar} className="text-yellow-400 text-sm" />
+      <FontAwesomeIcon key={i} icon={faStar} className="text-sm text-yellow-400" />
     ));
   };
 
   return (
-    <div className="bg-gray-50 rounded-2xl p-6 hover:shadow-lg transition-shadow duration-300">
-      <div className="flex items-center gap-1 mb-4">
-        {renderStars()}
-      </div>
+    <div className="rounded-2xl border border-white/50 bg-white/80 p-6 shadow-sm backdrop-blur transition-shadow duration-300 hover:shadow-md">
+      <div className="mb-4 flex items-center gap-1">{renderStars()}</div>
 
-      <p className="text-gray-700 mb-4 leading-relaxed">
-        {quote}
-      </p>
+      <p className="mb-4 leading-relaxed text-slate-700">{quote}</p>
 
-      <div className="flex items-center justify-between mt-4 pt-2 border-t border-gray-200">
+      <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-2">
         <div>
-          <p className="font-semibold text-gray-900">{name}</p>
-          <p className="text-sm text-gray-500">{title}</p>
+          <p className="font-semibold text-slate-900">{name}</p>
+          <p className="text-sm text-slate-500">{title}</p>
         </div>
 
-        <div className="flex items-center gap-1 text-green-600">
+        <div className="flex items-center gap-1 text-indigo-500">
           <FontAwesomeIcon icon={faStar} className="text-sm" />
           <span className="text-sm font-medium">+{rating}</span>
         </div>

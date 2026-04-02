@@ -2,28 +2,28 @@ import StepCard from "../home/StepCard";
 
 const StepsSection = () => {
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <p className="text-blue-500 text-sm font-semibold uppercase tracking-wider mb-4 text-center">
+    <section className="py-20">
+      <div className="mx-auto max-w-7xl rounded-[1.5rem] border border-white/40 bg-white/60 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8">
+        <p className="mb-4 text-center text-sm font-semibold uppercase tracking-wider text-indigo-500">
           Four steps
         </p>
 
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6 text-center">
+        <h2 className="mb-6 text-center text-3xl font-bold leading-tight text-slate-900 md:text-4xl lg:text-5xl">
           Your next breakthrough starts here
         </h2>
 
-        <p className="text-center text-gray-600 max-w-2xl mx-auto mb-12">
-          The whole flow — from posting to completed session — happens right inside PeerCredit.
+        <p className="mx-auto mb-12 max-w-2xl text-center text-slate-600">
+          The whole flow - from posting to completed session - happens right inside PeerCredit.
         </p>
 
         <div className="relative">
-          <div className="hidden lg:block absolute top-10 left-0 right-0 h-px bg-gray-300 z-0"></div>
+          <div className="absolute left-0 right-0 top-10 z-0 hidden h-px bg-white/70 lg:block" />
 
-          <div className="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 z-10">
+          <div className="relative z-10 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
             <StepCard
               step="01"
               title="Post a Request"
-              description="Describe what you need help with — a skill, a topic, a problem. Set your budget in credits and timeline."
+              description="Describe what you need help with - a skill, a topic, a problem. Set your budget in credits and timeline."
             />
             <StepCard
               step="02"
@@ -33,7 +33,7 @@ const StepsSection = () => {
             <StepCard
               step="03"
               title="Complete a Session"
-              description="Meet in our live session room — video, chat, file sharing, quizzes, and collaborative notes included."
+              description="Meet in our live session room - video, chat, file sharing, quizzes, and collaborative notes included."
             />
             <StepCard
               step="04"
