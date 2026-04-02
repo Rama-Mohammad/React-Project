@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
@@ -9,6 +9,7 @@ import ReviewCard from "../components/profile/ReviewCard";
 import RatingsSummary from "../components/profile/RatingsSummary";
 import EditProfileModal from "../components/profile/EditProfileModal";
 import AddSkillModal from "../components/profile/AddSkillModal";
+import AddPortfolioModal from "../components/profile/AddPortfolioModal";
 
 const mockUser = {
   name: "Jordan Lee",
@@ -72,6 +73,7 @@ const mockPortfolio = [
     tags: ["Python", "CLI", "PyPI", "Testing"],
   },
 ];
+type PortfolioEntry = (typeof mockPortfolio)[number];
 
 const mockReviews = [
   {
@@ -139,7 +141,7 @@ const mockReviews = [
 const Profile: React.FC = () => {
   const [user, setUser] = useState(mockUser);
   const [skills, setSkills] = useState(mockSkills);
-  const [portfolio] = useState(mockPortfolio);
+  const [portfolio, setPortfolio] = useState(mockPortfolio);
   const [reviews] = useState(mockReviews);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -147,6 +149,11 @@ const Profile: React.FC = () => {
   const [selectedSkill, setSelectedSkill] = useState<any>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const [isAddPortfolioModalOpen, setIsAddPortfolioModalOpen] = useState(false);
+  const [isPortfolioEditMode, setIsPortfolioEditMode] = useState(false);
+  const [selectedPortfolioItem, setSelectedPortfolioItem] = useState<PortfolioEntry | null>(null);
+  const [pendingPortfolioDeleteId, setPendingPortfolioDeleteId] = useState<string | null>(null);
+  const [reviewSortBy, setReviewSortBy] = useState<"newest" | "oldest" | "highest" | "lowest">("newest");
 
   const handleEditProfile = (updatedUser: typeof mockUser) => {
     setUser(updatedUser);
@@ -173,13 +180,49 @@ const Profile: React.FC = () => {
     console.log("View portfolio item:", id);
   };
 
+  const handleAddPortfolio = (newItem: Omit<(typeof mockPortfolio)[0], "id">) => {
+    setPortfolio((prev) => [{ ...newItem, id: Date.now().toString() }, ...prev]);
+  };
+
+  const handleUpdatePortfolio = (updatedItem: PortfolioEntry) => {
+    setPortfolio((prev) => prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)));
+  };
+
+  const handleEditPortfolio = (item: PortfolioEntry) => {
+    setSelectedPortfolioItem(item);
+    setIsPortfolioEditMode(true);
+    setIsAddPortfolioModalOpen(true);
+  };
+
+  const handleDeletePortfolioRequest = (id: string) => {
+    setPendingPortfolioDeleteId(id);
+  };
+
+  const handleConfirmDeletePortfolio = () => {
+    if (!pendingPortfolioDeleteId) return;
+    setPortfolio((prev) => prev.filter((item) => item.id !== pendingPortfolioDeleteId));
+    setPendingPortfolioDeleteId(null);
+  };
+
   const handleEditSkill = (skill: any) => {
     setSelectedSkill(skill);
     setIsEditMode(true);
     setIsAddSkillModalOpen(true);
   };
 
-  const visibleReviews = showAllReviews ? reviews : reviews.slice(0, 3);
+  const sortedReviews = useMemo(() => {
+    const data = [...reviews];
+    const getDate = (value: string) => new Date(value).getTime() || 0;
+
+    if (reviewSortBy === "newest") data.sort((a, b) => getDate(b.date) - getDate(a.date));
+    if (reviewSortBy === "oldest") data.sort((a, b) => getDate(a.date) - getDate(b.date));
+    if (reviewSortBy === "highest") data.sort((a, b) => b.rating - a.rating || getDate(b.date) - getDate(a.date));
+    if (reviewSortBy === "lowest") data.sort((a, b) => a.rating - b.rating || getDate(b.date) - getDate(a.date));
+
+    return data;
+  }, [reviews, reviewSortBy]);
+
+  const visibleReviews = showAllReviews ? sortedReviews : sortedReviews.slice(0, 3);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(160deg,#e8efff_0%,#e9f7ff_45%,#f5f8ff_100%)] text-slate-900">
@@ -222,7 +265,12 @@ const Profile: React.FC = () => {
           </section>
 
           <section className="explore-fade-in-up rounded-2xl border border-white/70 bg-white/80 px-5 py-4 backdrop-blur-sm">
-            <RatingsSummary reviews={reviews} embedded />
+            <RatingsSummary
+              reviews={reviews}
+              embedded
+              sortBy={reviewSortBy}
+              onSortChange={setReviewSortBy}
+            />
 
             <div className="mt-4 space-y-3.5 border-t border-slate-200/70 pt-4">
               {visibleReviews.length > 0 ? (
@@ -251,15 +299,29 @@ const Profile: React.FC = () => {
               <p className="text-xs text-slate-500">{portfolio.length} items</p>
             </div>
 
-            <button className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedPortfolioItem(null);
+                setIsPortfolioEditMode(false);
+                setIsAddPortfolioModalOpen(true);
+              }}
+              className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100"
+            >
               <Plus size={14} />
               Add Item
             </button>
           </div>
 
-          <div className="mt-4 grid gap-4 md:grid-cols-[repeat(2,minmax(0,0.4fr))] md:justify-start">
+          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             {portfolio.map((item) => (
-              <PortfolioItem key={item.id} item={item} onView={handleViewPortfolio} />
+              <PortfolioItem
+                key={item.id}
+                item={item}
+                onView={handleViewPortfolio}
+                onEdit={handleEditPortfolio}
+                onDelete={handleDeletePortfolioRequest}
+              />
             ))}
           </div>
         </section>
@@ -286,6 +348,49 @@ const Profile: React.FC = () => {
         editSkill={selectedSkill}
         isEditMode={isEditMode}
       />
+
+      <AddPortfolioModal
+        isOpen={isAddPortfolioModalOpen}
+        onClose={() => {
+          setIsAddPortfolioModalOpen(false);
+          setIsPortfolioEditMode(false);
+          setSelectedPortfolioItem(null);
+        }}
+        onAdd={handleAddPortfolio}
+        onUpdate={handleUpdatePortfolio}
+        editItem={selectedPortfolioItem}
+        isEditMode={isPortfolioEditMode}
+      />
+
+      {pendingPortfolioDeleteId ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <button
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            onClick={() => setPendingPortfolioDeleteId(null)}
+            aria-label="Close delete confirmation"
+          />
+          <div className="relative w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
+            <h3 className="text-base font-semibold text-slate-900">Delete Portfolio Item?</h3>
+            <p className="mt-1 text-sm text-slate-600">This action cannot be undone.</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setPendingPortfolioDeleteId(null)}
+                className="rounded-lg border border-slate-300 px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeletePortfolio}
+                className="rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-100"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

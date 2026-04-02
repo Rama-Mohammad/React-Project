@@ -1,15 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   CalendarDays,
-  GitBranch,
-  Globe,
+  Check,
   GraduationCap,
   MapPin,
   MessageSquareMore,
   NotebookTabs,
   PencilLine,
+  QrCode,
+  Share2,
   Sparkles,
   Star,
+  X,
 } from "lucide-react";
 
 interface ProfileHeaderProps {
@@ -34,6 +36,34 @@ interface ProfileHeaderProps {
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
+  const [copied, setCopied] = useState(false);
+  const [isQrOpen, setIsQrOpen] = useState(false);
+
+  const handleShareProfile = async () => {
+    const profileUrl = window.location.href;
+    const shareData = {
+      title: `${user.name} on Tokenly`,
+      text: `Check out ${user.name}'s profile`,
+      url: profileUrl,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+
+      await navigator.clipboard.writeText(profileUrl);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1400);
+    } catch {
+      // no-op if share is canceled or clipboard is unavailable
+    }
+  };
+
+  const profileUrl = window.location.href;
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(profileUrl)}`;
+
   const renderStars = (rating: number = 0) => {
     const fullStars = Math.floor(rating);
     const emptyStars = Math.max(0, 5 - fullStars);
@@ -79,18 +109,25 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
 
           <div className="flex items-center gap-2">
             <button
+              type="button"
+              onClick={handleShareProfile}
               className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white/85 text-slate-600 transition hover:border-sky-200 hover:text-sky-600"
-              aria-label="GitHub profile"
+              aria-label="Share profile"
+              title={copied ? "Link copied" : "Share profile"}
             >
-              <GitBranch size={15} />
+              {copied ? <Check size={15} /> : <Share2 size={15} />}
             </button>
             <button
+              type="button"
+              onClick={() => setIsQrOpen(true)}
               className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white/85 text-slate-600 transition hover:border-sky-200 hover:text-sky-600"
-              aria-label="Personal website"
+              aria-label="Show profile QR code"
+              title="Show profile QR code"
             >
-              <Globe size={15} />
+              <QrCode size={15} />
             </button>
             <button
+              type="button"
               onClick={onEdit}
               className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white/90 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-indigo-200 hover:text-indigo-600"
             >
@@ -135,6 +172,51 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
           </div>
         </div>
       </div>
+
+      {isQrOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <button
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            onClick={() => setIsQrOpen(false)}
+            aria-label="Close QR modal"
+          />
+
+          <div className="relative w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setIsQrOpen(false)}
+              className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+              aria-label="Close"
+            >
+              <X size={16} />
+            </button>
+
+            <h3 className="text-base font-semibold text-slate-900">Profile QR Code</h3>
+            <p className="mt-1 text-xs text-slate-500">Scan to open this profile</p>
+
+            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <img src={qrCodeUrl} alt={`${user.name} profile QR code`} className="h-full w-full rounded-lg bg-white" />
+            </div>
+
+            <div className="mt-4 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleShareProfile}
+                className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+              >
+                Copy Link
+              </button>
+              <a
+                href={qrCodeUrl}
+                download={`${user.name.replace(/\s+/g, "-").toLowerCase()}-profile-qr.png`}
+                className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 transition hover:bg-indigo-100"
+              >
+                Download QR
+              </a>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 };
