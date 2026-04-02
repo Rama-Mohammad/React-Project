@@ -9,10 +9,12 @@ import {
   Star,
 } from "lucide-react";
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import { helpers, requests } from "../data/mockExploreData";
+import { supabase } from "../lib/supabaseClient";
+import { createOffer } from "../services/offerService";
 
 const urgencyStyles: Record<string, string> = {
   High: "bg-rose-50 text-rose-600",
@@ -23,7 +25,13 @@ const urgencyStyles: Record<string, string> = {
 export default function RequestDetails() {
   const { requestId } = useParams<{ requestId: string }>();
   const request = requests.find((item) => item.id === requestId);
+  const navigate = useNavigate();
   const [actionFeedback, setActionFeedback] = useState<string>("");
+  const [offerMessage, setOfferMessage] = useState("");
+  const [availability, setAvailability] = useState("");
+  const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
+  const [offerFeedback, setOfferFeedback] = useState("");
+  const [offerError, setOfferError] = useState("");
 
   if (!request) {
     return (
@@ -48,7 +56,7 @@ export default function RequestDetails() {
   const authorHelper = helpers.find((helper) => helper.name === request.author.name);
   const authorSkills = authorHelper?.skills.slice(0, 3) ?? request.tags.slice(0, 3);
   const sessionsCompleted = authorHelper?.sessions ?? 12;
-  const draftMessage = "";
+  const canSubmitOffer = offerMessage.trim().length > 0 && availability.trim().length > 0 && !isSubmittingOffer;
 
   const handleShare = async () => {
     const shareUrl = window.location.href;
@@ -87,6 +95,118 @@ export default function RequestDetails() {
 
     window.location.href = `mailto:support@tokenly.app?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     setActionFeedback("Opened your email app to submit a report.");
+  };
+
+  const handleSubmitOffer = async () => {
+    if (!canSubmitOffer) return;
+
+    setOfferError("");
+    setOfferFeedback("");
+    setIsSubmittingOffer(true);
+
+    try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        const authMessage = String((userError as { message?: string }).message ?? "").toLowerCase();
+        if (authMessage.includes("auth session missing")) {
+          setOfferError("Please sign in first to submit an offer.");
+          return;
+        }
+        throw userError;
+      }
+
+      const helperId = userData.user?.id;
+      if (!helperId) {
+        setOfferError("Please sign in first to submit an offer.");
+        return;
+      }
+
+      const roleFromAuth = userData.user.user_metadata?.role ?? userData.user.app_metadata?.role;
+      const normalizedRole = typeof roleFromAuth === "string" ? roleFromAuth.toLowerCase() : "";
+
+      let isHelper = normalizedRole === "helper" || normalizedRole === "both";
+
+      if (!isHelper) {
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("role, is_helper")
+          .eq("id", helperId)
+          .maybeSingle();
+
+        if (profileError) {
+          // Some projects don't yet have role/is_helper columns. Don't hard-fail here.
+          const message = String((profileError as { message?: string }).message ?? "").toLowerCase();
+          const isMissingColumn =
+            message.includes("column") && (message.includes("role") || message.includes("is_helper"));
+          if (!isMissingColumn) throw profileError;
+        } else {
+          const profileRole = typeof profile?.role === "string" ? profile.role.toLowerCase() : "";
+          isHelper =
+            profile?.is_helper === true ||
+            profileRole === "helper" ||
+            profileRole === "both";
+        }
+      }
+
+      if (!isHelper) {
+        setOfferError("Only helper accounts can submit offers.");
+        return;
+      }
+
+      const isMockRequestId = /^r\d+$/i.test(request.id);
+
+      if (!isMockRequestId) {
+        const { data: requestOwner, error: requestOwnerError } = await supabase
+          .from("requests")
+          .select("requester_id")
+          .eq("id", request.id)
+          .maybeSingle();
+
+        if (requestOwnerError) throw requestOwnerError;
+
+        if (requestOwner?.requester_id && requestOwner.requester_id === helperId) {
+          setOfferError("You cannot submit an offer on your own request.");
+          return;
+        }
+
+        const { data: existingOffer, error: duplicateCheckError } = await supabase
+          .from("offers")
+          .select("id")
+          .eq("request_id", request.id)
+          .eq("helper_id", helperId)
+          .maybeSingle();
+
+        if (duplicateCheckError) throw duplicateCheckError;
+
+        if (existingOffer?.id) {
+          setOfferError("You already submitted an offer for this request.");
+          return;
+        }
+
+        const fullMessage = `${offerMessage.trim()}\n\nAvailability: ${availability.trim()}`;
+        const { error } = await createOffer(request.id, helperId, fullMessage);
+        if (error) throw error;
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, 700));
+      }
+
+      setOfferFeedback("Offer submitted successfully. Redirecting to your dashboard...");
+      setOfferMessage("");
+      setAvailability("");
+
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 900);
+    } catch (error) {
+      const detailedMessage =
+        typeof error === "object" && error && "message" in error
+          ? String((error as { message?: string }).message)
+          : "Please try again.";
+      console.error("Offer submission failed:", error);
+      setOfferError(`Could not submit your offer right now. ${detailedMessage}`);
+    } finally {
+      setIsSubmittingOffer(false);
+    }
   };
 
   return (
@@ -217,23 +337,42 @@ export default function RequestDetails() {
               </label>
               <textarea
                 maxLength={500}
-                defaultValue={draftMessage}
+                value={offerMessage}
+                onChange={(event) => setOfferMessage(event.target.value)}
                 placeholder="Explain why you're a good fit and how you'll approach this..."
                 className="mt-2 h-24 w-full resize-none rounded-2xl border border-slate-200/80 bg-white/92 p-3 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
               />
-              <p className="mt-1 text-right text-xs text-slate-500">0/500</p>
+              <p className="mt-1 text-right text-xs text-slate-500">{offerMessage.length}/500</p>
 
               <label className="mt-3 block text-sm font-semibold text-slate-800">
                 Your availability
               </label>
               <input
+                value={availability}
+                onChange={(event) => setAvailability(event.target.value)}
                 placeholder="e.g. Today 3-6 PM UTC, or anytime tomorrow"
                 className="mt-2 h-11 w-full rounded-2xl border border-slate-200/80 bg-white/92 px-4 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
               />
 
-              <button className="mt-4 h-11 w-full rounded-xl bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 text-sm font-semibold text-white transition hover:brightness-105">
-                Submit Offer
+              <button
+                type="button"
+                onClick={handleSubmitOffer}
+                disabled={!canSubmitOffer}
+                className={`mt-4 h-11 w-full rounded-xl text-sm font-semibold text-white transition ${
+                  canSubmitOffer
+                    ? "bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 hover:brightness-105"
+                    : "cursor-not-allowed bg-slate-300"
+                }`}
+              >
+                {isSubmittingOffer ? "Submitting..." : "Submit Offer"}
               </button>
+
+              {offerError ? (
+                <p className="mt-2 text-sm font-medium text-rose-600">{offerError}</p>
+              ) : null}
+              {offerFeedback ? (
+                <p className="mt-2 text-sm font-medium text-emerald-600">{offerFeedback}</p>
+              ) : null}
             </div>
 
             <div className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/78 p-5 backdrop-blur-xl">

@@ -1,7 +1,11 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartLine, faCheck } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "react-router-dom";
+import { helpers } from "../../data/mockExploreData";
 
 const CTASection = () => {
+  const defaultHelperId = helpers[0]?.id ?? "h1";
+
   return (
     <section className="py-20">
       <div className="mx-auto max-w-7xl rounded-[1.5rem] border border-white/40 bg-white/60 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8">
@@ -30,12 +34,18 @@ const CTASection = () => {
               <p className="mb-6 text-slate-600">No credit card. No payments. Just skills.</p>
 
               <div className="mb-6 flex flex-col justify-center gap-3 sm:flex-row">
-                <button className="rounded-xl border border-slate-200 bg-white px-6 py-2.5 font-semibold text-slate-900 transition hover:bg-slate-50">
+                <Link
+                  to="/explore"
+                  className="rounded-xl border border-slate-200 bg-white px-6 py-2.5 text-center font-semibold text-slate-900 transition hover:bg-slate-50"
+                >
                   Browse Requests
-                </button>
-                <button className="rounded-xl border border-white/50 bg-white/80 px-6 py-2.5 font-semibold text-slate-700 transition hover:bg-white">
+                </Link>
+                <Link
+                  to={`/helpers/${defaultHelperId}/request`}
+                  className="rounded-xl border border-white/50 bg-white/80 px-6 py-2.5 text-center font-semibold text-slate-700 transition hover:bg-white"
+                >
                   Post a Request
-                </button>
+                </Link>
               </div>
 
               <div className="mb-6">

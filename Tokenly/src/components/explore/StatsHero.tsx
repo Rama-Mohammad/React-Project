@@ -17,6 +17,7 @@ import type { ExploreStats } from "../../types/explore";
 
 interface StatsHeroProps {
   stats: ExploreStats;
+  defaultHelperId?: string;
 }
 
 function StatCard({
@@ -60,8 +61,8 @@ function Step({
   );
 }
 
-export default function StatsHero({ stats }: StatsHeroProps) {
-  const defaultHelperId = helpers[0]?.id ?? "h1";
+export default function StatsHero({ stats, defaultHelperId }: StatsHeroProps) {
+  const fallbackHelperId = defaultHelperId ?? helpers[0]?.id ?? "h1";
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
 
   return (
@@ -92,7 +93,7 @@ export default function StatsHero({ stats }: StatsHeroProps) {
 
             <div className="explore-fade-in-up mt-5 flex flex-wrap gap-2.5">
               <Link
-                to={`/helpers/${defaultHelperId}/request`}
+                to={`/helpers/${fallbackHelperId}/request`}
                 className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition duration-300 hover:bg-slate-50"
               >
                 <FileText size={17} />

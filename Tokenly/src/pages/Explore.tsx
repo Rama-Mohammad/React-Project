@@ -10,7 +10,6 @@ import SearchBar from "../components/explore/SearchBar";
 import SkillCard from "../components/explore/SkillCard";
 import StatsHero from "../components/explore/StatsHero";
 import {
-  exploreStats,
   helperCategories,
   helpers,
   requestCategories,
@@ -169,6 +168,31 @@ export default function Explore() {
       ? filteredHelpers.length
       : filteredSkills.length;
 
+  const tabCounts = useMemo(
+    () => ({
+      requests: filteredRequests.length,
+      helpers: filteredHelpers.length,
+      skills: filteredSkills.length,
+    }),
+    [filteredRequests.length, filteredHelpers.length, filteredSkills.length]
+  );
+
+  const dynamicStats = useMemo(() => {
+    const totalSessions = helpers.reduce((sum, helper) => sum + helper.sessions, 0);
+    const totalCredits = helpers.reduce((sum, helper) => sum + helper.creditsPerHour, 0);
+
+    return {
+      activeRequests: filteredRequests.length,
+      helpersOnline: filteredHelpers.filter((helper) => helper.online).length,
+      sessionsToday: Math.max(1, Math.round(totalSessions / 20)),
+      creditsExchanged: `${Math.max(1, Math.round(totalCredits / 10))}k`,
+    };
+  }, [filteredHelpers, filteredRequests.length]);
+
+  const defaultHelperId = useMemo(() => {
+    return filteredHelpers.find((helper) => helper.online)?.id ?? helpers[0]?.id ?? "h1";
+  }, [filteredHelpers]);
+
   const titleText =
     activeTab === "requests"
       ? "Browse open help requests from peers"
@@ -202,18 +226,14 @@ export default function Explore() {
       <Navbar />
 
       <main className="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-5 lg:px-6 lg:py-8">
-        <StatsHero stats={exploreStats} />
+        <StatsHero stats={dynamicStats} defaultHelperId={defaultHelperId} />
 
         <section className="mt-8">
           <div className="explore-fade-in-up mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <CategoryTabs
               activeTab={activeTab}
               onChange={handleTabChange}
-              counts={{
-                requests: requests.length,
-                helpers: helpers.length,
-                skills: skills.length,
-              }}
+              counts={tabCounts}
             />
 
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 lg:text-right">
