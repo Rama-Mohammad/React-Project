@@ -34,8 +34,8 @@ function BadgePill({ label }: { label: string }) {
 
 export default function HelperCard({ item }: HelperCardProps) {
   return (
-    <article className="explore-glass overflow-hidden rounded-xl border border-white/60 bg-white/80 backdrop-blur transition duration-300 hover:-translate-y-1 hover:shadow-md">
-      <div className="p-4">
+    <article className="explore-glass flex h-full flex-col overflow-hidden rounded-xl border border-white/60 bg-white/85 backdrop-blur transition duration-300 hover:border-white/80 hover:shadow-md">
+      <div className="flex-1 p-4">
         <div className="flex items-start gap-3">
           <div className="relative shrink-0">
             <div
@@ -51,7 +51,7 @@ export default function HelperCard({ item }: HelperCardProps) {
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="text-lg font-semibold tracking-tight text-slate-950">
+                <h3 className="text-base font-semibold tracking-tight text-slate-900">
                   {item.name}
                 </h3>
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
@@ -66,7 +66,7 @@ export default function HelperCard({ item }: HelperCardProps) {
               </div>
             </div>
 
-            <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-500">
+            <p className="mt-2.5 line-clamp-3 text-sm leading-6 text-slate-600">
               {item.bio}
             </p>
 
@@ -101,7 +101,7 @@ export default function HelperCard({ item }: HelperCardProps) {
         </div>
       </div>
 
-      <div className="border-t border-slate-100 p-4">
+      <div className="mt-auto border-t border-slate-100/90 p-4">
         <div className="flex flex-wrap items-center gap-4">
           <div className="text-xs text-slate-500">
             <span className="font-semibold text-slate-800">{item.sessions}</span> sessions
@@ -115,7 +115,7 @@ export default function HelperCard({ item }: HelperCardProps) {
             {item.creditsPerHour} /hr
           </div>
 
-          <button className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition duration-300 hover:-translate-y-0.5 hover:bg-slate-50">
+          <button className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition duration-200 hover:bg-slate-50">
             <MessageCircle size={14} />
             Request
           </button>

@@ -17,10 +17,10 @@ export default function CategoryTabs({
   counts,
 }: CategoryTabsProps) {
   const tabClass = (active: boolean) =>
-    `inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition duration-300 ${
+    `inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition duration-200 ${
       active
-        ? "border border-slate-200 bg-white text-slate-900 shadow-sm ring-1 ring-white/70"
-        : "border border-white/40 bg-white/50 text-slate-500 hover:-translate-y-0.5 hover:bg-white/80"
+        ? "border border-slate-200 bg-white text-slate-900 shadow-sm"
+        : "border border-transparent bg-transparent text-slate-500 hover:bg-white/80 hover:text-slate-700"
     }`;
 
   const badgeClass = (active: boolean) =>
@@ -29,7 +29,7 @@ export default function CategoryTabs({
       : "rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold text-slate-500";
 
   return (
-    <div className="explore-fade-in-up flex flex-wrap items-center gap-3">
+    <div className="explore-fade-in-up inline-flex flex-wrap items-center gap-2 rounded-xl border border-white/50 bg-white/55 p-1.5 backdrop-blur">
       <button
         type="button"
         onClick={() => onChange("requests")}

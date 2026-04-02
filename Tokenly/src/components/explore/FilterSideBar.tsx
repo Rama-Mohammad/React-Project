@@ -37,10 +37,10 @@ function ChipButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+      className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
         active
-          ? "border-slate-200 bg-white text-slate-900 shadow-sm ring-1 ring-white/70"
-          : "border-white/40 bg-white/60 text-slate-500 hover:-translate-y-0.5 hover:bg-white"
+          ? "border-slate-200 bg-white text-slate-900 shadow-sm"
+          : "border-white/40 bg-white/65 text-slate-600 hover:bg-white"
       }`}
     >
       {children}
@@ -66,9 +66,9 @@ export default function FilterSideBar({
   totalCount,
 }: FilterSideBarProps) {
   return (
-    <div className="explore-glass explore-fade-in-up rounded-[1.25rem] border border-white/50 bg-white/70 p-4 backdrop-blur-xl">
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap gap-2">
+    <div className="explore-glass explore-fade-in-up rounded-[1.25rem] border border-white/50 bg-white/75 p-4 backdrop-blur-xl">
+      <div className="flex flex-col gap-3.5">
+        <div className="flex flex-wrap gap-1.5">
           {categories.map((item) => (
             <ChipButton
               key={item}
@@ -81,8 +81,8 @@ export default function FilterSideBar({
         </div>
 
         {activeTab === "requests" && (
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex flex-wrap gap-1.5">
               {["All", "High", "Medium", "Low"].map((item) => (
                 <ChipButton
                   key={item}
@@ -104,15 +104,15 @@ export default function FilterSideBar({
               ))}
             </div>
 
-            <p className="text-sm text-slate-500">
+            <p className="text-xs text-slate-500">
               <span className="font-semibold text-indigo-500">{totalCount}</span> requests
             </p>
           </div>
         )}
 
         {activeTab === "helpers" && (
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex flex-wrap gap-1.5">
               {["Any rating", "4.0+", "4.5+", "4.8+"].map((item) => (
                 <ChipButton
                   key={item}
@@ -134,15 +134,15 @@ export default function FilterSideBar({
               </ChipButton>
             </div>
 
-            <p className="text-sm text-slate-500">
+            <p className="text-xs text-slate-500">
               <span className="font-semibold text-indigo-500">{totalCount}</span> helpers
             </p>
           </div>
         )}
 
         {activeTab === "skills" && (
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex flex-wrap gap-1.5">
               {["All", "Beginner", "Intermediate", "Advanced"].map((item) => (
                 <ChipButton
                   key={item}
@@ -154,7 +154,7 @@ export default function FilterSideBar({
               ))}
             </div>
 
-            <p className="text-sm text-slate-500">
+            <p className="text-xs text-slate-500">
               <span className="font-semibold text-indigo-500">{totalCount}</span> skills
             </p>
           </div>

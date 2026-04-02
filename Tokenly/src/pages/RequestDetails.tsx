@@ -2,10 +2,13 @@ import {
   AlertTriangle,
   Clock3,
   Coins,
+  Flag,
   MessageCircle,
+  Share2,
   ShieldCheck,
   Star,
 } from "lucide-react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
 import { helpers, requests } from "../data/mockExploreData";
@@ -19,6 +22,7 @@ const urgencyStyles: Record<string, string> = {
 export default function RequestDetails() {
   const { requestId } = useParams<{ requestId: string }>();
   const request = requests.find((item) => item.id === requestId);
+  const [actionFeedback, setActionFeedback] = useState<string>("");
 
   if (!request) {
     return (
@@ -45,16 +49,55 @@ export default function RequestDetails() {
   const sessionsCompleted = authorHelper?.sessions ?? 12;
   const draftMessage = "";
 
+  const handleShare = async () => {
+    const shareUrl = window.location.href;
+    const shareTitle = `${request.title} | Tokenly`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: shareTitle,
+          text: `Can you help with this request on Tokenly?`,
+          url: shareUrl,
+        });
+        setActionFeedback("Shared successfully.");
+        return;
+      }
+
+      await navigator.clipboard.writeText(shareUrl);
+      setActionFeedback("Request link copied to clipboard.");
+    } catch {
+      setActionFeedback("Could not share right now. Please try again.");
+    }
+  };
+
+  const handleReport = () => {
+    const subject = `Report request: ${request.title}`;
+    const body = [
+      "Hello Tokenly team,",
+      "",
+      "I want to report this request.",
+      `Request ID: ${request.id}`,
+      `Request title: ${request.title}`,
+      `Request URL: ${window.location.href}`,
+      "",
+      "Issue details:",
+    ].join("\n");
+
+    window.location.href = `mailto:support@tokenly.app?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    setActionFeedback("Opened your email app to submit a report.");
+  };
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#c7d2fe_0%,#bae6fd_40%,#ddd6fe_100%)] text-slate-900">
+    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(160deg,#e8efff_0%,#e9f7ff_45%,#f5f8ff_100%)] text-slate-900">
       <div className="pointer-events-none absolute inset-0">
-        <div className="explore-pulse absolute -left-24 top-20 h-72 w-72 rounded-full bg-indigo-200/40 blur-3xl" />
-        <div className="explore-float absolute right-[-6rem] top-44 h-80 w-80 rounded-full bg-sky-200/40 blur-3xl" />
+        <div className="explore-pulse absolute -left-24 top-20 h-64 w-64 rounded-full bg-indigo-200/24 blur-3xl" />
+        <div className="explore-float absolute right-[-6rem] top-44 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
       </div>
 
       <Navbar />
 
-      <main className="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-5 lg:px-6">
+      <main className="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-5 lg:px-6 lg:py-7">
         <div className="mb-3">
           <Link
             to="/explore"
@@ -65,66 +108,106 @@ export default function RequestDetails() {
         </div>
 
         <div className="grid gap-5 lg:grid-cols-[1.9fr_0.8fr]">
-          <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/50 bg-white/75 p-5 backdrop-blur-xl md:p-6">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                  {request.category}
-                </span>
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${urgencyStyles[request.urgency]}`}
-                >
-                  {request.urgency} urgency
-                </span>
-              </div>
-              <span className="text-xs text-slate-500">{request.postedAgo}</span>
-            </div>
-
-            <h1 className="text-2xl font-bold leading-tight tracking-tight text-slate-900 md:text-3xl">
-              {request.title}
-            </h1>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm text-slate-700">
-                <Clock3 size={15} />
-                {request.duration} min session
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1.5 text-sm font-semibold text-emerald-700">
-                <Coins size={15} />
-                {request.credits} credits offered
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm text-slate-700">
-                <MessageCircle size={15} />
-                {request.offers} offers received
-              </span>
-            </div>
-
-            <div className="mt-5 rounded-2xl border border-white/50 bg-white/70 p-4">
-              <h2 className="text-xl font-semibold text-slate-900">Description</h2>
-              <p className="mt-2.5 text-base leading-7 text-slate-600">{request.description}</p>
-            </div>
-
-            <div className="mt-5">
-              <h3 className="text-xl font-semibold text-slate-900">Skills Required</h3>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {request.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full border border-slate-200 bg-white/90 px-3.5 py-1 text-sm text-slate-700"
-                  >
-                    {tag}
+          <div className="space-y-5">
+            <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/50 bg-white/80 p-5 backdrop-blur-xl md:p-6">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                    {request.category}
                   </span>
-                ))}
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${urgencyStyles[request.urgency]}`}
+                  >
+                    {request.urgency} urgency
+                  </span>
+                </div>
+                <span className="text-xs text-slate-500">{request.postedAgo}</span>
               </div>
-            </div>
-          </section>
 
-          <aside className="space-y-6">
-            <div className="explore-glass explore-fade-in-up rounded-3xl border border-white/50 bg-white/75 p-5 backdrop-blur-xl">
-              <h3 className="text-2xl font-bold text-slate-900">Can you help?</h3>
+              <h1 className="text-2xl font-bold leading-tight tracking-tight text-slate-900 md:text-[1.9rem]">
+                {request.title}
+              </h1>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm text-slate-700">
+                  <Clock3 size={15} />
+                  {request.duration} min session
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1.5 text-sm font-semibold text-emerald-700">
+                  <Coins size={15} />
+                  {request.credits} credits offered
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm text-slate-700">
+                  <MessageCircle size={15} />
+                  {request.offers} offers received
+                </span>
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-white/60 bg-white/75 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Description</p>
+                <p className="mt-2.5 text-base leading-7 text-slate-600">{request.description}</p>
+              </div>
+
+              <div className="mt-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Skills Required</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {request.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full border border-slate-200 bg-white/90 px-3.5 py-1 text-sm text-slate-700"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/50 bg-white/80 p-5 backdrop-blur-xl md:p-6">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Posted by</p>
+              <div className="mt-4 flex flex-wrap items-center gap-4">
+                <div
+                  className={`flex h-16 w-16 items-center justify-center rounded-full text-lg font-bold text-slate-800 ${request.author.avatarBg}`}
+                >
+                  {request.author.initials}
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-semibold text-slate-900">{request.author.name}</h3>
+                  <p className="mt-1 inline-flex items-center gap-2 text-sm text-slate-600">
+                    <span className="inline-flex items-center gap-0.5 text-amber-400">
+                      <Star size={14} className="fill-amber-400" />
+                      <Star size={14} className="fill-amber-400" />
+                      <Star size={14} className="fill-amber-400" />
+                      <Star size={14} className="fill-amber-400" />
+                      <Star size={14} />
+                    </span>
+                    {request.author.rating?.toFixed(1)}
+                    <span className="text-slate-500">
+                      {sessionsCompleted} sessions completed
+                    </span>
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {authorSkills.map((skill) => (
+                      <span
+                        key={skill}
+                        className="rounded-full border border-slate-200 bg-white/90 px-3 py-1 text-sm text-slate-700"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
+            <div className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/78 p-5 backdrop-blur-xl">
+              <h3 className="text-xl font-semibold text-slate-900">Can you help?</h3>
               <p className="mt-2 text-base text-slate-600">
                 Submit an offer to help with this request. You'll earn{" "}
-                <span className="font-semibold text-emerald-600">{request.credits} credits</span>{" "}
+                <span className="font-semibold text-indigo-600">{request.credits} credits</span>{" "}
                 on completion.
               </p>
 
@@ -135,7 +218,7 @@ export default function RequestDetails() {
                 maxLength={500}
                 defaultValue={draftMessage}
                 placeholder="Explain why you're a good fit and how you'll approach this..."
-                className="mt-2 h-24 w-full resize-none rounded-2xl border border-white/60 bg-white/85 p-3 text-sm text-slate-800 outline-none transition focus:border-indigo-200 focus:ring-2 focus:ring-indigo-100"
+                className="mt-2 h-24 w-full resize-none rounded-2xl border border-slate-200/80 bg-white/92 p-3 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
               />
               <p className="mt-1 text-right text-xs text-slate-500">0/500</p>
 
@@ -144,95 +227,72 @@ export default function RequestDetails() {
               </label>
               <input
                 placeholder="e.g. Today 3-6 PM UTC, or anytime tomorrow"
-                className="mt-2 h-11 w-full rounded-2xl border border-white/60 bg-white/85 px-4 text-sm text-slate-800 outline-none transition focus:border-indigo-200 focus:ring-2 focus:ring-indigo-100"
+                className="mt-2 h-11 w-full rounded-2xl border border-slate-200/80 bg-white/92 px-4 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
               />
 
-              <button className="mt-4 h-11 w-full rounded-2xl bg-emerald-600 text-base font-semibold text-white transition hover:bg-emerald-700">
+              <button className="mt-4 h-11 w-full rounded-xl bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 text-sm font-semibold text-white transition hover:brightness-105">
                 Submit Offer
               </button>
             </div>
 
-            <div className="explore-glass explore-fade-in-up rounded-3xl border border-white/50 bg-white/75 p-5 backdrop-blur-xl">
-              <h3 className="text-xl font-semibold text-slate-900">Session Details</h3>
+            <div className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/78 p-5 backdrop-blur-xl">
+              <h3 className="text-lg font-semibold text-slate-900">Session Details</h3>
               <div className="mt-3.5 space-y-3 text-sm">
                 <div className="flex items-center justify-between text-slate-600">
                   <span className="inline-flex items-center gap-2">
-                    <Clock3 size={15} />
+                    <Clock3 size={15} className="text-indigo-400" />
                     Duration
                   </span>
                   <span className="font-semibold text-slate-800">{request.duration} minutes</span>
                 </div>
                 <div className="flex items-center justify-between text-slate-600">
                   <span className="inline-flex items-center gap-2">
-                    <Coins size={15} />
+                    <Coins size={15} className="text-indigo-400" />
                     Credits earned
                   </span>
-                  <span className="font-semibold text-emerald-600">{request.credits} credits</span>
+                  <span className="font-semibold text-indigo-600">{request.credits} credits</span>
                 </div>
                 <div className="flex items-center justify-between text-slate-600">
                   <span className="inline-flex items-center gap-2">
-                    <AlertTriangle size={15} />
+                    <AlertTriangle size={15} className="text-indigo-400" />
                     Urgency
                   </span>
                   <span className="font-semibold text-slate-800">{request.urgency}</span>
                 </div>
                 <div className="flex items-center justify-between text-slate-600">
                   <span className="inline-flex items-center gap-2">
-                    <ShieldCheck size={15} />
+                    <ShieldCheck size={15} className="text-indigo-400" />
                     Credits escrowed
                   </span>
                   <span className="font-semibold text-slate-800">After acceptance</span>
                 </div>
               </div>
             </div>
+
+            <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/78 p-4 backdrop-blur-xl">
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="group flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-300/70 bg-white/70 px-4 text-sm font-semibold text-slate-500 transition hover:bg-white"
+                >
+                  <Share2 size={14} className="text-slate-500" />
+                  <span className="leading-none">Share</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReport}
+                  className="group flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-300/70 bg-white/70 px-4 text-sm font-semibold text-slate-500 transition hover:bg-white"
+                >
+                  <Flag size={14} className="text-slate-500" />
+                  <span className="leading-none">Report</span>
+                </button>
+              </div>
+              {actionFeedback ? (
+                <p className="mt-3 text-center text-sm text-slate-600">{actionFeedback}</p>
+              ) : null}
+            </section>
           </aside>
-
-          <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/50 bg-white/75 p-5 backdrop-blur-xl md:p-6 lg:col-span-1">
-            <h2 className="text-2xl font-bold text-slate-900">Posted by</h2>
-            <div className="mt-4 flex flex-wrap items-center gap-4">
-              <div
-                className={`flex h-16 w-16 items-center justify-center rounded-full text-lg font-bold text-slate-800 ${request.author.avatarBg}`}
-              >
-                {request.author.initials}
-              </div>
-
-              <div>
-                <h3 className="text-2xl font-semibold text-slate-900">{request.author.name}</h3>
-                <p className="mt-1 inline-flex items-center gap-2 text-sm text-slate-600">
-                  <span className="inline-flex items-center gap-0.5 text-amber-400">
-                    <Star size={14} className="fill-amber-400" />
-                    <Star size={14} className="fill-amber-400" />
-                    <Star size={14} className="fill-amber-400" />
-                    <Star size={14} className="fill-amber-400" />
-                    <Star size={14} />
-                  </span>
-                  {request.author.rating?.toFixed(1)}
-                  <span className="text-slate-500">
-                    {sessionsCompleted} sessions completed
-                  </span>
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {authorSkills.map((skill) => (
-                    <span
-                      key={skill}
-                      className="rounded-full border border-slate-200 bg-white/90 px-3 py-1 text-sm text-slate-700"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <div className="flex gap-3 lg:col-start-2">
-            <button className="flex-1 rounded-2xl border border-white/50 bg-white/75 py-2.5 text-sm font-medium text-slate-600 backdrop-blur transition hover:bg-white">
-              Share
-            </button>
-            <button className="flex-1 rounded-2xl border border-white/50 bg-white/75 py-2.5 text-sm font-medium text-slate-600 backdrop-blur transition hover:bg-white">
-              Report
-            </button>
-          </div>
         </div>
       </main>
     </div>

@@ -13,8 +13,8 @@ const levelStyles: Record<string, string> = {
 
 export default function SkillCard({ item }: SkillCardProps) {
   return (
-    <article className="explore-glass overflow-hidden rounded-xl border border-white/60 bg-white/80 backdrop-blur transition duration-300 hover:-translate-y-1 hover:shadow-md">
-      <div className="p-4">
+    <article className="explore-glass flex h-full flex-col overflow-hidden rounded-xl border border-white/60 bg-white/85 backdrop-blur transition duration-300 hover:border-white/80 hover:shadow-md">
+      <div className="flex-1 p-4">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-100 via-sky-100 to-purple-100 text-indigo-500">
             <Sparkles size={18} />
@@ -29,19 +29,19 @@ export default function SkillCard({ item }: SkillCardProps) {
           </span>
         </div>
 
-        <h3 className="text-lg font-semibold leading-snug tracking-tight text-slate-950">
+        <h3 className="text-base font-semibold leading-snug tracking-tight text-slate-900">
           {item.name}
         </h3>
         <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
           {item.category}
         </p>
 
-        <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-500">
+        <p className="mt-2.5 line-clamp-3 text-sm leading-6 text-slate-600">
           {item.description}
         </p>
       </div>
 
-      <div className="border-t border-slate-100 p-4">
+      <div className="mt-auto border-t border-slate-100/90 p-4">
         <div className="mb-4 flex items-center gap-4 text-xs text-slate-500">
           <span className="inline-flex items-center gap-1.5">
             <Users size={14} />

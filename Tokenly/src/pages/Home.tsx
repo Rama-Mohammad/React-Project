@@ -11,7 +11,7 @@ import CTASection from "../components/home/CTASection";
 
 const Home = () => {
   return (
-    <div className="min-h-screen bg-[linear-gradient(135deg,#c7d2fe_0%,#bae6fd_40%,#ddd6fe_100%)] text-slate-900">
+    <div className="min-h-screen bg-[linear-gradient(160deg,#e8efff_0%,#e9f7ff_45%,#f5f8ff_100%)] text-slate-900">
       <Navbar />
 
       <main>

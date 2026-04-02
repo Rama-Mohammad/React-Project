@@ -191,20 +191,20 @@ export default function Explore() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#c7d2fe_0%,#bae6fd_40%,#ddd6fe_100%)] text-slate-900">
+    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(160deg,#e8efff_0%,#e9f7ff_45%,#f5f8ff_100%)] text-slate-900">
       <div className="pointer-events-none absolute inset-0">
-        <div className="explore-pulse absolute -left-24 top-20 h-72 w-72 rounded-full bg-indigo-200/40 blur-3xl" />
-        <div className="explore-float absolute right-[-6rem] top-44 h-80 w-80 rounded-full bg-sky-200/40 blur-3xl" />
-        <div className="explore-pulse absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-purple-200/35 blur-3xl" />
+        <div className="explore-pulse absolute -left-28 top-24 h-64 w-64 rounded-full bg-indigo-200/25 blur-3xl" />
+        <div className="explore-float absolute right-[-7rem] top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
+        <div className="explore-pulse absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-purple-200/20 blur-3xl" />
       </div>
 
       <Navbar />
 
-      <main className="relative z-10 mx-auto max-w-6xl px-4 py-6 sm:px-5 lg:px-6 lg:py-8">
+      <main className="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-5 lg:px-6 lg:py-8">
         <StatsHero stats={exploreStats} />
 
         <section className="mt-8">
-          <div className="explore-fade-in-up mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="explore-fade-in-up mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <CategoryTabs
               activeTab={activeTab}
               onChange={handleTabChange}
@@ -215,10 +215,12 @@ export default function Explore() {
               }}
             />
 
-            <p className="text-sm font-medium text-slate-500 lg:text-right">{titleText}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 lg:text-right">
+              {titleText}
+            </p>
           </div>
 
-          <div className="explore-glass explore-fade-in-up rounded-[1.5rem] border border-white/50 bg-white/70 p-4 backdrop-blur-xl md:p-5">
+          <div className="explore-glass explore-fade-in-up rounded-[1.25rem] border border-white/50 bg-white/70 p-4 backdrop-blur-xl md:p-5">
             <SearchBar
               activeTab={activeTab}
               search={search}
@@ -249,9 +251,9 @@ export default function Explore() {
           </div>
 
           {activeTab === "requests" && (
-            <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {filteredRequests.map((item, index) => (
-                <div key={item.id} className="explore-fade-in-up" style={getEnterStyle(index)}>
+                <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
                   <RequestCard item={item} />
                 </div>
               ))}
@@ -259,9 +261,9 @@ export default function Explore() {
           )}
 
           {activeTab === "helpers" && (
-            <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {filteredHelpers.map((item, index) => (
-                <div key={item.id} className="explore-fade-in-up" style={getEnterStyle(index)}>
+                <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
                   <HelperCard item={item} />
                 </div>
               ))}
@@ -269,9 +271,9 @@ export default function Explore() {
           )}
 
           {activeTab === "skills" && (
-            <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {filteredSkills.map((item, index) => (
-                <div key={item.id} className="explore-fade-in-up" style={getEnterStyle(index)}>
+                <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
                   <SkillCard item={item} />
                 </div>
               ))}
