@@ -7,8 +7,8 @@ import Home from "../pages/Home";
 import RequestDetails from "../pages/RequestDetails";
 import RequestHelper from "../pages/RequestHelper";
 import SkillHelpers from "../pages/SkillHelpers";
-import Sessions from "../pages/Sessions";
 import Profile from "../pages/Profile";
+import Sessions from "../pages/Sessions";
 
 function ScrollToTopLayout() {
   const { pathname } = useLocation();
