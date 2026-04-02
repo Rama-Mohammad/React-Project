@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
@@ -18,6 +18,7 @@ import {
   skills,
 } from "../data/mockExploreData";
 import type { ExploreTab, RequestItem, HelperItem, SkillItem } from "../types/explore";
+import useRequests from "../hooks/useRequest";
 
 function matchesSearch(text: string, search: string) {
   return text.toLowerCase().includes(search.toLowerCase().trim());
@@ -30,6 +31,12 @@ function getEnterStyle(index: number): CSSProperties {
 }
 
 export default function Explore() {
+  const {
+    requests: liveOpenRequests,
+    fetchOpenRequests,
+    loading: requestsLoading,
+    error: requestsError,
+  } = useRequests();
   const [activeTab, setActiveTab] = useState<ExploreTab>("requests");
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -39,6 +46,22 @@ export default function Explore() {
   const [rating, setRating] = useState("Any rating");
   const [onlineOnly, setOnlineOnly] = useState(false);
   const [level, setLevel] = useState("All");
+
+  useEffect(() => {
+    if (activeTab !== "requests") return;
+
+    const mappedUrgency =
+      urgency === "Low" ? "low" : urgency === "Medium" ? "medium" : urgency === "High" ? "high" : undefined;
+    const mappedDuration =
+      duration === "<=30 min" ? 30 : duration === "<=45 min" ? 45 : duration === "<=60 min" ? 60 : undefined;
+
+    void fetchOpenRequests({
+      category: selectedCategory === "All" ? undefined : selectedCategory,
+      urgency: mappedUrgency,
+      max_duration: mappedDuration,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, duration, selectedCategory, urgency]);
 
   const filteredRequests: RequestItem[] = useMemo(() => {
     let data = [...requests];
@@ -180,14 +203,15 @@ export default function Explore() {
   const dynamicStats = useMemo(() => {
     const totalSessions = helpers.reduce((sum, helper) => sum + helper.sessions, 0);
     const totalCredits = helpers.reduce((sum, helper) => sum + helper.creditsPerHour, 0);
+    const liveCount = liveOpenRequests.length;
 
     return {
-      activeRequests: filteredRequests.length,
+      activeRequests: liveCount || filteredRequests.length,
       helpersOnline: filteredHelpers.filter((helper) => helper.online).length,
       sessionsToday: Math.max(1, Math.round(totalSessions / 20)),
       creditsExchanged: `${Math.max(1, Math.round(totalCredits / 10))}k`,
     };
-  }, [filteredHelpers, filteredRequests.length]);
+  }, [filteredHelpers, filteredRequests.length, liveOpenRequests.length]);
 
   const defaultHelperId = useMemo(() => {
     return filteredHelpers.find((helper) => helper.online)?.id ?? helpers[0]?.id ?? "h1";
@@ -240,6 +264,14 @@ export default function Explore() {
               {titleText}
             </p>
           </div>
+          {activeTab === "requests" ? (
+            <p className="mb-4 text-xs text-slate-500">
+              {requestsLoading ? "Syncing live open requests..." : `Live open requests: ${liveOpenRequests.length}`}
+            </p>
+          ) : null}
+          {requestsError ? (
+            <p className="mb-4 text-xs text-rose-600">{requestsError}</p>
+          ) : null}
 
           <div className="explore-glass explore-fade-in-up rounded-[1.25rem] border border-white/50 bg-white/70 p-4 backdrop-blur-xl md:p-5">
             <SearchBar

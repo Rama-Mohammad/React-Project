@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
@@ -10,6 +10,10 @@ import RatingsSummary from "../components/profile/RatingsSummary";
 import EditProfileModal from "../components/profile/EditProfileModal";
 import AddSkillModal from "../components/profile/AddSkillModal";
 import AddPortfolioModal from "../components/profile/AddPortfolioModal";
+import useAuth from "../hooks/useAuth";
+import useProfiles from "../hooks/useProfile";
+import useSkills from "../hooks/useSkills";
+import useReviews from "../hooks/useReviews";
 
 const mockUser = {
   name: "Jordan Lee",
@@ -27,7 +31,15 @@ const mockUser = {
   },
 };
 
-const mockSkills = [
+type UiSkill = {
+  id: string;
+  name: string;
+  category: string;
+  level: "Expert" | "Advanced" | "Intermediate";
+  sessions: number;
+};
+
+const mockSkills: UiSkill[] = [
   { id: "1", name: "React", category: "Web Development", level: "Expert" as const, sessions: 8 },
   { id: "2", name: "TypeScript", category: "Web Development", level: "Advanced" as const, sessions: 6 },
   { id: "3", name: "Python", category: "Programming", level: "Advanced" as const, sessions: 5 },
@@ -138,11 +150,40 @@ const mockReviews = [
   },
 ];
 
+const toTitleCase = (value: string) =>
+  value ? `${value.charAt(0).toUpperCase()}${value.slice(1).toLowerCase()}` : value;
+
+const toUiSkillLevel = (value: string): UiSkill["level"] => {
+  const normalized = toTitleCase(value);
+  if (normalized === "Expert" || normalized === "Advanced") return normalized;
+  return "Intermediate";
+};
+
 const Profile: React.FC = () => {
+  const { user: authUser } = useAuth();
+  const {
+    profile: liveProfile,
+    fetchProfileById,
+    loading: profileLoading,
+    error: profileError,
+  } = useProfiles();
+  const {
+    skills: liveSkills,
+    fetchSkillsByUser,
+    loading: skillsLoading,
+    error: skillsError,
+  } = useSkills();
+  const {
+    reviews: liveReviews,
+    fetchReviewsByUser,
+    loading: reviewsLoading,
+    error: reviewsError,
+  } = useReviews();
+
   const [user, setUser] = useState(mockUser);
-  const [skills, setSkills] = useState(mockSkills);
+  const [skills, setSkills] = useState<UiSkill[]>(mockSkills);
   const [portfolio, setPortfolio] = useState(mockPortfolio);
-  const [reviews] = useState(mockReviews);
+  const [reviews, setReviews] = useState(mockReviews);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddSkillModalOpen, setIsAddSkillModalOpen] = useState(false);
@@ -155,17 +196,74 @@ const Profile: React.FC = () => {
   const [pendingPortfolioDeleteId, setPendingPortfolioDeleteId] = useState<string | null>(null);
   const [reviewSortBy, setReviewSortBy] = useState<"newest" | "oldest" | "highest" | "lowest">("newest");
 
+  useEffect(() => {
+    if (!authUser?.id) return;
+
+    void fetchProfileById(authUser.id);
+    void fetchSkillsByUser(authUser.id);
+    void fetchReviewsByUser(authUser.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authUser?.id]);
+
+  useEffect(() => {
+    if (!liveProfile) return;
+
+    setUser((prev) => ({
+      ...prev,
+      name: liveProfile.full_name || liveProfile.username || prev.name,
+      bio: liveProfile.bio || prev.bio,
+      rating: liveProfile.avg_rating ?? prev.rating,
+    }));
+  }, [liveProfile]);
+
+  useEffect(() => {
+    if (liveSkills.length === 0) return;
+
+    setSkills(
+      liveSkills.map((skill) => ({
+        id: skill.id,
+        name: skill.name,
+        category: skill.category,
+        level: toUiSkillLevel(skill.level),
+        sessions: skill.sessions_count,
+      }))
+    );
+  }, [liveSkills]);
+
+  useEffect(() => {
+    if (liveReviews.length === 0) return;
+
+    setReviews(
+      liveReviews.map((review) => ({
+        id: review.id,
+        reviewerName: "Community Member",
+        date: new Date(review.created_at).toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        }),
+        rating: review.rating,
+        comment: review.comment || "Great session.",
+        skillCategory: "General",
+        sessionTopic: "Peer session",
+      }))
+    );
+  }, [liveReviews]);
+
+  const pageError = profileError || skillsError || reviewsError;
+
   const handleEditProfile = (updatedUser: typeof mockUser) => {
     setUser(updatedUser);
   };
 
-  const handleUpdateSkill = (updatedSkill: any) => {
+  const handleUpdateSkill = (updatedSkill: UiSkill) => {
     setSkills(skills.map((skill) => (skill.id === updatedSkill.id ? updatedSkill : skill)));
   };
 
-  const handleAddSkill = (newSkill: Omit<(typeof mockSkills)[0], "id">) => {
+  const handleAddSkill = (newSkill: Omit<UiSkill, "id">) => {
     const skill = {
       ...newSkill,
+      level: toUiSkillLevel(newSkill.level),
       id: Date.now().toString(),
       sessions: 0,
     };
@@ -234,6 +332,11 @@ const Profile: React.FC = () => {
       <Navbar />
 
       <main className="relative z-10 mx-auto min-h-[calc(100vh-76px)] w-full max-w-[1280px] px-4 py-4 sm:px-6 lg:px-8 lg:py-6 xl:px-10">
+        {(profileLoading || skillsLoading || reviewsLoading) ? (
+          <p className="mb-3 text-xs text-slate-500">Syncing profile data...</p>
+        ) : null}
+        {pageError ? <p className="mb-3 text-xs text-rose-600">{pageError}</p> : null}
+
         <ProfileHeader user={user} onEdit={() => setIsEditModalOpen(true)} />
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.7fr_1.3fr]">
