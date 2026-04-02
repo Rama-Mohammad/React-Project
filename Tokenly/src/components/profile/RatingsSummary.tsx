@@ -1,95 +1,79 @@
-import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar as solidStar, faStarHalfAlt } from '@fortawesome/free-solid-svg-icons';
-import { faStar as regularStar } from '@fortawesome/free-regular-svg-icons';
+import React from "react";
+import { ArrowDownUp, ChevronDown, Star } from "lucide-react";
 
 interface RatingsSummaryProps {
   reviews: Array<{ rating: number }>;
+  embedded?: boolean;
 }
 
-const RatingsSummary: React.FC<RatingsSummaryProps> = ({ reviews }) => {
+const RatingsSummary: React.FC<RatingsSummaryProps> = ({ reviews, embedded = false }) => {
   const ratingDistribution = [0, 0, 0, 0, 0];
-  reviews.forEach(review => {
+  reviews.forEach((review) => {
     if (review.rating >= 1 && review.rating <= 5) {
       ratingDistribution[review.rating - 1]++;
     }
   });
-  
-  const averageRating = reviews.length > 0 
-    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
-    : '0.0';
+
+  const averageRating =
+    reviews.length > 0 ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1) : "0.0";
 
   const totalReviews = reviews.length;
+  const roundedAverage = Number(averageRating);
 
-  // Helper function to render stars using Font Awesome
-const renderStars = (rating: number) => {
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating % 1 >= 0.5;
-  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-
-  return (
-    <div className="flex gap-0.5 text-yellow-400">
-      {[...Array(fullStars)].map((_, i) => (
-        <FontAwesomeIcon key={`full-${i}`} icon={solidStar} />
-      ))}
-
-      {hasHalfStar && (
-        <FontAwesomeIcon icon={faStarHalfAlt} />
-      )}
-
-      {[...Array(emptyStars)].map((_, i) => (
-        <FontAwesomeIcon key={`empty-${i}`} icon={regularStar} />
-      ))}
-    </div>
-  );
-};
-
-  return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Received Ratings</h2>
-        <span className="text-sm text-gray-500">{totalReviews} reviews</span>
-      </div>
-
-      <div className="flex items-start gap-8 mb-6">
-        {/* Left side - Average rating */}
-        <div className="text-center min-w-[120px]">
-          <div className="text-5xl font-bold text-gray-900 mb-2">
-            {averageRating}
-          </div>
-          <div className="flex justify-center mb-2">
-            {renderStars(parseFloat(averageRating))}
-          </div>
-          <div className="text-sm text-gray-500">
-            {totalReviews} {totalReviews === 1 ? 'rating' : 'ratings'}
-          </div>
+  const content = (
+    <>
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-semibold text-slate-900">Received Ratings</h2>
+          <p className="text-xs text-slate-500">{totalReviews} reviews</p>
         </div>
 
-        {/* Right side - Rating bars */}
-        <div className="flex-1 space-y-2">
-          {ratingDistribution.map((count, i) => {
-            const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
-            const stars = 5 - i;
-            return (
-              <div key={i} className="flex items-center gap-2 text-sm">
-                <div className="flex items-center gap-1 w-12">
-                  <span className="text-gray-600">{stars}</span>
-                  <FontAwesomeIcon icon={solidStar} className="text-xs text-yellow-400" />
+        <button className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-slate-300">
+          <ArrowDownUp size={14} />
+          Newest first
+          <ChevronDown size={14} className="text-slate-400" />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[0.75fr_1.25fr]">
+        <div className="text-center md:text-left">
+          <div className="text-5xl font-bold leading-none text-slate-900">{averageRating}</div>
+          <div className="mt-2 flex justify-center gap-1 text-amber-400 md:justify-start">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star key={i} size={15} className={i < Math.round(roundedAverage) ? "fill-amber-400" : ""} />
+            ))}
+          </div>
+          <p className="mt-1 text-xs text-slate-500">
+            {totalReviews} {totalReviews === 1 ? "rating" : "ratings"}
+          </p>
+        </div>
+
+        <div className="space-y-2 border-l border-slate-200/70 pl-4">
+          {ratingDistribution
+            .map((count, i) => ({ count, stars: 5 - i }))
+            .map(({ count, stars }) => {
+              const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+              return (
+                <div key={stars} className="flex items-center gap-2 text-xs">
+                  <div className="flex w-5 items-center justify-end font-medium text-slate-600">{stars}</div>
+                  <Star size={13} className="fill-amber-400 text-amber-400" />
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200/90">
+                    <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-yellow-500" style={{ width: `${percentage}%` }} />
+                  </div>
+                  <span className="w-5 text-right text-slate-500">{count}</span>
                 </div>
-                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-yellow-400 rounded-full transition-all duration-300"
-                    style={{ width: `${percentage}%` }}
-                  />
-                </div>
-                <span className="w-8 text-gray-500 text-right">{count}</span>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       </div>
-    </div>
+    </>
   );
+
+  if (embedded) {
+    return content;
+  }
+
+  return <section>{content}</section>;
 };
 
 export default RatingsSummary;

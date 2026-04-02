@@ -1,26 +1,29 @@
-// src/pages/Profile.tsx
-import React, { useState } from 'react';
-import ProfileHeader from '../components/profile/ProfileHeader';
-import SkillCard from '../components/profile/SkillCard';
-import PortfolioItem from '../components/profile/PortfolioItem';
-import ReviewCard from '../components/profile/ReviewCard';
-import RatingsSummary from '../components/profile/RatingsSummary';
-import EditProfileModal from '../components/profile/EditProfileModal';
-import AddSkillModal from '../components/profile/AddSkillModal';
+import React, { useState } from "react";
+import { Plus } from "lucide-react";
+import Navbar from "../components/common/Navbar";
+import Footer from "../components/common/Footer";
+import ProfileHeader from "../components/profile/ProfileHeader";
+import SkillCard from "../components/profile/SkillCard";
+import PortfolioItem from "../components/profile/PortfolioItem";
+import ReviewCard from "../components/profile/ReviewCard";
+import RatingsSummary from "../components/profile/RatingsSummary";
+import EditProfileModal from "../components/profile/EditProfileModal";
+import AddSkillModal from "../components/profile/AddSkillModal";
 
-// Mock data - In a real app, this would come from an API or state management
 const mockUser = {
   name: "Jordan Lee",
-  title: "Senior Full Stack Developer | Technical Writer",
-  location: "San Francisco, CA",
-  memberSince: "January 2024",
-  bio: "Passionate about helping others learn to code. I specialize in React, TypeScript, and backend architecture. I believe in practical, example-driven teaching that builds real understanding.",
+  title: "UC Berkeley",
+  location: "Berkeley, CA",
+  memberSince: "September 2025",
+  bio: "CS student at UC Berkeley, graduating 2027. I love building tools that solve real problems. Strong in React, TypeScript, and Python and always happy to debug code or explain tough concepts.",
   avatarInitials: "JL",
+  rating: 4.7,
+  totalRatings: 6,
   stats: {
-    totalSessions: 24,
-    creditsEarned: 187,
-    skillsTaught: 5
-  }
+    totalSessions: 19,
+    creditsEarned: 4.7,
+    skillsTaught: 17,
+  },
 };
 
 const mockSkills = [
@@ -28,63 +31,109 @@ const mockSkills = [
   { id: "2", name: "TypeScript", category: "Web Development", level: "Advanced" as const, sessions: 6 },
   { id: "3", name: "Python", category: "Programming", level: "Advanced" as const, sessions: 5 },
   { id: "4", name: "SQL", category: "Database", level: "Intermediate" as const, sessions: 3 },
-  { id: "5", name: "System Design", category: "Architecture", level: "Intermediate" as const, sessions: 2 }
+  { id: "5", name: "System Design", category: "Architecture", level: "Intermediate" as const, sessions: 2 },
 ];
 
 const mockPortfolio = [
   {
     id: "1",
     type: "Project" as const,
-    title: "PeerFlow — Collaborative Study Scheduler",
+    title: "PeerFlow - Collaborative Study Scheduler",
     date: "Jan 2026",
-    description: "A full-stack web app that lets student groups coordinate study sessions, assign topics, and track progress. Built with React, Node.js, and PostgreSQL. 200+ active users at my university.",
-    tags: ["React", "Node.js", "PostgreSQL", "Socket.io"]
+    description:
+      "A full-stack web app that lets student groups coordinate study sessions, assign topics, and track progress. Built with React, Node.js, and PostgreSQL. 200+ active users at my university.",
+    tags: ["React", "Node.js", "PostgreSQL", "Socket.io"],
   },
   {
     id: "2",
     type: "Article" as const,
     title: "TypeScript Generic Patterns Cheat Sheet",
     date: "Nov 2025",
-    description: "A comprehensive article I wrote covering 10 practical generic patterns with real-world code examples. Published on Dev.to, reached 4,200 views and was featured in the TypeScript weekly newsletter.",
-    tags: ["TypeScript", "Technical Writing", "Generics"]
+    description:
+      "A comprehensive article I wrote covering 10 practical generic patterns with real-world code examples. Published on Dev.to and featured in the TypeScript weekly newsletter.",
+    tags: ["TypeScript", "Technical Writing", "Generics"],
   },
   {
     id: "3",
     type: "Contribution" as const,
-    title: "Open Source Contribution — React Query Docs",
+    title: "Open Source Contribution - React Query Docs",
     date: "Sep 2025",
-    description: "Rewrote the optimistic updates guide in TanStack Query's official documentation, adding code sandboxes and clarifying 3 confusing sections. PR merged and live on the docs site.",
-    tags: ["React", "Open Source", "Documentation"]
+    description:
+      "Rewrote the optimistic updates guide in TanStack Query documentation, added practical examples, and clarified confusing sections. PR merged and now live in docs.",
+    tags: ["React", "Open Source", "Documentation"],
   },
   {
     id: "4",
     type: "Project" as const,
     title: "Lightweight CLI Task Manager in Python",
     date: "Jul 2025",
-    description: "A terminal-based task tracker with priorities, due dates, and CSV export. Written with clean OOP structure and 95% test coverage. Available on PyPI with 800+ installs.",
-    tags: ["Python", "CLI", "PyPI", "Testing"]
-  }
+    description:
+      "A terminal task tracker with priorities, due dates, and CSV export. Built with a clean OOP structure and high test coverage. Released on PyPI.",
+    tags: ["Python", "CLI", "PyPI", "Testing"],
+  },
 ];
 
 const mockReviews = [
   {
     id: "1",
     reviewerName: "Sofia Russo",
-    date: "Mar 28, 2026",
+    date: "Mar 27, 2026",
     rating: 5,
-    comment: "I finally understand window functions! Jordan didn't just explain the syntax — they gave me real examples from datasets similar to mine. We went over RANK, DENSE_RANK and LAG in one session and it all clicked. Excellent session.",
+    comment:
+      "I finally understand window functions. Jordan explained concepts with examples from datasets similar to mine and everything clicked in one session.",
     skillCategory: "Database",
-    sessionTopic: "Walkthrough of SQL window functions (RANK, LAG, LEAD)"
+    sessionTopic: "Walkthrough of SQL window functions",
   },
   {
     id: "2",
     reviewerName: "Alex Chen",
     date: "Mar 25, 2026",
     rating: 5,
-    comment: "Jordan was amazing — walked me through exactly why my TypeScript generics weren't working and showed me three patterns I can reuse immediately. Super clear, patient, and actually knew what they were talking about. Will definitely request help again.",
+    comment:
+      "Jordan walked me through why my TypeScript generics were failing and gave reusable patterns immediately. Super clear and patient.",
     skillCategory: "Web Development",
-    sessionTopic: "Understand TypeScript generics with practical examples"
-  }
+    sessionTopic: "Understand TypeScript generics",
+  },
+  {
+    id: "3",
+    reviewerName: "Marcus Webb",
+    date: "Mar 20, 2026",
+    rating: 4,
+    comment:
+      "Great explanations and excellent guidance through Big O notation. I needed repetition in one section but the session was very helpful.",
+    skillCategory: "Algorithms",
+    sessionTopic: "Big O fundamentals",
+  },
+  {
+    id: "4",
+    reviewerName: "Noa Kim",
+    date: "Mar 18, 2026",
+    rating: 5,
+    comment:
+      "Came in confused, left with a clean implementation plan and confidence. Every minute of the session felt useful.",
+    skillCategory: "Architecture",
+    sessionTopic: "Service boundaries and API design",
+  },
+  {
+    id: "5",
+    reviewerName: "Leo Patel",
+    date: "Mar 16, 2026",
+    rating: 4,
+    comment:
+      "Helpful and practical. Jordan explains tradeoffs clearly and keeps the pace easy to follow.",
+    skillCategory: "Programming",
+    sessionTopic: "Python data pipelines",
+  },
+  {
+    id: "6",
+    reviewerName: "Nina Ortega",
+    date: "Mar 11, 2026",
+    rating: 5,
+    comment:
+      "Very strong technical depth without making it overwhelming. I learned exactly what I needed for my project.",
+    skillCategory: "Web Development",
+    sessionTopic: "React app performance",
+  },
 ];
 
 const Profile: React.FC = () => {
@@ -104,26 +153,24 @@ const Profile: React.FC = () => {
   };
 
   const handleUpdateSkill = (updatedSkill: any) => {
-    setSkills(skills.map(skill =>
-      skill.id === updatedSkill.id ? updatedSkill : skill
-    ));
+    setSkills(skills.map((skill) => (skill.id === updatedSkill.id ? updatedSkill : skill)));
   };
 
-  const handleAddSkill = (newSkill: Omit<typeof mockSkills[0], 'id'>) => {
+  const handleAddSkill = (newSkill: Omit<(typeof mockSkills)[0], "id">) => {
     const skill = {
       ...newSkill,
       id: Date.now().toString(),
-      sessions: 0
+      sessions: 0,
     };
     setSkills([...skills, skill]);
   };
 
   const handleDeleteSkill = (id: string) => {
-    setSkills(skills.filter(skill => skill.id !== id));
+    setSkills(skills.filter((skill) => skill.id !== id));
   };
 
   const handleViewPortfolio = (id: string) => {
-    console.log('View portfolio item:', id);
+    console.log("View portfolio item:", id);
   };
 
   const handleEditSkill = (skill: any) => {
@@ -132,101 +179,94 @@ const Profile: React.FC = () => {
     setIsAddSkillModalOpen(true);
   };
 
-  const visibleReviews = showAllReviews ? reviews : reviews.slice(0, 4);
+  const visibleReviews = showAllReviews ? reviews : reviews.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(160deg,#e8efff_0%,#e9f7ff_45%,#f5f8ff_100%)] text-slate-900">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="explore-pulse absolute -left-24 top-20 h-64 w-64 rounded-full bg-indigo-200/24 blur-3xl" />
+        <div className="explore-float absolute right-[-6rem] top-44 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
+      </div>
 
-        <ProfileHeader
-          user={user}
-          onEdit={() => setIsEditModalOpen(true)}
-        />
+      <Navbar />
 
-        {/* ✅ FIXED MAIN GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <main className="relative z-10 mx-auto min-h-[calc(100vh-76px)] w-full max-w-[1280px] px-4 py-4 sm:px-6 lg:px-8 lg:py-6 xl:px-10">
+        <ProfileHeader user={user} onEdit={() => setIsEditModalOpen(true)} />
 
-          {/* LEFT COLUMN */}
-          <div className="space-y-8">
-
-            {/* Skills */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-gray-900">Offered Skills</h2>
-                <button
-                  onClick={() => setIsAddSkillModalOpen(true)}
-                  className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  + Add Skill
-                </button>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.7fr_1.3fr]">
+          <section className="explore-fade-in-up rounded-2xl border border-white/70 bg-white/80 px-5 py-4 backdrop-blur-sm">
+            <div className="flex items-center justify-between border-b border-slate-200/70 pb-3">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">Offered Skills</h2>
+                <p className="text-xs text-slate-500">{skills.length} skills listed</p>
               </div>
 
-              <div className="space-y-3">
-                {skills.length > 0 ? (
-                  skills.map(skill => (
-                    <SkillCard
-                      key={skill.id}
-                      skill={skill}
-                      onDelete={handleDeleteSkill}
-                      onEdit={handleEditSkill}
-                    />
-                  ))
-                ) : (
-                  <p className="text-gray-500 text-center py-4">
-                    No skills added yet. Click "Add Skill" to get started!
-                  </p>
-                )}
-              </div>
+              <button
+                onClick={() => setIsAddSkillModalOpen(true)}
+                className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100"
+              >
+                <Plus size={14} />
+                Add Skill
+              </button>
             </div>
 
-            {/* Portfolio (moved here ✅) */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
-                Portfolio
-              </h2>
+            <div className="mt-3 grid gap-1 md:grid-cols-2">
+              {skills.length > 0 ? (
+                skills.map((skill) => (
+                  <SkillCard key={skill.id} skill={skill} onDelete={handleDeleteSkill} onEdit={handleEditSkill} />
+                ))
+              ) : (
+                <p className="py-4 text-center text-slate-500">No skills added yet. Click "Add Skill" to get started.</p>
+              )}
+            </div>
+          </section>
 
-              <div className="space-y-6">
-                {portfolio.map(item => (
-                  <PortfolioItem
-                    key={item.id}
-                    item={item}
-                    onView={handleViewPortfolio}
-                  />
-                ))}
-              </div>
+          <section className="explore-fade-in-up rounded-2xl border border-white/70 bg-white/80 px-5 py-4 backdrop-blur-sm">
+            <RatingsSummary reviews={reviews} embedded />
+
+            <div className="mt-4 space-y-3.5 border-t border-slate-200/70 pt-4">
+              {visibleReviews.length > 0 ? (
+                visibleReviews.map((review) => <ReviewCard key={review.id} review={review} />)
+              ) : (
+                <p className="py-4 text-center text-slate-500">No reviews yet. Complete sessions to receive feedback.</p>
+              )}
             </div>
 
-          </div>
-
-          {/* RIGHT COLUMN */}
-          <div className="space-y-8">
-
-            <RatingsSummary reviews={reviews} />
-
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
-                Recent Reviews
-              </h2>
-
-              <div className="space-y-6">
-                {reviews.length > 0 ? (
-                  reviews.map(review => (
-                    <ReviewCard key={review.id} review={review} />
-                  ))
-                ) : (
-                  <p className="text-gray-500 text-center py-4">
-                    No reviews yet. Complete sessions to receive feedback!
-                  </p>
-                )}
-              </div>
-            </div>
-
-          </div>
-
+            {reviews.length > 3 ? (
+              <button
+                type="button"
+                onClick={() => setShowAllReviews((value) => !value)}
+                className="mt-3.5 text-sm font-semibold text-indigo-600 transition hover:text-indigo-700"
+              >
+                {showAllReviews ? "Show fewer reviews" : `Show all ${reviews.length} reviews`}
+              </button>
+            ) : null}
+          </section>
         </div>
+
+        <section className="explore-fade-in-up mt-8 border-b border-slate-200/60 pb-8">
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900">Portfolio</h2>
+              <p className="text-xs text-slate-500">{portfolio.length} items</p>
+            </div>
+
+            <button className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100">
+              <Plus size={14} />
+              Add Item
+            </button>
+          </div>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-[repeat(2,minmax(0,0.4fr))] md:justify-start">
+            {portfolio.map((item) => (
+              <PortfolioItem key={item.id} item={item} onView={handleViewPortfolio} />
+            ))}
+          </div>
+        </section>
       </main>
 
-      {/* Modals */}
+      <Footer />
+
       <EditProfileModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -251,3 +291,4 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
+

@@ -7,6 +7,7 @@ import Home from "../pages/Home";
 import RequestDetails from "../pages/RequestDetails";
 import RequestHelper from "../pages/RequestHelper";
 import SkillHelpers from "../pages/SkillHelpers";
+import Profile from "../pages/Profile";
 
 function ScrollToTopLayout() {
   const { pathname } = useLocation();
@@ -75,7 +76,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "/profile",
-        element: <PlaceholderPage title="Profile" />,
+        element: <Profile />,
       },
     ],
   },

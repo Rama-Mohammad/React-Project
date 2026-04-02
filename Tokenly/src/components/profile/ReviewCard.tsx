@@ -1,6 +1,5 @@
-import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar } from '@fortawesome/free-solid-svg-icons';
+import React from "react";
+import { Star } from "lucide-react";
 
 interface ReviewCardProps {
   review: {
@@ -15,61 +14,50 @@ interface ReviewCardProps {
 }
 
 const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
- const renderStars = (rating: number) => {
-  const fullStars = Math.floor(rating);
+  const date = new Date(review.date);
+  const formattedDate = Number.isNaN(date.getTime())
+    ? review.date
+    : date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+
+  const initials = review.reviewerName
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
-    <div className="flex gap-0.5 text-yellow-400 text-sm">
-      {[...Array(fullStars)].map((_, i) => (
-        <FontAwesomeIcon key={i} icon={faStar} />
-      ))}
-    </div>
-  );
-};
+    <article className="border-b border-slate-200/70 pb-4 last:border-b-0">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-sky-500 text-xs font-bold text-white">
+            {initials}
+          </div>
 
-  // Format date to look like "Mar 28, 2026"
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
-    });
-  };
-
-  return (
-    <div className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
-      {/* First row: Name on left, Date on right */}
-      <div className="flex justify-between items-start mb-2">
-        <h3 className="font-semibold text-gray-900 text-base">
-          {review.reviewerName}
-        </h3>
-        <span className="text-xs text-gray-400">
-          {formatDate(review.date)}
-        </span>
-      </div>
-
-      {/* Second row: Stars and session topic */}
-      <div className="flex items-center gap-2 mb-3">
-        {renderStars(review.rating)}
-        <span className="text-xs text-gray-400">·</span>
-        <div className="bg-gray-50 rounded-lg px-2 py-0.5">
-          <span className="text-xs text-gray-500">
-            Session: {review.sessionTopic}
-          </span>
+          <div>
+            <h3 className="text-sm font-semibold text-slate-900">{review.reviewerName}</h3>
+            <div className="mt-1 flex items-center gap-1 text-amber-400">
+              {Array.from({ length: review.rating }).map((_, i) => (
+                <Star key={i} size={13} className="fill-amber-400" />
+              ))}
+              <span className="ml-2 text-xs text-slate-500">{review.sessionTopic}</span>
+            </div>
+          </div>
         </div>
+
+        <span className="text-xs text-slate-400">{formattedDate}</span>
       </div>
 
-      {/* Comment with quotes */}
-      <p className="text-gray-700 text-sm mb-2 leading-relaxed">
-        “{review.comment}”
-      </p>
+      <p className="text-sm leading-7 text-slate-700">{review.comment}</p>
 
-      {/* Skill category badge */}
-      <div className="bg-gray-100 rounded-full inline-block px-3 py-1">
-        <span className="text-xs font-medium text-gray-700">{review.skillCategory}</span>
-      </div>
-    </div>
+      <span className="mt-3 inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
+        {review.skillCategory}
+      </span>
+    </article>
   );
 };
 

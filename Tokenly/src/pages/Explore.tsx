@@ -225,7 +225,7 @@ export default function Explore() {
 
       <Navbar />
 
-      <main className="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-5 lg:px-6 lg:py-8">
+      <main className="relative z-10 mx-auto w-[90vw] px-2 py-6 sm:px-3 lg:px-4 lg:py-8">
         <StatsHero stats={dynamicStats} defaultHelperId={defaultHelperId} />
 
         <section className="mt-8">
