@@ -7,6 +7,8 @@ import Home from "../pages/Home";
 import RequestDetails from "../pages/RequestDetails";
 import RequestHelper from "../pages/RequestHelper";
 import SkillHelpers from "../pages/SkillHelpers";
+import SessionsPage from "../pages/Sessions";
+// import SessionLivePage from "../pages/SessionLive";
 import Profile from "../pages/Profile";
 import Sessions from "../pages/Sessions";
 
@@ -58,8 +60,16 @@ export const router = createBrowserRouter([
       },
       {
         path: "/sessions",
+<<<<<<< HEAD
         element: <Sessions />,
+=======
+        element: <SessionsPage />,
+>>>>>>> 0ababe72551a10ab23c2f170a0caf621a7f75066
       },
+      // {
+      //   path: "/session/:sessionId",  // Dynamic route for live session
+      //   element: <SessionLivePage />,
+      // },
       {
         path: "/profile",
         element: <Profile />,
