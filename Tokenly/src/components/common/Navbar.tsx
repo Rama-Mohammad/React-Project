@@ -1,66 +1,63 @@
-import { Link, NavLink } from 'react-router-dom';
-import { User, LayoutDashboard, Calendar, Compass } from 'lucide-react';
+import { Compass, CalendarDays, LayoutDashboard, Menu, User } from "lucide-react";
+import { NavLink } from "react-router-dom";
+
+const navLinkBase =
+  "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition border";
+const navLinkInactive = "bg-white/50 border-white/40 text-slate-500 hover:bg-white/60";
+const navLinkActive = "bg-white text-slate-900 border-slate-200 shadow-sm";
+
+function getNavClass({ isActive }: { isActive: boolean }) {
+  return `${navLinkBase} ${isActive ? navLinkActive : navLinkInactive}`;
+}
 
 export default function Navbar() {
-  const navItems = [
-    { to: '/' , label: 'Home', icon: LayoutDashboard },
-    { to: '/explore', label: 'Explore', icon: Compass },
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/sessions', label: 'Sessions', icon: Calendar },
-  ];
-
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-full bg-gradient-to-br from-cyan-500 to-emerald-500" />
-          <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-            SkillSwap Credits
-          </span>
-        </Link>
-
-        {/* Navigation */}
-        <nav className="hidden items-center gap-1 md:flex">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
-                  isActive
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                }`
-              }
-            >
-              <item.icon size={15} />
-              {item.label}
-            </NavLink>
-          ))}
-          <NavLink
-            to="/profile"
-            className={({ isActive }) =>
-              `flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
-                isActive
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`
-            }
-          >
-            <User size={15} />
-            Profile
+    <header className="sticky top-0 z-40 border-b border-white/40 bg-white/75 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-5 lg:px-6">
+        <div className="flex items-center gap-8">
+          <NavLink to="/" className="flex items-center gap-3">
+            <div className="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-200 via-sky-200 to-purple-200 shadow-sm" />
+            <span className="text-[1.05rem] font-bold tracking-tight text-slate-800">
+              SkillSwap Credits
+            </span>
           </NavLink>
-        </nav>
 
-        {/* Right Section */}
-        <div className="flex items-center gap-3">
-          <Link
-            to="/auth"
-            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
-          >
+          <nav className="hidden items-center gap-1 md:flex">
+            <NavLink to="/" className={getNavClass}>
+              <Compass size={16} />
+              Home
+            </NavLink>
+
+            <NavLink to="/explore" className={getNavClass}>
+              <Compass size={16} />
+              Explore
+            </NavLink>
+
+            <NavLink to="/dashboard" className={getNavClass}>
+              <LayoutDashboard size={16} />
+              Dashboard
+            </NavLink>
+
+            <NavLink to="/sessions" className={getNavClass}>
+              <CalendarDays size={16} />
+              Sessions
+            </NavLink>
+
+            <NavLink to="/profile" className={getNavClass}>
+              <User size={16} />
+              Profile
+            </NavLink>
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
             Sign in
-          </Link>
+          </button>
+
+          <button className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 md:hidden">
+            <Menu size={18} />
+          </button>
         </div>
       </div>
     </header>

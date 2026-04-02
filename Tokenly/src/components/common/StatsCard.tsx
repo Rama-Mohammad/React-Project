@@ -69,18 +69,18 @@ const StatCard = ({ icon, number, label }: StatCardProps) => {
   return (
     <div
       ref={ref}
-      className="flex flex-col items-center gap-4 p-6 rounded-2xl bg-white border border-gray-200 shadow-md hover:shadow-xl hover:border-blue-400 hover:-translate-y-1 transition-all duration-300"
+      className="flex flex-col items-center gap-4 rounded-2xl border border-white/50 bg-white/80 p-6 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
     >
       <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
         <FontAwesomeIcon icon={icon} />
       </div>
 
-      <div className="text-4xl font-bold text-gray-900">
+      <div className="text-4xl font-bold text-slate-900">
         <CountUp end={numericValue} start={isVisible} />
         {number.includes("+") && "+"}
       </div>
 
-      <div className="text-gray-600 text-sm font-medium">{label}</div>
+      <div className="text-sm font-medium text-slate-600">{label}</div>
     </div>
   );
 };

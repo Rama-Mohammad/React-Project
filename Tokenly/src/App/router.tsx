@@ -2,6 +2,8 @@ import { createBrowserRouter, Link } from "react-router-dom";
 import Explore from "../pages/Explore";
 import Dashboard from "../pages/Dashboard";
 import Tutorial from "../pages/Tutorial";
+import Home from "../pages/Home";
+import RequestDetails from "../pages/RequestDetails";
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -21,11 +23,19 @@ function PlaceholderPage({ title }: { title: string }) {
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <Explore />,
+    element: <Home />,
+  },
+  {
+    path: "/home",
+    element: <Home />,
   },
   {
     path: "/explore",
     element: <Explore />,
+  },
+  {
+    path: "/requests/:requestId",
+    element: <RequestDetails />,
   },
   {
     path: "/dashboard",
