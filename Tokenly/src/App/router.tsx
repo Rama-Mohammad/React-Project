@@ -4,6 +4,8 @@ import Dashboard from "../pages/Dashboard";
 import Tutorial from "../pages/Tutorial";
 import Home from "../pages/Home";
 import RequestDetails from "../pages/RequestDetails";
+import RequestHelper from "../pages/RequestHelper";
+import SkillHelpers from "../pages/SkillHelpers";
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -36,6 +38,14 @@ export const router = createBrowserRouter([
   {
     path: "/requests/:requestId",
     element: <RequestDetails />,
+  },
+  {
+    path: "/helpers/:helperId/request",
+    element: <RequestHelper />,
+  },
+  {
+    path: "/skills/:skillId/helpers",
+    element: <SkillHelpers />,
   },
   {
     path: "/dashboard",

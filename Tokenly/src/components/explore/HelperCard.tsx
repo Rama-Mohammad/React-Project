@@ -1,4 +1,5 @@
 import { BadgeCheck, MessageCircle, ShieldCheck, Star, Zap } from "lucide-react";
+import { Link } from "react-router-dom";
 import type { HelperItem } from "../../types/explore";
 
 interface HelperCardProps {
@@ -115,10 +116,13 @@ export default function HelperCard({ item }: HelperCardProps) {
             {item.creditsPerHour} /hr
           </div>
 
-          <button className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition duration-200 hover:bg-slate-50">
+          <Link
+            to={`/helpers/${item.id}/request`}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition duration-200 hover:bg-slate-50"
+          >
             <MessageCircle size={14} />
             Request
-          </button>
+          </Link>
         </div>
       </div>
     </article>

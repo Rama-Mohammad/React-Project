@@ -3,11 +3,16 @@ import {
   BadgeCheck,
   CalendarCheck,
   Coins,
+  Handshake,
+  X,
   FileText,
   PlayCircle,
   Sparkles,
   Users,
 } from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { helpers } from "../../data/mockExploreData";
 import type { ExploreStats } from "../../types/explore";
 
 interface StatsHeroProps {
@@ -56,8 +61,12 @@ function Step({
 }
 
 export default function StatsHero({ stats }: StatsHeroProps) {
+  const defaultHelperId = helpers[0]?.id ?? "h1";
+  const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
+
   return (
-    <section className="space-y-4">
+    <>
+      <section className="space-y-4">
       <div className="explore-glass explore-fade-in-up overflow-hidden rounded-2xl border border-white/50 bg-white/75 px-5 py-5 backdrop-blur-xl md:px-6 md:py-6">
         <div className="grid items-center gap-6 lg:grid-cols-[1.15fr_0.85fr]">
           <div>
@@ -82,12 +91,19 @@ export default function StatsHero({ stats }: StatsHeroProps) {
             </p>
 
             <div className="explore-fade-in-up mt-5 flex flex-wrap gap-2.5">
-              <button className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition duration-300 hover:bg-slate-50">
+              <Link
+                to={`/helpers/${defaultHelperId}/request`}
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition duration-300 hover:bg-slate-50"
+              >
                 <FileText size={17} />
                 Post a Request
-              </button>
+              </Link>
 
-              <button className="inline-flex items-center gap-2 rounded-lg border border-white/60 bg-white/85 px-4 py-2.5 text-sm font-semibold text-slate-700 transition duration-300 hover:bg-white">
+              <button
+                type="button"
+                onClick={() => setIsHowItWorksOpen(true)}
+                className="inline-flex items-center gap-2 rounded-lg border border-white/60 bg-white/85 px-4 py-2.5 text-sm font-semibold text-slate-700 transition duration-300 hover:bg-white"
+              >
                 <PlayCircle size={17} />
                 How it works
               </button>
@@ -144,6 +160,77 @@ export default function StatsHero({ stats }: StatsHeroProps) {
         <Step icon={<ArrowRight size={16} />} label="3. Complete session" />
         <Step icon={<Coins size={16} />} label="4. Credits transfer" />
       </div>
-    </section>
+      </section>
+
+      {isHowItWorksOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-6 backdrop-blur-sm"
+          onClick={() => setIsHowItWorksOpen(false)}
+        >
+          <div
+            className="w-full max-w-3xl overflow-hidden rounded-3xl border border-white/30 bg-[linear-gradient(140deg,#eef4ff_0%,#e8f8ff_45%,#f3efff_100%)] shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/40 px-5 py-4 sm:px-6">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">How It Works</p>
+                <h3 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+                  Learn, help, and earn credits
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsHowItWorksOpen(false)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/60 bg-white/80 text-slate-600 transition hover:bg-white"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="grid gap-3 p-5 sm:grid-cols-2 sm:p-6">
+              <div className="rounded-2xl border border-indigo-100 bg-white/75 p-4">
+                <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
+                  <FileText size={18} />
+                </div>
+                <p className="text-base font-semibold text-slate-900">1. Post a request</p>
+                <p className="mt-1 text-sm leading-6 text-slate-600">
+                  Share your problem, choose a skill area, and set your preferred session details.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-sky-100 bg-white/75 p-4">
+                <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
+                  <Users size={18} />
+                </div>
+                <p className="text-base font-semibold text-slate-900">2. Get matched with helpers</p>
+                <p className="mt-1 text-sm leading-6 text-slate-600">
+                  Review ratings, response time, and expertise before choosing who to work with.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-violet-100 bg-white/75 p-4">
+                <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-600">
+                  <Handshake size={18} />
+                </div>
+                <p className="text-base font-semibold text-slate-900">3. Complete your session</p>
+                <p className="mt-1 text-sm leading-6 text-slate-600">
+                  Meet live or async, solve the issue together, and confirm when the goal is met.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-amber-100 bg-white/75 p-4">
+                <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                  <Coins size={18} />
+                </div>
+                <p className="text-base font-semibold text-slate-900">4. Credits transfer safely</p>
+                <p className="mt-1 text-sm leading-6 text-slate-600">
+                  Credits are held in escrow and released only after you mark the session complete.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

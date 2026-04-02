@@ -133,7 +133,7 @@ export default function RequestDetails() {
                   <Clock3 size={15} />
                   {request.duration} min session
                 </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1.5 text-sm font-semibold text-emerald-700">
+                <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-sm font-semibold text-indigo-700">
                   <Coins size={15} />
                   {request.credits} credits offered
                 </span>

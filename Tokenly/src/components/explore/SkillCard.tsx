@@ -1,4 +1,5 @@
 import { ArrowRight, Sparkles, Star, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 import type { SkillItem } from "../../types/explore";
 
 interface SkillCardProps {
@@ -68,10 +69,13 @@ export default function SkillCard({ item }: SkillCardProps) {
           <span className="text-xs text-slate-500">Top helpers</span>
         </div>
 
-        <button className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-500 transition duration-300 hover:gap-2 hover:text-indigo-600">
+        <Link
+          to={`/skills/${item.id}/helpers`}
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-500 transition duration-300 hover:gap-2 hover:text-indigo-600"
+        >
           Find helpers
           <ArrowRight size={14} />
-        </button>
+        </Link>
       </div>
     </article>
   );
