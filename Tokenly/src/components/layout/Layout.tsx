@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import Footer from '../common/Footer';
+import tokenlyLogo from '../../assets/tokenly-logo-cropped.png';
 
 const Navbar: React.FC = () => {
   return (
@@ -8,10 +9,8 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              SkillSwap
-            </span>
+          <Link to="/" className="flex items-center">
+            <img src={tokenlyLogo} alt="Tokenly" className="h-8 w-auto object-contain" />
           </Link>
 
           {/* Navigation Links */}

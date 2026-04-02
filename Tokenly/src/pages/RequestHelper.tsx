@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import { helpers } from "../data/mockExploreData";
 
@@ -386,6 +387,8 @@ export default function RequestHelper() {
           </aside>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

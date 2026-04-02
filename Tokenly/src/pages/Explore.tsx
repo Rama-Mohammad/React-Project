@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import type { CSSProperties } from "react";
+import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import CategoryTabs from "../components/explore/CategoryTabs";
 import FilterSideBar from "../components/explore/FilterSideBar";
@@ -288,6 +289,8 @@ export default function Explore() {
           )}
         </section>
       </main>
+
+      <Footer />
     </div>
   );
 }

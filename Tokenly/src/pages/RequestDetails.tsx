@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import { helpers, requests } from "../data/mockExploreData";
 
@@ -295,6 +296,8 @@ export default function RequestDetails() {
           </aside>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

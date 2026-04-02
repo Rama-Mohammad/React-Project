@@ -1,5 +1,6 @@
 import { Compass, CalendarDays, LayoutDashboard, Menu, User } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import tokenlyLogo from "../../assets/tokenly-logo-cropped.png";
 
 const navLinkBase =
   "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition border";
@@ -15,11 +16,8 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 border-b border-white/40 bg-white/75 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-5 lg:px-6">
         <div className="flex items-center gap-8">
-          <NavLink to="/" className="flex items-center gap-3">
-            <div className="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-200 via-sky-200 to-purple-200 shadow-sm" />
-            <span className="text-[1.05rem] font-bold tracking-tight text-slate-800">
-              SkillSwap Credits
-            </span>
+          <NavLink to="/" className="flex items-center">
+            <img src={tokenlyLogo} alt="Tokenly" className="h-9 w-auto object-contain" />
           </NavLink>
 
           <nav className="hidden items-center gap-1 md:flex">

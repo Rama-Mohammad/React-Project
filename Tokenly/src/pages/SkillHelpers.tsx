@@ -1,6 +1,7 @@
 import { ArrowLeft, Code2, Search, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import HelperCard from "../components/explore/HelperCard";
 import { helpers, skills } from "../data/mockExploreData";
@@ -241,6 +242,8 @@ export default function SkillHelpers() {
           </section>
         )}
       </main>
+
+      <Footer />
     </div>
   );
 }
