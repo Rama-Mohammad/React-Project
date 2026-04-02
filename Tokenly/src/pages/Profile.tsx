@@ -84,42 +84,6 @@ const mockReviews = [
     comment: "Jordan was amazing — walked me through exactly why my TypeScript generics weren't working and showed me three patterns I can reuse immediately. Super clear, patient, and actually knew what they were talking about. Will definitely request help again.",
     skillCategory: "Web Development",
     sessionTopic: "Understand TypeScript generics with practical examples"
-  },
-  {
-    id: "3",
-    reviewerName: "Marcus Webb",
-    date: "Mar 20, 2026",
-    rating: 4,
-    comment: "Jordan asked great questions during the Big O session and clearly put in effort before the call. They were engaged and gave good examples. A few concepts needed more repetition but overall a worthwhile session.",
-    skillCategory: "Algorithms",
-    sessionTopic: "Help me understand Big O notation for interview prep"
-  },
-  {
-    id: "4",
-    reviewerName: "Sarah Johnson",
-    date: "Mar 15, 2026",
-    rating: 5,
-    comment: "Jordan's React session was incredibly helpful. They explained hooks in a way that finally made sense. I've already applied what I learned to my project!",
-    skillCategory: "Web Development",
-    sessionTopic: "React Hooks deep dive"
-  },
-  {
-    id: "5",
-    reviewerName: "David Kim",
-    date: "Mar 10, 2026",
-    rating: 4,
-    comment: "Great session on system design. Jordan provided excellent resources and real-world examples. Would definitely book again.",
-    skillCategory: "Architecture",
-    sessionTopic: "System Design interview prep"
-  },
-  {
-    id: "6",
-    reviewerName: "Emily Chen",
-    date: "Mar 5, 2026",
-    rating: 5,
-    comment: "Best TypeScript tutor I've found! Jordan helped me understand complex generic types and now I feel confident using them in production.",
-    skillCategory: "Web Development",
-    sessionTopic: "Advanced TypeScript patterns"
   }
 ];
 
@@ -128,13 +92,21 @@ const Profile: React.FC = () => {
   const [skills, setSkills] = useState(mockSkills);
   const [portfolio] = useState(mockPortfolio);
   const [reviews] = useState(mockReviews);
-  
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddSkillModalOpen, setIsAddSkillModalOpen] = useState(false);
+  const [selectedSkill, setSelectedSkill] = useState<any>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [showAllReviews, setShowAllReviews] = useState(false);
 
   const handleEditProfile = (updatedUser: typeof mockUser) => {
     setUser(updatedUser);
-    // In a real app, you would also save to backend here
+  };
+
+  const handleUpdateSkill = (updatedSkill: any) => {
+    setSkills(skills.map(skill =>
+      skill.id === updatedSkill.id ? updatedSkill : skill
+    ));
   };
 
   const handleAddSkill = (newSkill: Omit<typeof mockSkills[0], 'id'>) => {
@@ -144,33 +116,40 @@ const Profile: React.FC = () => {
       sessions: 0
     };
     setSkills([...skills, skill]);
-    // In a real app, you would also save to backend here
   };
 
   const handleDeleteSkill = (id: string) => {
     setSkills(skills.filter(skill => skill.id !== id));
-    // In a real app, you would also delete from backend here
   };
 
   const handleViewPortfolio = (id: string) => {
-    // In a real app, this would navigate to portfolio item details
     console.log('View portfolio item:', id);
   };
+
+  const handleEditSkill = (skill: any) => {
+    setSelectedSkill(skill);
+    setIsEditMode(true);
+    setIsAddSkillModalOpen(true);
+  };
+
+  const visibleReviews = showAllReviews ? reviews : reviews.slice(0, 4);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Profile Header Section */}
-        <ProfileHeader 
-          user={user} 
-          onEdit={() => setIsEditModalOpen(true)} 
+
+        <ProfileHeader
+          user={user}
+          onEdit={() => setIsEditModalOpen(true)}
         />
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Skills & Ratings */}
-          <div className="lg:col-span-1 space-y-8">
-            {/* Offered Skills Section */}
+        {/* ✅ FIXED MAIN GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+          {/* LEFT COLUMN */}
+          <div className="space-y-8">
+
+            {/* Skills */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-gray-900">Offered Skills</h2>
@@ -181,13 +160,15 @@ const Profile: React.FC = () => {
                   + Add Skill
                 </button>
               </div>
+
               <div className="space-y-3">
                 {skills.length > 0 ? (
                   skills.map(skill => (
-                    <SkillCard 
-                      key={skill.id} 
-                      skill={skill} 
+                    <SkillCard
+                      key={skill.id}
+                      skill={skill}
                       onDelete={handleDeleteSkill}
+                      onEdit={handleEditSkill}
                     />
                   ))
                 ) : (
@@ -198,35 +179,35 @@ const Profile: React.FC = () => {
               </div>
             </div>
 
-            {/* Ratings Summary */}
-            <RatingsSummary reviews={reviews} />
-          </div>
-
-          {/* Right Column - Portfolio & Reviews */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Portfolio Section */}
+            {/* Portfolio (moved here ✅) */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Portfolio</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                Portfolio
+              </h2>
+
               <div className="space-y-6">
-                {portfolio.length > 0 ? (
-                  portfolio.map(item => (
-                    <PortfolioItem 
-                      key={item.id} 
-                      item={item} 
-                      onView={handleViewPortfolio}
-                    />
-                  ))
-                ) : (
-                  <p className="text-gray-500 text-center py-4">
-                    No portfolio items yet. Start adding your projects and contributions!
-                  </p>
-                )}
+                {portfolio.map(item => (
+                  <PortfolioItem
+                    key={item.id}
+                    item={item}
+                    onView={handleViewPortfolio}
+                  />
+                ))}
               </div>
             </div>
 
-            {/* Reviews Section */}
+          </div>
+
+          {/* RIGHT COLUMN */}
+          <div className="space-y-8">
+
+            <RatingsSummary reviews={reviews} />
+
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Reviews</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                Recent Reviews
+              </h2>
+
               <div className="space-y-6">
                 {reviews.length > 0 ? (
                   reviews.map(review => (
@@ -239,7 +220,9 @@ const Profile: React.FC = () => {
                 )}
               </div>
             </div>
+
           </div>
+
         </div>
       </main>
 
@@ -250,11 +233,18 @@ const Profile: React.FC = () => {
         user={user}
         onSave={handleEditProfile}
       />
-      
+
       <AddSkillModal
         isOpen={isAddSkillModalOpen}
-        onClose={() => setIsAddSkillModalOpen(false)}
+        onClose={() => {
+          setIsAddSkillModalOpen(false);
+          setIsEditMode(false);
+          setSelectedSkill(null);
+        }}
         onAdd={handleAddSkill}
+        onUpdate={handleUpdateSkill}
+        editSkill={selectedSkill}
+        isEditMode={isEditMode}
       />
     </div>
   );

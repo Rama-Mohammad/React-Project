@@ -2,6 +2,7 @@ import { createBrowserRouter, Link } from "react-router-dom";
 import Explore from "../pages/Explore";
 import Dashboard from "../pages/Dashboard";
 import Tutorial from "../pages/Tutorial";
+import Profile from "../pages/Profile";
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -41,6 +42,6 @@ export const router = createBrowserRouter([
   },
   {
     path: "/profile",
-    element: <PlaceholderPage title="Profile" />,
+    element: <Profile />,
   },
 ]);
