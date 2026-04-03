@@ -9,6 +9,7 @@ import RequestHelper from "../pages/RequestHelper";
 import SkillHelpers from "../pages/SkillHelpers";
 import Profile from "../pages/Profile";
 import Sessions from "../pages/Sessions";
+import Activity from "../pages/Activity";
 
 function ScrollToTopLayout() {
   const { pathname } = useLocation();
@@ -63,6 +64,10 @@ export const router = createBrowserRouter([
       {
         path: "/profile",
         element: <Profile />,
+      },
+      {
+        path: "/activity",
+        element: <Activity />,
       },
     ],
   },

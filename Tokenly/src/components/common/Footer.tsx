@@ -1,6 +1,5 @@
 ﻿import { Compass, Heart, LifeBuoy, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
-import tokenlyLogo from "../../assets/tokenly-logo-cropped.png";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -12,7 +11,7 @@ export default function Footer() {
       <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-5 md:grid-cols-[1.2fr_0.8fr_0.8fr] lg:px-6">
         <div>
           <Link to="/" className="inline-flex items-center">
-            <img src={tokenlyLogo} alt="Tokenly" className="h-10 w-auto object-contain" />
+            <img src="/images/logo-nobg.png" alt="Tokenly" className="h-28 w-auto object-contain" />
           </Link>
 
           <p className="mt-3 max-w-md text-sm leading-6 text-slate-600">
@@ -84,3 +83,4 @@ export default function Footer() {
     </footer>
   );
 }
+

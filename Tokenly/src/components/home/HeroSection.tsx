@@ -3,8 +3,8 @@ import { faStar } from "@fortawesome/free-solid-svg-icons";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen">
-      <div className="absolute inset-0 rounded-b-[2rem] border-b border-white/40 bg-white/35 backdrop-blur-xl">
+    <section className="relative min-h-screen overflow-x-clip">
+      <div className="absolute left-1/2 top-0 h-full w-screen -translate-x-1/2 border-b border-white/40 bg-white/35 backdrop-blur-xl">
         <img
           src="/images/hero_image.png"
           alt="People connecting and learning together"
@@ -14,7 +14,7 @@ const HeroSection = () => {
 
       <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white/60 to-transparent" />
 
-      <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28 lg:px-8">
+      <div className="relative mx-auto max-w-7xl px-4 pt-12 pb-20 sm:px-6 md:pt-16 md:pb-24 lg:px-8">
         <div className="max-w-3xl">
           <div className="mb-6 inline-flex items-center rounded-full border border-white/50 bg-white/80 px-4 py-1.5 backdrop-blur">
             <span className="text-sm font-medium text-slate-700">

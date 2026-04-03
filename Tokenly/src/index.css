@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --font-body: "Plus Jakarta Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --font-heading: "Sora", "Plus Jakarta Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Manrope", "Plus Jakarta Sans", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-heading: "Manrope", "Plus Jakarta Sans", "Segoe UI", "Helvetica Neue", sans-serif;
 }
 
 html,
@@ -14,8 +14,8 @@ body,
 body {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.55;
+  font-size: 14px;
+  line-height: 1.5;
   color: #0f172a;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

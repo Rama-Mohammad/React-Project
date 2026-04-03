@@ -1,7 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import Footer from '../common/Footer';
-import tokenlyLogo from '../../assets/tokenly-logo-cropped.png';
 
 const Navbar: React.FC = () => {
   return (
@@ -10,7 +9,7 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <img src={tokenlyLogo} alt="Tokenly" className="h-8 w-auto object-contain" />
+            <img src="/images/logo-nobg.png" alt="Tokenly" className="h-20 w-auto object-contain" />
           </Link>
 
           {/* Navigation Links */}
@@ -53,3 +52,4 @@ const Layout: React.FC = () => {
 };
 
 export default Layout;
+

@@ -22,18 +22,18 @@ const StepCard = ({
   const config = stepConfig[step];
 
   return (
-    <div className="group rounded-xl border border-white/40 bg-white/70 px-4 py-5 text-center backdrop-blur transition hover:shadow-md">
+    <div className="group rounded-xl border border-white/40 bg-white/70 px-3.5 py-4 text-center backdrop-blur transition hover:shadow-md">
       <div
-        className={`mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-xl ${config.bg} transition-all duration-300 group-hover:scale-105`}
+        className={`mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl ${config.bg} transition-all duration-300 group-hover:scale-105`}
       >
-        <FontAwesomeIcon icon={config.icon} className={`text-2xl ${config.text}`} />
+        <FontAwesomeIcon icon={config.icon} className={`text-lg ${config.text}`} />
       </div>
 
-      <p className={`mb-2 text-sm font-semibold ${config.text}`}>STEP {step}</p>
+      <p className={`mb-1.5 text-xs font-semibold ${config.text}`}>STEP {step}</p>
 
-      <h3 className="mb-3 text-xl font-semibold text-slate-900">{title}</h3>
+      <h3 className="mb-2 text-lg font-semibold text-slate-900">{title}</h3>
 
-      <p className="mx-auto max-w-xs text-sm leading-relaxed text-slate-600">{description}</p>
+      <p className="mx-auto max-w-xs text-xs leading-relaxed text-slate-600">{description}</p>
     </div>
   );
 };
