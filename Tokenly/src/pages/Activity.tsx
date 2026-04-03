@@ -1,4 +1,4 @@
-import { Calendar, Check, Coins, Plus, Send, Star } from "lucide-react";
+﻿import { Calendar, Check, Coins, Plus, Send, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
@@ -16,7 +16,7 @@ function toneClasses(tone: string) {
 
 export default function Activity() {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,#dff4ff_0%,#edf7ff_34%,#f8fafc_100%)] text-slate-900">
+    <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <Navbar />
 
       <main className="mx-auto w-full max-w-[1100px] px-4 py-6 sm:px-6 lg:px-8">
@@ -83,3 +83,7 @@ export default function Activity() {
     </div>
   );
 }
+
+
+
+

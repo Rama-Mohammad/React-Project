@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { Calendar, Check, Clock3, Coins, Star, Timer, User } from "lucide-react";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
@@ -65,7 +65,7 @@ export default function Sessions() {
   const visibleSessions = useMemo(() => initialSessionItems, []);
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <Navbar />
 
       <main className="p-4">
@@ -82,3 +82,6 @@ export default function Sessions() {
     </div>
   );
 }
+
+
+

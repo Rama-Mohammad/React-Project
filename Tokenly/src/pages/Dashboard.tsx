@@ -191,26 +191,26 @@ const panelClass =
   "rounded-3xl border border-slate-200/70 bg-white/90 shadow-[0_12px_30px_-24px_rgba(15,23,42,0.35)] backdrop-blur-sm";
 
 function toneClasses(tone: string) {
-  if (tone === "teal") return "bg-teal-100 text-teal-700";
+  if (tone === "teal") return "bg-violet-100 text-violet-700";
   if (tone === "blue") return "bg-sky-100 text-sky-700";
   if (tone === "amber") return "bg-amber-100 text-amber-700";
   if (tone === "gold") return "bg-yellow-100 text-yellow-700";
-  if (tone === "green") return "bg-emerald-100 text-emerald-700";
+  if (tone === "green") return "bg-violet-100 text-violet-700";
   if (tone === "rose") return "bg-rose-100 text-rose-700";
   return "bg-slate-100 text-slate-600";
 }
 
 function skillTone(skill: string) {
   if (skill === "Programming" || skill === "Web Development") return "bg-sky-100 text-sky-700";
-  if (skill === "Database" || skill === "Statistics") return "bg-cyan-100 text-cyan-700";
-  if (skill === "Algorithms" || skill === "System Design") return "bg-emerald-100 text-emerald-700";
+  if (skill === "Database" || skill === "Statistics") return "bg-indigo-100 text-indigo-700";
+  if (skill === "Algorithms" || skill === "System Design") return "bg-violet-100 text-violet-700";
   if (skill === "Machine Learning") return "bg-amber-100 text-amber-700";
   return "bg-slate-100 text-slate-700";
 }
 
 function statusTone(status: SessionItem["status"]) {
   if (status === "Upcoming") return "bg-blue-100 text-blue-700";
-  if (status === "Active Now") return "bg-teal-100 text-teal-700";
+  if (status === "Active Now") return "bg-violet-100 text-violet-700";
   return "bg-slate-100 text-slate-600";
 }
 
@@ -292,13 +292,13 @@ export default function Dashboard() {
     : null;
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,#dff4ff_0%,#edf7ff_34%,#f8fafc_100%)] text-slate-900">
+    <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <Navbar />
 
       <main className="mx-auto w-full max-w-[1420px] px-4 py-6 sm:px-6 lg:px-8">
         <section className="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-transparent p-5 shadow-none sm:p-6">
-          <div className="pointer-events-none absolute -right-20 -top-24 h-52 w-52 rounded-full bg-cyan-300/30 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 left-1/3 h-52 w-52 rounded-full bg-emerald-300/20 blur-3xl" />
+          <div className="pointer-events-none absolute -right-20 -top-24 h-52 w-52 rounded-full bg-indigo-300/30 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 left-1/3 h-52 w-52 rounded-full bg-violet-300/20 blur-3xl" />
 
           <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex items-start gap-4">
@@ -330,7 +330,7 @@ export default function Dashboard() {
               </Link>
               <Link
                 to="/helpers/h1/request"
-                className="inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#0891b2_0%,#0ea5e9_100%)] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-cyan-900/20 transition hover:brightness-105"
+                className="inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-indigo-900/20 transition hover:brightness-105"
               >
                 <Plus size={17} />
                 Post Request
@@ -339,10 +339,10 @@ export default function Dashboard() {
           </div>
 
           <div className="relative mt-5 grid grid-cols-1 gap-3 xl:grid-cols-[1.8fr_1fr_1fr_1fr_1fr]">
-            <article className="rounded-2xl border border-cyan-100 bg-transparent p-4">
+            <article className="rounded-2xl border border-indigo-100 bg-transparent p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="rounded-2xl bg-cyan-100 p-3 text-cyan-700">
+                  <div className="rounded-2xl bg-indigo-100 p-3 text-indigo-700">
                     <Coins size={20} />
                   </div>
                   <div>
@@ -369,31 +369,31 @@ export default function Dashboard() {
 
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200/80">
                 <div
-                  className="h-full bg-[linear-gradient(90deg,#10b981_0%,#10b981_58%,#fb7185_58%,#fb7185_100%)]"
+                  className="h-full bg-[linear-gradient(90deg,#93c5fd_0%,#93c5fd_58%,#c4b5fd_58%,#c4b5fd_100%)]"
                   style={{ width: `${earnedPct}%` }}
                 />
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-6 text-sm">
                 <span className="inline-flex items-center gap-2 text-slate-600">
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-blue-300" />
                   Earned <strong className="text-slate-900">47</strong>
                 </span>
                 <span className="inline-flex items-center gap-2 text-slate-600">
-                  <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-blue-300" />
                   Spent <strong className="text-slate-900">35</strong>
                 </span>
               </div>
 
               {showCreditDetails ? (
                 <>
-                  <div className="my-4 h-px bg-cyan-200/70" />
+                  <div className="my-4 h-px bg-indigo-200/70" />
 
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <article className="rounded-2xl border border-cyan-200/70 bg-cyan-100/45 px-4 py-3">
-                      <p className="text-sm font-semibold text-cyan-700">As Helper</p>
-                      <p className="mt-1 text-4xl font-semibold leading-none text-cyan-700">11</p>
-                      <p className="mt-1 text-sm text-cyan-700">sessions completed</p>
+                    <article className="rounded-2xl border border-indigo-200/70 bg-indigo-100/45 px-4 py-3">
+                      <p className="text-sm font-semibold text-indigo-700">As Helper</p>
+                      <p className="mt-1 text-4xl font-semibold leading-none text-indigo-700">11</p>
+                      <p className="mt-1 text-sm text-indigo-700">sessions completed</p>
                     </article>
 
                     <article className="rounded-2xl border border-sky-200/70 bg-sky-100/45 px-4 py-3">
@@ -403,7 +403,7 @@ export default function Dashboard() {
                     </article>
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between rounded-2xl border border-cyan-200/70 bg-cyan-50/80 px-4 py-3">
+                  <div className="mt-3 flex items-center justify-between rounded-2xl border border-indigo-200/70 bg-indigo-50/80 px-4 py-3">
                     <p className="text-sm font-semibold text-slate-700">Average Rating as Helper</p>
                     <div className="flex items-center gap-1.5 text-slate-700">
                       <Stars count={5} />
@@ -425,7 +425,7 @@ export default function Dashboard() {
             </article>
 
             <article className="rounded-2xl border border-slate-200 bg-transparent p-4">
-              <div className="w-fit rounded-2xl bg-teal-100 p-3 text-teal-700">
+              <div className="w-fit rounded-2xl bg-violet-100 p-3 text-violet-700">
                 <MessageCircle size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">8</p>
@@ -434,7 +434,7 @@ export default function Dashboard() {
             </article>
 
             <article className="rounded-2xl border border-slate-200 bg-transparent p-4">
-              <div className="w-fit rounded-2xl bg-cyan-100 p-3 text-cyan-700">
+              <div className="w-fit rounded-2xl bg-indigo-100 p-3 text-indigo-700">
                 <Send size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">15</p>
@@ -453,18 +453,18 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <section className="relative mt-4 overflow-hidden rounded-3xl border border-cyan-200/70 bg-[linear-gradient(140deg,rgba(236,253,255,0.95)_0%,rgba(240,249,255,0.92)_45%,rgba(236,253,245,0.95)_100%)] p-4 shadow-[0_14px_34px_-26px_rgba(8,145,178,0.45)] sm:p-5">
-          <div className="pointer-events-none absolute -top-16 right-6 h-40 w-40 rounded-full bg-cyan-300/20 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-16 left-10 h-36 w-36 rounded-full bg-emerald-300/20 blur-3xl" />
+        <section className="relative mt-4 overflow-hidden rounded-3xl border border-indigo-200/70 bg-[linear-gradient(140deg,rgba(238,242,255,0.95)_0%,rgba(237,233,254,0.92)_45%,rgba(224,231,255,0.95)_100%)] p-4 shadow-[0_14px_34px_-26px_rgba(99,102,241,0.45)] sm:p-5">
+          <div className="pointer-events-none absolute -top-16 right-6 h-40 w-40 rounded-full bg-indigo-300/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-16 left-10 h-36 w-36 rounded-full bg-violet-300/20 blur-3xl" />
 
           <div className="relative flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <div className="rounded-xl bg-cyan-100 p-2 text-cyan-700">
+              <div className="rounded-xl bg-indigo-100 p-2 text-indigo-700">
                 <Calendar size={16} />
               </div>
               <h2 className="text-base font-semibold">Sessions</h2>
             </div>
-            <Link to="/sessions" className="text-xs font-semibold text-cyan-700 hover:text-cyan-800">
+            <Link to="/sessions" className="text-xs font-semibold text-indigo-700 hover:text-indigo-800">
               View all
             </Link>
           </div>
@@ -506,8 +506,8 @@ export default function Dashboard() {
                     <span
                       className={`rounded-full px-2.5 py-0.5 font-medium ${
                         item.role === "Helping"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-cyan-100 text-cyan-700"
+                          ? "bg-violet-100 text-violet-700"
+                          : "bg-indigo-100 text-indigo-700"
                       }`}
                     >
                       {item.role}
@@ -534,7 +534,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="flex items-center gap-2 self-end lg:self-center">
-                  <span className="inline-flex items-center gap-1 rounded-full border border-cyan-200 bg-cyan-50 px-3 py-0.5 text-xs font-semibold text-cyan-700">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-0.5 text-xs font-semibold text-indigo-700">
                     <Coins size={12} />
                     {item.credits > 0 ? `+${item.credits}` : item.credits}
                   </span>
@@ -547,7 +547,7 @@ export default function Dashboard() {
                       {item.action}
                     </button>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-violet-700">
                       <Check size={12} />
                       Done
                     </span>
@@ -568,7 +568,7 @@ export default function Dashboard() {
           <article className="rounded-3xl border border-slate-200/70 bg-transparent shadow-none">
             <div className="flex items-center justify-between border-b border-slate-200/80 p-4">
               <h3 className="text-lg font-semibold">Open Requests</h3>
-              <Link to="/helpers/h1/request" className="text-sm font-semibold text-cyan-700">
+              <Link to="/helpers/h1/request" className="text-sm font-semibold text-indigo-700">
                 + New
               </Link>
             </div>
@@ -587,7 +587,7 @@ export default function Dashboard() {
                         <span>{item.age}</span>
                       </div>
                     </div>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-cyan-200 bg-cyan-50 px-3.5 py-1 text-sm font-semibold text-cyan-700">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3.5 py-1 text-sm font-semibold text-indigo-700">
                       <Coins size={14} />
                       {item.credits}
                     </span>
@@ -600,7 +600,7 @@ export default function Dashboard() {
           <article className="rounded-3xl border border-slate-200/70 bg-transparent shadow-none">
             <div className="flex items-center justify-between border-b border-slate-200/80 p-4">
               <h3 className="text-lg font-semibold">Submitted Offers</h3>
-              <Link to="/explore?tab=requests#explore-tabs-bar" className="text-sm font-semibold text-cyan-700">
+              <Link to="/explore?tab=requests#explore-tabs-bar" className="text-sm font-semibold text-indigo-700">
                 Browse requests
               </Link>
             </div>
@@ -614,7 +614,7 @@ export default function Dashboard() {
                         <span
                           className={`rounded-full px-3 py-0.5 ${
                             item.status === "Accepted"
-                              ? "bg-emerald-100 text-emerald-700"
+                              ? "bg-violet-100 text-violet-700"
                               : "bg-amber-100 text-amber-700"
                           }`}
                         >
@@ -624,7 +624,7 @@ export default function Dashboard() {
                         <span>{item.age}</span>
                       </div>
                     </div>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-cyan-200 bg-cyan-50 px-3.5 py-1 text-sm font-semibold text-cyan-700">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3.5 py-1 text-sm font-semibold text-indigo-700">
                       <Coins size={14} />
                       {item.credits}
                     </span>
@@ -635,15 +635,15 @@ export default function Dashboard() {
           </article>
         </section>
 
-        <section className="relative mt-4 overflow-hidden rounded-3xl border border-cyan-200/70 bg-[linear-gradient(140deg,rgba(236,253,255,0.95)_0%,rgba(240,249,255,0.92)_45%,rgba(236,253,245,0.95)_100%)] shadow-[0_14px_34px_-26px_rgba(8,145,178,0.45)]">
-          <div className="pointer-events-none absolute -top-16 right-6 h-40 w-40 rounded-full bg-cyan-300/20 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-16 left-10 h-36 w-36 rounded-full bg-emerald-300/20 blur-3xl" />
+        <section className="relative mt-4 overflow-hidden rounded-3xl border border-indigo-200/70 bg-[linear-gradient(140deg,rgba(238,242,255,0.95)_0%,rgba(237,233,254,0.92)_45%,rgba(224,231,255,0.95)_100%)] shadow-[0_14px_34px_-26px_rgba(99,102,241,0.45)]">
+          <div className="pointer-events-none absolute -top-16 right-6 h-40 w-40 rounded-full bg-indigo-300/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-16 left-10 h-36 w-36 rounded-full bg-violet-300/20 blur-3xl" />
 
-          <div className="relative flex items-center justify-between border-b border-cyan-200/70 p-4">
+          <div className="relative flex items-center justify-between border-b border-indigo-200/70 p-4">
             <h3 className="text-lg font-semibold">Activity</h3>
             <Link
               to="/activity"
-              className="inline-flex items-center gap-2 rounded-xl border border-cyan-300/70 bg-white/80 px-3 py-1.5 text-xs font-semibold text-cyan-700 transition hover:bg-white"
+              className="inline-flex items-center gap-2 rounded-xl border border-indigo-300/70 bg-white/80 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-white"
             >
               View all
             </Link>
@@ -653,7 +653,7 @@ export default function Dashboard() {
             {activityPreview.map((item) => (
               <article
                 key={item.id}
-                className="flex items-center justify-between border-b border-cyan-200/70 px-4 py-5 last:border-b-0"
+                className="flex items-center justify-between border-b border-indigo-200/70 px-4 py-5 last:border-b-0"
               >
                 <div className="flex items-center gap-3">
                   <div className={`rounded-full p-3 ${toneClasses(item.tone)}`}>
@@ -678,7 +678,7 @@ export default function Dashboard() {
                 {item.credits ? (
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold ${
-                      item.credits > 0 ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+                      item.credits > 0 ? "bg-violet-100 text-violet-700" : "bg-rose-100 text-rose-700"
                     }`}
                   >
                     <Coins size={14} />
@@ -695,13 +695,13 @@ export default function Dashboard() {
 
       {transferToast ? (
         <div className="pointer-events-none fixed bottom-5 right-5 z-[60]">
-          <div className="flex min-w-[260px] items-center gap-2.5 rounded-2xl border border-cyan-300 bg-[linear-gradient(135deg,#0284c7_0%,#0d9488_100%)] px-4 py-3 text-white shadow-xl shadow-cyan-900/20">
+          <div className="flex min-w-[260px] items-center gap-2.5 rounded-2xl border border-indigo-300 bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-4 py-3 text-white shadow-xl shadow-indigo-900/20">
             <div className="rounded-full bg-white/20 p-1.5 text-white">
               <Coins size={15} />
             </div>
             <div>
               <p className="text-base font-semibold leading-tight">{transferToast.credits} credits released</p>
-              <p className="mt-0.5 text-sm text-cyan-100">Session marked as complete</p>
+              <p className="mt-0.5 text-sm text-indigo-100">Session marked as complete</p>
             </div>
           </div>
         </div>
@@ -716,9 +716,9 @@ export default function Dashboard() {
             aria-label="Close confirmation"
           />
 
-          <div className="relative w-full max-w-md rounded-2xl border border-cyan-100 bg-white p-4 shadow-xl">
+          <div className="relative w-full max-w-md rounded-2xl border border-indigo-100 bg-white p-4 shadow-xl">
             <div className="flex items-start gap-3">
-              <div className="rounded-xl bg-cyan-100 p-2.5 text-cyan-700">
+              <div className="rounded-xl bg-indigo-100 p-2.5 text-indigo-700">
                 <Check size={16} />
               </div>
               <div>
@@ -727,7 +727,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="mt-3 rounded-xl border border-cyan-100 bg-cyan-50/50 p-3">
+            <div className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50/50 p-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-lg font-medium leading-snug text-slate-800">{pendingSession.topic}</p>
@@ -735,7 +735,7 @@ export default function Dashboard() {
                     {pendingSession.role === "Helping" ? "for" : "with"} {pendingSession.person}
                   </p>
                 </div>
-                <span className="inline-flex items-center gap-1 rounded-full border border-cyan-200 bg-cyan-100 px-3 py-1 text-sm font-semibold text-cyan-700">
+                <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700">
                   <Coins size={14} />
                   {pendingSession.credits > 0 ? `+${pendingSession.credits}` : pendingSession.credits}
                 </span>
@@ -763,7 +763,7 @@ export default function Dashboard() {
                   setPendingCompleteId(null);
                   setTransferToast({ credits: releasedCredits });
                 }}
-                className="rounded-xl bg-[linear-gradient(135deg,#0284c7_0%,#0d9488_100%)] px-3 py-2 text-sm font-semibold text-white transition hover:brightness-105"
+                className="rounded-xl bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-3 py-2 text-sm font-semibold text-white transition hover:brightness-105"
               >
                 Confirm & Transfer
               </button>
@@ -774,4 +774,9 @@ export default function Dashboard() {
     </div>
   );
 }
+
+
+
+
+
 

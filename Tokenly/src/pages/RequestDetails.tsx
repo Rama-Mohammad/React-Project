@@ -1,4 +1,4 @@
-import {
+﻿import {
   AlertTriangle,
   Clock3,
   Coins,
@@ -35,7 +35,7 @@ export default function RequestDetails() {
 
   if (!request) {
     return (
-      <div className="min-h-screen bg-[linear-gradient(135deg,#c7d2fe_0%,#bae6fd_40%,#ddd6fe_100%)] text-slate-900">
+      <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
         <Navbar />
         <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
           <h1 className="text-3xl font-bold text-slate-900">Request not found</h1>
@@ -210,7 +210,7 @@ export default function RequestDetails() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(160deg,#e8efff_0%,#e9f7ff_45%,#f5f8ff_100%)] text-slate-900">
+    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <div className="pointer-events-none absolute inset-0">
         <div className="explore-pulse absolute -left-24 top-20 h-64 w-64 rounded-full bg-indigo-200/24 blur-3xl" />
         <div className="explore-float absolute right-[-6rem] top-44 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
@@ -440,3 +440,7 @@ export default function RequestDetails() {
     </div>
   );
 }
+
+
+
+

@@ -1,8 +1,8 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 
 export default function Tutorial() {
   return (
-    <div className="min-h-screen bg-[#f8f9fb] px-4 py-12">
+    <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] px-4 py-12">
       <div className="mx-auto max-w-3xl rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
         <h1 className="text-3xl font-bold text-gray-900">How It Works</h1>
         <p className="mt-2 text-gray-600">
@@ -51,3 +51,7 @@ export default function Tutorial() {
     </div>
   );
 }
+
+
+
+

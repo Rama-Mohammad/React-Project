@@ -41,7 +41,7 @@ const Navbar: React.FC = () => {
 
 const Layout: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex flex-col">
       <Navbar />
       <main className="flex-grow">
         <Outlet />
@@ -52,4 +52,7 @@ const Layout: React.FC = () => {
 };
 
 export default Layout;
+
+
+
 

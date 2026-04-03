@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadgeCheck,
   CalendarClock,
   CheckCircle2,
@@ -70,7 +70,7 @@ export default function RequestHelper() {
 
   if (!helper) {
     return (
-      <div className="min-h-screen bg-[linear-gradient(160deg,#e8efff_0%,#e9f7ff_45%,#f5f8ff_100%)] text-slate-900">
+      <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
         <Navbar />
         <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
           <h1 className="text-3xl font-bold text-slate-900">Helper not found</h1>
@@ -100,7 +100,7 @@ export default function RequestHelper() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(160deg,#e8efff_0%,#e9f7ff_45%,#f5f8ff_100%)] text-slate-900">
+    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <div className="pointer-events-none absolute inset-0">
         <div className="explore-pulse absolute -left-24 top-20 h-64 w-64 rounded-full bg-indigo-200/24 blur-3xl" />
         <div className="explore-float absolute right-[-6rem] top-44 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
@@ -323,7 +323,7 @@ export default function RequestHelper() {
 
                 <h3 className="mt-3 text-lg font-semibold text-slate-900">{helper.name}</h3>
                 <p className="mt-1 text-xs text-slate-500">
-                  {helper.online ? "Online now" : "Offline"} • Responds {helper.responseTime}
+                  {helper.online ? "Online now" : "Offline"} â€¢ Responds {helper.responseTime}
                 </p>
                 <p className="mt-3 text-sm leading-6 text-slate-600">{helper.bio}</p>
 
@@ -392,3 +392,7 @@ export default function RequestHelper() {
     </div>
   );
 }
+
+
+
+
