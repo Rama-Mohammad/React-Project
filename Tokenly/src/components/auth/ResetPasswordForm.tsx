@@ -38,18 +38,19 @@ export default function ResetPasswordForm({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Reset your password</h1>
+    <div className="mx-auto w-full max-w-md rounded-2xl border border-white/70 bg-white/60 p-5 shadow-[0_20px_60px_-30px_rgba(79,70,229,0.55)] backdrop-blur-md sm:p-6">
+      <div className="mb-5">
+        <span className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-violet-700">
+          Recovery
+        </span>
+        <h1 className="mt-3 mb-2 text-3xl font-bold text-slate-900">Reset your password</h1>
         <p className="text-slate-500">Enter your email and we'll send you a link to reset your password</p>
       </div>
 
-      {/* Error alert */}
       {error && (
         <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50/90 p-4">
           <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-rose-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5 shrink-0 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <p className="text-sm text-rose-700">{error}</p>
@@ -57,11 +58,10 @@ export default function ResetPasswordForm({
         </div>
       )}
 
-      {/* Success alert */}
       {successMessage && (
         <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50/90 p-4">
           <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <p className="text-sm text-emerald-700">{successMessage}</p>
@@ -69,10 +69,9 @@ export default function ResetPasswordForm({
         </div>
       )}
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <div>
-          <label htmlFor="reset-email" className="block text-sm font-medium text-slate-700 mb-1.5">
+          <label htmlFor="reset-email" className="mb-1.5 block text-sm font-medium text-slate-700">
             Email address
           </label>
           <input
@@ -87,28 +86,23 @@ export default function ResetPasswordForm({
             placeholder="you@example.com"
             autoComplete="email"
             disabled={loading}
-            className={`w-full px-4 py-3 rounded-lg border bg-white text-slate-900 placeholder-slate-400
-              transition-colors outline-none
+            className={`w-full rounded-xl border bg-white/90 px-4 py-3 text-slate-900 placeholder-slate-400 outline-none transition-colors
               ${touched && fieldError
                 ? "border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
                 : "border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
               }`}
           />
-          {touched && fieldError && (
-            <p className="mt-1.5 text-sm text-rose-500">{fieldError}</p>
-          )}
+          {touched && fieldError && <p className="mt-1.5 text-sm text-rose-500">{fieldError}</p>}
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 py-3 px-4 text-white font-medium
-            hover:brightness-105 transition
-            disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 via-indigo-500 to-sky-500 px-4 py-3 font-medium text-white shadow-[0_10px_30px_-15px_rgba(99,102,241,0.85)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <>
-              <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+              <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
@@ -120,13 +114,12 @@ export default function ResetPasswordForm({
         </button>
       </form>
 
-      {/* Back link */}
       <p className="mt-6 text-center text-sm text-slate-500">
         Remember your password?{" "}
         <button
           type="button"
           onClick={onSwitchToSignIn}
-          className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+          className="font-medium text-indigo-600 transition-colors hover:text-indigo-700"
         >
           Back to sign in
         </button>

@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-// ── Validation helpers (you can move these to a shared utils/validators.ts) ──
 function validateEmail(email: string): string | null {
   if (!email.trim()) return "Email is required";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Please enter a valid email address";
@@ -13,7 +12,6 @@ function validatePassword(password: string): string | null {
   return null;
 }
 
-// ── Props ──
 interface SignInFormProps {
   onSubmit: (email: string, password: string) => Promise<boolean>;
   onSwitchToSignUp: () => void;
@@ -61,18 +59,19 @@ export default function SignInForm({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome back</h1>
+    <div className="mx-auto w-full max-w-md rounded-2xl border border-white/70 bg-white/60 p-5 shadow-[0_20px_60px_-30px_rgba(79,70,229,0.55)] backdrop-blur-md sm:p-6">
+      <div className="mb-5">
+        <span className="inline-flex rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-indigo-700">
+          Member Access
+        </span>
+        <h1 className="mt-3 mb-2 text-3xl font-bold text-slate-900">Welcome back</h1>
         <p className="text-slate-500">Sign in to your Tokenly account to continue</p>
       </div>
 
-      {/* Error alert */}
       {error && (
         <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50/90 p-4">
           <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-rose-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5 shrink-0 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <p className="text-sm text-rose-700">{error}</p>
@@ -80,11 +79,10 @@ export default function SignInForm({
         </div>
       )}
 
-      {/* Success alert */}
       {successMessage && (
         <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50/90 p-4">
           <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <p className="text-sm text-emerald-700">{successMessage}</p>
@@ -92,11 +90,9 @@ export default function SignInForm({
         </div>
       )}
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-        {/* Email */}
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <div>
-          <label htmlFor="signin-email" className="block text-sm font-medium text-slate-700 mb-1.5">
+          <label htmlFor="signin-email" className="mb-1.5 block text-sm font-medium text-slate-700">
             Email address
           </label>
           <input
@@ -108,28 +104,24 @@ export default function SignInForm({
             placeholder="you@example.com"
             autoComplete="email"
             disabled={loading}
-            className={`w-full px-4 py-3 rounded-lg border bg-white text-slate-900 placeholder-slate-400
-              transition-colors outline-none
+            className={`w-full rounded-xl border bg-white/90 px-4 py-3 text-slate-900 placeholder-slate-400 outline-none transition-colors
               ${touched.email && fieldErrors.email
                 ? "border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
                 : "border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
               }`}
           />
-          {touched.email && fieldErrors.email && (
-            <p className="mt-1.5 text-sm text-rose-500">{fieldErrors.email}</p>
-          )}
+          {touched.email && fieldErrors.email && <p className="mt-1.5 text-sm text-rose-500">{fieldErrors.email}</p>}
         </div>
 
-        {/* Password */}
         <div>
-          <div className="flex items-center justify-between mb-1.5">
+          <div className="mb-1.5 flex items-center justify-between">
             <label htmlFor="signin-password" className="block text-sm font-medium text-slate-700">
               Password
             </label>
             <button
               type="button"
               onClick={onSwitchToReset}
-              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+              className="text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700"
             >
               Forgot password?
             </button>
@@ -144,8 +136,7 @@ export default function SignInForm({
               placeholder="Enter your password"
               autoComplete="current-password"
               disabled={loading}
-              className={`w-full px-4 py-3 pr-12 rounded-lg border bg-white text-slate-900 placeholder-slate-400
-                transition-colors outline-none
+              className={`w-full rounded-xl border bg-white/90 px-4 py-3 pr-12 text-slate-900 placeholder-slate-400 outline-none transition-colors
                 ${touched.password && fieldErrors.password
                   ? "border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
                   : "border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
@@ -154,37 +145,32 @@ export default function SignInForm({
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
               tabIndex={-1}
             >
               {showPassword ? (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
                 </svg>
               ) : (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
               )}
             </button>
           </div>
-          {touched.password && fieldErrors.password && (
-            <p className="mt-1.5 text-sm text-rose-500">{fieldErrors.password}</p>
-          )}
+          {touched.password && fieldErrors.password && <p className="mt-1.5 text-sm text-rose-500">{fieldErrors.password}</p>}
         </div>
 
-        {/* Submit */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 py-3 px-4 text-white font-medium
-            hover:brightness-105 transition
-            disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 px-4 py-3 font-medium text-white shadow-[0_10px_30px_-15px_rgba(59,130,246,0.8)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <>
-              <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+              <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
@@ -196,13 +182,12 @@ export default function SignInForm({
         </button>
       </form>
 
-      {/* Switch link */}
       <p className="mt-6 text-center text-sm text-slate-500">
         Don't have an account?{" "}
         <button
           type="button"
           onClick={onSwitchToSignUp}
-          className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+          className="font-medium text-indigo-600 transition-colors hover:text-indigo-700"
         >
           Create a new account
         </button>

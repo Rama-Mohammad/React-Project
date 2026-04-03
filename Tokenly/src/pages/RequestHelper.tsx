@@ -1,5 +1,5 @@
 import { CheckCircle2, Coins, Lightbulb } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
@@ -7,6 +7,7 @@ import { helpers } from "../data/mockExploreData";
 
 type SessionType = "one-on-one" | "async" | "group";
 type NeedBy = "flexible" | "soon" | "urgent";
+type RequiredSection = "title" | "skills" | "description" | "sessionType" | "duration" | "urgency";
 
 const durationChoices = [30, 45, 60, 90, 120];
 
@@ -23,6 +24,15 @@ export default function RequestHelper() {
   const [creditsToOffer, setCreditsToOffer] = useState<number>(6);
   const [needBy, setNeedBy] = useState<NeedBy | null>(null);
   const [submitMessage, setSubmitMessage] = useState("");
+  const [sectionError, setSectionError] = useState<RequiredSection | null>(null);
+  const sectionRefs = useRef<Record<RequiredSection, HTMLElement | null>>({
+    title: null,
+    skills: null,
+    description: null,
+    sessionType: null,
+    duration: null,
+    urgency: null,
+  });
   const availableCredits = 12;
 
   const allSkills = [
@@ -60,6 +70,7 @@ export default function RequestHelper() {
     setSelectedSkills((previous) =>
       previous.includes(skill) ? previous.filter((entry) => entry !== skill) : [...previous, skill]
     );
+    if (sectionError === "skills") setSectionError(null);
   };
 
   useEffect(() => {
@@ -80,23 +91,28 @@ export default function RequestHelper() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!isFormComplete) {
-      setSubmitMessage("Please complete all required fields before sending your request.");
+
+    const orderedChecks: Array<{ key: RequiredSection; invalid: boolean }> = [
+      { key: "title", invalid: title.trim().length === 0 },
+      { key: "skills", invalid: selectedSkills.length === 0 },
+      { key: "description", invalid: description.trim().length === 0 },
+      { key: "sessionType", invalid: sessionType === null },
+      { key: "duration", invalid: durationMinutes === null },
+      { key: "urgency", invalid: needBy === null },
+    ];
+
+    const firstInvalid = orderedChecks.find((item) => item.invalid);
+    if (firstInvalid) {
+      setSectionError(firstInvalid.key);
+      setSubmitMessage("");
+      sectionRefs.current[firstInvalid.key]?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
+    setSectionError(null);
     setSubmitMessage("Request sent successfully.");
     resetForm();
   };
-
-  const isFormComplete =
-    title.trim().length > 0 &&
-    description.trim().length > 0 &&
-    selectedSkills.length > 0 &&
-    sessionType !== null &&
-    durationMinutes !== null &&
-    creditsToOffer > 0 &&
-    needBy !== null;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
@@ -127,20 +143,35 @@ export default function RequestHelper() {
               </p>
             </section>
 
-            <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
+            <section
+              ref={(el) => {
+                sectionRefs.current.title = el;
+              }}
+              className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl"
+            >
               <label className="text-sm font-semibold text-slate-800">
                 Request Title <span className="text-rose-500">*</span>
               </label>
               <input
                 value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                required
+                onChange={(event) => {
+                  setTitle(event.target.value);
+                  if (sectionError === "title" && event.target.value.trim().length > 0) setSectionError(null);
+                }}
                 placeholder="e.g. Debugging a React state management issue"
                 className="mt-2 h-11 w-full rounded-2xl border border-slate-200/80 bg-white/92 px-4 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
               />
+              {sectionError === "title" ? (
+                <p className="mt-2 text-xs font-medium text-rose-600">Please fill out this section.</p>
+              ) : null}
             </section>
 
-            <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
+            <section
+              ref={(el) => {
+                sectionRefs.current.skills = el;
+              }}
+              className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl"
+            >
               <p className="text-sm font-semibold text-slate-800">
                 Skill Category <span className="text-rose-500">*</span>
               </p>
@@ -163,24 +194,42 @@ export default function RequestHelper() {
                   );
                 })}
               </div>
+              {sectionError === "skills" ? (
+                <p className="mt-2 text-xs font-medium text-rose-600">Please fill out this section.</p>
+              ) : null}
             </section>
 
-            <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
+            <section
+              ref={(el) => {
+                sectionRefs.current.description = el;
+              }}
+              className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl"
+            >
               <label className="text-sm font-semibold text-slate-800">
                 Describe Your Request <span className="text-rose-500">*</span>
               </label>
               <textarea
                 maxLength={500}
                 value={description}
-                onChange={(event) => setDescription(event.target.value)}
-                required
+                onChange={(event) => {
+                  setDescription(event.target.value);
+                  if (sectionError === "description" && event.target.value.trim().length > 0) setSectionError(null);
+                }}
                 placeholder="What happens now, and what outcome are you trying to get?"
                 className="mt-2 h-28 w-full resize-none rounded-2xl border border-slate-200/80 bg-white/92 p-3 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
               />
               <p className="mt-1 text-right text-xs text-slate-500">{description.length}/500</p>
+              {sectionError === "description" ? (
+                <p className="mt-1 text-xs font-medium text-rose-600">Please fill out this section.</p>
+              ) : null}
             </section>
 
-            <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
+            <section
+              ref={(el) => {
+                sectionRefs.current.sessionType = el;
+              }}
+              className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl"
+            >
               <p className="text-sm font-semibold text-slate-800">
                 Session Type <span className="text-rose-500">*</span>
               </p>
@@ -199,7 +248,10 @@ export default function RequestHelper() {
                     <button
                       key={option.value}
                       type="button"
-                      onClick={() => setSessionType(option.value)}
+                      onClick={() => {
+                        setSessionType(option.value);
+                        if (sectionError === "sessionType") setSectionError(null);
+                      }}
                       className={`rounded-2xl border p-3 text-left transition ${
                         active
                           ? "border-indigo-300 bg-indigo-50"
@@ -212,9 +264,17 @@ export default function RequestHelper() {
                   );
                 })}
               </div>
+              {sectionError === "sessionType" ? (
+                <p className="mt-2 text-xs font-medium text-rose-600">Please fill out this section.</p>
+              ) : null}
             </section>
 
-            <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
+            <section
+              ref={(el) => {
+                sectionRefs.current.duration = el;
+              }}
+              className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl"
+            >
               <p className="text-sm font-semibold text-slate-800">
                 Session Duration <span className="text-rose-500">*</span>
               </p>
@@ -225,7 +285,10 @@ export default function RequestHelper() {
                     <button
                       key={minutes}
                       type="button"
-                      onClick={() => setDurationMinutes(minutes)}
+                      onClick={() => {
+                        setDurationMinutes(minutes);
+                        if (sectionError === "duration") setSectionError(null);
+                      }}
                       className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
                         active
                           ? "border border-indigo-300 bg-indigo-50 text-indigo-700"
@@ -241,6 +304,9 @@ export default function RequestHelper() {
                 Estimated cost: <span className="font-semibold text-indigo-700">{creditsToOffer} credits</span>{" "}
                 at {helper.creditsPerHour} credits/hr
               </p>
+              {sectionError === "duration" ? (
+                <p className="mt-2 text-xs font-medium text-rose-600">Please fill out this section.</p>
+              ) : null}
             </section>
 
             <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-4 backdrop-blur-xl">
@@ -274,7 +340,12 @@ export default function RequestHelper() {
               </div>
             </section>
 
-            <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
+            <section
+              ref={(el) => {
+                sectionRefs.current.urgency = el;
+              }}
+              className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl"
+            >
               <p className="text-sm font-semibold text-slate-800">
                 Urgency Level <span className="text-rose-500">*</span>
               </p>
@@ -289,7 +360,10 @@ export default function RequestHelper() {
                     <button
                       key={option.value}
                       type="button"
-                      onClick={() => setNeedBy(option.value)}
+                      onClick={() => {
+                        setNeedBy(option.value);
+                        if (sectionError === "urgency") setSectionError(null);
+                      }}
                       className={`rounded-2xl border p-3 text-left transition ${
                         active
                           ? "border-indigo-300 bg-indigo-50"
@@ -302,6 +376,9 @@ export default function RequestHelper() {
                   );
                 })}
               </div>
+              {sectionError === "urgency" ? (
+                <p className="mt-2 text-xs font-medium text-rose-600">Please fill out this section.</p>
+              ) : null}
             </section>
 
 
@@ -309,12 +386,7 @@ export default function RequestHelper() {
 
             <button
               type="submit"
-              disabled={!isFormComplete}
-              className={`h-11 w-full rounded-xl text-sm font-semibold text-white transition ${
-                isFormComplete
-                  ? "bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 hover:brightness-105"
-                  : "cursor-not-allowed bg-slate-300"
-              }`}
+              className="h-11 w-full rounded-xl bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 text-sm font-semibold text-white transition hover:brightness-105"
             >
               Send Session Request
             </button>
