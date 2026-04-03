@@ -5,11 +5,18 @@ import SignInForm from "../components/auth/SignInForm";
 import SignUpForm from "../components/auth/SignUpForm";
 import ResetPasswordForm from "../components/auth/ResetPasswordForm";
 import VisualPanel from "../components/auth/VisualPanel";
+import { useSearchParams } from "react-router-dom";
 
 import type { AuthMode } from "../types/auth";
 
+
+
 export default function AuthPage() {
-    const [mode, setMode] = useState<AuthMode>("signin");
+    const [searchParams] = useSearchParams();
+    // const [mode, setMode] = useState<AuthMode>("signin");
+    const [mode, setMode] = useState<AuthMode>(
+  (searchParams.get("mode") as AuthMode) ?? "signin"
+);
     const navigate = useNavigate();
 
     const {
@@ -55,7 +62,7 @@ export default function AuthPage() {
             <div className="relative h-dvh w-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex items-center justify-center p-4">
                 <div className="pointer-events-none absolute inset-0">
                     <div className="explore-pulse absolute -left-24 top-16 h-64 w-64 rounded-full bg-indigo-200/25 blur-3xl" />
-                    <div className="explore-float absolute right-[-6rem] top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
+                    <div className="explore-float absolute -right-24 top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
                 </div>
                 <div className="relative z-10 bg-white/85 rounded-2xl shadow-sm border border-white/70 p-8 max-w-sm w-full text-center backdrop-blur">
                     <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
@@ -86,7 +93,7 @@ export default function AuthPage() {
         <div className="relative h-dvh w-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex items-center justify-center p-2 sm:p-3 lg:p-4">
             <div className="pointer-events-none absolute inset-0">
                 <div className="explore-pulse absolute -left-24 top-16 h-64 w-64 rounded-full bg-indigo-200/25 blur-3xl" />
-                <div className="explore-float absolute right-[-6rem] top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
+                <div className="explore-float absolute -right-24 top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
                 <div className="explore-pulse absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-purple-200/20 blur-3xl" />
             </div>
             <Link
@@ -104,8 +111,8 @@ export default function AuthPage() {
             <div className="flex h-full w-full max-w-5xl items-center justify-center">
 
                 {/* Main card */}
-                <div className="relative z-10 h-[88dvh] w-full overflow-hidden rounded-3xl border border-white/70 bg-white/80 shadow-[0_28px_90px_-35px_rgba(79,70,229,0.55)] ring-1 ring-white/60 backdrop-blur-xl sm:h-[86dvh] lg:h-[88dvh] lg:max-h-[760px]">
-                    <div className="grid h-full lg:grid-cols-2">
+                <div className="relative z-10 overflow-hidden rounded-2xl border border-white/70 bg-white/80 shadow-sm backdrop-blur-xl">
+                    <div className="grid min-h-170 lg:grid-cols-2">
 
                         {formIsLeft ? (
                             <>

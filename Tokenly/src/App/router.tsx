@@ -9,7 +9,7 @@ import SkillHelpers from "../pages/SkillHelpers";
 import Profile from "../pages/Profile";
 import Sessions from "../pages/Sessions";
 import Activity from "../pages/Activity";
-import AuthPage from "../pages/AuthPage";
+import AuthPage from "../pages/authPage"
 
 function ScrollToTopLayout() {
   const { pathname } = useLocation();
