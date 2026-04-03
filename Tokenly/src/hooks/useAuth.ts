@@ -18,8 +18,12 @@ type UseAuthResult = {
     loading: boolean;
     error: string;
     successMessage: string;
-    isAuthenticated: boolean;                                    // ← added
-    signUp: (email: string, password: string) => Promise<boolean>;
+    isAuthenticated: boolean;
+    signUp: (
+        email: string,
+        password: string,
+        metadata?: { username?: string; full_name?: string },
+    ) => Promise<boolean>;
     signIn: (email: string, password: string) => Promise<boolean>;
     signOut: () => Promise<boolean>;
     resetPassword: (email: string) => Promise<boolean>;
@@ -27,7 +31,6 @@ type UseAuthResult = {
 };
 
 
-// ← moved to top so it's defined before use
 function formatError(message: string) {
     const msg = message.toLowerCase();
 
@@ -112,11 +115,15 @@ export default function useAuth(): UseAuthResult {
     }, []);
 
 
-    async function signUp(email: string, password: string) {
+    async function signUp(
+        email: string,
+        password: string,
+        metadata?: { username?: string; full_name?: string },
+    ) {
         setError("");
         setSuccessMessage("");
 
-        const { error } = await signUpWithEmail(email, password);
+        const { error } = await signUpWithEmail(email, password, metadata);
 
         if (error) {
             setError(formatError(error.message));

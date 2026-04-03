@@ -10,6 +10,7 @@ import SkillHelpers from "../pages/SkillHelpers";
 import Profile from "../pages/Profile";
 import Sessions from "../pages/Sessions";
 import Activity from "../pages/Activity";
+import AuthPage from "../pages/authPage";
 
 function ScrollToTopLayout() {
   const { pathname } = useLocation();
@@ -69,6 +70,8 @@ export const router = createBrowserRouter([
         path: "/activity",
         element: <Activity />,
       },
+      {path: "/auth", element: <AuthPage />},
+      { path: "/reset-password", element: <AuthPage /> },
     ],
   },
 ]);
