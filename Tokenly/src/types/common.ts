@@ -21,6 +21,10 @@ export interface ProtectedRouteProps {
 
 export interface RatingStarsProps {
   value: number;
+  sizeClassName?: string;
+  wrapperClassName?: string;
+  filledClassName?: string;
+  emptyClassName?: string;
 }
 
 export type CountUpProps = {

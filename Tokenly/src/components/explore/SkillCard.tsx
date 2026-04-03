@@ -1,5 +1,6 @@
-import { ArrowRight, Sparkles, Star, Users } from "lucide-react";
+import { ArrowRight, Sparkles, Users } from "lucide-react";
 import { Link } from "react-router-dom";
+import RatingStars from "../common/RatingStars";
 import type { ExploreSkillCardProps } from "../../types/explore";
 
 const levelStyles: Record<string, string> = {
@@ -45,7 +46,7 @@ export default function SkillCard({ item }: ExploreSkillCardProps) {
             {item.helpers} helpers
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <Star size={14} className="fill-amber-400 text-amber-400" />
+            <RatingStars value={item.avgRating} />
             {item.avgRating.toFixed(1)}
           </span>
           <span>{item.sessions} sessions</span>

@@ -1,5 +1,6 @@
-import { Clock3, MessageCircle, Star } from "lucide-react";
+import { Clock3, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import RatingStars from "../common/RatingStars";
 import type { RequestCardProps } from "../../types/explore";
 
 const categoryColors: Record<string, string> = {
@@ -90,7 +91,7 @@ export default function RequestCard({ item }: RequestCardProps) {
               {item.author.name}
             </div>
             <div className="mt-0.5 inline-flex items-center gap-1 text-xs text-slate-500">
-              <Star size={13} className="fill-amber-400 text-amber-400" />
+              <RatingStars value={item.author.rating ?? 0} />
               {item.author.rating?.toFixed(1)}
             </div>
           </div>

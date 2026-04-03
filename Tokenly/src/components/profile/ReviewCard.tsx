@@ -1,5 +1,5 @@
 import React from "react";
-import { Star } from "lucide-react";
+import RatingStars from "../common/RatingStars";
 import type { ReviewCardProps } from "../../types/profile";
 
 const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
@@ -30,9 +30,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
           <div>
             <h3 className="text-sm font-semibold text-slate-900">{review.reviewerName}</h3>
             <div className="mt-1 flex items-center gap-1 text-amber-400">
-              {Array.from({ length: review.rating }).map((_, i) => (
-                <Star key={i} size={13} className="fill-amber-400" />
-              ))}
+              <RatingStars value={review.rating} />
               <span className="ml-2 text-xs text-slate-500">{review.sessionTopic}</span>
             </div>
           </div>
