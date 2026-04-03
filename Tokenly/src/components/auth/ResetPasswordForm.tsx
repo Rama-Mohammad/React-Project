@@ -38,13 +38,13 @@ export default function ResetPasswordForm({
   };
 
   return (
-    <div className="mx-auto w-full max-w-md rounded-2xl border border-white/70 bg-white/60 p-5 shadow-[0_20px_60px_-30px_rgba(79,70,229,0.55)] backdrop-blur-md sm:p-6">
-      <div className="mb-5">
+    <div className="mx-auto w-full max-w-md rounded-2xl border border-white/70 bg-white/60 p-4 shadow-[0_20px_60px_-30px_rgba(79,70,229,0.55)] backdrop-blur-md sm:p-5">
+      <div className="mb-4">
         <span className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-violet-700">
           Recovery
         </span>
-        <h1 className="mt-3 mb-2 text-3xl font-bold text-slate-900">Reset your password</h1>
-        <p className="text-slate-500">Enter your email and we'll send you a link to reset your password</p>
+        <h1 className="mt-2 mb-1 text-2xl font-bold text-slate-900">Reset your password</h1>
+        <p className="text-sm text-slate-500">Enter your email and we'll send you a link to reset your password</p>
       </div>
 
       {error && (
@@ -69,9 +69,9 @@ export default function ResetPasswordForm({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      <form onSubmit={handleSubmit} className="space-y-3" noValidate>
         <div>
-          <label htmlFor="reset-email" className="mb-1.5 block text-sm font-medium text-slate-700">
+          <label htmlFor="reset-email" className="mb-1 block text-xs font-semibold text-slate-700">
             Email address
           </label>
           <input
@@ -86,7 +86,7 @@ export default function ResetPasswordForm({
             placeholder="you@example.com"
             autoComplete="email"
             disabled={loading}
-            className={`w-full rounded-xl border bg-white/90 px-4 py-3 text-slate-900 placeholder-slate-400 outline-none transition-colors
+            className={`w-full rounded-xl border bg-white/90 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-colors
               ${touched && fieldError
                 ? "border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
                 : "border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
@@ -98,7 +98,7 @@ export default function ResetPasswordForm({
         <button
           type="submit"
           disabled={loading}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 via-indigo-500 to-sky-500 px-4 py-3 font-medium text-white shadow-[0_10px_30px_-15px_rgba(99,102,241,0.85)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 via-indigo-500 to-sky-500 px-4 py-2.5 text-sm font-medium text-white shadow-[0_10px_30px_-15px_rgba(99,102,241,0.85)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <>
@@ -114,7 +114,7 @@ export default function ResetPasswordForm({
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-slate-500">
+      <p className="mt-4 text-center text-xs text-slate-500">
         Remember your password?{" "}
         <button
           type="button"

@@ -42,7 +42,7 @@ const CTASection = () => {
                 </Link>
                 <Link
                   to={`/helpers/${defaultHelperId}/request`}
-                  className="rounded-xl border border-white/50 bg-white/80 px-6 py-2.5 text-center font-semibold text-slate-700 transition hover:bg-white"
+                  className="rounded-xl border border-indigo-200/70 bg-[linear-gradient(135deg,rgba(129,140,248,0.24)_0%,rgba(56,189,248,0.2)_48%,rgba(168,139,250,0.24)_100%)] px-6 py-2.5 text-center font-semibold text-indigo-800 shadow-[0_10px_30px_-18px_rgba(79,70,229,0.6)] backdrop-blur-md transition hover:brightness-105"
                 >
                   Post a Request
                 </Link>
