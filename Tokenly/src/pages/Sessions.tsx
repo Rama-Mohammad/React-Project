@@ -1,21 +1,9 @@
 import { useMemo } from "react";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
+import type { SessionsPageItem } from "../types/page";
 
-type SessionItem = {
-  id: string;
-  topic: string;
-  skill: string;
-  status: "Upcoming" | "Active Now" | "Completed";
-  role: "Helping" | "Receiving help";
-  person: string;
-  date: string;
-  duration: string;
-  credits: number;
-  rating?: number;
-};
-
-const initialSessionItems: SessionItem[] = [
+const initialSessionItems: SessionsPageItem[] = [
   {
     id: "s1",
     topic: "Debug React useEffect causing infinite re-renders",
@@ -50,3 +38,4 @@ export default function Sessions() {
     </div>
   );
 }
+

@@ -1,12 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
-
-type TestimonialCardProps = {
-  quote: string;
-  name: string;
-  title: string;
-  rating: number;
-};
+import type { TestimonialCardProps } from "../../types/home";
 
 const TestimonialCard = ({ quote, name, title, rating }: TestimonialCardProps) => {
   const renderStars = () => {
@@ -37,3 +31,4 @@ const TestimonialCard = ({ quote, name, title, rating }: TestimonialCardProps) =
 };
 
 export default TestimonialCard;
+

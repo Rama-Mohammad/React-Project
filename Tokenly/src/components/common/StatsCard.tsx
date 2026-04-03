@@ -1,33 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useState, useRef, useEffect } from "react";
-import type { RefObject } from "react";
-import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-
-const useInView = (): [RefObject<HTMLDivElement | null>, boolean] => {
-  // ref is used to detect when an element appears on screen for the first time and isVisible is used to trigger the count up animation
-  const ref = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState<boolean>(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true);
-      },
-      { threshold: 0.3 }
-    );
-
-    if (ref.current) observer.observe(ref.current);
-
-    return () => observer.disconnect();
-  }, []);
-
-  return [ref, isVisible];
-};
-
-type CountUpProps = {
-  end: number;
-  start: boolean;
-};
+import { useEffect, useState } from "react";
+import type { CountUpProps, StatCardProps } from "../../types/common";
+import useInView from "../../hooks/useInView";
 
 const CountUp = ({ end, start }: CountUpProps) => {
   const [value, setValue] = useState<number>(0);
@@ -56,12 +30,6 @@ const CountUp = ({ end, start }: CountUpProps) => {
   return <>{value.toLocaleString()}</>;
 };
 
-type StatCardProps = {
-  icon: IconDefinition;
-  number: string;
-  label: string;
-};
-
 const StatCard = ({ icon, number, label }: StatCardProps) => {
   const numericValue = parseInt(number.replace(/\D/g, ""));
   const [ref, isVisible] = useInView();
@@ -86,3 +54,4 @@ const StatCard = ({ icon, number, label }: StatCardProps) => {
 };
 
 export default StatCard;
+

@@ -1,13 +1,6 @@
 // components/session/live/Checklist.tsx
 import React, { useState } from 'react';
-import type { ChecklistItem } from '../../../types/session';
-
-interface ChecklistProps {
-  items: ChecklistItem[];
-  onToggleItem: (itemId: string) => void;
-  onAddItem: (text: string) => void;
-  isEditable: boolean;
-}
+import type { ChecklistProps } from '../../../types/session';
 
 const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, isEditable }) => {
   const [newItemText, setNewItemText] = useState('');
@@ -83,3 +76,4 @@ const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, i
 };
 
 export default Checklist;
+

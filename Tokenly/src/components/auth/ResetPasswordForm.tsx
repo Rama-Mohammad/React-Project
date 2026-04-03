@@ -1,17 +1,10 @@
 import { useState } from "react";
+import type { ResetPasswordFormProps } from "../../types/auth";
 
 function validateEmail(email: string): string | null {
   if (!email.trim()) return "Email is required";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Please enter a valid email address";
   return null;
-}
-
-interface ResetPasswordFormProps {
-  onSubmit: (email: string) => Promise<boolean>;
-  onSwitchToSignIn: () => void;
-  loading: boolean;
-  error: string;
-  successMessage: string;
 }
 
 export default function ResetPasswordForm({
@@ -127,3 +120,4 @@ export default function ResetPasswordForm({
     </div>
   );
 }
+

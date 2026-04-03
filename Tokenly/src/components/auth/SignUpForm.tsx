@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { SignUpFormProps } from "../../types/auth";
 
 function validateEmail(email: string): string | null {
   if (!email.trim()) return "Email is required";
@@ -37,14 +38,6 @@ function getPasswordStrength(pw: string) {
   if (score <= 2) return { label: "Weak", color: "bg-rose-500", width: "33%" };
   if (score <= 3) return { label: "Medium", color: "bg-amber-500", width: "66%" };
   return { label: "Strong", color: "bg-emerald-500", width: "100%" };
-}
-
-interface SignUpFormProps {
-  onSubmit: (email: string, password: string, username: string, fullName: string) => Promise<boolean>;
-  onSwitchToSignIn: () => void;
-  loading: boolean;
-  error: string;
-  successMessage: string;
 }
 
 export default function SignUpForm({
@@ -311,3 +304,4 @@ export default function SignUpForm({
     </div>
   );
 }
+

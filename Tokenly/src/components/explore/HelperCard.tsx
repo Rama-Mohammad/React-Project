@@ -1,10 +1,6 @@
 import { BadgeCheck, MessageCircle, ShieldCheck, Star, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { HelperItem } from "../../types/explore";
-
-interface HelperCardProps {
-  item: HelperItem;
-}
+import type { HelperCardProps } from "../../types/explore";
 
 function BadgePill({ label }: { label: string }) {
   const styles: Record<string, string> = {
@@ -128,3 +124,4 @@ export default function HelperCard({ item }: HelperCardProps) {
     </article>
   );
 }
+

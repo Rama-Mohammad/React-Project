@@ -1,8 +1,4 @@
-type AuthMode = "signin" | "signup" | "reset";
-
-interface VisualPanelProps {
-  mode: AuthMode;
-}
+import type { VisualPanelProps } from "../../types/auth";
 
 export default function VisualPanel({ mode }: VisualPanelProps) {
   return (
@@ -47,3 +43,4 @@ export default function VisualPanel({ mode }: VisualPanelProps) {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
@@ -14,6 +14,12 @@ import useAuth from "../hooks/useAuth";
 import useProfiles from "../hooks/useProfile";
 import useSkills from "../hooks/useSkills";
 import useReviews from "../hooks/useReviews";
+import type {
+  PortfolioEntry,
+  UiReview,
+  UiSkill,
+} from "../types/page";
+import type { EditProfileUserInput, ProfileHeaderUser, ReviewSortBy } from "../types/profile";
 
 const mockUser = {
   name: "Jordan Lee",
@@ -29,14 +35,6 @@ const mockUser = {
     creditsEarned: 4.7,
     skillsTaught: 17,
   },
-};
-
-type UiSkill = {
-  id: string;
-  name: string;
-  category: string;
-  level: "Expert" | "Advanced" | "Intermediate";
-  sessions: number;
 };
 
 const mockSkills: UiSkill[] = [
@@ -85,8 +83,6 @@ const mockPortfolio = [
     tags: ["Python", "CLI", "PyPI", "Testing"],
   },
 ];
-type PortfolioEntry = (typeof mockPortfolio)[number];
-
 const PROFILE_SKILLS_STORAGE_KEY = "tokenly.profile.skills";
 const PROFILE_PORTFOLIO_STORAGE_KEY = "tokenly.profile.portfolio";
 
@@ -194,25 +190,25 @@ const Profile: React.FC = () => {
     error: reviewsError,
   } = useReviews();
 
-  const [user, setUser] = useState(mockUser);
+  const [user, setUser] = useState<ProfileHeaderUser>(mockUser);
   const [skills, setSkills] = useState<UiSkill[]>(() =>
     readStoredValue<UiSkill[]>(PROFILE_SKILLS_STORAGE_KEY, mockSkills)
   );
   const [portfolio, setPortfolio] = useState<PortfolioEntry[]>(() =>
     readStoredValue<PortfolioEntry[]>(PROFILE_PORTFOLIO_STORAGE_KEY, mockPortfolio)
   );
-  const [reviews, setReviews] = useState(mockReviews);
+  const [reviews, setReviews] = useState<UiReview[]>(mockReviews);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddSkillModalOpen, setIsAddSkillModalOpen] = useState(false);
-  const [selectedSkill, setSelectedSkill] = useState<any>(null);
+  const [selectedSkill, setSelectedSkill] = useState<UiSkill | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [isAddPortfolioModalOpen, setIsAddPortfolioModalOpen] = useState(false);
   const [isPortfolioEditMode, setIsPortfolioEditMode] = useState(false);
   const [selectedPortfolioItem, setSelectedPortfolioItem] = useState<PortfolioEntry | null>(null);
   const [pendingPortfolioDeleteId, setPendingPortfolioDeleteId] = useState<string | null>(null);
-  const [reviewSortBy, setReviewSortBy] = useState<"newest" | "oldest" | "highest" | "lowest">("newest");
+  const [reviewSortBy, setReviewSortBy] = useState<ReviewSortBy>("newest");
 
   useEffect(() => {
     if (!authUser?.id) return;
@@ -287,8 +283,8 @@ const Profile: React.FC = () => {
 
   const pageError = profileError || skillsError || reviewsError;
 
-  const handleEditProfile = (updatedUser: typeof mockUser) => {
-    setUser(updatedUser);
+  const handleEditProfile = (updatedUser: EditProfileUserInput) => {
+    setUser((prev) => ({ ...prev, ...updatedUser }));
   };
 
   const handleUpdateSkill = (updatedSkill: UiSkill) => {
@@ -313,7 +309,7 @@ const Profile: React.FC = () => {
     console.log("View portfolio item:", id);
   };
 
-  const handleAddPortfolio = (newItem: Omit<(typeof mockPortfolio)[0], "id">) => {
+  const handleAddPortfolio = (newItem: Omit<PortfolioEntry, "id">) => {
     setPortfolio((prev) => [{ ...newItem, id: Date.now().toString() }, ...prev]);
   };
 
@@ -337,7 +333,7 @@ const Profile: React.FC = () => {
     setPendingPortfolioDeleteId(null);
   };
 
-  const handleEditSkill = (skill: any) => {
+  const handleEditSkill = (skill: UiSkill) => {
     setSelectedSkill(skill);
     setIsEditMode(true);
     setIsAddSkillModalOpen(true);
@@ -534,6 +530,8 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
+
+
 
 
 

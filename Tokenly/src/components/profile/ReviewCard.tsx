@@ -1,17 +1,6 @@
 import React from "react";
 import { Star } from "lucide-react";
-
-interface ReviewCardProps {
-  review: {
-    id: string;
-    reviewerName: string;
-    date: string;
-    rating: number;
-    comment: string;
-    skillCategory: string;
-    sessionTopic: string;
-  };
-}
+import type { ReviewCardProps } from "../../types/profile";
 
 const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
   const date = new Date(review.date);
@@ -62,3 +51,4 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
 };
 
 export default ReviewCard;
+

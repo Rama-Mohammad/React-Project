@@ -1,35 +1,12 @@
 import { useState } from "react";
-import type { Skill, SkillLevel, SkillCategory } from "../types/skill";
+import type { Skill } from "../types/skill";
+import type { SkillInput, SkillUpdateInput, UseSkillsResult } from "../types/hooks";
 import {
     getSkillsByUser,
     createSkill,
     updateSkill,
     deleteSkill,
 } from "../services/skillService";
-
-type UseSkillsResult = {
-    skills: Skill[];
-    loading: boolean;
-    error: string;
-    fetchSkillsByUser: (user_id: string) => Promise<void>;
-    addSkill: (data: {
-        user_id: string;
-        name: string;
-        category: SkillCategory;
-        level: SkillLevel;
-        description?: string;
-    }) => Promise<boolean>;
-    editSkill: (
-        id: string,
-        updates: {
-            name?: string;
-            category?: SkillCategory;
-            level?: SkillLevel;
-            description?: string;
-        }
-    ) => Promise<boolean>;
-    removeSkill: (id: string) => Promise<boolean>;
-};
 
 export default function useSkills(): UseSkillsResult {
     const [skills, setSkills] = useState<Skill[]>([]);
@@ -52,13 +29,7 @@ export default function useSkills(): UseSkillsResult {
         setLoading(false);
     }
 
-    async function addSkill(data: {
-        user_id: string;
-        name: string;
-        category: SkillCategory;
-        level: SkillLevel;
-        description?: string;
-    }) {
+    async function addSkill(data: SkillInput) {
         setLoading(true);
         setError("");
 
@@ -77,12 +48,7 @@ export default function useSkills(): UseSkillsResult {
 
     async function editSkill(
         id: string,
-        updates: {
-            name?: string;
-            category?: SkillCategory;
-            level?: SkillLevel;
-            description?: string;
-        }
+        updates: SkillUpdateInput
     ) {
         setLoading(true);
         setError("");

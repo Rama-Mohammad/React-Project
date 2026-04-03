@@ -1,5 +1,6 @@
 import {useState } from "react";
 import type { Notification} from "../types/notification";
+import type { UseNotificationsResult } from "../types/hooks";
 import {
     getNotificationsByUser,
     getUnreadNotifications,
@@ -8,19 +9,6 @@ import {
     deleteNotification,
     subscribeToNotifications,
 } from "../services/notificationService";
-
-type UseNotificationsResult = {
-    notifications: Notification[];
-    unreadCount: number;
-    loading: boolean;
-    error: string;
-    fetchNotifications: (user_id: string) => Promise<void>;
-    fetchUnread: (user_id: string) => Promise<void>;
-    markAsRead: (id: string) => Promise<boolean>;
-    markAllAsRead: (user_id: string) => Promise<boolean>;
-    removeNotification: (id: string) => Promise<boolean>;
-    subscribeToLive: (user_id: string) => () => void;
-};
 
 export default function useNotifications(): UseNotificationsResult {
     const [notifications, setNotifications] = useState<Notification[]>([]);

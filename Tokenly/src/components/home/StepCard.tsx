@@ -1,17 +1,8 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileAlt, faUsers, faComments, faCoins } from "@fortawesome/free-solid-svg-icons";
+import type { StepCardProps } from "../../types/home";
 
-type StepKey = "01" | "02" | "03" | "04";
-
-const StepCard = ({
-  step,
-  title,
-  description,
-}: {
-  step: StepKey;
-  title: string;
-  description: string;
-}) => {
+const StepCard = ({ step, title, description }: StepCardProps) => {
   const stepConfig = {
     "01": { icon: faFileAlt, bg: "bg-indigo-100", text: "text-indigo-500" },
     "02": { icon: faUsers, bg: "bg-sky-100", text: "text-sky-500" },
@@ -39,3 +30,4 @@ const StepCard = ({
 };
 
 export default StepCard;
+

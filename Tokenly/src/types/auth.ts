@@ -16,3 +16,32 @@ export type AuthSession = {
 };
 
 export type AuthMode = "signin" | "signup" | "reset";
+
+export interface VisualPanelProps {
+  mode: AuthMode;
+}
+
+export interface SignInFormProps {
+  onSubmit: (email: string, password: string) => Promise<boolean>;
+  onSwitchToSignUp: () => void;
+  onSwitchToReset: () => void;
+  loading: boolean;
+  error: string;
+  successMessage: string;
+}
+
+export interface SignUpFormProps {
+  onSubmit: (email: string, password: string, username: string, fullName: string) => Promise<boolean>;
+  onSwitchToSignIn: () => void;
+  loading: boolean;
+  error: string;
+  successMessage: string;
+}
+
+export interface ResetPasswordFormProps {
+  onSubmit: (email: string) => Promise<boolean>;
+  onSwitchToSignIn: () => void;
+  loading: boolean;
+  error: string;
+  successMessage: string;
+}

@@ -13,27 +13,7 @@ import {
   Star,
   X,
 } from "lucide-react";
-
-interface ProfileHeaderProps {
-  user: {
-    name: string;
-    title: string;
-    location: string;
-    memberSince: string;
-    bio: string;
-    avatarInitials: string;
-    rating?: number;
-    totalRatings?: number;
-    website?: string;
-    coverImage?: string;
-    stats: {
-      totalSessions: number;
-      creditsEarned: number;
-      skillsTaught: number;
-    };
-  };
-  onEdit: () => void;
-}
+import type { ProfileHeaderProps } from "../../types/profile";
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
   const [copied, setCopied] = useState(false);
@@ -222,3 +202,4 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
 };
 
 export default ProfileHeader;
+

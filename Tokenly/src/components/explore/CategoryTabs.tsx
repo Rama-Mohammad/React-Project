@@ -1,15 +1,5 @@
 import { BookOpen, FileText, Users } from "lucide-react";
-import type { ExploreTab } from "../../types/explore";
-
-interface CategoryTabsProps {
-  activeTab: ExploreTab;
-  onChange: (tab: ExploreTab) => void;
-  counts: {
-    requests: number;
-    helpers: number;
-    skills: number;
-  };
-}
+import type { CategoryTabsProps } from "../../types/explore";
 
 export default function CategoryTabs({
   activeTab,
@@ -62,3 +52,4 @@ export default function CategoryTabs({
     </div>
   );
 }
+

@@ -1,42 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
-
-interface AddPortfolioModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onAdd: (item: {
-    type: "Project" | "Article" | "Contribution";
-    title: string;
-    date: string;
-    description: string;
-    tags: string[];
-  }) => void;
-  onUpdate?: (item: {
-    id: string;
-    type: "Project" | "Article" | "Contribution";
-    title: string;
-    date: string;
-    description: string;
-    tags: string[];
-  }) => void;
-  editItem?: {
-    id: string;
-    type: "Project" | "Article" | "Contribution";
-    title: string;
-    date: string;
-    description: string;
-    tags: string[];
-  } | null;
-  isEditMode?: boolean;
-}
-
-type PortfolioForm = {
-  type: "Project" | "Article" | "Contribution";
-  title: string;
-  date: string;
-  description: string;
-  tags: string;
-};
+import type { AddPortfolioModalProps, PortfolioForm } from "../../types/profile";
 
 const initialForm: PortfolioForm = {
   type: "Project",
@@ -205,3 +169,4 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
 };
 
 export default AddPortfolioModal;
+

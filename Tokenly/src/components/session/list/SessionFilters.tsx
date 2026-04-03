@@ -1,15 +1,6 @@
 // components/session/list/SessionFilters.tsx
 import React from 'react';
-
-interface SessionFiltersProps {
-  activeFilter: 'upcoming' | 'active' | 'completed' | 'all';
-  onFilterChange: (filter: 'upcoming' | 'active' | 'completed' | 'all') => void;
-  counts: {
-    upcoming: number;
-    active: number;
-    completed: number;
-  };
-}
+import type { SessionFiltersProps } from '../../../types/session';
 
 const SessionFilters: React.FC<SessionFiltersProps> = ({ activeFilter, onFilterChange, counts }) => {
   const filters = [
@@ -42,3 +33,4 @@ const SessionFilters: React.FC<SessionFiltersProps> = ({ activeFilter, onFilterC
 };
 
 export default SessionFilters;
+

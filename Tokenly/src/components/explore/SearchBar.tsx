@@ -1,14 +1,7 @@
 import { ChevronDown, Search, SlidersHorizontal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ExploreTab } from "../../types/explore";
-
-interface SearchBarProps {
-  activeTab: ExploreTab;
-  search: string;
-  onSearchChange: (value: string) => void;
-  sortBy: string;
-  onSortChange: (value: string) => void;
-}
+import type { SearchBarProps } from "../../types/explore";
 
 const sortOptionsMap: Record<ExploreTab, string[]> = {
   requests: ["Newest", "Most Offers", "Lowest Credits", "Highest Credits"],
@@ -133,3 +126,4 @@ export default function SearchBar({
     </div>
   );
 }
+

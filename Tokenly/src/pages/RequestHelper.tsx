@@ -4,10 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import { helpers } from "../data/mockExploreData";
-
-type SessionType = "one-on-one" | "async" | "group";
-type NeedBy = "flexible" | "soon" | "urgent";
-type RequiredSection = "title" | "skills" | "description" | "sessionType" | "duration" | "urgency";
+import type { NeedBy, RequiredSection, SessionType } from "../types/page";
 
 const durationChoices = [30, 45, 60, 90, 120];
 
@@ -470,3 +467,4 @@ export default function RequestHelper() {
     </div>
   );
 }
+

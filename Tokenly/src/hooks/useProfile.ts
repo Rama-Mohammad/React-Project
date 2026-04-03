@@ -1,30 +1,12 @@
 import { useState } from "react";
 import type { Profile } from "../types/profile";
+import type { EditProfileInput, UseProfilesResult } from "../types/hooks";
 import {
     getProfileById,
     getProfileByUsername,
     updateProfile,
     searchProfiles,
 } from "../services/profileService";
-
-type UseProfilesResult = {
-    profile: Profile | null;
-    results: Profile[];
-    loading: boolean;
-    error: string;
-    fetchProfileById: (id: string) => Promise<void>;
-    fetchProfileByUsername: (username: string) => Promise<void>;
-    editProfile: (
-        id: string,
-        updates: {
-            username?: string;
-            full_name?: string;
-            bio?: string;
-            profile_image_url?: string;
-        }
-    ) => Promise<boolean>;
-    search: (query: string) => Promise<void>;
-};
 
 export default function useProfiles(): UseProfilesResult {
     const [profile, setProfile] = useState<Profile | null>(null);
@@ -66,12 +48,7 @@ export default function useProfiles(): UseProfilesResult {
 
     async function editProfile(
         id: string,
-        updates: {
-            username?: string;
-            full_name?: string;
-            bio?: string;
-            profile_image_url?: string;
-        }
+        updates: EditProfileInput
     ) {
         setLoading(true);
         setError("");

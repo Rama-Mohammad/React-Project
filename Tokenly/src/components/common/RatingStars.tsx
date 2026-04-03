@@ -1,8 +1,6 @@
-interface Props {
-  value: number;
-}
+import type { RatingStarsProps } from "../../types/common";
 
-export default function RatingStars({ value }: Props) {
+export default function RatingStars({ value }: RatingStarsProps) {
   const rounded = Math.round(value);
   return (
     <span className='stars' aria-label={`Rated ${value} out of 5`}>
@@ -12,3 +10,4 @@ export default function RatingStars({ value }: Props) {
     </span>
   );
 }
+

@@ -13,13 +13,7 @@ import {
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { helpers } from "../../data/mockExploreData";
-import type { ExploreStats } from "../../types/explore";
-
-interface StatsHeroProps {
-  stats: ExploreStats;
-  defaultHelperId?: string;
-  openHowItWorks?: boolean;
-}
+import type { StatsHeroProps } from "../../types/explore";
 
 function StatCard({
   icon,
@@ -242,3 +236,4 @@ export default function StatsHero({ stats, defaultHelperId, openHowItWorks = fal
     </>
   );
 }
+

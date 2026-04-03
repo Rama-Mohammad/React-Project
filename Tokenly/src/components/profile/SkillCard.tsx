@@ -1,17 +1,6 @@
 import React from "react";
 import { PenLine, Trash2 } from "lucide-react";
-
-interface SkillCardProps {
-  skill: {
-    id: string;
-    name: string;
-    category: string;
-    level: "Expert" | "Advanced" | "Intermediate";
-    sessions: number;
-  };
-  onDelete?: (id: string) => void;
-  onEdit?: (skill: any) => void;
-}
+import type { ProfileSkillCardProps } from "../../types/profile";
 
 const descriptions: Record<string, string> = {
   react: "Hooks, context, performance and component architecture.",
@@ -21,7 +10,7 @@ const descriptions: Record<string, string> = {
   "system design": "Scalability patterns, API design, queues and caching.",
 };
 
-const SkillCard: React.FC<SkillCardProps> = ({ skill, onDelete, onEdit }) => {
+const SkillCard: React.FC<ProfileSkillCardProps> = ({ skill, onDelete, onEdit }) => {
   const getLevelColor = (level: string) => {
     switch (level) {
       case "Expert":
@@ -91,3 +80,4 @@ const SkillCard: React.FC<SkillCardProps> = ({ skill, onDelete, onEdit }) => {
 };
 
 export default SkillCard;
+

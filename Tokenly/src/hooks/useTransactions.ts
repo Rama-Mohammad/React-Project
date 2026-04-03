@@ -1,34 +1,12 @@
 import { useState } from "react";
-import type { Transaction, TransactionType } from "../types/transaction";
+import type { Transaction } from "../types/transaction";
+import type { CreditSummary, TransactionInput, UseTransactionsResult } from "../types/hooks";
 import {
     getTransactionsByUser,
     getTransactionsBySession,
     createTransaction,
     getUserCreditSummary,
 } from "../services/transactionService";
-
-type CreditSummary = {
-    earned: number;
-    spent: number;
-    total: number;
-};
-
-type UseTransactionsResult = {
-    transactions: Transaction[];
-    summary: CreditSummary | null;
-    loading: boolean;
-    error: string;
-    fetchTransactionsByUser: (user_id: string) => Promise<void>;
-    fetchTransactionsBySession: (session_id: string) => Promise<void>;
-    fetchCreditSummary: (user_id: string) => Promise<void>;
-    addTransaction: (data: {
-        user_id: string;
-        session_id?: string;
-        amount: number;
-        type: TransactionType;
-        description?: string;
-    }) => Promise<boolean>;
-};
 
 export default function useTransactions(): UseTransactionsResult {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -84,13 +62,7 @@ export default function useTransactions(): UseTransactionsResult {
         setLoading(false);
     }
 
-    async function addTransaction(data: {
-        user_id: string;
-        session_id?: string;
-        amount: number;
-        type: TransactionType;
-        description?: string;
-    }) {
+    async function addTransaction(data: TransactionInput) {
         setLoading(true);
         setError("");
 

@@ -1,15 +1,7 @@
 // components/session/live/ChatWindow.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import MessageBubble from './MessageBubble';
-import type { Message } from '../../../types/session';
-
-interface ChatWindowProps {
-  sessionId: string;
-  messages: Message[];
-  onSendMessage: (text: string) => void;
-  isActive: boolean;
-  currentUserId: string;
-}
+import type { ChatWindowProps } from '../../../types/session';
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
   messages,
@@ -96,3 +88,4 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 };
 
 export default ChatWindow;
+

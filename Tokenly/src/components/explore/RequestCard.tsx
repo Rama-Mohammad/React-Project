@@ -1,10 +1,6 @@
 import { Clock3, MessageCircle, Star } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { RequestItem } from "../../types/explore";
-
-interface RequestCardProps {
-  item: RequestItem;
-}
+import type { RequestCardProps } from "../../types/explore";
 
 const categoryColors: Record<string, string> = {
   "Data Science": "bg-cyan-50 text-cyan-700",
@@ -114,3 +110,4 @@ export default function RequestCard({ item }: RequestCardProps) {
     </article>
   );
 }
+

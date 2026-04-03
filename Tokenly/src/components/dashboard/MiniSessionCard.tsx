@@ -1,12 +1,7 @@
 import React from 'react';
-import type { Session } from '../../types';
 import { format } from '../../utils/dateHelpers';
 import Button from '../common/Button';
-
-interface MiniSessionCardProps {
-  sessions: Session[];
-  onJoinSession: (sessionId: string) => void;
-}
+import type { MiniSessionCardProps } from '../../types/dashboard';
 
 const MiniSessionCard: React.FC<MiniSessionCardProps> = ({ sessions, onJoinSession }) => {
   const upcomingSessions = sessions.filter(s => s.status === 'scheduled');
@@ -53,3 +48,4 @@ const MiniSessionCard: React.FC<MiniSessionCardProps> = ({ sessions, onJoinSessi
 };
 
 export default MiniSessionCard;
+

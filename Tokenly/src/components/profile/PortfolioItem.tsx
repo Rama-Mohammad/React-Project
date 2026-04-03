@@ -1,26 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Code2, FileText, HandHeart, PenLine, Trash2 } from "lucide-react";
-
-interface PortfolioItemProps {
-  item: {
-    id: string;
-    type: "Project" | "Article" | "Contribution";
-    title: string;
-    date: string;
-    description: string;
-    tags: string[];
-  };
-  onView?: (id: string) => void;
-  onEdit?: (item: {
-    id: string;
-    type: "Project" | "Article" | "Contribution";
-    title: string;
-    date: string;
-    description: string;
-    tags: string[];
-  }) => void;
-  onDelete?: (id: string) => void;
-}
+import type { PortfolioItemProps } from "../../types/profile";
 
 const typeMeta = {
   Project: {
@@ -111,3 +91,4 @@ const PortfolioItem: React.FC<PortfolioItemProps> = ({ item, onEdit, onDelete })
 };
 
 export default PortfolioItem;
+

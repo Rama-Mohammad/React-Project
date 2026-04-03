@@ -1,14 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ArrowDownUp, ChevronDown, Star } from "lucide-react";
+import type { RatingsSummaryProps, ReviewSortBy } from "../../types/profile";
 
-interface RatingsSummaryProps {
-  reviews: Array<{ rating: number }>;
-  embedded?: boolean;
-  sortBy?: "newest" | "oldest" | "highest" | "lowest";
-  onSortChange?: (value: "newest" | "oldest" | "highest" | "lowest") => void;
-}
-
-const sortLabels: Record<"newest" | "oldest" | "highest" | "lowest", string> = {
+const sortLabels: Record<ReviewSortBy, string> = {
   newest: "Newest first",
   oldest: "Oldest first",
   highest: "Highest rating",
@@ -134,3 +128,4 @@ const RatingsSummary: React.FC<RatingsSummaryProps> = ({
 };
 
 export default RatingsSummary;
+

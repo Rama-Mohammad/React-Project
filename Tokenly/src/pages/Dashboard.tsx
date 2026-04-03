@@ -1,4 +1,4 @@
-ï»¿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Calendar,
   Check,
@@ -17,44 +17,16 @@ import { Link } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import { activityItems } from "../data/activityItems";
-
-type SessionTabLabel = "All" | "Upcoming" | "Active" | "Completed";
-
-type SessionItem = {
-  id: string;
-  topic: string;
-  skill: string;
-  status: "Upcoming" | "Active Now" | "Completed";
-  role: "Helping" | "Receiving help";
-  person: string;
-  date: string;
-  duration: string;
-  credits: number;
-  action?: string;
-  rating?: number;
-};
-
-type RequestItem = {
-  id: string;
-  title: string;
-  urgency: string;
-  offers: number;
-  age: string;
-  credits: number;
-};
-
-type OfferItem = {
-  id: string;
-  title: string;
-  status: "Accepted" | "Pending";
-  user: string;
-  age: string;
-  credits: number;
-};
+import type {
+  DashboardOfferItem,
+  DashboardRequestItem,
+  DashboardSessionItem,
+  SessionTabLabel,
+} from "../types/dashboard";
 
 const sessionTabs: SessionTabLabel[] = ["All", "Upcoming", "Active", "Completed"];
 
-const initialSessionItems: SessionItem[] = [
+const initialSessionItems: DashboardSessionItem[] = [
   {
     id: "s1",
     topic: "Debug React useEffect causing infinite re-renders",
@@ -141,7 +113,7 @@ const initialSessionItems: SessionItem[] = [
   },
 ];
 
-const openRequests: RequestItem[] = [
+const openRequests: DashboardRequestItem[] = [
   {
     id: "r1",
     title: "Debug my React useEffect causing infinite re-renders",
@@ -160,7 +132,7 @@ const openRequests: RequestItem[] = [
   },
 ];
 
-const submittedOffers: OfferItem[] = [
+const submittedOffers: DashboardOfferItem[] = [
   {
     id: "o1",
     title: "Help me understand Big O notation for interview prep",
@@ -205,7 +177,7 @@ function skillTone(skill: string) {
   return "bg-slate-100 text-slate-700";
 }
 
-function statusTone(status: SessionItem["status"]) {
+function statusTone(status: DashboardSessionItem["status"]) {
   if (status === "Upcoming") return "bg-blue-100 text-blue-700";
   if (status === "Active Now") return "bg-violet-100 text-violet-700";
   return "bg-slate-100 text-slate-600";
@@ -227,7 +199,7 @@ function Stars({ count }: { count: number }) {
 
 export default function Dashboard() {
   const [activeSessionTab, setActiveSessionTab] = useState<SessionTabLabel>("All");
-  const [sessions, setSessions] = useState<SessionItem[]>(initialSessionItems);
+  const [sessions, setSessions] = useState<DashboardSessionItem[]>(initialSessionItems);
   const [pendingCompleteId, setPendingCompleteId] = useState<string | null>(null);
   const [transferToast, setTransferToast] = useState<{ credits: number } | null>(null);
   const [showCreditDetails, setShowCreditDetails] = useState(false);
@@ -418,7 +390,7 @@ export default function Dashboard() {
               </div>
               <p className="mt-4 text-2xl font-semibold">19</p>
               <p className="text-sm text-slate-700">Sessions Done</p>
-              <p className="mt-2 text-sm text-slate-500">11 as helper Â· 8 as requester</p>
+              <p className="mt-2 text-sm text-slate-500">11 as helper · 8 as requester</p>
             </article>
 
             <article className="rounded-2xl border border-slate-200 bg-transparent p-4">
@@ -576,7 +548,7 @@ export default function Dashboard() {
                     <div>
                       <p className="text-base leading-tight">{item.title}</p>
                       <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-500">
-                        <span className="rounded-full bg-rose-100 px-3 py-0.5 text-rose-700">â€¢ {item.urgency}</span>
+                        <span className="rounded-full bg-rose-100 px-3 py-0.5 text-rose-700">• {item.urgency}</span>
                         <span className="inline-flex items-center gap-1">
                           <MessageCircle size={14} />
                           {item.offers} offers
@@ -771,6 +743,7 @@ export default function Dashboard() {
     </div>
   );
 }
+
 
 
 
