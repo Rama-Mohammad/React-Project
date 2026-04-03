@@ -233,6 +233,7 @@ export default function Dashboard() {
   const [sessions, setSessions] = useState<SessionItem[]>(initialSessionItems);
   const [pendingCompleteId, setPendingCompleteId] = useState<string | null>(null);
   const [transferToast, setTransferToast] = useState<{ credits: number } | null>(null);
+  const [showCreditDetails, setShowCreditDetails] = useState(false);
 
   const earned = 47;
   const spent = 35;
@@ -351,8 +352,13 @@ export default function Dashboard() {
                     </p>
                   </div>
                 </div>
-                <button className="inline-flex items-center gap-2 text-sm text-slate-500">
-                  Details <ChevronDown size={16} />
+                <button
+                  type="button"
+                  onClick={() => setShowCreditDetails((prev) => !prev)}
+                  className="inline-flex items-center gap-2 text-sm text-slate-500"
+                >
+                  {showCreditDetails ? "Hide" : "Details"}
+                  <ChevronDown size={16} className={showCreditDetails ? "rotate-180 transition" : "transition"} />
                 </button>
               </div>
 
@@ -363,21 +369,50 @@ export default function Dashboard() {
 
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200/80">
                 <div
-                  className="h-full bg-[linear-gradient(90deg,#0ea5e9_0%,#10b981_100%)]"
+                  className="h-full bg-[linear-gradient(90deg,#10b981_0%,#10b981_58%,#fb7185_58%,#fb7185_100%)]"
                   style={{ width: `${earnedPct}%` }}
                 />
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-6 text-sm">
                 <span className="inline-flex items-center gap-2 text-slate-600">
-                  <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
                   Earned <strong className="text-slate-900">47</strong>
                 </span>
                 <span className="inline-flex items-center gap-2 text-slate-600">
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
                   Spent <strong className="text-slate-900">35</strong>
                 </span>
               </div>
+
+              {showCreditDetails ? (
+                <>
+                  <div className="my-4 h-px bg-cyan-200/70" />
+
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <article className="rounded-2xl border border-cyan-200/70 bg-cyan-100/45 px-4 py-3">
+                      <p className="text-sm font-semibold text-cyan-700">As Helper</p>
+                      <p className="mt-1 text-4xl font-semibold leading-none text-cyan-700">11</p>
+                      <p className="mt-1 text-sm text-cyan-700">sessions completed</p>
+                    </article>
+
+                    <article className="rounded-2xl border border-sky-200/70 bg-sky-100/45 px-4 py-3">
+                      <p className="text-sm font-semibold text-sky-700">As Requester</p>
+                      <p className="mt-1 text-4xl font-semibold leading-none text-sky-700">8</p>
+                      <p className="mt-1 text-sm text-sky-700">sessions received</p>
+                    </article>
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between rounded-2xl border border-cyan-200/70 bg-cyan-50/80 px-4 py-3">
+                    <p className="text-sm font-semibold text-slate-700">Average Rating as Helper</p>
+                    <div className="flex items-center gap-1.5 text-slate-700">
+                      <Stars count={5} />
+                      <span className="text-lg font-semibold leading-none">4.7</span>
+                      <span className="text-sm font-medium">(17)</span>
+                    </div>
+                  </div>
+                </>
+              ) : null}
             </article>
 
             <article className="rounded-2xl border border-slate-200 bg-transparent p-4">
@@ -708,7 +743,8 @@ export default function Dashboard() {
             </div>
 
             <p className="mt-3 text-sm text-slate-500">
-              {Math.abs(pendingSession.credits)} credits will be released from escrow to {pendingSession.person}.
+              {Math.abs(pendingSession.credits)} credits will be transferred{" "}
+              {pendingSession.credits > 0 ? "to your balance." : "from your balance."}
             </p>
 
             <div className="mt-4 grid grid-cols-2 gap-2.5">
