@@ -1,12 +1,10 @@
 ﻿import {
-  BadgeCheck,
   CalendarClock,
   CheckCircle2,
-  ShieldCheck,
-  Star,
-  Zap,
+  Coins,
+  Lightbulb,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
@@ -16,33 +14,6 @@ type SessionType = "one-on-one" | "async" | "group";
 type NeedBy = "flexible" | "soon" | "urgent";
 
 const durationChoices = [30, 45, 60, 90, 120];
-
-function BadgePill({ label }: { label: string }) {
-  const styles: Record<string, string> = {
-    "Top Rated": "bg-amber-50 text-amber-700",
-    "Fast Responder": "bg-indigo-50 text-indigo-700",
-    Expert: "bg-violet-50 text-violet-700",
-    "Verified Student": "bg-sky-50 text-sky-700",
-  };
-
-  const icons: Record<string, React.ReactNode> = {
-    "Top Rated": <Star size={13} className="fill-current" />,
-    "Fast Responder": <Zap size={13} />,
-    Expert: <BadgeCheck size={13} />,
-    "Verified Student": <ShieldCheck size={13} />,
-  };
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
-        styles[label] || "bg-slate-100 text-slate-700"
-      }`}
-    >
-      {icons[label]}
-      {label}
-    </span>
-  );
-}
 
 export default function RequestHelper() {
   const { helperId } = useParams<{ helperId: string }>();
@@ -55,18 +26,24 @@ export default function RequestHelper() {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [sessionType, setSessionType] = useState<SessionType>("one-on-one");
   const [durationMinutes, setDurationMinutes] = useState<number>(60);
+  const [creditsToOffer, setCreditsToOffer] = useState<number>(6);
   const [needBy, setNeedBy] = useState<NeedBy>("soon");
   const [preferredDateTime, setPreferredDateTime] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
+  const availableCredits = 12;
 
-  const allSkills = helper
-    ? Array.from(new Set([...helper.categories, ...helper.skills]))
-    : [];
-
-  const totalCredits = useMemo(() => {
-    if (!helper) return 0;
-    return Math.max(1, Math.round((helper.creditsPerHour * durationMinutes) / 60));
-  }, [helper, durationMinutes]);
+  const allSkills = [
+    "Programming",
+    "Mathematics",
+    "Machine Learning",
+    "Data Science",
+    "Web Development",
+    "Algorithms",
+    "System Design",
+    "Writing",
+    "Statistics",
+    "Database",
+  ];
 
   if (!helper) {
     return (
@@ -94,10 +71,24 @@ export default function RequestHelper() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!isFormComplete) {
+      setSubmitMessage("Please complete all required fields before sending your request.");
+      return;
+    }
+
     setSubmitMessage(
-      `Session request sent to ${helper.name}. Estimated total: ${totalCredits} credits.`
+      `Session request sent to ${helper.name}. Estimated total: ${creditsToOffer} credits.`
     );
   };
+
+  const isFormComplete =
+    title.trim().length > 0 &&
+    description.trim().length > 0 &&
+    selectedSkills.length > 0 &&
+    Boolean(sessionType) &&
+    durationMinutes > 0 &&
+    creditsToOffer > 0 &&
+    Boolean(needBy);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
@@ -124,12 +115,14 @@ export default function RequestHelper() {
             <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
               <h1 className="text-3xl font-bold tracking-tight text-slate-900">Request a Session</h1>
               <p className="mt-2 text-sm text-slate-600">
-                Tell {helper.name} what you need help with and confirm your preferred session details.
+                Describe what you need clearly so the right helper can find you quickly.
               </p>
             </section>
 
             <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
-              <label className="text-sm font-semibold text-slate-800">What do you need help with?</label>
+              <label className="text-sm font-semibold text-slate-800">
+                Request Title <span className="text-rose-500">*</span>
+              </label>
               <input
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
@@ -140,7 +133,9 @@ export default function RequestHelper() {
             </section>
 
             <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
-              <p className="text-sm font-semibold text-slate-800">Which skill area?</p>
+              <p className="text-sm font-semibold text-slate-800">
+                Skill Category <span className="text-rose-500">*</span>
+              </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {allSkills.map((skill) => {
                   const active = selectedSkills.includes(skill);
@@ -163,7 +158,9 @@ export default function RequestHelper() {
             </section>
 
             <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
-              <label className="text-sm font-semibold text-slate-800">Describe your problem</label>
+              <label className="text-sm font-semibold text-slate-800">
+                Describe Your Request <span className="text-rose-500">*</span>
+              </label>
               <textarea
                 maxLength={500}
                 value={description}
@@ -176,7 +173,9 @@ export default function RequestHelper() {
             </section>
 
             <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
-              <p className="text-sm font-semibold text-slate-800">Session Type</p>
+              <p className="text-sm font-semibold text-slate-800">
+                Session Type <span className="text-rose-500">*</span>
+              </p>
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 {[
                   {
@@ -208,7 +207,9 @@ export default function RequestHelper() {
             </section>
 
             <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
-              <p className="text-sm font-semibold text-slate-800">Session Duration</p>
+              <p className="text-sm font-semibold text-slate-800">
+                Session Duration <span className="text-rose-500">*</span>
+              </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {durationChoices.map((minutes) => {
                   const active = durationMinutes === minutes;
@@ -229,13 +230,46 @@ export default function RequestHelper() {
                 })}
               </div>
               <p className="mt-3 text-xs text-slate-500">
-                Estimated cost: <span className="font-semibold text-indigo-700">{totalCredits} credits</span>{" "}
+                Estimated cost: <span className="font-semibold text-indigo-700">{creditsToOffer} credits</span>{" "}
                 at {helper.creditsPerHour} credits/hr
               </p>
             </section>
 
+            <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-4 backdrop-blur-xl">
+              <p className="text-lg font-semibold text-slate-800">
+                Credits to Offer <span className="text-rose-500">*</span>
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Higher credits attract more experienced helpers. You currently have <span className="font-semibold text-slate-700">{availableCredits} credits</span>.
+              </p>
+
+              <div className="mt-3 grid items-center gap-3 md:grid-cols-[1fr_auto]">
+                <input
+                  type="range"
+                  min={1}
+                  max={20}
+                  value={creditsToOffer}
+                  onChange={(event) => setCreditsToOffer(Number(event.target.value))}
+                  className="h-2 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-blue-600"
+                />
+
+                <div className="inline-flex min-w-[88px] items-center justify-center gap-1.5 rounded-2xl border border-indigo-300 bg-indigo-50 px-3 py-2 text-2xl font-semibold text-indigo-700">
+                  <Coins size={15} />
+                  {creditsToOffer}
+                </div>
+              </div>
+
+              <div className="mt-1.5 grid grid-cols-3 text-xs text-slate-500">
+                <span>1 (minimal)</span>
+                <span className="text-center">10 (recommended)</span>
+                <span className="text-right">20 (premium)</span>
+              </div>
+            </section>
+
             <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
-              <p className="text-sm font-semibold text-slate-800">When do you need this?</p>
+              <p className="text-sm font-semibold text-slate-800">
+                Urgency Level <span className="text-rose-500">*</span>
+              </p>
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 {[
                   { value: "flexible" as NeedBy, title: "Flexible", hint: "Within a few days" },
@@ -262,38 +296,17 @@ export default function RequestHelper() {
               </div>
             </section>
 
-            <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
-              <label className="text-sm font-semibold text-slate-800">
-                Preferred Date & Time <span className="text-slate-500">(optional)</span>
-              </label>
-              <div className="relative mt-2">
-                <CalendarClock size={16} className="pointer-events-none absolute left-3 top-3 text-slate-400" />
-                <input
-                  type="datetime-local"
-                  value={preferredDateTime}
-                  onChange={(event) => setPreferredDateTime(event.target.value)}
-                  className="h-11 w-full rounded-2xl border border-slate-200/80 bg-white/92 pl-10 pr-4 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
-                />
-              </div>
-            </section>
 
-            <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
-              <label className="text-sm font-semibold text-slate-800">
-                Personal message to {helper.name} <span className="text-slate-500">(optional)</span>
-              </label>
-              <textarea
-                maxLength={300}
-                value={personalMessage}
-                onChange={(event) => setPersonalMessage(event.target.value)}
-                placeholder="Any context you'd like to share before the session?"
-                className="mt-2 h-24 w-full resize-none rounded-2xl border border-slate-200/80 bg-white/92 p-3 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
-              />
-              <p className="mt-1 text-right text-xs text-slate-500">{personalMessage.length}/300</p>
-            </section>
+
 
             <button
               type="submit"
-              className="h-11 w-full rounded-xl bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 text-sm font-semibold text-white transition hover:brightness-105"
+              disabled={!isFormComplete}
+              className={`h-11 w-full rounded-xl text-sm font-semibold text-white transition ${
+                isFormComplete
+                  ? "bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 hover:brightness-105"
+                  : "cursor-not-allowed bg-slate-300"
+              }`}
             >
               Send Session Request
             </button>
@@ -306,46 +319,6 @@ export default function RequestHelper() {
           </form>
 
           <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-            <section className="explore-glass explore-fade-in-up overflow-hidden rounded-3xl border border-white/55 bg-white/80 backdrop-blur-xl">
-              <div className="h-16 bg-gradient-to-r from-indigo-500 to-sky-500" />
-              <div className="p-5">
-                <div className="-mt-10 flex items-start justify-between gap-3">
-                  <div
-                    className={`flex h-16 w-16 items-center justify-center rounded-full border-4 border-white text-base font-bold text-slate-800 ${helper.avatarBg}`}
-                  >
-                    {helper.initials}
-                  </div>
-                  <div className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
-                    <Star size={12} className="fill-current" />
-                    {helper.rating.toFixed(1)}
-                  </div>
-                </div>
-
-                <h3 className="mt-3 text-lg font-semibold text-slate-900">{helper.name}</h3>
-                <p className="mt-1 text-xs text-slate-500">
-                  {helper.online ? "Online now" : "Offline"} â€¢ Responds {helper.responseTime}
-                </p>
-                <p className="mt-3 text-sm leading-6 text-slate-600">{helper.bio}</p>
-
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {helper.badges.slice(0, 3).map((badge) => (
-                    <BadgePill key={badge} label={badge} />
-                  ))}
-                </div>
-
-                <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl border border-slate-200 bg-white p-3 text-center">
-                  <div>
-                    <p className="text-lg font-bold text-slate-900">{helper.sessions}</p>
-                    <p className="text-xs text-slate-500">Sessions</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold text-slate-900">{helper.successRate}%</p>
-                    <p className="text-xs text-slate-500">Completion</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
             <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
               <h4 className="text-sm font-semibold text-slate-900">Credit Estimate</h4>
               <div className="mt-3 space-y-2 text-sm">
@@ -359,7 +332,7 @@ export default function RequestHelper() {
                 </div>
                 <div className="flex items-center justify-between border-t border-slate-200 pt-2 text-slate-700">
                   <span className="font-semibold">Total</span>
-                  <span className="text-lg font-bold text-indigo-700">{totalCredits}</span>
+                  <span className="text-lg font-bold text-indigo-700">{creditsToOffer}</span>
                 </div>
               </div>
               <p className="mt-3 text-xs text-slate-500">
@@ -367,22 +340,45 @@ export default function RequestHelper() {
               </p>
             </section>
 
-            <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
-              <h4 className="text-sm font-semibold text-slate-900">You're Protected</h4>
-              <ul className="mt-3 space-y-2 text-xs text-slate-600">
+            <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-4 backdrop-blur-xl">
+              <h4 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
+                <Lightbulb size={16} className="text-indigo-500" />
+                Tips for a Great Request
+              </h4>
+              <ul className="mt-3 space-y-2.5 text-xs text-slate-600">
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 size={14} className="mt-0.5 text-indigo-500" />
-                  Credits only transfer after your confirmation.
+                  <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-indigo-500" />
+                  Be specific about what you've already tried
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 size={14} className="mt-0.5 text-indigo-500" />
-                  You can report issues if session goals are not met.
+                  <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-indigo-500" />
+                  Describe the exact outcome you need
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 size={14} className="mt-0.5 text-indigo-500" />
-                  Helper ratings are verified by real session outcomes.
+                  <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-indigo-500" />
+                  Use relevant skill tags to attract the right helpers
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-indigo-500" />
+                  Set a fair credit amount for the complexity
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-indigo-500" />
+                  Choose urgency honestly - high urgency attracts faster responses
                 </li>
               </ul>
+            </section>
+
+            <section className="explore-fade-in-up rounded-3xl border border-indigo-200 bg-indigo-50/70 p-4">
+              <h4 className="inline-flex items-center gap-2 text-lg font-semibold text-indigo-800">
+                <Coins size={16} className="text-indigo-600" />
+                How Credits Work
+              </h4>
+              <p className="mt-2 text-sm leading-6 text-indigo-800/90">
+                Credits are <span className="font-semibold">reserved</span> when a session is created and{" "}
+                <span className="font-semibold">transferred</span> only after you confirm the session was
+                completed. If a session fails, credits are returned to you automatically.
+              </p>
             </section>
           </aside>
         </div>
@@ -392,6 +388,10 @@ export default function RequestHelper() {
     </div>
   );
 }
+
+
+
+
 
 
 
