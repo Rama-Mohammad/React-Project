@@ -1,4 +1,4 @@
-// export type SessionStatus = 'upcoming' | 'active' | 'completed' | 'cancelled';
+export type SessionStatus = "upcoming" | "active" | "completed" | "cancelled";
 
 // export type Session = {
 //   id: string;

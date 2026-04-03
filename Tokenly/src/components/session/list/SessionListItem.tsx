@@ -1,6 +1,5 @@
 import React from 'react';
 import type { Session } from '../../../types/session';
-import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCalendarAlt,
@@ -22,13 +21,10 @@ interface SessionListItemProps {
 const SessionListItem: React.FC<SessionListItemProps> = ({
   session,
   onJoin,
-  onCancel,
   onReview,
   onViewRequest,
   onMarkComplete
 }) => {
-
-  const navigate = useNavigate();
 
   const getStatusBadge = () => {
     switch (session.status) {
@@ -134,7 +130,7 @@ const SessionListItem: React.FC<SessionListItemProps> = ({
         {session.status === 'upcoming' && (
           <>
             <button
-              onClick={() => (`/request/${session.id}navigate`)}
+              onClick={() => onViewRequest?.(session.id)}
               className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50"
             >
               View Request

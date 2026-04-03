@@ -43,7 +43,7 @@ const typeMeta = {
   },
 };
 
-const PortfolioItem: React.FC<PortfolioItemProps> = ({ item, onView, onEdit, onDelete }) => {
+const PortfolioItem: React.FC<PortfolioItemProps> = ({ item, onEdit, onDelete }) => {
   const [expanded, setExpanded] = useState(false);
   const meta = typeMeta[item.type];
   const Icon = meta.icon;

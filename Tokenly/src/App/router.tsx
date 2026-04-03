@@ -7,8 +7,7 @@ import Home from "../pages/Home";
 import RequestDetails from "../pages/RequestDetails";
 import RequestHelper from "../pages/RequestHelper";
 import SkillHelpers from "../pages/SkillHelpers";
-import SessionsPage from "../pages/Sessions";
-// import SessionLivePage from "../pages/SessionLive";
+import Sessions from "../pages/Sessions";
 import Profile from "../pages/Profile";
 
 function ScrollToTopLayout() {
@@ -59,12 +58,8 @@ export const router = createBrowserRouter([
       },
       {
         path: "/sessions",
-        element: <SessionsPage />,
+        element: <Sessions />,
       },
-      // {
-      //   path: "/session/:sessionId",  // Dynamic route for live session
-      //   element: <SessionLivePage />,
-      // },
       {
         path: "/profile",
         element: <Profile />,

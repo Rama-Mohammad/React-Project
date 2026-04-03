@@ -45,3 +45,17 @@ export interface DashboardStats {
   totalHelpGiven: number;
   totalHelpReceived: number;
 }
+
+export interface Transaction {
+  id: string;
+  description: string;
+  createdAt: Date | string;
+  type: "earned" | "spent";
+  amount: number;
+}
+
+export interface Session {
+  id: string;
+  status: "scheduled" | "active" | "completed" | "cancelled";
+  scheduledTime: Date | string;
+}

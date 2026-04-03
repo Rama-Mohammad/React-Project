@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import { useLocation } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import CategoryTabs from "../components/explore/CategoryTabs";
@@ -31,6 +32,8 @@ function getEnterStyle(index: number): CSSProperties {
 }
 
 export default function Explore() {
+  const location = useLocation();
+  const tabsBarRef = useRef<HTMLDivElement | null>(null);
   const {
     requests: liveOpenRequests,
     fetchOpenRequests,
@@ -46,6 +49,26 @@ export default function Explore() {
   const [rating, setRating] = useState("Any rating");
   const [onlineOnly, setOnlineOnly] = useState(false);
   const [level, setLevel] = useState("All");
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const requestedTab = params.get("tab");
+
+    if (requestedTab === "requests") {
+      setActiveTab("requests");
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    if (location.hash !== "#explore-tabs-bar") return;
+    if (!tabsBarRef.current) return;
+
+    const id = window.setTimeout(() => {
+      tabsBarRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 80);
+
+    return () => window.clearTimeout(id);
+  }, [location.hash]);
 
   useEffect(() => {
     if (activeTab !== "requests") return;
@@ -253,7 +276,11 @@ export default function Explore() {
         <StatsHero stats={dynamicStats} defaultHelperId={defaultHelperId} />
 
         <section className="mt-8">
-          <div className="explore-fade-in-up mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div
+            id="explore-tabs-bar"
+            ref={tabsBarRef}
+            className="explore-fade-in-up mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"
+          >
             <CategoryTabs
               activeTab={activeTab}
               onChange={handleTabChange}
