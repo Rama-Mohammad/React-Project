@@ -14,3 +14,5 @@ export type AuthSession = {
   expires_at: number;
   user: AuthUser;
 };
+
+export type AuthMode = "signin" | "signup" | "reset";

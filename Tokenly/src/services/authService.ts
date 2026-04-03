@@ -9,10 +9,17 @@ export function getCurrentSession() {
   return supabase.auth.getSession();
 }
 
-export function signUpWithEmail(email: string, password: string): Promise<AuthResponse> {
+export function signUpWithEmail(
+  email: string,
+  password: string,
+  metadata?: { username?: string; full_name?: string },
+): Promise<AuthResponse> {
   return supabase.auth.signUp({
     email,
     password,
+    options: {
+      data: metadata ?? {},
+    },
   });
 }
 
