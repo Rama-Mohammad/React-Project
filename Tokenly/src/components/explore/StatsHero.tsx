@@ -10,7 +10,7 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { helpers } from "../../data/mockExploreData";
 import type { ExploreStats } from "../../types/explore";
@@ -18,6 +18,7 @@ import type { ExploreStats } from "../../types/explore";
 interface StatsHeroProps {
   stats: ExploreStats;
   defaultHelperId?: string;
+  openHowItWorks?: boolean;
 }
 
 function StatCard({
@@ -61,9 +62,15 @@ function Step({
   );
 }
 
-export default function StatsHero({ stats, defaultHelperId }: StatsHeroProps) {
+export default function StatsHero({ stats, defaultHelperId, openHowItWorks = false }: StatsHeroProps) {
   const fallbackHelperId = defaultHelperId ?? helpers[0]?.id ?? "h1";
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
+
+  useEffect(() => {
+    if (openHowItWorks) {
+      setIsHowItWorksOpen(true);
+    }
+  }, [openHowItWorks]);
 
   return (
     <>

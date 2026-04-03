@@ -65,12 +65,12 @@ export default function SignInForm({
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome back</h1>
-        <p className="text-slate-500">Sign in to your PeerCredit account to continue</p>
+        <p className="text-slate-500">Sign in to your Tokenly account to continue</p>
       </div>
 
       {/* Error alert */}
       {error && (
-        <div className="mb-4 p-4 rounded-lg bg-rose-50 border border-rose-200">
+        <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50/90 p-4">
           <div className="flex items-center gap-2">
             <svg className="w-5 h-5 text-rose-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -82,7 +82,7 @@ export default function SignInForm({
 
       {/* Success alert */}
       {successMessage && (
-        <div className="mb-4 p-4 rounded-lg bg-emerald-50 border border-emerald-200">
+        <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50/90 p-4">
           <div className="flex items-center gap-2">
             <svg className="w-5 h-5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -112,7 +112,7 @@ export default function SignInForm({
               transition-colors outline-none
               ${touched.email && fieldErrors.email
                 ? "border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
-                : "border-slate-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
+                : "border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
               }`}
           />
           {touched.email && fieldErrors.email && (
@@ -129,7 +129,7 @@ export default function SignInForm({
             <button
               type="button"
               onClick={onSwitchToReset}
-              className="text-sm text-purple-600 hover:text-purple-700 font-medium transition-colors"
+              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
             >
               Forgot password?
             </button>
@@ -148,7 +148,7 @@ export default function SignInForm({
                 transition-colors outline-none
                 ${touched.password && fieldErrors.password
                   ? "border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
-                  : "border-slate-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
+                  : "border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
                 }`}
             />
             <button
@@ -178,8 +178,8 @@ export default function SignInForm({
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 px-4 rounded-lg bg-slate-900 text-white font-medium
-            hover:bg-slate-800 active:bg-slate-950 transition-colors
+          className="w-full rounded-xl bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 py-3 px-4 text-white font-medium
+            hover:brightness-105 transition
             disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loading ? (
@@ -202,7 +202,7 @@ export default function SignInForm({
         <button
           type="button"
           onClick={onSwitchToSignUp}
-          className="text-purple-600 hover:text-purple-700 font-medium transition-colors"
+          className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
         >
           Create a new account
         </button>

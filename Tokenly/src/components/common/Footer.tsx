@@ -1,4 +1,4 @@
-﻿import { Compass, Heart, LifeBuoy, Mail } from "lucide-react";
+import { Compass, Heart, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Footer() {
@@ -34,7 +34,7 @@ export default function Footer() {
             <Link to="/dashboard" className="block text-sm text-slate-700 transition hover:text-indigo-600">
               Dashboard
             </Link>
-            <Link to="/tutorial" className="block text-sm text-slate-700 transition hover:text-indigo-600">
+            <Link to="/explore?modal=how-it-works" className="block text-sm text-slate-700 transition hover:text-indigo-600">
               How it works
             </Link>
             <Link to="/profile" className="block text-sm text-slate-700 transition hover:text-indigo-600">
@@ -63,13 +63,6 @@ export default function Footer() {
               <Compass size={13} />
               Browse Requests
             </Link>
-            <Link
-              to="/tutorial"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-            >
-              <LifeBuoy size={13} />
-              Get Help
-            </Link>
           </div>
         </div>
       </div>
@@ -83,4 +76,3 @@ export default function Footer() {
     </footer>
   );
 }
-

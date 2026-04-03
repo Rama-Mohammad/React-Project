@@ -187,9 +187,6 @@ const submittedOffers: OfferItem[] = [
   },
 ];
 
-const panelClass =
-  "rounded-3xl border border-slate-200/70 bg-white/90 shadow-[0_12px_30px_-24px_rgba(15,23,42,0.35)] backdrop-blur-sm";
-
 function toneClasses(tone: string) {
   if (tone === "teal") return "bg-violet-100 text-violet-700";
   if (tone === "blue") return "bg-sky-100 text-sky-700";
@@ -774,6 +771,7 @@ export default function Dashboard() {
     </div>
   );
 }
+
 
 
 

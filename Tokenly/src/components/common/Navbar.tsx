@@ -1,5 +1,5 @@
-import { Compass, CalendarDays, LayoutDashboard, Menu, User } from "lucide-react";
-import { NavLink } from "react-router-dom";
+﻿import { Compass, CalendarDays, LayoutDashboard, Menu, User } from "lucide-react";
+import { Link, NavLink } from "react-router-dom";
 
 const navLinkBase =
   "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition border";
@@ -48,9 +48,12 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+          <Link
+            to="/auth"
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
             Sign in
-          </button>
+          </Link>
 
           <button className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 md:hidden">
             <Menu size={18} />
@@ -60,3 +63,5 @@ export default function Navbar() {
     </header>
   );
 }
+
+

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Navigate } from 'react-router-dom';
 import Loader from './Loader';
 
@@ -24,14 +24,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/auth" replace />;
   }
 
   if (requiredRole && user?.role !== requiredRole) {
-    return <Navigate to="/unauthorized" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
 };
 
 export default ProtectedRoute;
+
