@@ -1,5 +1,6 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+﻿import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
@@ -35,12 +36,18 @@ const HeroSection = () => {
           </p>
 
           <div className="flex flex-col items-center justify-start gap-4 sm:flex-row">
-            <button className="rounded-xl border border-slate-200 bg-white px-8 py-3 font-semibold text-slate-900 transition hover:bg-slate-50">
+            <Link
+              to="/auth"
+              className="rounded-xl border border-slate-200 bg-white px-8 py-3 font-semibold text-slate-900 transition hover:bg-slate-50"
+            >
               Get started for free
-            </button>
-            <button className="rounded-xl border border-white/50 bg-white/80 px-8 py-3 font-semibold text-slate-700 transition backdrop-blur hover:bg-white">
+            </Link>
+            <Link
+              to="/tutorial"
+              className="rounded-xl border border-white/50 bg-white/80 px-8 py-3 font-semibold text-slate-700 transition backdrop-blur hover:bg-white"
+            >
               How it works
-            </button>
+            </Link>
           </div>
 
           <div className="mt-8 flex items-center gap-2 text-slate-500">

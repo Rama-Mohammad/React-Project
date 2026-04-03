@@ -1,4 +1,4 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+﻿import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartLine, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import { helpers } from "../../data/mockExploreData";
@@ -49,13 +49,13 @@ const CTASection = () => {
               </div>
 
               <div className="mb-6">
-                <a
-                  href="#"
+                <Link
+                  to="/dashboard"
                   className="inline-flex items-center gap-2 text-sm font-medium text-indigo-500 transition-colors hover:text-indigo-600"
                 >
                   <FontAwesomeIcon icon={faChartLine} className="text-sm" />
                   View your dashboard
-                </a>
+                </Link>
               </div>
 
               <div className="border-t border-slate-200 pt-6">
@@ -85,3 +85,5 @@ const CTASection = () => {
 };
 
 export default CTASection;
+
+
