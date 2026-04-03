@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Calendar, Check, Clock3, Coins, Star, Timer, User } from "lucide-react";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
@@ -62,7 +62,8 @@ function Stars({ count }: { count: number }) {
 export default function Sessions() {
   const [activeSessionTab, setActiveSessionTab] = useState<SessionTabLabel>("All");
 
-  const visibleSessions = useMemo(() => initialSessionItems, []);
+  // ✅ FIX: removed useMemo
+  const visibleSessions = initialSessionItems;
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
