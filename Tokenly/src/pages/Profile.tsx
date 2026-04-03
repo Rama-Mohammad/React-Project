@@ -87,6 +87,20 @@ const mockPortfolio = [
 ];
 type PortfolioEntry = (typeof mockPortfolio)[number];
 
+const PROFILE_SKILLS_STORAGE_KEY = "tokenly.profile.skills";
+const PROFILE_PORTFOLIO_STORAGE_KEY = "tokenly.profile.portfolio";
+
+function readStoredValue<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
 const mockReviews = [
   {
     id: "1",
@@ -181,8 +195,12 @@ const Profile: React.FC = () => {
   } = useReviews();
 
   const [user, setUser] = useState(mockUser);
-  const [skills, setSkills] = useState<UiSkill[]>(mockSkills);
-  const [portfolio, setPortfolio] = useState(mockPortfolio);
+  const [skills, setSkills] = useState<UiSkill[]>(() =>
+    readStoredValue<UiSkill[]>(PROFILE_SKILLS_STORAGE_KEY, mockSkills)
+  );
+  const [portfolio, setPortfolio] = useState<PortfolioEntry[]>(() =>
+    readStoredValue<PortfolioEntry[]>(PROFILE_PORTFOLIO_STORAGE_KEY, mockPortfolio)
+  );
   const [reviews, setReviews] = useState(mockReviews);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -219,16 +237,33 @@ const Profile: React.FC = () => {
   useEffect(() => {
     if (liveSkills.length === 0) return;
 
-    setSkills(
-      liveSkills.map((skill) => ({
-        id: skill.id,
-        name: skill.name,
-        category: skill.category,
-        level: toUiSkillLevel(skill.level),
-        sessions: skill.sessions_count,
-      }))
-    );
+    const mappedLiveSkills = liveSkills.map((skill) => ({
+      id: skill.id,
+      name: skill.name,
+      category: skill.category,
+      level: toUiSkillLevel(skill.level),
+      sessions: skill.sessions_count,
+    }));
+
+    setSkills((prev) => {
+      const merged = new Map<string, UiSkill>();
+      mappedLiveSkills.forEach((skill) => merged.set(skill.id, skill));
+      prev.forEach((skill) => {
+        if (!merged.has(skill.id)) merged.set(skill.id, skill);
+      });
+      return Array.from(merged.values());
+    });
   }, [liveSkills]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(PROFILE_SKILLS_STORAGE_KEY, JSON.stringify(skills));
+  }, [skills]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(PROFILE_PORTFOLIO_STORAGE_KEY, JSON.stringify(portfolio));
+  }, [portfolio]);
 
   useEffect(() => {
     if (liveReviews.length === 0) return;
@@ -339,7 +374,7 @@ const Profile: React.FC = () => {
 
         <ProfileHeader user={user} onEdit={() => setIsEditModalOpen(true)} />
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.7fr_1.3fr]">
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1.7fr_1.3fr]">
           <section className="explore-fade-in-up rounded-2xl border border-white/70 bg-white/80 px-5 py-4 backdrop-blur-sm">
             <div className="flex items-center justify-between border-b border-slate-200/70 pb-3">
               <div>

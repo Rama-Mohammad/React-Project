@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { createBrowserRouter, Outlet, useLocation } from "react-router-dom";
 import Explore from "../pages/Explore";
 import Dashboard from "../pages/Dashboard";
-import Tutorial from "../pages/Tutorial";
 import Home from "../pages/Home";
 import RequestDetails from "../pages/RequestDetails";
 import RequestHelper from "../pages/RequestHelper";
@@ -10,7 +9,7 @@ import SkillHelpers from "../pages/SkillHelpers";
 import Profile from "../pages/Profile";
 import Sessions from "../pages/Sessions";
 import Activity from "../pages/Activity";
-import AuthPage from "../pages/authPage";
+import AuthPage from "../pages/AuthPage";
 
 function ScrollToTopLayout() {
   const { pathname } = useLocation();
@@ -53,10 +52,6 @@ export const router = createBrowserRouter([
       {
         path: "/dashboard",
         element: <Dashboard />,
-      },
-      {
-        path: "/tutorial",
-        element: <Tutorial />,
       },
       {
         path: "/sessions",

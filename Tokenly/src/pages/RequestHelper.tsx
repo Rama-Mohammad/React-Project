@@ -1,10 +1,5 @@
-﻿import {
-  CalendarClock,
-  CheckCircle2,
-  Coins,
-  Lightbulb,
-} from "lucide-react";
-import { useState } from "react";
+import { CheckCircle2, Coins, Lightbulb } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
@@ -22,13 +17,11 @@ export default function RequestHelper() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [personalMessage, setPersonalMessage] = useState("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [sessionType, setSessionType] = useState<SessionType>("one-on-one");
-  const [durationMinutes, setDurationMinutes] = useState<number>(60);
+  const [sessionType, setSessionType] = useState<SessionType | null>(null);
+  const [durationMinutes, setDurationMinutes] = useState<number | null>(null);
   const [creditsToOffer, setCreditsToOffer] = useState<number>(6);
-  const [needBy, setNeedBy] = useState<NeedBy>("soon");
-  const [preferredDateTime, setPreferredDateTime] = useState("");
+  const [needBy, setNeedBy] = useState<NeedBy | null>(null);
   const [submitMessage, setSubmitMessage] = useState("");
   const availableCredits = 12;
 
@@ -69,6 +62,22 @@ export default function RequestHelper() {
     );
   };
 
+  useEffect(() => {
+    if (!submitMessage) return;
+    const timeoutId = window.setTimeout(() => setSubmitMessage(""), 3000);
+    return () => window.clearTimeout(timeoutId);
+  }, [submitMessage]);
+
+  const resetForm = () => {
+    setTitle("");
+    setDescription("");
+    setSelectedSkills([]);
+    setSessionType(null);
+    setDurationMinutes(null);
+    setCreditsToOffer(6);
+    setNeedBy(null);
+  };
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!isFormComplete) {
@@ -76,19 +85,18 @@ export default function RequestHelper() {
       return;
     }
 
-    setSubmitMessage(
-      `Session request sent to ${helper.name}. Estimated total: ${creditsToOffer} credits.`
-    );
+    setSubmitMessage("Request sent successfully.");
+    resetForm();
   };
 
   const isFormComplete =
     title.trim().length > 0 &&
     description.trim().length > 0 &&
     selectedSkills.length > 0 &&
-    Boolean(sessionType) &&
-    durationMinutes > 0 &&
+    sessionType !== null &&
+    durationMinutes !== null &&
     creditsToOffer > 0 &&
-    Boolean(needBy);
+    needBy !== null;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
@@ -328,7 +336,9 @@ export default function RequestHelper() {
                 </div>
                 <div className="flex items-center justify-between text-slate-600">
                   <span>Duration</span>
-                  <span className="font-semibold text-slate-900">{durationMinutes} min</span>
+                  <span className="font-semibold text-slate-900">
+                    {durationMinutes === null ? "-" : `${durationMinutes} min`}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between border-t border-slate-200 pt-2 text-slate-700">
                   <span className="font-semibold">Total</span>
@@ -388,11 +398,3 @@ export default function RequestHelper() {
     </div>
   );
 }
-
-
-
-
-
-
-
-

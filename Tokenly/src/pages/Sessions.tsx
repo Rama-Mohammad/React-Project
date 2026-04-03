@@ -1,9 +1,6 @@
-﻿import { useMemo, useState } from "react";
-import { Calendar, Check, Clock3, Coins, Star, Timer, User } from "lucide-react";
+import { useMemo } from "react";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
-
-type SessionTabLabel = "All" | "Upcoming" | "Active" | "Completed";
 
 type SessionItem = {
   id: string;
@@ -17,8 +14,6 @@ type SessionItem = {
   credits: number;
   rating?: number;
 };
-
-const sessionTabs: SessionTabLabel[] = ["All", "Upcoming", "Active", "Completed"];
 
 const initialSessionItems: SessionItem[] = [
   {
@@ -34,34 +29,7 @@ const initialSessionItems: SessionItem[] = [
   },
 ];
 
-function skillTone(skill: string) {
-  if (skill === "Programming") return "bg-violet-100 text-violet-700";
-  return "bg-slate-100 text-slate-700";
-}
-
-function statusTone(status: SessionItem["status"]) {
-  if (status === "Upcoming") return "bg-sky-100 text-sky-700";
-  if (status === "Active Now") return "bg-violet-100 text-violet-700";
-  return "bg-slate-100 text-slate-600";
-}
-
-function Stars({ count }: { count: number }) {
-  return (
-    <span className="inline-flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((value) => (
-        <Star
-          key={value}
-          size={12}
-          className={value <= count ? "fill-violet-400 text-violet-400" : "text-violet-200"}
-        />
-      ))}
-    </span>
-  );
-}
-
 export default function Sessions() {
-  const [activeSessionTab, setActiveSessionTab] = useState<SessionTabLabel>("All");
-
   const visibleSessions = useMemo(() => initialSessionItems, []);
 
   return (
@@ -72,7 +40,7 @@ export default function Sessions() {
         <h2 className="text-lg font-semibold">Sessions</h2>
 
         {visibleSessions.map((item) => (
-          <div key={item.id} className="border p-3 rounded mt-3">
+          <div key={item.id} className="mt-3 rounded border p-3">
             <p>{item.topic}</p>
           </div>
         ))}
@@ -82,6 +50,3 @@ export default function Sessions() {
     </div>
   );
 }
-
-
-

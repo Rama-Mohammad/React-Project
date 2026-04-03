@@ -59,6 +59,11 @@ export default function Explore() {
     }
   }, [location.search]);
 
+  const shouldOpenHowItWorks = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get("modal") === "how-it-works";
+  }, [location.search]);
+
   useEffect(() => {
     if (location.hash !== "#explore-tabs-bar") return;
     if (!tabsBarRef.current) return;
@@ -273,7 +278,11 @@ export default function Explore() {
       <Navbar />
 
       <main className="relative z-10 mx-auto w-[90vw] px-2 py-6 sm:px-3 lg:px-4 lg:py-8">
-        <StatsHero stats={dynamicStats} defaultHelperId={defaultHelperId} />
+        <StatsHero
+          stats={dynamicStats}
+          defaultHelperId={defaultHelperId}
+          openHowItWorks={shouldOpenHowItWorks}
+        />
 
         <section className="mt-8">
           <div

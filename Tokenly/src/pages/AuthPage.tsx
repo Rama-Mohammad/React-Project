@@ -52,9 +52,13 @@ export default function AuthPage() {
     // (normally the router would redirect before this renders)
     if (isAuthenticated && user) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-sm w-full text-center">
-                    <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
+            <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex items-center justify-center p-4">
+                <div className="pointer-events-none absolute inset-0">
+                    <div className="explore-pulse absolute -left-24 top-16 h-64 w-64 rounded-full bg-indigo-200/25 blur-3xl" />
+                    <div className="explore-float absolute right-[-6rem] top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
+                </div>
+                <div className="relative z-10 bg-white/85 rounded-2xl shadow-sm border border-white/70 p-8 max-w-sm w-full text-center backdrop-blur">
+                    <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
                         <svg className="w-8 h-8 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
@@ -64,8 +68,8 @@ export default function AuthPage() {
                     <button
                         onClick={signOut}
                         disabled={loading}
-                        className="w-full py-2.5 px-4 rounded-lg border border-slate-200 text-slate-700 font-medium
-              hover:bg-slate-50 transition-colors disabled:opacity-50"
+                        className="w-full py-2.5 px-4 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 font-medium
+              hover:bg-indigo-100 transition-colors disabled:opacity-50"
                     >
                         Sign Out
                     </button>
@@ -79,24 +83,22 @@ export default function AuthPage() {
     const formIsLeft = mode === "signin" || mode === "reset";
 
     return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex items-center justify-center p-4">
+            <div className="pointer-events-none absolute inset-0">
+                <div className="explore-pulse absolute -left-24 top-16 h-64 w-64 rounded-full bg-indigo-200/25 blur-3xl" />
+                <div className="explore-float absolute right-[-6rem] top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
+                <div className="explore-pulse absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-purple-200/20 blur-3xl" />
+            </div>
             <div className="w-full max-w-5xl">
 
                 {/* Mobile logo (visual panel is hidden on mobile) */}
                 <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-                    <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center">
-                        <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                            <path d="M2 17l10 5 10-5" />
-                            <path d="M2 12l10 5 10-5" />
-                        </svg>
-                    </div>
-                    <span className="text-xl font-bold text-slate-900">PeerCredit</span>
+                    <img src="/images/logo-nobg.png" alt="Tokenly" className="h-20 w-auto object-contain" />
                 </div>
 
                 {/* Main card */}
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="grid lg:grid-cols-2 min-h-120">
+                <div className="relative z-10 overflow-hidden rounded-2xl border border-white/70 bg-white/80 shadow-sm backdrop-blur-xl">
+                    <div className="grid min-h-[680px] lg:grid-cols-2">
 
                         {formIsLeft ? (
                             <>
