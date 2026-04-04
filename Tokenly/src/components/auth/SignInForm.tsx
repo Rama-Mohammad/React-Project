@@ -158,7 +158,9 @@ export default function SignInForm({
         <button
           type="submit"
           disabled={loading}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 px-4 py-2.5 text-sm font-medium text-white shadow-[0_10px_30px_-15px_rgba(59,130,246,0.8)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-xl bg-linear-to-r from-indigo-500 via-sky-500 to-indigo-500 py-3 px-4 text-white font-medium
+            hover:brightness-105 transition
+            disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loading ? (
             <>
