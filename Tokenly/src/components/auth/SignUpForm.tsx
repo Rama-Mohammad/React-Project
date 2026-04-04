@@ -1,6 +1,6 @@
 import { useState } from "react";
+import type { SignUpFormProps } from "../../types/auth";
 
-// ── Validation helpers ──
 function validateEmail(email: string): string | null {
   if (!email.trim()) return "Email is required";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Please enter a valid email address";
@@ -38,15 +38,6 @@ function getPasswordStrength(pw: string) {
   if (score <= 2) return { label: "Weak", color: "bg-rose-500", width: "33%" };
   if (score <= 3) return { label: "Medium", color: "bg-amber-500", width: "66%" };
   return { label: "Strong", color: "bg-emerald-500", width: "100%" };
-}
-
-// ── Props ──
-interface SignUpFormProps {
-  onSubmit: (email: string, password: string, username: string, fullName: string) => Promise<boolean>;
-  onSwitchToSignIn: () => void;
-  loading: boolean;
-  error: string;
-  successMessage: string;
 }
 
 export default function SignUpForm({
@@ -104,26 +95,26 @@ export default function SignUpForm({
   };
 
   const inputClass = (field: string) =>
-    `w-full px-4 py-3 rounded-lg border bg-white text-slate-900 placeholder-slate-400
-     transition-colors outline-none
+    `w-full rounded-xl border bg-white/90 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-colors
      ${touched[field] && fieldErrors[field]
        ? "border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
        : "border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
      }`;
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Create your account</h1>
-        <p className="text-slate-500">Join Tokenly and start earning credits by helping others</p>
+    <div className="mx-auto w-full max-w-md rounded-2xl border border-white/70 bg-white/60 p-4 shadow-[0_20px_60px_-30px_rgba(79,70,229,0.55)] backdrop-blur-md sm:p-5">
+      <div className="mb-4">
+        <span className="inline-flex rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-700">
+          New Account
+        </span>
+        <h1 className="mt-2 mb-1 text-2xl font-bold text-slate-900">Create your account</h1>
+        <p className="text-sm text-slate-500">Join Tokenly and start earning credits by helping others</p>
       </div>
 
-      {/* Error alert */}
       {error && (
         <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50/90 p-4">
           <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-rose-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5 shrink-0 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <p className="text-sm text-rose-700">{error}</p>
@@ -131,11 +122,10 @@ export default function SignUpForm({
         </div>
       )}
 
-      {/* Success alert */}
       {successMessage && (
         <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50/90 p-4">
           <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5 shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <p className="text-sm text-emerald-700">{successMessage}</p>
@@ -143,12 +133,10 @@ export default function SignUpForm({
         </div>
       )}
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-        {/* Full name + Username side by side */}
+      <form onSubmit={handleSubmit} className="space-y-2.5" noValidate>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="signup-fullname" className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label htmlFor="signup-fullname" className="mb-1 block text-xs font-semibold text-slate-700">
               Full name
             </label>
             <input
@@ -161,12 +149,10 @@ export default function SignUpForm({
               disabled={loading}
               className={inputClass("fullName")}
             />
-            {touched.fullName && fieldErrors.fullName && (
-              <p className="mt-1 text-sm text-rose-500">{fieldErrors.fullName}</p>
-            )}
+            {touched.fullName && fieldErrors.fullName && <p className="mt-1 text-sm text-rose-500">{fieldErrors.fullName}</p>}
           </div>
           <div>
-            <label htmlFor="signup-username" className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label htmlFor="signup-username" className="mb-1 block text-xs font-semibold text-slate-700">
               Username
             </label>
             <input
@@ -180,15 +166,12 @@ export default function SignUpForm({
               disabled={loading}
               className={inputClass("username")}
             />
-            {touched.username && fieldErrors.username && (
-              <p className="mt-1 text-sm text-rose-500">{fieldErrors.username}</p>
-            )}
+            {touched.username && fieldErrors.username && <p className="mt-1 text-sm text-rose-500">{fieldErrors.username}</p>}
           </div>
         </div>
 
-        {/* Email */}
         <div>
-          <label htmlFor="signup-email" className="block text-sm font-medium text-slate-700 mb-1.5">
+          <label htmlFor="signup-email" className="mb-1 block text-xs font-semibold text-slate-700">
             Email address
           </label>
           <input
@@ -202,14 +185,11 @@ export default function SignUpForm({
             disabled={loading}
             className={inputClass("email")}
           />
-          {touched.email && fieldErrors.email && (
-            <p className="mt-1 text-sm text-rose-500">{fieldErrors.email}</p>
-          )}
+          {touched.email && fieldErrors.email && <p className="mt-1 text-sm text-rose-500">{fieldErrors.email}</p>}
         </div>
 
-        {/* Password */}
         <div>
-          <label htmlFor="signup-password" className="block text-sm font-medium text-slate-700 mb-1.5">
+          <label htmlFor="signup-password" className="mb-1 block text-xs font-semibold text-slate-700">
             Password
           </label>
           <div className="relative">
@@ -227,43 +207,36 @@ export default function SignUpForm({
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
               tabIndex={-1}
             >
               {showPassword ? (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
                 </svg>
               ) : (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
               )}
             </button>
           </div>
-          {/* Strength bar */}
           {password && (
             <div className="mt-2">
-              <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div
-                  className={`h-full ${strength.color} rounded-full transition-all duration-300`}
-                  style={{ width: strength.width }}
-                />
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                <div className={`h-full ${strength.color} rounded-full transition-all duration-300`} style={{ width: strength.width }} />
               </div>
               <p className="mt-1 text-xs text-slate-500">
                 Password strength: <span className="font-medium">{strength.label}</span>
               </p>
             </div>
           )}
-          {touched.password && fieldErrors.password && (
-            <p className="mt-1 text-sm text-rose-500">{fieldErrors.password}</p>
-          )}
+          {touched.password && fieldErrors.password && <p className="mt-1 text-sm text-rose-500">{fieldErrors.password}</p>}
         </div>
 
-        {/* Confirm password */}
         <div>
-          <label htmlFor="signup-confirm" className="block text-sm font-medium text-slate-700 mb-1.5">
+          <label htmlFor="signup-confirm" className="mb-1 block text-xs font-semibold text-slate-700">
             Confirm password
           </label>
           <div className="relative">
@@ -281,44 +254,36 @@ export default function SignUpForm({
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
               tabIndex={-1}
             >
               {showConfirmPassword ? (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
                 </svg>
               ) : (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
               )}
             </button>
           </div>
-          {touched.confirmPassword && fieldErrors.confirmPassword && (
-            <p className="mt-1 text-sm text-rose-500">{fieldErrors.confirmPassword}</p>
-          )}
+          {touched.confirmPassword && fieldErrors.confirmPassword && <p className="mt-1 text-sm text-rose-500">{fieldErrors.confirmPassword}</p>}
         </div>
 
-        {/* Terms */}
-        <p className="text-xs text-slate-400">
-          By creating an account, you agree to Tokenly's{" "}
-          <a href="#" className="text-indigo-600 hover:text-indigo-700">Terms of Service</a>{" "}
-          and{" "}
-          <a href="#" className="text-indigo-600 hover:text-indigo-700">Privacy Policy</a>
+        <p className="text-[11px] text-slate-400">
+          By creating an account, you agree to Tokenly's <a href="#" className="text-indigo-600 hover:text-indigo-700">Terms of Service</a> and <a href="#" className="text-indigo-600 hover:text-indigo-700">Privacy Policy</a>
         </p>
 
-        {/* Submit */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 py-3 px-4 text-white font-medium`r`n            hover:brightness-105 transition
-            disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 via-indigo-500 to-sky-500 px-4 py-2.5 text-sm font-medium text-white shadow-[0_10px_30px_-15px_rgba(99,102,241,0.85)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <>
-              <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+              <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
@@ -330,17 +295,13 @@ export default function SignUpForm({
         </button>
       </form>
 
-      {/* Switch link */}
-      <p className="mt-6 text-center text-sm text-slate-500">
+      <p className="mt-4 text-center text-xs text-slate-500">
         Already have an account?{" "}
-        <button
-          type="button"
-          onClick={onSwitchToSignIn}
-          className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
-        >
+        <button type="button" onClick={onSwitchToSignIn} className="font-medium text-indigo-600 transition-colors hover:text-indigo-700">
           Sign in
         </button>
       </p>
     </div>
   );
 }
+

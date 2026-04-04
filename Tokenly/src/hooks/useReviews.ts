@@ -1,29 +1,12 @@
 import { useState } from "react";
 import type { Review } from "../types/review";
+import type { ReviewInput, UseReviewsResult } from "../types/hooks";
 import {
     createReview,
     getReviewsByUser,
     getReviewBySession,
     hasUserReviewedSession,
 } from "../services/reviewService";
-
-type UseReviewsResult = {
-    review: Review | null;
-    reviews: Review[];
-    hasReviewed: boolean;
-    loading: boolean;
-    error: string;
-    submitReview: (data: {
-        session_id: string;
-        reviewer_id: string;
-        reviewee_id: string;
-        rating: number;
-        comment?: string;
-    }) => Promise<boolean>;
-    fetchReviewsByUser: (reviewee_id: string) => Promise<void>;
-    fetchReviewBySession: (session_id: string, reviewer_id: string) => Promise<void>;
-    checkHasReviewed: (session_id: string, reviewer_id: string) => Promise<void>;
-};
 
 export default function useReviews(): UseReviewsResult {
     const [review, setReview] = useState<Review | null>(null);
@@ -32,13 +15,7 @@ export default function useReviews(): UseReviewsResult {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    async function submitReview(data: {
-        session_id: string;
-        reviewer_id: string;
-        reviewee_id: string;
-        rating: number;
-        comment?: string;
-    }) {
+    async function submitReview(data: ReviewInput) {
         setLoading(true);
         setError("");
 

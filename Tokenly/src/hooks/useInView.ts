@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import type { UseInViewResult } from "../types/hooks";
 
-const useInView = () => {
+const useInView = (): UseInViewResult => {
   const ref = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Offer, OfferStatus } from "../types/offer";
+import type { UseOffersResult } from "../types/hooks";
 import {
     createOffer,
     getOffersByRequest,
@@ -7,22 +8,6 @@ import {
     updateOfferStatus,
     deleteOffer,
 } from "../services/offerService";
-
-type UseOffersResult = {
-    offer: Offer | null;
-    offers: Offer[];
-    loading: boolean;
-    error: string;
-    submitOffer: (
-        request_id: string,
-        helper_id: string,
-        message?: string
-    ) => Promise<boolean>;
-    fetchOffersByRequest: (request_id: string) => Promise<void>;
-    fetchOffersByHelper: (helper_id: string) => Promise<void>;
-    changeOfferStatus: (id: string, status: OfferStatus) => Promise<boolean>;
-    removeOffer: (id: string) => Promise<boolean>;
-};
 
 export default function useOffers(): UseOffersResult {
     const [offer, setOffer] = useState<Offer | null>(null);

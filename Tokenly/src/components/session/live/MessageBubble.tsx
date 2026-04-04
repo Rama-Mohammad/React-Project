@@ -1,11 +1,6 @@
 // components/session/live/MessageBubble.tsx
 import React from 'react';
-import type { Message } from '../../../types/session';
-
-interface MessageBubbleProps {
-  message: Message;
-  isOwn: boolean;
-}
+import type { MessageBubbleProps } from '../../../types/session';
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn }) => {
   const formatTime = (date: Date) => {
@@ -44,3 +39,4 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn }) => {
 };
 
 export default MessageBubble;
+

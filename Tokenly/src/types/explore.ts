@@ -62,3 +62,57 @@ export interface ExploreStats {
   sessionsToday: number;
   creditsExchanged: string;
 }
+
+export interface FilterSideBarProps {
+  activeTab: ExploreTab;
+  categories: string[];
+  selectedCategory: string;
+  onCategoryChange: (value: string) => void;
+  urgency: string;
+  onUrgencyChange: (value: string) => void;
+  duration: string;
+  onDurationChange: (value: string) => void;
+  rating: string;
+  onRatingChange: (value: string) => void;
+  onlineOnly: boolean;
+  onOnlineOnlyChange: (value: boolean) => void;
+  level: string;
+  onLevelChange: (value: string) => void;
+  totalCount: number;
+}
+
+export interface CategoryTabsProps {
+  activeTab: ExploreTab;
+  onChange: (tab: ExploreTab) => void;
+  counts: {
+    requests: number;
+    helpers: number;
+    skills: number;
+  };
+}
+
+export interface SearchBarProps {
+  activeTab: ExploreTab;
+  search: string;
+  onSearchChange: (value: string) => void;
+  sortBy: string;
+  onSortChange: (value: string) => void;
+}
+
+export interface HelperCardProps {
+  item: HelperItem;
+}
+
+export interface RequestCardProps {
+  item: RequestItem;
+}
+
+export interface ExploreSkillCardProps {
+  item: SkillItem;
+}
+
+export interface StatsHeroProps {
+  stats: ExploreStats;
+  defaultHelperId?: string;
+  openHowItWorks?: boolean;
+}

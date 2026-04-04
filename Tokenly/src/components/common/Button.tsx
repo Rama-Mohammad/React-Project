@@ -1,16 +1,9 @@
-import { type ButtonHTMLAttributes, type PropsWithChildren } from "react";
-
-type Variant = "primary" | "secondary" | "ghost" | "danger";
-
-interface Props extends ButtonHTMLAttributes<HTMLButtonElement>, PropsWithChildren {
-  variant?: Variant;
-  fullWidth?: boolean;
-}
+import type { ButtonProps, ButtonVariant } from "../../types/common";
 
 const baseClass =
   "inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-200 disabled:cursor-not-allowed disabled:opacity-60";
 
-const variantClass: Record<Variant, string> = {
+const variantClass: Record<ButtonVariant, string> = {
   primary:
     "border border-transparent bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 text-white hover:brightness-105",
   secondary:
@@ -27,7 +20,7 @@ export default function Button({
   className = "",
   children,
   ...props
-}: Props) {
+}: ButtonProps) {
   const widthClass = fullWidth ? "w-full" : "";
 
   return (
@@ -39,3 +32,4 @@ export default function Button({
     </button>
   );
 }
+

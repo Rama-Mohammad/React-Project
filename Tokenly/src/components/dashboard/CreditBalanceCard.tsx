@@ -1,11 +1,7 @@
 import React from 'react';
 import { CreditCard, History } from 'lucide-react';
 import Button from '../common/Button';
-
-interface CreditBalanceCardProps {
-  balance: number;
-  onViewHistory: () => void;
-}
+import type { CreditBalanceCardProps } from '../../types/dashboard';
 
 const CreditBalanceCard: React.FC<CreditBalanceCardProps> = ({ balance, onViewHistory }) => {
   return (
@@ -36,3 +32,4 @@ const CreditBalanceCard: React.FC<CreditBalanceCardProps> = ({ balance, onViewHi
 };
 
 export default CreditBalanceCard;
+

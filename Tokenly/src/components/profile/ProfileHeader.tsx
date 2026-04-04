@@ -10,30 +10,10 @@ import {
   QrCode,
   Share2,
   Sparkles,
-  Star,
   X,
 } from "lucide-react";
-
-interface ProfileHeaderProps {
-  user: {
-    name: string;
-    title: string;
-    location: string;
-    memberSince: string;
-    bio: string;
-    avatarInitials: string;
-    rating?: number;
-    totalRatings?: number;
-    website?: string;
-    coverImage?: string;
-    stats: {
-      totalSessions: number;
-      creditsEarned: number;
-      skillsTaught: number;
-    };
-  };
-  onEdit: () => void;
-}
+import RatingStars from "../common/RatingStars";
+import type { ProfileHeaderProps } from "../../types/profile";
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
   const [copied, setCopied] = useState(false);
@@ -64,22 +44,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
   const profileUrl = window.location.href;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(profileUrl)}`;
 
-  const renderStars = (rating: number = 0) => {
-    const fullStars = Math.floor(rating);
-    const emptyStars = Math.max(0, 5 - fullStars);
-
-    return (
-      <>
-        {[...Array(fullStars)].map((_, i) => (
-          <Star key={`full-${i}`} size={14} className="fill-amber-400 text-amber-400" />
-        ))}
-        {[...Array(emptyStars)].map((_, i) => (
-          <Star key={`empty-${i}`} size={14} className="text-slate-300" />
-        ))}
-      </>
-    );
-  };
-
   return (
     <section className="mb-6 border-b border-slate-200/60 pb-6">
       <div className="relative h-40 overflow-hidden rounded-2xl bg-[radial-gradient(circle_at_58%_0%,rgba(255,255,255,0.9)_0%,rgba(209,223,255,0.65)_34%,rgba(191,224,255,0.5)_58%,rgba(170,206,255,0.35)_100%)]">
@@ -99,7 +63,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
                 <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">{user.name}</h1>
                 {user.rating ? (
                   <div className="ml-1 flex items-center gap-1">
-                    {renderStars(user.rating)}
+                    <RatingStars value={user.rating} />
                     <span className="ml-1 text-base font-semibold text-slate-700">{user.rating.toFixed(1)}</span>
                   </div>
                 ) : null}
@@ -222,3 +186,4 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
 };
 
 export default ProfileHeader;
+

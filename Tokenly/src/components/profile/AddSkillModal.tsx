@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
-
-interface AddSkillModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onAdd: (skill: any) => void;
-  onUpdate?: (skill: any) => void;
-  editSkill?: any;
-  isEditMode?: boolean;
-}
+import type { AddSkillModalProps, ProfileSkill } from '../../types/profile';
 
 const AddSkillModal: React.FC<AddSkillModalProps> = ({
   isOpen,
@@ -22,7 +14,7 @@ const AddSkillModal: React.FC<AddSkillModalProps> = ({
   const [formData, setFormData] = useState({
     name: '',
     category: '',
-    level: 'Intermediate',
+    level: 'Intermediate' as ProfileSkill['level'],
     sessions: 0
   });
 
@@ -43,7 +35,7 @@ const AddSkillModal: React.FC<AddSkillModalProps> = ({
       setFormData({
         name: editSkill.name || '',
         category: editSkill.category || '',
-        level: editSkill.level || 'Intermediate',
+        level: (editSkill.level || 'Intermediate') as ProfileSkill['level'],
         sessions: editSkill.sessions || 0
       });
     }
@@ -65,7 +57,7 @@ const AddSkillModal: React.FC<AddSkillModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (isEditMode) {
+    if (isEditMode && editSkill) {
       onUpdate && onUpdate({ ...formData, id: editSkill.id });
     } else {
       onAdd(formData);
@@ -142,7 +134,7 @@ const AddSkillModal: React.FC<AddSkillModalProps> = ({
             <select
               value={formData.level}
               onChange={(e) =>
-                setFormData({ ...formData, level: e.target.value })
+                setFormData({ ...formData, level: e.target.value as ProfileSkill['level'] })
               }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
             >
@@ -195,3 +187,4 @@ const AddSkillModal: React.FC<AddSkillModalProps> = ({
 };
 
 export default AddSkillModal;
+

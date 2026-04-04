@@ -15,27 +15,9 @@ import {
   faMicrophone,
   faLightbulb,
 } from "@fortawesome/free-solid-svg-icons";
+import type { HomeSkillCardProps } from "../../types/home";
 
-type SkillName =
-  | "Programming"
-  | "Design"
-  | "Math & Science"
-  | "Languages"
-  | "Finance"
-  | "Music"
-  | "Writing"
-  | "Career & Biz"
-  | "Photography"
-  | "Marketing"
-  | "Data Science"
-  | "Public Speaking";
-
-type SkillCardProps = {
-  name: SkillName;
-  count: number | string;
-};
-
-const SkillCard = ({ name, count }: SkillCardProps) => {
+const SkillCard = ({ name, count }: HomeSkillCardProps) => {
   const skillColors: Record<
     string,
     {
@@ -82,3 +64,4 @@ const SkillCard = ({ name, count }: SkillCardProps) => {
 };
 
 export default SkillCard;
+

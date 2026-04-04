@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import SignInForm from "../components/auth/SignInForm";
 import SignUpForm from "../components/auth/SignUpForm";
@@ -52,7 +52,7 @@ export default function AuthPage() {
     // (normally the router would redirect before this renders)
     if (isAuthenticated && user) {
         return (
-            <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex items-center justify-center p-4">
+            <div className="relative h-dvh w-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex items-center justify-center p-4">
                 <div className="pointer-events-none absolute inset-0">
                     <div className="explore-pulse absolute -left-24 top-16 h-64 w-64 rounded-full bg-indigo-200/25 blur-3xl" />
                     <div className="explore-float absolute right-[-6rem] top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
@@ -83,27 +83,34 @@ export default function AuthPage() {
     const formIsLeft = mode === "signin" || mode === "reset";
 
     return (
-        <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex items-center justify-center p-4">
+        <div className="relative h-dvh w-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex items-center justify-center p-2 sm:p-3 lg:p-4">
             <div className="pointer-events-none absolute inset-0">
                 <div className="explore-pulse absolute -left-24 top-16 h-64 w-64 rounded-full bg-indigo-200/25 blur-3xl" />
                 <div className="explore-float absolute right-[-6rem] top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
                 <div className="explore-pulse absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-purple-200/20 blur-3xl" />
             </div>
-            <div className="w-full max-w-5xl">
+            <Link
+                to="/home"
+                className="absolute left-3 top-3 z-20 inline-flex items-center gap-2 rounded-xl border border-white/70 bg-white/70 px-3.5 py-2 text-sm font-semibold text-slate-700 backdrop-blur transition hover:bg-white sm:left-4 sm:top-4"
+            >
+                ← Go back to Home Page
+            </Link>
 
-                {/* Mobile logo (visual panel is hidden on mobile) */}
-                <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-                    <img src="/images/logo-nobg.png" alt="Tokenly" className="h-20 w-auto object-contain" />
-                </div>
+            {/* Mobile logo (visual panel is hidden on mobile) */}
+            <div className="absolute left-1/2 top-3 z-20 -translate-x-1/2 lg:hidden">
+                <img src="/images/logo-nobg.png" alt="Tokenly" className="h-28 w-auto object-contain sm:h-32" />
+            </div>
+
+            <div className="flex h-full w-full max-w-5xl items-center justify-center">
 
                 {/* Main card */}
-                <div className="relative z-10 overflow-hidden rounded-2xl border border-white/70 bg-white/80 shadow-sm backdrop-blur-xl">
-                    <div className="grid min-h-[680px] lg:grid-cols-2">
+                <div className="relative z-10 h-[88dvh] w-full overflow-hidden rounded-3xl border border-white/70 bg-white/80 shadow-[0_28px_90px_-35px_rgba(79,70,229,0.55)] ring-1 ring-white/60 backdrop-blur-xl sm:h-[86dvh] lg:h-[88dvh] lg:max-h-[760px]">
+                    <div className="grid h-full lg:grid-cols-2">
 
                         {formIsLeft ? (
                             <>
                                 {/* Form on the left */}
-                                <div className="flex items-center justify-center p-8 lg:p-12">
+                                <div className="flex items-center justify-center overflow-hidden p-4 sm:p-5 lg:p-7">
                                     {mode === "signin" && (
                                         <SignInForm
                                             onSubmit={signIn}
@@ -134,7 +141,7 @@ export default function AuthPage() {
                                 <VisualPanel mode={mode} />
 
                                 {/* Form on the right */}
-                                <div className="flex items-center justify-center p-8 lg:p-12">
+                                <div className="flex items-center justify-center overflow-hidden p-4 sm:p-5 lg:p-7">
                                     <SignUpForm
                                         onSubmit={handleSignUp}
                                         onSwitchToSignIn={() => setMode("signin")}

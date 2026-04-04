@@ -1,19 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
-
-interface EditProfileModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  user: {
-    name: string;
-    title: string;
-    location: string;
-    bio: string;
-    website?: string;
-  };
-  onSave: (updatedUser: any) => void;
-}
+import type { EditProfileModalProps } from '../../types/profile';
 
 const EditProfileModal: React.FC<EditProfileModalProps> = ({ 
   isOpen, 
@@ -162,3 +150,4 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 };
 
 export default EditProfileModal;
+

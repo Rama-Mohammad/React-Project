@@ -8,3 +8,126 @@ export interface Profile {
   avg_rating: number;
   created_at: string;
 }
+
+export type PortfolioType = "Project" | "Article" | "Contribution";
+export type ProfileSkillLevel = "Expert" | "Advanced" | "Intermediate" | "Beginner";
+export type ReviewSortBy = "newest" | "oldest" | "highest" | "lowest";
+
+export type ProfileHeaderStats = {
+  totalSessions: number;
+  creditsEarned: number;
+  skillsTaught: number;
+};
+
+export type ProfileHeaderUser = {
+  name: string;
+  title: string;
+  location: string;
+  memberSince: string;
+  bio: string;
+  avatarInitials: string;
+  rating?: number;
+  totalRatings?: number;
+  website?: string;
+  coverImage?: string;
+  stats: ProfileHeaderStats;
+};
+
+export interface ProfileHeaderProps {
+  user: ProfileHeaderUser;
+  onEdit: () => void;
+}
+
+export type ProfileSkill = {
+  id: string;
+  name: string;
+  category: string;
+  level: ProfileSkillLevel;
+  sessions: number;
+};
+
+export interface AddSkillModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAdd: (skill: Omit<ProfileSkill, "id">) => void;
+  onUpdate?: (skill: ProfileSkill) => void;
+  editSkill?: ProfileSkill | null;
+  isEditMode?: boolean;
+}
+
+export interface ProfileSkillCardProps {
+  skill: ProfileSkill;
+  onDelete?: (id: string) => void;
+  onEdit?: (skill: ProfileSkill) => void;
+}
+
+export type EditProfileUserInput = {
+  name: string;
+  title: string;
+  location: string;
+  bio: string;
+  website?: string;
+};
+
+export interface EditProfileModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  user: EditProfileUserInput;
+  onSave: (updatedUser: EditProfileUserInput) => void;
+}
+
+export type PortfolioItemData = {
+  id: string;
+  type: PortfolioType;
+  title: string;
+  date: string;
+  description: string;
+  tags: string[];
+};
+
+export type AddPortfolioItemInput = Omit<PortfolioItemData, "id">;
+
+export interface AddPortfolioModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAdd: (item: AddPortfolioItemInput) => void;
+  onUpdate?: (item: PortfolioItemData) => void;
+  editItem?: PortfolioItemData | null;
+  isEditMode?: boolean;
+}
+
+export type PortfolioForm = {
+  type: PortfolioType;
+  title: string;
+  date: string;
+  description: string;
+  tags: string;
+};
+
+export interface PortfolioItemProps {
+  item: PortfolioItemData;
+  onView?: (id: string) => void;
+  onEdit?: (item: PortfolioItemData) => void;
+  onDelete?: (id: string) => void;
+}
+
+export type ReviewItem = {
+  id: string;
+  reviewerName: string;
+  date: string;
+  rating: number;
+  comment: string;
+  skillCategory: string;
+  sessionTopic: string;
+};
+
+export interface ReviewCardProps {
+  review: ReviewItem;
+}
+
+export interface RatingsSummaryProps {
+  reviews: Array<{ rating: number }>;
+  embedded?: boolean;
+  sortBy?: ReviewSortBy;
+  onSortChange?: (value: ReviewSortBy) => void;
+}

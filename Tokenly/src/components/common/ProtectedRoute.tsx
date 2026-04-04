@@ -1,15 +1,11 @@
-﻿import React from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
 import Loader from './Loader';
+import type { ProtectedRouteProps } from '../../types/common';
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  requiredRole?: 'user' | 'admin';
-}
-
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
-  children, 
-  requiredRole 
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
+  requiredRole
 }) => {
   const loading = false;
   const isAuthenticated = true;

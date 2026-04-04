@@ -1,5 +1,6 @@
 import { useState } from "react";
-import type { Request, Urgency } from "../types/request";
+import type { Request } from "../types/request";
+import type { RequestFilters, RequestInput, UseRequestsResult } from "../types/hooks";
 import {
     createRequest,
     getRequestById,
@@ -9,32 +10,6 @@ import {
     deleteRequest,
 } from "../services/requestService";
 import type { RequestStatus } from "../types/request";
-
-type UseRequestsResult = {
-    request: Request | null;
-    requests: Request[];
-    loading: boolean;
-    error: string;
-    fetchRequestById: (id: string) => Promise<void>;
-    fetchRequestsByUser: (user_id: string) => Promise<void>;
-    fetchOpenRequests: (filters?: {
-        category?: string;
-        urgency?: Urgency;
-        max_duration?: number;
-    }) => Promise<void>;
-    submitRequest: (data: {
-        requester_id: string;
-        title: string;
-        description: string;
-        category?: string;
-        urgency: Urgency;
-        duration_minutes?: number;
-        credit_cost: number;
-        tags?: string[];
-    }) => Promise<boolean>;
-    changeRequestStatus: (id: string, status: RequestStatus) => Promise<boolean>;
-    removeRequest: (id: string) => Promise<boolean>;
-};
 
 export default function useRequests(): UseRequestsResult {
     const [request, setRequest] = useState<Request | null>(null);
@@ -74,11 +49,7 @@ export default function useRequests(): UseRequestsResult {
         setLoading(false);
     }
 
-    async function fetchOpenRequests(filters?: {
-        category?: string;
-        urgency?: Urgency;
-        max_duration?: number;
-    }) {
+    async function fetchOpenRequests(filters?: RequestFilters) {
         setLoading(true);
         setError("");
 
@@ -94,16 +65,7 @@ export default function useRequests(): UseRequestsResult {
         setLoading(false);
     }
 
-    async function submitRequest(data: {
-        requester_id: string;
-        title: string;
-        description: string;
-        category?: string;
-        urgency: Urgency;
-        duration_minutes?: number;
-        credit_cost: number;
-        tags?: string[];
-    }) {
+    async function submitRequest(data: RequestInput) {
         setLoading(true);
         setError("");
 

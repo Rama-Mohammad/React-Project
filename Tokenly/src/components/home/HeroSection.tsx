@@ -1,8 +1,7 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import RatingStars from "../common/RatingStars";
 
 const HeroSection = () => {
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
@@ -57,10 +56,7 @@ const HeroSection = () => {
             </div>
 
             <div className="mt-8 flex items-center gap-2 text-slate-500">
-              <FontAwesomeIcon icon={faStar} className="text-xl text-yellow-400" />
-              <FontAwesomeIcon icon={faStar} className="text-xl text-yellow-400" />
-              <FontAwesomeIcon icon={faStar} className="text-xl text-yellow-400" />
-              <FontAwesomeIcon icon={faStar} className="text-xl text-yellow-400" />
+              <RatingStars value={4.9} sizeClassName="text-xl" />
               <span className="font-medium text-slate-700">4.9</span>
               <span className="text-slate-600">Loved by 8,500+ learners & helpers</span>
             </div>

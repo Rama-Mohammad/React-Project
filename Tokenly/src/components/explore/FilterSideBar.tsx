@@ -1,28 +1,4 @@
-import type { ExploreTab } from "../../types/explore";
-
-interface FilterSideBarProps {
-  activeTab: ExploreTab;
-  categories: string[];
-  selectedCategory: string;
-  onCategoryChange: (value: string) => void;
-
-  urgency: string;
-  onUrgencyChange: (value: string) => void;
-
-  duration: string;
-  onDurationChange: (value: string) => void;
-
-  rating: string;
-  onRatingChange: (value: string) => void;
-
-  onlineOnly: boolean;
-  onOnlineOnlyChange: (value: boolean) => void;
-
-  level: string;
-  onLevelChange: (value: string) => void;
-
-  totalCount: number;
-}
+import type { FilterSideBarProps } from "../../types/explore";
 
 function ChipButton({
   active,
@@ -163,3 +139,4 @@ export default function FilterSideBar({
     </div>
   );
 }
+

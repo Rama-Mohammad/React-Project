@@ -1,5 +1,4 @@
 import React from 'react';
-import type { Session } from '../../../types/session';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCalendarAlt,
@@ -8,15 +7,7 @@ import {
   faPen,
   faLightbulb
 } from '@fortawesome/free-solid-svg-icons';
-
-interface SessionListItemProps {
-  session: Session;
-  onJoin?: (sessionId: string) => void;
-  onCancel?: (sessionId: string) => void;
-  onReview?: (sessionId: string) => void;
-  onViewRequest?: (sessionId: string) => void;
-  onMarkComplete?: (sessionId: string) => void;
-}
+import type { SessionListItemProps } from '../../../types/session';
 
 const SessionListItem: React.FC<SessionListItemProps> = ({
   session,
@@ -168,3 +159,4 @@ const SessionListItem: React.FC<SessionListItemProps> = ({
 };
 
 export default SessionListItem;
+

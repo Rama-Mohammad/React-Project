@@ -1,14 +1,10 @@
-type AuthMode = "signin" | "signup" | "reset";
-
-interface VisualPanelProps {
-  mode: AuthMode;
-}
+import type { VisualPanelProps } from "../../types/auth";
 
 export default function VisualPanel({ mode }: VisualPanelProps) {
   return (
-    <div className="hidden lg:flex flex-col items-center justify-center bg-[linear-gradient(140deg,#eef4ff_0%,#e8f8ff_45%,#f3efff_100%)] p-12">
-      <div className="mb-8">
-        <img src="/images/logo-nobg.png" alt="Tokenly" className="h-32 w-auto object-contain" />
+    <div className="hidden lg:flex flex-col items-center justify-center bg-[linear-gradient(140deg,#eef4ff_0%,#e8f8ff_45%,#f3efff_100%)] p-8 xl:p-10">
+      <div className="mb-5">
+        <img src="/images/logo-nobg.png" alt="Tokenly" className="h-44 w-auto object-contain" />
       </div>
 
       <h2 className="mb-3 text-center text-2xl font-bold text-slate-900">
@@ -17,7 +13,7 @@ export default function VisualPanel({ mode }: VisualPanelProps) {
         {mode === "reset" && "We'll help you get back in"}
       </h2>
 
-      <p className="mb-10 max-w-sm text-center text-slate-500">
+      <p className="mb-6 max-w-sm text-center text-slate-500">
         {mode === "signin" &&
           "Your peers are waiting. Pick up where you left off - check new offers, join live sessions, and keep building your skills."}
         {mode === "signup" &&
@@ -26,7 +22,7 @@ export default function VisualPanel({ mode }: VisualPanelProps) {
           "No worries - it happens to everyone. We'll send you a link to set a new password."}
       </p>
 
-      <div className="flex gap-8">
+      <div className="flex gap-6">
         <div className="text-center">
           <p className="text-2xl font-bold text-slate-900">1.2k+</p>
           <p className="text-sm text-slate-500">Sessions completed</p>
@@ -41,9 +37,10 @@ export default function VisualPanel({ mode }: VisualPanelProps) {
         </div>
       </div>
 
-      <div className="mt-10 flex h-48 w-full max-w-sm items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-white/60 text-sm text-slate-400">
+      <div className="mt-6 flex h-40 w-full max-w-sm items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-white/60 text-sm text-slate-400">
         Image / Animation placeholder
       </div>
     </div>
   );
 }
+

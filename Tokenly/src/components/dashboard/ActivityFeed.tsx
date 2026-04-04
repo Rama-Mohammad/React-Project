@@ -1,11 +1,6 @@
 import React from 'react';
-import type{ Transaction } from '../../types';
 import { formatDistanceToNow } from '../../utils/dateHelpers';
-
-interface ActivityFeedProps {
-  transactions: Transaction[];
-  onViewAll: () => void;
-}
+import type { ActivityFeedProps } from '../../types/dashboard';
 
 const ActivityFeed: React.FC<ActivityFeedProps> = ({ transactions, onViewAll }) => {
   return (
@@ -46,3 +41,4 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ transactions, onViewAll }) 
 };
 
 export default ActivityFeed;
+

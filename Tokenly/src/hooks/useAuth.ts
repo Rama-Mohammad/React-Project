@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { AuthUser, AuthSession } from "../types/auth";
+import type { UseAuthResult } from "../types/hooks";
 import type { SupabaseAuthSession } from "../services/authService";
 import {
     getCurrentSession,
@@ -10,25 +11,6 @@ import {
     updatePassword,
     subscribeToAuthChanges,
 } from "../services/authService";
-
-
-type UseAuthResult = {
-    user: AuthUser | null;
-    session: AuthSession | null;
-    loading: boolean;
-    error: string;
-    successMessage: string;
-    isAuthenticated: boolean;
-    signUp: (
-        email: string,
-        password: string,
-        metadata?: { username?: string; full_name?: string },
-    ) => Promise<boolean>;
-    signIn: (email: string, password: string) => Promise<boolean>;
-    signOut: () => Promise<boolean>;
-    resetPassword: (email: string) => Promise<boolean>;
-    changePassword: (newPassword: string) => Promise<boolean>;
-};
 
 
 function formatError(message: string) {

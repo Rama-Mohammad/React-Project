@@ -1,10 +1,7 @@
-import { ArrowRight, Sparkles, Star, Users } from "lucide-react";
+import { ArrowRight, Sparkles, Users } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { SkillItem } from "../../types/explore";
-
-interface SkillCardProps {
-  item: SkillItem;
-}
+import RatingStars from "../common/RatingStars";
+import type { ExploreSkillCardProps } from "../../types/explore";
 
 const levelStyles: Record<string, string> = {
   Beginner: "bg-emerald-50 text-emerald-700",
@@ -12,7 +9,7 @@ const levelStyles: Record<string, string> = {
   Advanced: "bg-rose-50 text-rose-700",
 };
 
-export default function SkillCard({ item }: SkillCardProps) {
+export default function SkillCard({ item }: ExploreSkillCardProps) {
   return (
     <article className="explore-glass flex h-full flex-col overflow-hidden rounded-xl border border-white/60 bg-white/85 backdrop-blur transition duration-300 hover:border-white/80 hover:shadow-md">
       <div className="flex-1 p-4">
@@ -49,7 +46,7 @@ export default function SkillCard({ item }: SkillCardProps) {
             {item.helpers} helpers
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <Star size={14} className="fill-amber-400 text-amber-400" />
+            <RatingStars value={item.avgRating} />
             {item.avgRating.toFixed(1)}
           </span>
           <span>{item.sessions} sessions</span>
@@ -80,3 +77,4 @@ export default function SkillCard({ item }: SkillCardProps) {
     </article>
   );
 }
+

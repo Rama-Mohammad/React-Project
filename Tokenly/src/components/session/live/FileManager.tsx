@@ -1,13 +1,6 @@
 // components/session/live/FileManager.tsx
 import React, { useState } from 'react';
-import type { FileAttachment } from '../../../types/session';
-
-interface FileManagerProps {
-  sessionId: string;
-  onFileUpload: (file: File) => void;
-  files: FileAttachment[];
-  onDownload: (fileId: string) => void;
-}
+import type { FileManagerProps } from '../../../types/session';
 
 const FileManager: React.FC<FileManagerProps> = ({ onFileUpload, files, onDownload }) => {
   const [isUploading, setIsUploading] = useState(false);
@@ -81,3 +74,4 @@ const FileManager: React.FC<FileManagerProps> = ({ onFileUpload, files, onDownlo
 };
 
 export default FileManager;
+

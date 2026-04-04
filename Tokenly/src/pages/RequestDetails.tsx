@@ -6,12 +6,12 @@
   MessageCircle,
   Share2,
   ShieldCheck,
-  Star,
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
+import RatingStars from "../components/common/RatingStars";
 import { helpers, requests } from "../data/mockExploreData";
 import { supabase } from "../lib/supabaseClient";
 import { createOffer } from "../services/offerService";
@@ -296,13 +296,7 @@ export default function RequestDetails() {
                 <div>
                   <h3 className="text-xl font-semibold text-slate-900">{request.author.name}</h3>
                   <p className="mt-1 inline-flex items-center gap-2 text-sm text-slate-600">
-                    <span className="inline-flex items-center gap-0.5 text-amber-400">
-                      <Star size={14} className="fill-amber-400" />
-                      <Star size={14} className="fill-amber-400" />
-                      <Star size={14} className="fill-amber-400" />
-                      <Star size={14} className="fill-amber-400" />
-                      <Star size={14} />
-                    </span>
+                    <RatingStars value={request.author.rating ?? 0} />
                     {request.author.rating?.toFixed(1)}
                     <span className="text-slate-500">
                       {sessionsCompleted} sessions completed

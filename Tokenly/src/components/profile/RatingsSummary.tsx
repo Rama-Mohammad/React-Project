@@ -1,14 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ArrowDownUp, ChevronDown, Star } from "lucide-react";
+import { ArrowDownUp, ChevronDown } from "lucide-react";
+import RatingStars from "../common/RatingStars";
+import type { RatingsSummaryProps, ReviewSortBy } from "../../types/profile";
 
-interface RatingsSummaryProps {
-  reviews: Array<{ rating: number }>;
-  embedded?: boolean;
-  sortBy?: "newest" | "oldest" | "highest" | "lowest";
-  onSortChange?: (value: "newest" | "oldest" | "highest" | "lowest") => void;
-}
-
-const sortLabels: Record<"newest" | "oldest" | "highest" | "lowest", string> = {
+const sortLabels: Record<ReviewSortBy, string> = {
   newest: "Newest first",
   oldest: "Oldest first",
   highest: "Highest rating",
@@ -95,10 +90,8 @@ const RatingsSummary: React.FC<RatingsSummaryProps> = ({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-[0.75fr_1.25fr]">
         <div className="text-center md:text-left">
           <div className="text-5xl font-bold leading-none text-slate-900">{averageRating}</div>
-          <div className="mt-2 flex justify-center gap-1 text-amber-400 md:justify-start">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} size={15} className={i < Math.round(roundedAverage) ? "fill-amber-400" : ""} />
-            ))}
+          <div className="mt-2 flex justify-center md:justify-start">
+            <RatingStars value={roundedAverage} />
           </div>
           <p className="mt-1 text-xs text-slate-500">
             {totalReviews} {totalReviews === 1 ? "rating" : "ratings"}
@@ -112,8 +105,7 @@ const RatingsSummary: React.FC<RatingsSummaryProps> = ({
               const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
               return (
                 <div key={stars} className="flex items-center gap-2 text-xs">
-                  <div className="flex w-5 items-center justify-end font-medium text-slate-600">{stars}</div>
-                  <Star size={13} className="fill-amber-400 text-amber-400" />
+                  <div className="flex w-14 items-center justify-end font-medium text-slate-600">{stars} stars</div>
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200/90">
                     <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-yellow-500" style={{ width: `${percentage}%` }} />
                   </div>
@@ -134,3 +126,4 @@ const RatingsSummary: React.FC<RatingsSummaryProps> = ({
 };
 
 export default RatingsSummary;
+

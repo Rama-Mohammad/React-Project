@@ -1,10 +1,7 @@
 import { BadgeCheck, MessageCircle, ShieldCheck, Star, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { HelperItem } from "../../types/explore";
-
-interface HelperCardProps {
-  item: HelperItem;
-}
+import RatingStars from "../common/RatingStars";
+import type { HelperCardProps } from "../../types/explore";
 
 function BadgePill({ label }: { label: string }) {
   const styles: Record<string, string> = {
@@ -62,7 +59,7 @@ export default function HelperCard({ item }: HelperCardProps) {
               </div>
 
               <div className="inline-flex items-center gap-1 text-base font-bold text-slate-800">
-                <Star size={15} className="fill-amber-400 text-amber-400" />
+                <RatingStars value={item.rating} />
                 {item.rating.toFixed(1)}
               </div>
             </div>
@@ -128,3 +125,4 @@ export default function HelperCard({ item }: HelperCardProps) {
     </article>
   );
 }
+

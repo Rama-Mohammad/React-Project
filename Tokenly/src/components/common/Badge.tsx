@@ -1,9 +1,6 @@
-import type { PropsWithChildren } from 'react';
+import type { BadgeProps } from "../../types/common";
 
-interface Props extends PropsWithChildren {
-  tone?: 'neutral' | 'success' | 'warning' | 'danger';
-}
-
-export default function Badge({ tone = 'neutral', children }: Props) {
+export default function Badge({ tone = 'neutral', children }: BadgeProps) {
   return <span className={`badge badge-${tone}`}>{children}</span>;
 }
+

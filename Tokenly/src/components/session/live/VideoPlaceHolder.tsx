@@ -1,13 +1,6 @@
 // components/session/live/VideoPlaceholder.tsx
 import React, { useState } from 'react';
-
-interface VideoPlaceholderProps {
-  isVideoEnabled: boolean;
-  participantCount: number;
-  onToggleVideo: () => void;
-  onToggleAudio: () => void;
-  onShareScreen: () => void;
-}
+import type { VideoPlaceholderProps } from '../../../types/session';
 
 const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
   isVideoEnabled,
@@ -72,3 +65,4 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
 };
 
 export default VideoPlaceholder;
+

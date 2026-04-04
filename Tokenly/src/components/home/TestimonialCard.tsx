@@ -1,23 +1,12 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar } from "@fortawesome/free-solid-svg-icons";
-
-type TestimonialCardProps = {
-  quote: string;
-  name: string;
-  title: string;
-  rating: number;
-};
+import type { TestimonialCardProps } from "../../types/home";
+import RatingStars from "../common/RatingStars";
 
 const TestimonialCard = ({ quote, name, title, rating }: TestimonialCardProps) => {
-  const renderStars = () => {
-    return [...Array(5)].map((_, i) => (
-      <FontAwesomeIcon key={i} icon={faStar} className="text-sm text-yellow-400" />
-    ));
-  };
-
   return (
     <div className="rounded-2xl border border-white/50 bg-white/80 p-6 shadow-sm backdrop-blur transition-shadow duration-300 hover:shadow-md">
-      <div className="mb-4 flex items-center gap-1">{renderStars()}</div>
+      <div className="mb-4">
+        <RatingStars value={5} />
+      </div>
 
       <p className="mb-4 leading-relaxed text-slate-700">{quote}</p>
 
@@ -28,7 +17,13 @@ const TestimonialCard = ({ quote, name, title, rating }: TestimonialCardProps) =
         </div>
 
         <div className="flex items-center gap-1 text-indigo-500">
-          <FontAwesomeIcon icon={faStar} className="text-sm" />
+          <RatingStars
+            value={1}
+            sizeClassName="text-sm"
+            wrapperClassName="inline-flex items-center"
+            filledClassName="text-indigo-500"
+            emptyClassName="hidden"
+          />
           <span className="text-sm font-medium">+{rating}</span>
         </div>
       </div>
@@ -37,3 +32,4 @@ const TestimonialCard = ({ quote, name, title, rating }: TestimonialCardProps) =
 };
 
 export default TestimonialCard;
+

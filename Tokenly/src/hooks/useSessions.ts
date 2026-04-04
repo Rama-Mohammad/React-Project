@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Session, SessionStatus } from "../types/session";
+import type { SessionStartInput, UseSessionsResult } from "../types/hooks";
 import {
     createSession,
     getSessionById,
@@ -7,25 +8,6 @@ import {
     getSessionsByStatus,
     updateSessionStatus,
 } from "../services/sessionService";
-
-type UseSessionsResult = {
-    session: Session | null;
-    sessions: Session[];
-    loading: boolean;
-    error: string;
-    fetchSessionById: (id: string) => Promise<void>;
-    fetchSessionsByUser: (user_id: string) => Promise<void>;
-    fetchSessionsByStatus: (user_id: string, status: SessionStatus) => Promise<void>;
-    startSession: (data: {
-        request_id: string;
-        offer_id: string;
-        helper_id: string;
-        requester_id: string;
-        scheduled_at?: string;
-        duration_minutes?: number;
-    }) => Promise<boolean>;
-    changeSessionStatus: (id: string, status: SessionStatus) => Promise<boolean>;
-};
 
 export default function useSessions(): UseSessionsResult {
     const [session, setSession] = useState<Session | null>(null);
@@ -81,14 +63,7 @@ export default function useSessions(): UseSessionsResult {
         setLoading(false);
     }
 
-    async function startSession(data: {
-        request_id: string;
-        offer_id: string;
-        helper_id: string;
-        requester_id: string;
-        scheduled_at?: string;
-        duration_minutes?: number;
-    }) {
+    async function startSession(data: SessionStartInput) {
         setLoading(true);
         setError("");
 
