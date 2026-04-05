@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import type { FileManagerProps } from '../../../types/session';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFile, faUpload, faDownload, faTrash } from '@fortawesome/free-solid-svg-icons';
 
-const FileManager: React.FC<FileManagerProps> = ({ onFileUpload, files, onDownload }) => {
+const FileManager: React.FC<FileManagerProps> = ({ onFileUpload, files, onDownload,onDelete }) => {
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,7 +33,8 @@ const FileManager: React.FC<FileManagerProps> = ({ onFileUpload, files, onDownlo
             disabled={isUploading}
           />
           <span className="text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition-colors">
-            {isUploading ? 'Uploading...' : '+ Upload'}
+            <FontAwesomeIcon icon={faUpload} className="mr-2" />
+            {isUploading ? 'Uploading...' : 'Upload'}
           </span>
         </label>
       </div>
@@ -48,7 +51,7 @@ const FileManager: React.FC<FileManagerProps> = ({ onFileUpload, files, onDownlo
               className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg transition-colors"
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <span className="text-lg">📄</span>
+                <FontAwesomeIcon icon={faFile} className="text-gray-500" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
                     {file.name}
@@ -62,8 +65,14 @@ const FileManager: React.FC<FileManagerProps> = ({ onFileUpload, files, onDownlo
                 onClick={() => onDownload(file.id)}
                 className="text-gray-400 hover:text-blue-600 transition-colors"
               >
-                ⬇️
+                <FontAwesomeIcon icon={faDownload} />
               </button>
+              <button
+    onClick={() => onDelete(file.id)}
+    className="text-gray-400 hover:text-red-600 transition-colors"
+  >
+    <FontAwesomeIcon icon={faTrash} />
+  </button>
             </div>
           ))}
         </div>

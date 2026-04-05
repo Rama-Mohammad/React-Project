@@ -1,4 +1,6 @@
 export type SessionStatus = "upcoming" | "active" | "completed" | "cancelled";
+export type ReactionType = 'like' | 'love' | 'laugh' | 'wow';
+
 
 export interface Session {
   id: string;
@@ -28,6 +30,7 @@ export interface Message {
   timestamp: Date;
   attachments?: FileAttachment[]; 
   isRead?: boolean; 
+  senderAvatar?: string;
 }
 
 export interface ChecklistItem {
@@ -68,6 +71,7 @@ export interface FileManagerProps {
   onFileUpload: (file: File) => void;
   files: FileAttachment[];
   onDownload: (fileId: string) => void;
+  onDelete: (fileId: string) => void;
 }
 
 export interface ChecklistProps {

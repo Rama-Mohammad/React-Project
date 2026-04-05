@@ -70,7 +70,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
       {/* Placeholder when video off */}
       {!isVideoEnabled && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 rounded-xl">
-          <div className="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mb-3">
+          <div className="w-30 h-30 bg-gray-700 rounded-full flex items-center justify-center mb-3">
             <span className="text-xl text-gray-300 font-bold">Camera Off</span>
           </div>
           <p className="text-gray-400 text-sm">{participantCount} participants</p>
@@ -98,12 +98,6 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
           }`}
         >
           {isAudioEnabled ? 'Mic On' : 'Mic Off'}
-        </button>
-        <button
-          onClick={onShareScreen}
-          className="p-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
-        >
-          Share Screen
         </button>
       </div>
 
