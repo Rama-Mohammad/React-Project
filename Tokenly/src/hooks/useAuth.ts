@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { AuthUser, AuthSession } from "../types/auth";
 import type { UseAuthResult } from "../types/hooks";
 import type { SupabaseAuthSession } from "../services/authService";
@@ -54,11 +54,24 @@ export default function useAuth(): UseAuthResult {
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+    const recoveryFlowRef = useRef(false);
 
     useEffect(() => {
+        // Capture hash IMMEDIATELY — Supabase clears it after processing
+        const initialHash = window.location.hash;
+        const isRecoveryFlow = initialHash.includes("type=recovery");
+        recoveryFlowRef.current = isRecoveryFlow;
+
         async function initialize() {
             setLoading(true);
             setError("");
+
+            if (isRecoveryFlow) {
+                setIsPasswordRecovery(true);
+                setLoading(false);
+                return;
+            }
+
             const { data, error } = await getCurrentSession();
             if (error) {
                 setError(formatError(error.message));
@@ -75,13 +88,25 @@ export default function useAuth(): UseAuthResult {
 
         const { data: { subscription } } = subscribeToAuthChanges((_event, session) => {
             if (_event === "PASSWORD_RECOVERY") {
+                recoveryFlowRef.current = true;
                 setIsPasswordRecovery(true);
                 setLoading(false);
                 return;
             }
+
+            if (recoveryFlowRef.current && _event !== "SIGNED_OUT") {
+                const mapped = mapSession(session);
+                setSession(mapped);
+                setUser(mapped?.user ?? null);
+                setIsPasswordRecovery(true);
+                setLoading(false);
+                return;
+            }
+
             const mapped = mapSession(session);
             setSession(mapped);
             setUser(mapped?.user ?? null);
+            recoveryFlowRef.current = false;
             setIsPasswordRecovery(false);
             setLoading(false);
         });
@@ -126,6 +151,7 @@ export default function useAuth(): UseAuthResult {
         const { error } = await updatePassword(newPassword);
         if (error) { setError(formatError(error.message)); return false; }
         await signOutUser();
+        recoveryFlowRef.current = false;
         setIsPasswordRecovery(false);
         setUser(null);
         setSession(null);

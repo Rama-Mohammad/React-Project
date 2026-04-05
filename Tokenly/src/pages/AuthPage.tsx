@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import NewPasswordForm from "../components/auth/NewPasswordForm";
@@ -8,24 +8,27 @@ import SignUpForm from "../components/auth/SignUpForm";
 import VisualPanel from "../components/auth/VisualPanel";
 import type { AuthMode } from "../types/auth";
 
+function getInitialMode(searchParams: URLSearchParams): AuthMode {
+    const queryMode = searchParams.get("mode");
+    if (
+        queryMode === "signin" ||
+        queryMode === "signup" ||
+        queryMode === "reset" ||
+        queryMode === "newpassword"
+    ) {
+        return queryMode;
+    }
+    if (window.location.hash.includes("type=recovery")) {
+        return "newpassword";
+    }
+    return "signin";
+}
+
 export default function AuthPage() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
-    const getModeFromQuery = (): AuthMode => {
-        const queryMode = searchParams.get("mode");
-        if (
-            queryMode === "signin" ||
-            queryMode === "signup" ||
-            queryMode === "reset" ||
-            queryMode === "newpassword"
-        ) {
-            return queryMode;
-        }
-        return "signin";
-    };
-
-    const [mode, setMode] = useState<AuthMode>(getModeFromQuery);
+    const [mode, setMode] = useState<AuthMode>(() => getInitialMode(searchParams));
     const [slideDirection, setSlideDirection] = useState<1 | -1>(1);
     const [switchTick, setSwitchTick] = useState(0);
 
@@ -42,24 +45,25 @@ export default function AuthPage() {
         resetPassword,
         changePassword,
     } = useAuth();
+    const isRecoveryRoute =
+        isPasswordRecovery ||
+        mode === "newpassword" ||
+        window.location.pathname === "/reset-password" ||
+        window.location.hash.includes("type=recovery");
 
+    //when supabase fires PASSWORD_RECOVERY event=>force newpassword mode
     useEffect(() => {
         if (isPasswordRecovery) {
             setMode("newpassword");
         }
     }, [isPasswordRecovery]);
 
+    //redirect to explore if alrready authenticated and not in password revovery 
     useEffect(() => {
-        if (!isPasswordRecovery) {
-            setMode(getModeFromQuery());
+        if (isAuthenticated && !isRecoveryRoute) {
+            navigate("/explore", { replace: true });
         }
-    }, [searchParams, isPasswordRecovery]);
-
-    useEffect(() => {
-        if (isAuthenticated && !isPasswordRecovery) {
-            navigate("/dashboard", { replace: true });
-        }
-    }, [isAuthenticated, isPasswordRecovery, navigate]);
+    }, [isAuthenticated, isRecoveryRoute, navigate]);
 
     const switchMode = (nextMode: AuthMode) => {
         if (nextMode === mode) return;
@@ -86,7 +90,7 @@ export default function AuthPage() {
         }
     };
 
-    if (isAuthenticated && user && !isPasswordRecovery) {
+    if (isAuthenticated && user && !isRecoveryRoute) {
         return (
             <div className="relative h-dvh w-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex items-center justify-center p-4">
                 <div className="relative z-10 bg-white/85 rounded-2xl shadow-sm border border-white/70 p-8 max-w-sm w-full text-center backdrop-blur">
@@ -135,6 +139,7 @@ export default function AuthPage() {
                                     mode === "signup" ? "-translate-x-1/2" : "translate-x-0"
                                 }`}
                             >
+                                {/* Left panel: signin / reset / newpassword */}
                                 <div className="grid w-1/2 min-h-170 lg:grid-cols-2">
                                     <div className="flex items-center justify-center overflow-hidden p-4 sm:p-5 lg:p-7">
                                         {mode === "reset" ? (
@@ -166,6 +171,7 @@ export default function AuthPage() {
                                     <VisualPanel mode={mode === "newpassword" ? "reset" : mode} />
                                 </div>
 
+                                {/* Right panel: signup */}
                                 <div className="grid w-1/2 min-h-170 lg:grid-cols-2">
                                     <VisualPanel mode="signup" />
                                     <div className="flex items-center justify-center overflow-hidden p-4 sm:p-5 lg:p-7">
