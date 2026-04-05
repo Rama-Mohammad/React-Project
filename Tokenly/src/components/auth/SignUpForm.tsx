@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { SignUpFormProps } from "../../types/auth";
+import { getEmailByUsername } from "../../services/profileService";
 
 function validateEmail(email: string): string | null {
   if (!email.trim()) return "Email is required";
@@ -56,8 +57,12 @@ export default function SignUpForm({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string | undefined>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [usernameTaken, setUsernameTaken] = useState(false);
+  const [usernameChecking, setUsernameChecking] = useState(false);
 
   const strength = getPasswordStrength(password);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,12 +99,45 @@ export default function SignUpForm({
     }
   };
 
+  useEffect(() => {
+    if (!username || username.length < 3) {
+      setUsernameTaken(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setUsernameChecking(true);
+      const email = await getEmailByUsername(username.toLowerCase());
+      setUsernameTaken(!!email);
+      setUsernameChecking(false);
+    }, 500); // wait 500ms after user stops typing
+
+    return () => clearTimeout(timer);
+  }, [username]);
+
+  function generateUsernameSuggestions(email: string): string[] {
+    if (!email.includes("@")) return [];
+    const base = email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (!base) return [];
+    const year = new Date().getFullYear().toString().slice(-2);
+    return [
+      base,
+      `${base}${year}`,
+      `${base}_${Math.floor(Math.random() * 99 + 1)}`,
+    ].filter((s) => s.length >= 3);
+  }
+
+  useEffect(() => {
+    if (email && !username) {
+      setSuggestions(generateUsernameSuggestions(email));
+    }
+  }, [email]);
+
   const inputClass = (field: string) =>
     `w-full rounded-xl border bg-white/90 px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-colors
      ${touched[field] && fieldErrors[field]
-       ? "border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
-       : "border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-     }`;
+      ? "border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
+      : "border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+    }`;
 
   return (
     <div className="mx-auto w-full max-w-md rounded-2xl border border-white/70 bg-white/60 p-4 shadow-[0_20px_60px_-30px_rgba(79,70,229,0.55)] backdrop-blur-md sm:p-5">
@@ -163,7 +201,34 @@ export default function SignUpForm({
               disabled={loading}
               className={inputClass("username")}
             />
-            {touched.username && fieldErrors.username && <p className="mt-1 text-sm text-rose-500">{fieldErrors.username}</p>}
+            {usernameChecking && (
+              <p className="mt-1 text-xs text-slate-400">Checking availability...</p>
+            )}
+            {!usernameChecking && usernameTaken && (
+              <p className="mt-1 text-sm text-rose-500">Username already taken</p>
+            )}
+            {!usernameChecking && touched.username && fieldErrors.username && !usernameTaken && (
+              <p className="mt-1 text-sm text-rose-500">{fieldErrors.username}</p>
+            )}
+
+            {suggestions.length > 0 && !username && (
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {suggestions.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => {
+                      setUsername(s);
+                      setSuggestions([]);
+                    }}
+                    className="rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-600 hover:bg-purple-100 hover:text-purple-700 transition-colors"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+
           </div>
         </div>
 
@@ -276,7 +341,7 @@ export default function SignUpForm({
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-linear-to-r from-indigo-500 via-sky-500 to-indigo-500 py-3 px-4 text-white font-medium`r`n            hover:brightness-105 transition
+          className="w-full rounded-xl bg-linear-to-r from-indigo-500 via-sky-500 to-indigo-500 py-3 px-4 text-white font-medium hover:brightness-105 transition
             disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loading ? (

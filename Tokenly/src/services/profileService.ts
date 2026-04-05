@@ -40,3 +40,14 @@ export async function searchProfiles(query: string) {
     .or(`username.ilike.%${query}%,full_name.ilike.%${query}%`)
     .order("avg_rating", { ascending: false });
 }
+
+export async function getEmailByUsername(username: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("email")
+    .eq("username", username)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return data.email;   
+}

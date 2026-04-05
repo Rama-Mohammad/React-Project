@@ -1,9 +1,13 @@
 import { useState } from "react";
 import type { SignInFormProps } from "../../types/auth";
 
-function validateEmail(email: string): string | null {
-  if (!email.trim()) return "Email is required";
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Please enter a valid email address";
+// function validateEmail(email: string): string | null {
+//   if (!email.trim()) return "Email is required";
+//   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Please enter a valid email address";
+//   return null;
+// }
+function validateIdentifier(identifier: string): string | null {
+  if (!identifier.trim()) return "Email or username is required";
   return null;
 }
 
@@ -27,10 +31,11 @@ export default function SignInForm({
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [touched, setTouched] = useState<{ email?: boolean; password?: boolean }>({});
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const emailErr = validateEmail(email) ?? undefined;
+    const emailErr = validateIdentifier(email) ?? undefined;
     const passErr = validatePassword(password) ?? undefined;
 
     setFieldErrors({ email: emailErr, password: passErr });
@@ -44,11 +49,13 @@ export default function SignInForm({
   const handleBlur = (field: "email" | "password") => {
     setTouched((prev) => ({ ...prev, [field]: true }));
     if (field === "email") {
-      setFieldErrors((prev) => ({ ...prev, email: validateEmail(email) ?? undefined }));
+      setFieldErrors((prev) => ({ ...prev, email: validateIdentifier(email) ?? undefined }));
     } else {
       setFieldErrors((prev) => ({ ...prev, password: validatePassword(password) ?? undefined }));
     }
   };
+
+  
 
   return (
     <div className="mx-auto w-full max-w-md rounded-2xl border border-white/70 bg-white/60 p-4 shadow-[0_20px_60px_-30px_rgba(79,70,229,0.55)] backdrop-blur-md sm:p-5">
@@ -82,11 +89,11 @@ export default function SignInForm({
       <form onSubmit={handleSubmit} className="space-y-3" noValidate>
         <div>
           <label htmlFor="signin-email" className="mb-1 block text-xs font-semibold text-slate-700">
-            Email address
+            Email address or username
           </label>
           <input
             id="signin-email"
-            type="email"
+            type="text"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onBlur={() => handleBlur("email")}

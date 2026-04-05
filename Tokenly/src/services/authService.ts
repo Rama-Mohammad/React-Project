@@ -1,5 +1,7 @@
 import type { AuthChangeEvent, AuthResponse, AuthTokenResponsePassword, Session, Subscription, User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabaseClient";
+import { getEmailByUsername } from "./profileService";
+
 
 export function getCurrentUser() {
   return supabase.auth.getUser();
@@ -23,15 +25,30 @@ export function signUpWithEmail(
   });
 }
 
-export function signInWithEmail(
-  email: string,
+export async function signInWithIdentifier(
+  identifier: string,
   password: string,
 ): Promise<AuthTokenResponsePassword> {
-  return supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+
+  let email = identifier;
+
+  if (!isEmail) {
+    // if it's not an emaik treat it as a userame and find its corresponding email
+    const found = await getEmailByUsername(identifier.toLowerCase());
+    if (!found) {
+      return {
+        data: { user: null, session: null },
+        error: { message: "No account found with that username", name: "AuthError", status: 400 } as any,
+      };
+    }
+    email = found;
+  }
+
+  return supabase.auth.signInWithPassword({ email, password });
 }
+
+export const signInWithEmail = signInWithIdentifier;
 
 export function signOutUser() {
   return supabase.auth.signOut();
@@ -43,9 +60,15 @@ export function subscribeToAuthChanges(
   return supabase.auth.onAuthStateChange(callback);
 }
 
+// export function sendPasswordResetEmail(email: string) {
+//   return supabase.auth.resetPasswordForEmail(email, {
+//     redirectTo: `${window.location.origin}/reset-password`,
+//   });
+// }
+
 export function sendPasswordResetEmail(email: string) {
   return supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/reset-password`,
+    redirectTo: `${window.location.origin}/auth`,
   });
 }
 

@@ -12,21 +12,18 @@ import type { Transaction, TransactionType } from "./transaction";
 export type UseInViewResult = [RefObject<HTMLDivElement | null>, boolean];
 
 export type UseAuthResult = {
-  user: AuthUser | null;
-  session: AuthSession | null;
-  loading: boolean;
-  error: string;
-  successMessage: string;
-  isAuthenticated: boolean;
-  signUp: (
-    email: string,
-    password: string,
-    metadata?: { username?: string; full_name?: string },
-  ) => Promise<boolean>;
-  signIn: (email: string, password: string) => Promise<boolean>;
-  signOut: () => Promise<boolean>;
-  resetPassword: (email: string) => Promise<boolean>;
-  changePassword: (newPassword: string) => Promise<boolean>;
+    user: AuthUser | null;
+    session: AuthSession | null;
+    loading: boolean;
+    error: string;
+    successMessage: string;
+    isAuthenticated: boolean;
+    isPasswordRecovery: boolean; 
+    signUp: (email: string, password: string, metadata?: { username?: string; full_name?: string }) => Promise<boolean>;
+    signIn: (email: string, password: string) => Promise<boolean>;
+    signOut: () => Promise<boolean>;
+    resetPassword: (email: string) => Promise<boolean>;
+    changePassword: (newPassword: string) => Promise<boolean>; 
 };
 
 export type UseNotificationsResult = {

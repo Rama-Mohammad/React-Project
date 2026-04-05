@@ -8,7 +8,7 @@ import RequestHelper from "../pages/RequestHelper";
 import SkillHelpers from "../pages/SkillHelpers";
 import Profile from "../pages/Profile";
 import Sessions from "../pages/Sessions";
-import SessionLivePage from "../pages/SessionLive"; 
+import SessionLivePage from "../pages/SessionLive";
 import Activity from "../pages/Activity";
 import AuthPage from "../pages/AuthPage";
 
@@ -43,7 +43,7 @@ export const router = createBrowserRouter([
         element: <RequestDetails />,
       },
       {
-        path: "/session/:sessionId", 
+        path: "/session/:sessionId",
         element: <SessionLivePage />,
       },
       {
@@ -70,8 +70,11 @@ export const router = createBrowserRouter([
         path: "/activity",
         element: <Activity />,
       },
-      {path: "/auth", element: <AuthPage />},
-      { path: "/reset-password", element: <AuthPage /> },
+      { path: "/auth", element: <AuthPage /> },
+      {
+        path: "/reset-password",
+        element: <AuthPage />,
+      },
     ],
   },
 ]);

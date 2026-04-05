@@ -15,7 +15,7 @@ export type AuthSession = {
   user: AuthUser;
 };
 
-export type AuthMode = "signin" | "signup" | "reset";
+export type AuthMode = "signin" | "signup" | "reset" | "newpassword";
 
 export interface VisualPanelProps {
   mode: AuthMode;
