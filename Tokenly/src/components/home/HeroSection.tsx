@@ -2,9 +2,11 @@ import { X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import RatingStars from "../common/RatingStars";
+import useAuth from "../../hooks/useAuth";
 
 const HeroSection = () => {
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
+  const { isAuthenticated, loading } = useAuth();
 
   return (
     <>
@@ -36,20 +38,22 @@ const HeroSection = () => {
             </h1>
 
             <p className="mb-8 max-w-2xl text-xl leading-relaxed text-slate-600">
-              PeerCredit is a credit-based peer learning network. Help someone today, earn credits - use them to get help when you need it. No money, just reciprocity.
+              Tokenly is a credit-based peer learning network. Help someone today, earn credits - use them to get help when you need it. No money, just reciprocity.
             </p>
 
             <div className="flex flex-col items-center justify-start gap-4 sm:flex-row">
-              <Link
-                to="/auth"
-                className="rounded-xl border border-slate-200 bg-white px-8 py-3 font-semibold text-slate-900 transition hover:bg-slate-50"
-              >
-                Get started for free
-              </Link>
+              {!loading && !isAuthenticated ? (
+                <Link
+                  to="/auth?mode=signup"
+                  className="rounded-xl border border-slate-200 bg-white px-8 py-3 font-semibold text-slate-900 transition hover:bg-slate-50"
+                >
+                  Get started for free
+                </Link>
+              ) : null}
               <button
                 type="button"
                 onClick={() => setIsHowItWorksOpen(true)}
-                className="rounded-xl border border-white/50 bg-white/80 px-8 py-3 font-semibold text-slate-700 transition backdrop-blur hover:bg-white"
+                className="rounded-xl border border-sky-200 bg-sky-50 px-8 py-3 font-semibold text-sky-700 transition hover:bg-sky-100"
               >
                 How it works
               </button>

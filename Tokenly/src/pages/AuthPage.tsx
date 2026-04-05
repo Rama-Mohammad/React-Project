@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import SignInForm from "../components/auth/SignInForm";
@@ -13,10 +13,16 @@ import type { AuthMode } from "../types/auth";
 
 export default function AuthPage() {
     const [searchParams] = useSearchParams();
-    // const [mode, setMode] = useState<AuthMode>("signin");
-    const [mode, setMode] = useState<AuthMode>(
-  (searchParams.get("mode") as AuthMode) ?? "signin"
-);
+    const getModeFromQuery = (): AuthMode => {
+        const queryMode = searchParams.get("mode");
+        if (queryMode === "signup" || queryMode === "reset" || queryMode === "signin") {
+            return queryMode;
+        }
+        return "signin";
+    };
+    const [mode, setMode] = useState<AuthMode>(getModeFromQuery);
+    const [slideDirection, setSlideDirection] = useState<1 | -1>(1);
+    const [switchTick, setSwitchTick] = useState(0);
     const navigate = useNavigate();
 
     const {
@@ -31,14 +37,18 @@ export default function AuthPage() {
         resetPassword,
     } = useAuth();
 
-    // ── Redirect to dashboard once authenticated ──
+    // â”€â”€ Redirect to dashboard once authenticated â”€â”€
     useEffect(() => {
         if (isAuthenticated) {
             navigate("/dashboard", { replace: true });
         }
     }, [isAuthenticated, navigate]);
 
-    // ── Sign up handler (calls signUp, then you can also create profile) ──
+    useEffect(() => {
+        setMode(getModeFromQuery());
+    }, [searchParams]);
+
+    // â”€â”€ Sign up handler (calls signUp, then you can also create profile) â”€â”€
     const handleSignUp = async (
         email: string,
         password: string,
@@ -55,7 +65,7 @@ export default function AuthPage() {
         return success;
     };
 
-    // ── If already authenticated, show quick signed-in state ──
+    // â”€â”€ If already authenticated, show quick signed-in state â”€â”€
     // (normally the router would redirect before this renders)
     if (isAuthenticated && user) {
         return (
@@ -85,9 +95,17 @@ export default function AuthPage() {
         );
     }
 
-    // ── Layout: signin/reset → form LEFT, visual RIGHT
-    //            signup       → visual LEFT, form RIGHT ──
-    const formIsLeft = mode === "signin" || mode === "reset";
+    // â”€â”€ Layout: signin/reset â†’ form LEFT, visual RIGHT
+    //            signup       â†’ visual LEFT, form RIGHT â”€â”€
+
+    const switchMode = (nextMode: AuthMode) => {
+        if (nextMode === mode) return;
+        const currentIndex = mode === "signup" ? 1 : 0;
+        const nextIndex = nextMode === "signup" ? 1 : 0;
+        setSlideDirection(nextIndex > currentIndex ? 1 : -1);
+        setSwitchTick((prev) => prev + 1);
+        setMode(nextMode);
+    };
 
     return (
         <div className="relative h-dvh w-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex items-center justify-center p-2 sm:p-3 lg:p-4">
@@ -100,7 +118,7 @@ export default function AuthPage() {
                 to="/home"
                 className="absolute left-3 top-3 z-20 inline-flex items-center gap-2 rounded-xl border border-white/70 bg-white/70 px-3.5 py-2 text-sm font-semibold text-slate-700 backdrop-blur transition hover:bg-white sm:left-4 sm:top-4"
             >
-                ← Go back to Home Page
+                â† Go back to Home Page
             </Link>
 
             {/* Mobile logo (visual panel is hidden on mobile) */}
@@ -112,54 +130,55 @@ export default function AuthPage() {
 
                 {/* Main card */}
                 <div className="relative z-10 overflow-hidden rounded-2xl border border-white/70 bg-white/80 shadow-sm backdrop-blur-xl">
-                    <div className="grid min-h-170 lg:grid-cols-2">
-
-                        {formIsLeft ? (
-                            <>
-                                {/* Form on the left */}
+                    <div
+                        key={`${mode}-${switchTick}`}
+                        className={slideDirection === 1 ? "auth-switch-left" : "auth-switch-right"}
+                    >
+                    <div className="relative min-h-170 overflow-hidden">
+                        <div
+                            className={`flex w-[200%] min-h-170 transform-gpu transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                                mode === "signup" ? "-translate-x-1/2" : "translate-x-0"
+                            }`}
+                        >
+                            <div className="grid w-1/2 min-h-170 lg:grid-cols-2">
                                 <div className="flex items-center justify-center overflow-hidden p-4 sm:p-5 lg:p-7">
-                                    {mode === "signin" && (
-                                        <SignInForm
-                                            onSubmit={signIn}
-                                            onSwitchToSignUp={() => setMode("signup")}
-                                            onSwitchToReset={() => setMode("reset")}
+                                    {mode === "reset" ? (
+                                        <ResetPasswordForm
+                                            onSubmit={resetPassword}
+                                            onSwitchToSignIn={() => switchMode("signin")}
                                             loading={loading}
                                             error={error}
                                             successMessage={successMessage}
                                         />
-                                    )}
-                                    {mode === "reset" && (
-                                        <ResetPasswordForm
-                                            onSubmit={resetPassword}
-                                            onSwitchToSignIn={() => setMode("signin")}
+                                    ) : (
+                                        <SignInForm
+                                            onSubmit={signIn}
+                                            onSwitchToSignUp={() => switchMode("signup")}
+                                            onSwitchToReset={() => switchMode("reset")}
                                             loading={loading}
                                             error={error}
                                             successMessage={successMessage}
                                         />
                                     )}
                                 </div>
+                                <VisualPanel mode={mode === "reset" ? "reset" : "signin"} />
+                            </div>
 
-                                {/* Visual panel on the right */}
-                                <VisualPanel mode={mode} />
-                            </>
-                        ) : (
-                            <>
-                                {/* Visual panel on the left */}
-                                <VisualPanel mode={mode} />
-
-                                {/* Form on the right */}
+                            <div className="grid w-1/2 min-h-170 lg:grid-cols-2">
+                                <VisualPanel mode="signup" />
                                 <div className="flex items-center justify-center overflow-hidden p-4 sm:p-5 lg:p-7">
                                     <SignUpForm
                                         onSubmit={handleSignUp}
-                                        onSwitchToSignIn={() => setMode("signin")}
+                                        onSwitchToSignIn={() => switchMode("signin")}
                                         loading={loading}
                                         error={error}
                                         successMessage={successMessage}
                                     />
                                 </div>
-                            </>
-                        )}
+                            </div>
+                        </div>
 
+                    </div>
                     </div>
                 </div>
             </div>
