@@ -53,10 +53,7 @@ export default function SignInForm({
   return (
     <div className="mx-auto w-full max-w-md rounded-2xl border border-white/70 bg-white/60 p-4 shadow-[0_20px_60px_-30px_rgba(79,70,229,0.55)] backdrop-blur-md sm:p-5">
       <div className="mb-4">
-        <span className="inline-flex rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-indigo-700">
-          Member Access
-        </span>
-        <h1 className="mt-2 mb-1 text-2xl font-bold text-slate-900">Welcome back</h1>
+        <h1 className="mb-1 text-2xl font-bold text-slate-900">Welcome back</h1>
         <p className="text-sm text-slate-500">Sign in to your Tokenly account to continue</p>
       </div>
 

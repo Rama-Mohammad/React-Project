@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+ï»¿import { useEffect, useMemo, useState } from "react";
 import {
   Calendar,
   Check,
@@ -295,7 +295,7 @@ export default function Dashboard() {
           </div>
 
           <div className="relative mt-5 grid grid-cols-1 gap-3 xl:grid-cols-[1.8fr_1fr_1fr_1fr_1fr]">
-            <article className="rounded-2xl border border-indigo-100 bg-transparent p-4">
+            <article className="rounded-2xl border border-indigo-300/80 bg-transparent p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <div className="rounded-2xl bg-indigo-100 p-3 text-indigo-700">
@@ -371,16 +371,16 @@ export default function Dashboard() {
               ) : null}
             </article>
 
-            <article className="rounded-2xl border border-slate-200 bg-transparent p-4">
+            <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
               <div className="w-fit rounded-2xl bg-sky-100 p-3 text-sky-700">
                 <Check size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">19</p>
               <p className="text-sm text-slate-700">Sessions Done</p>
-              <p className="mt-2 text-sm text-slate-500">11 as helper · 8 as requester</p>
+              <p className="mt-2 text-sm text-slate-500">11 as helper - 8 as requester</p>
             </article>
 
-            <article className="rounded-2xl border border-slate-200 bg-transparent p-4">
+            <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
               <div className="w-fit rounded-2xl bg-violet-100 p-3 text-violet-700">
                 <MessageCircle size={20} />
               </div>
@@ -389,7 +389,7 @@ export default function Dashboard() {
               <p className="mt-2 text-sm text-slate-500">Total help requests</p>
             </article>
 
-            <article className="rounded-2xl border border-slate-200 bg-transparent p-4">
+            <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
               <div className="w-fit rounded-2xl bg-indigo-100 p-3 text-indigo-700">
                 <Send size={20} />
               </div>
@@ -398,7 +398,7 @@ export default function Dashboard() {
               <p className="mt-2 text-sm text-slate-500">11 accepted</p>
             </article>
 
-            <article className="rounded-2xl border border-slate-200 bg-transparent p-4">
+            <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
               <div className="w-fit rounded-2xl bg-amber-100 p-3 text-amber-700">
                 <Star size={20} />
               </div>
@@ -521,8 +521,8 @@ export default function Dashboard() {
         </section>
 
         <section className="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-2">
-          <article className="rounded-3xl border border-slate-200/70 bg-transparent shadow-none">
-            <div className="flex items-center justify-between border-b border-slate-200/80 p-4">
+          <article className="rounded-3xl border border-slate-300/80 bg-transparent shadow-none">
+            <div className="flex items-center justify-between border-b border-slate-300/80 p-4">
               <h3 className="text-lg font-semibold">Open Requests</h3>
               <Link to="/helpers/h1/request" className="text-sm font-semibold text-indigo-700">
                 + New
@@ -530,12 +530,12 @@ export default function Dashboard() {
             </div>
             <div className="space-y-2 p-4">
               {openRequests.map((item) => (
-                <div key={item.id} className="rounded-2xl border border-slate-200 bg-transparent p-4">
+                <div key={item.id} className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-base leading-tight">{item.title}</p>
                       <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-500">
-                        <span className="rounded-full bg-rose-100 px-3 py-0.5 text-rose-700">• {item.urgency}</span>
+                        <span className="rounded-full bg-rose-100 px-3 py-0.5 text-rose-700">{item.urgency}</span>
                         <span className="inline-flex items-center gap-1">
                           <MessageCircle size={14} />
                           {item.offers} offers
@@ -553,8 +553,8 @@ export default function Dashboard() {
             </div>
           </article>
 
-          <article className="rounded-3xl border border-slate-200/70 bg-transparent shadow-none">
-            <div className="flex items-center justify-between border-b border-slate-200/80 p-4">
+          <article className="rounded-3xl border border-slate-300/80 bg-transparent shadow-none">
+            <div className="flex items-center justify-between border-b border-slate-300/80 p-4">
               <h3 className="text-lg font-semibold">Submitted Offers</h3>
               <Link to="/explore?tab=requests#explore-tabs-bar" className="text-sm font-semibold text-indigo-700">
                 Browse requests
@@ -562,7 +562,7 @@ export default function Dashboard() {
             </div>
             <div className="space-y-2 p-4">
               {submittedOffers.map((item) => (
-                <div key={item.id} className="rounded-2xl border border-slate-200 bg-transparent p-4">
+                <div key={item.id} className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-base leading-tight">{item.title}</p>

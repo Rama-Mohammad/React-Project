@@ -2,9 +2,12 @@
 import { faChartLine, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import { helpers } from "../../data/mockExploreData";
+import useAuth from "../../hooks/useAuth";
 
 const CTASection = () => {
   const defaultHelperId = helpers[0]?.id ?? "h1";
+  const { isAuthenticated } = useAuth();
+  const gatedLink = "/auth?mode=signup";
 
   return (
     <section className="py-20">
@@ -35,13 +38,13 @@ const CTASection = () => {
 
               <div className="mb-6 flex flex-col justify-center gap-3 sm:flex-row">
                 <Link
-                  to="/explore"
+                  to={isAuthenticated ? "/explore" : gatedLink}
                   className="rounded-xl border border-slate-200 bg-white px-6 py-2.5 text-center font-semibold text-slate-900 transition hover:bg-slate-50"
                 >
                   Browse Requests
                 </Link>
                 <Link
-                  to={`/helpers/${defaultHelperId}/request`}
+                  to={isAuthenticated ? `/helpers/${defaultHelperId}/request` : gatedLink}
                   className="rounded-xl border border-indigo-200/70 bg-[linear-gradient(135deg,rgba(129,140,248,0.24)_0%,rgba(56,189,248,0.2)_48%,rgba(168,139,250,0.24)_100%)] px-6 py-2.5 text-center font-semibold text-indigo-800 shadow-[0_10px_30px_-18px_rgba(79,70,229,0.6)] backdrop-blur-md transition hover:brightness-105"
                 >
                   Post a Request
@@ -50,7 +53,7 @@ const CTASection = () => {
 
               <div className="mb-6">
                 <Link
-                  to="/dashboard"
+                  to={isAuthenticated ? "/dashboard" : gatedLink}
                   className="inline-flex items-center gap-2 text-sm font-medium text-indigo-500 transition-colors hover:text-indigo-600"
                 >
                   <FontAwesomeIcon icon={faChartLine} className="text-sm" />
@@ -59,19 +62,25 @@ const CTASection = () => {
               </div>
 
               <div className="border-t border-slate-200 pt-6">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-center gap-3">
-                    <FontAwesomeIcon icon={faCheck} className="text-sm text-emerald-500" />
+                <div className="mx-auto w-fit space-y-3">
+                  <div className="flex items-center gap-3 text-left">
+                    <span className="inline-flex w-4 shrink-0 justify-center">
+                      <FontAwesomeIcon icon={faCheck} className="text-sm text-emerald-500" />
+                    </span>
                     <span className="text-sm text-slate-700">5 free starter credits on sign-up</span>
                   </div>
 
-                  <div className="flex items-center justify-center gap-3">
-                    <FontAwesomeIcon icon={faCheck} className="text-sm text-emerald-500" />
+                  <div className="flex items-center gap-3 text-left">
+                    <span className="inline-flex w-4 shrink-0 justify-center">
+                      <FontAwesomeIcon icon={faCheck} className="text-sm text-emerald-500" />
+                    </span>
                     <span className="text-sm text-slate-700">No money ever changes hands</span>
                   </div>
 
-                  <div className="flex items-center justify-center gap-3">
-                    <FontAwesomeIcon icon={faCheck} className="text-sm text-emerald-500" />
+                  <div className="flex items-center gap-3 text-left">
+                    <span className="inline-flex w-4 shrink-0 justify-center">
+                      <FontAwesomeIcon icon={faCheck} className="text-sm text-emerald-500" />
+                    </span>
                     <span className="text-sm text-slate-700">Cancel or pause anytime</span>
                   </div>
                 </div>
@@ -85,5 +94,7 @@ const CTASection = () => {
 };
 
 export default CTASection;
+
+
 
 
