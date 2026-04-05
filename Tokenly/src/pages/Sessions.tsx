@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import SessionFilters from '../components/session/list/SessionFilters';
 import SessionListItem from '../components/session/list/SessionListItem';
 import type { Session } from '../types/session';
+import Navbar from '../components/common/Navbar';
+import Footer from '../components/common/Footer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faCalendarAlt,
@@ -19,7 +21,9 @@ const SessionsPage: React.FC = () => {
     const [activeFilter, setActiveFilter] = useState<'upcoming' | 'active' | 'completed' | 'all'>('upcoming');
     const [sessions, setSessions] = useState<Session[]>([]);
     const [creditsBalance, setCreditsBalance] = useState(12);
-    
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+
     // New state for search and filters
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState<'all' | 'helping' | 'receiving'>('all');
@@ -124,12 +128,11 @@ const SessionsPage: React.FC = () => {
     // Apply all filters
     const getFilteredSessions = () => {
         let filtered = sessions;
-        
-        // Filter by status
+
         if (activeFilter !== 'all') {
             filtered = filtered.filter(session => session.status === activeFilter);
         }
-        
+
         // Filter by search query
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
@@ -139,13 +142,13 @@ const SessionsPage: React.FC = () => {
                 session.otherParticipant.name.toLowerCase().includes(query)
             );
         }
-        
-        // Filter by role
+
+
         if (roleFilter !== 'all') {
             filtered = filtered.filter(session => session.role === roleFilter);
         }
-        
-        // Sort
+
+
         filtered = [...filtered].sort((a, b) => {
             if (sortBy === 'newest') {
                 return b.datetime.getTime() - a.datetime.getTime();
@@ -153,7 +156,7 @@ const SessionsPage: React.FC = () => {
                 return a.datetime.getTime() - b.datetime.getTime();
             }
         });
-        
+
         return filtered;
     };
 
@@ -185,23 +188,40 @@ const SessionsPage: React.FC = () => {
     };
 
     const handleMarkComplete = (sessionId: string) => {
-        if (confirm('Mark this session as complete?')) {
-            setSessions(prev => prev.map(session =>
-                session.id === sessionId
+        setSelectedSessionId(sessionId);
+        setShowConfirmModal(true);
+    };
+
+    const confirmMarkComplete = () => {
+        if (!selectedSessionId) return;
+
+        setSessions(prev =>
+            prev.map(session =>
+                session.id === selectedSessionId
                     ? { ...session, status: 'completed' as const }
                     : session
-            ));
-        }
+            )
+        );
+
+        setActiveFilter('completed');
+
+        setShowConfirmModal(false);
+        setSelectedSessionId(null);
+    };
+
+    const cancelMarkComplete = () => {
+        setShowConfirmModal(false);
+        setSelectedSessionId(null);
     };
 
     return (
         <div className="max-w-4xl mx-auto px-4 py-8">
+            <Navbar />
             {/* Header */}
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">All Sessions</h1>
             </div>
 
-            {/* Stats Cards */}
             <div className="grid grid-cols-4 gap-3 mb-6">
                 <div className="bg-white rounded-lg border border-gray-200 p-3">
                     <p className="text-2xl font-bold text-gray-900">{sessions.length}</p>
@@ -221,12 +241,10 @@ const SessionsPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Search and Filters Bar */}
             <div className="flex flex-wrap gap-3 mb-6">
-                {/* Search Input */}
                 <div className="flex-1 min-w-[200px] relative">
-                    <FontAwesomeIcon 
-                        icon={faSearch} 
+                    <FontAwesomeIcon
+                        icon={faSearch}
                         className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"
                     />
                     <input
@@ -238,7 +256,6 @@ const SessionsPage: React.FC = () => {
                     />
                 </div>
 
-                {/* Role Filter Dropdown */}
                 <select
                     value={roleFilter}
                     onChange={(e) => setRoleFilter(e.target.value as any)}
@@ -249,7 +266,6 @@ const SessionsPage: React.FC = () => {
                     <option value="receiving">Requesting</option>
                 </select>
 
-                {/* Sort Dropdown */}
                 <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as any)}
@@ -260,19 +276,16 @@ const SessionsPage: React.FC = () => {
                 </select>
             </div>
 
-            {/* Session Filters Tabs */}
             <SessionFilters
                 activeFilter={activeFilter}
                 onFilterChange={setActiveFilter}
                 counts={counts}
             />
 
-            {/* Results Count */}
             <div className="mb-4">
                 <p className="text-sm text-gray-500">{filteredSessions.length} sessions found</p>
             </div>
 
-            {/* Session List */}
             <div className="space-y-3">
                 {filteredSessions.map(session => (
                     <SessionListItem
@@ -282,18 +295,47 @@ const SessionsPage: React.FC = () => {
                         onCancel={handleCancel}
                         onReview={handleReview}
                         onViewRequest={handleViewRequest}
-                        onMarkComplete={handleMarkComplete}
                     />
                 ))}
             </div>
 
-            {/* Empty State */}
             {filteredSessions.length === 0 && (
                 <div className="text-center py-12">
                     <p className="text-gray-500">No sessions found</p>
                     <p className="text-sm text-gray-400 mt-1">Try adjusting your filters</p>
                 </div>
             )}
+
+            {showConfirmModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
+                        <h2 className="text-lg font-semibold mb-3">
+                            Mark session as complete?
+                        </h2>
+
+                        <p className="text-sm text-gray-500 mb-6">
+                            Are you sure you want to mark this session as completed?
+                        </p>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={cancelMarkComplete}
+                                className="px-4 py-2 border rounded-lg text-gray-600"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                onClick={confirmMarkComplete}
+                                className="px-4 py-2 bg-emerald-600 text-white rounded-lg"
+                            >
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <Footer />
         </div>
     );
 };

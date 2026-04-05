@@ -8,8 +8,9 @@ import RequestHelper from "../pages/RequestHelper";
 import SkillHelpers from "../pages/SkillHelpers";
 import Profile from "../pages/Profile";
 import Sessions from "../pages/Sessions";
+import SessionLivePage from "../pages/SessionLive"; 
 import Activity from "../pages/Activity";
-import AuthPage from "../pages/authPage"
+import AuthPage from "../pages/AuthPage";
 
 function ScrollToTopLayout() {
   const { pathname } = useLocation();
@@ -40,6 +41,10 @@ export const router = createBrowserRouter([
       {
         path: "/requests/:requestId",
         element: <RequestDetails />,
+      },
+      {
+        path: "/session/:sessionId", 
+        element: <SessionLivePage />,
       },
       {
         path: "/helpers/:helperId/request",

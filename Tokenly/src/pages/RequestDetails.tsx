@@ -33,6 +33,7 @@ export default function RequestDetails() {
   const [offerFeedback, setOfferFeedback] = useState("");
   const [offerError, setOfferError] = useState("");
 
+  // to handle errors
   if (!request) {
     return (
       <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">

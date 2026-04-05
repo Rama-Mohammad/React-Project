@@ -1,25 +1,23 @@
-// types/session.ts
-
 export type SessionStatus = "upcoming" | "active" | "completed" | "cancelled";
 
 export interface Session {
   id: string;
   title: string;
   category: string;
-  status: SessionStatus; // ✅ Use the SessionStatus type here instead of inline
+  status: SessionStatus; 
   role: 'helping' | 'receiving';
   otherParticipant: {
     name: string;
     avatar?: string;
-    id?: string; // ✅ Added optional id for better user tracking
+    id?: string; 
   };
   datetime: Date;
-  duration: number; // in minutes
+  duration: number;
   credits: number;
-  // ✅ Optional fields that might be useful
   description?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  requestId?: string;
 }
 
 export interface Message {
@@ -28,27 +26,26 @@ export interface Message {
   senderId: string;
   senderName: string;
   timestamp: Date;
-  attachments?: FileAttachment[]; // ✅ Should be FileAttachment[], not File[]
-  isRead?: boolean; // ✅ Useful for chat features
+  attachments?: FileAttachment[]; 
+  isRead?: boolean; 
 }
 
 export interface ChecklistItem {
   id: string;
   text: string;
   completed: boolean;
-  order?: number; // ✅ For sorting checklist items
+  order?: number; 
   createdAt?: Date;
 }
 
 export interface FileAttachment {
   id: string;
   name: string;
-  size: number; // in bytes
-  type: string; // MIME type
+  size: number; 
+  type: string; 
   url: string;
   uploadedBy: string;
   uploadedAt: Date;
-  // ✅ Optional fields
   thumbnailUrl?: string;
   isImage?: boolean;
 }

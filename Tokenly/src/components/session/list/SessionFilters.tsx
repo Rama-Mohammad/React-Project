@@ -1,4 +1,3 @@
-// components/session/list/SessionFilters.tsx
 import React from 'react';
 import type { SessionFiltersProps } from '../../../types/session';
 

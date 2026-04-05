@@ -1,4 +1,3 @@
-// components/session/live/MessageBubble.tsx
 import React from 'react';
 import type { MessageBubbleProps } from '../../../types/session';
 

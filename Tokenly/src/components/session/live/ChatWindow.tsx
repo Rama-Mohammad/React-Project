@@ -1,4 +1,3 @@
-// components/session/live/ChatWindow.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import MessageBubble from './MessageBubble';
 import type { ChatWindowProps } from '../../../types/session';

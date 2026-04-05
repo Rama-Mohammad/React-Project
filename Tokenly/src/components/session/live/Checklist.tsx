@@ -1,4 +1,3 @@
-// components/session/live/Checklist.tsx
 import React, { useState } from 'react';
 import type { ChecklistProps } from '../../../types/session';
 

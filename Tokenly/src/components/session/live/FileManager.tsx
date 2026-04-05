@@ -1,4 +1,3 @@
-// components/session/live/FileManager.tsx
 import React, { useState } from 'react';
 import type { FileManagerProps } from '../../../types/session';
 
