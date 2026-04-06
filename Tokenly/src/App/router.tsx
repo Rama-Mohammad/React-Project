@@ -11,6 +11,14 @@ import Sessions from "../pages/Sessions";
 import SessionLivePage from "../pages/SessionLive";
 import Activity from "../pages/Activity";
 import AuthPage from "../pages/AuthPage";
+import Help from "../pages/Help";
+import Guidelines from "../pages/Guidelines";
+import ReportIssue from "../pages/ReportIssue";
+import FAQ from "../pages/FAQ";
+import AccountSafety from "../pages/AccountSafety";
+import PrivacyPolicy from "../pages/PrivacyPolicy";
+import TermsOfService from "../pages/TermsOfService";
+import CookiePolicy from "../pages/CookiePolicy";
 
 function ScrollToTopLayout() {
   const { pathname } = useLocation();
@@ -69,6 +77,38 @@ export const router = createBrowserRouter([
       {
         path: "/activity",
         element: <Activity />,
+      },
+      {
+        path: "/help",
+        element: <Help />,
+      },
+      {
+        path: "/guidelines",
+        element: <Guidelines />,
+      },
+      {
+        path: "/report",
+        element: <ReportIssue />,
+      },
+      {
+        path: "/faqs",
+        element: <FAQ />,
+      },
+      {
+        path: "/account-safety",
+        element: <AccountSafety />,
+      },
+      {
+        path: "/privacy",
+        element: <PrivacyPolicy />,
+      },
+      {
+        path: "/terms",
+        element: <TermsOfService />,
+      },
+      {
+        path: "/cookies",
+        element: <CookiePolicy />,
       },
       { path: "/auth", element: <AuthPage /> },
       {

@@ -54,8 +54,8 @@ export default function Explore() {
     const params = new URLSearchParams(location.search);
     const requestedTab = params.get("tab");
 
-    if (requestedTab === "requests") {
-      setActiveTab("requests");
+    if (requestedTab === "requests" || requestedTab === "helpers" || requestedTab === "skills") {
+      setActiveTab(requestedTab);
     }
   }, [location.search]);
 

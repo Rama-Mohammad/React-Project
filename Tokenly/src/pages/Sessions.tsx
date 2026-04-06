@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Calendar,
   Check,
@@ -21,6 +21,7 @@ type SortBy = "newest" | "oldest";
 
 const SessionsPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [activeFilter, setActiveFilter] = useState<SessionFilter>("all");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [creditsBalance] = useState(12);
@@ -125,6 +126,13 @@ const SessionsPage: React.FC = () => {
 
     setSessions(mockSessions);
   }, []);
+
+  useEffect(() => {
+    const status = searchParams.get("status");
+    if (status === "all" || status === "upcoming" || status === "active" || status === "completed") {
+      setActiveFilter(status);
+    }
+  }, [searchParams]);
 
   const counts = useMemo(
     () => ({
