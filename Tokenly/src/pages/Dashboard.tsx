@@ -294,7 +294,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="relative mt-5 grid grid-cols-1 gap-3 xl:grid-cols-[1.8fr_1fr_1fr_1fr_1fr]">
+          <div className="relative mt-5 grid grid-cols-1 items-start gap-3 xl:grid-cols-[1.8fr_1fr_1fr_1fr_1fr]">
             <article className="rounded-2xl border border-indigo-300/80 bg-transparent p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
