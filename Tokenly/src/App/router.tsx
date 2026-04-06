@@ -19,6 +19,7 @@ import AccountSafety from "../pages/AccountSafety";
 import PrivacyPolicy from "../pages/PrivacyPolicy";
 import TermsOfService from "../pages/TermsOfService";
 import CookiePolicy from "../pages/CookiePolicy";
+import SessionRequestDetails from "../pages/SessionRequestDetails";
 
 function ScrollToTopLayout() {
   const { pathname } = useLocation();
@@ -49,6 +50,10 @@ export const router = createBrowserRouter([
       {
         path: "/requests/:requestId",
         element: <RequestDetails />,
+      },
+      {
+        path: "/sessions/request/:sessionId",
+        element: <SessionRequestDetails />,
       },
       {
         path: "/session/:sessionId",
