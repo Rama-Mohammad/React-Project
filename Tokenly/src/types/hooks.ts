@@ -56,6 +56,9 @@ export type EditProfileInput = {
   full_name?: string;
   bio?: string;
   profile_image_url?: string;
+  institution?: string; 
+  location?: string; 
+  title?: string;    
 };
 
 export type UseProfilesResult = {

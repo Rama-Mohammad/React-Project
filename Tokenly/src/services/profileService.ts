@@ -51,3 +51,24 @@ export async function getEmailByUsername(username: string): Promise<string | nul
   if (error || !data) return null;
   return data.email;   
 }
+
+/**
+uploads a profile picture to the `profile-pics` bucket and returns the public URL.
+path: profile-pics/{userId}/{timestamp}.{ext}**/
+
+export async function uploadProfilePicture(
+  userId: string,
+  file: File
+): Promise<string | null> {
+  const ext = file.name.split(".").pop() ?? "jpg";
+  const path = `${userId}/${Date.now()}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("profile-pics")
+    .upload(path, file, { upsert: true, contentType: file.type });
+
+  if (uploadError) return null;
+
+  const { data } = supabase.storage.from("profile-pics").getPublicUrl(path);
+  return data.publicUrl ?? null;
+}
