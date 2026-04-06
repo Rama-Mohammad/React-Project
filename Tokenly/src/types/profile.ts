@@ -7,6 +7,9 @@ export interface Profile {
   credit_balance: number;
   avg_rating: number;
   created_at: string;
+  institution?: string; 
+  location?: string; 
+  title?: string;
 }
 
 export type PortfolioType = "Project" | "Article" | "Contribution";

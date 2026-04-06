@@ -1,11 +1,14 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import NewPasswordForm from "../components/auth/NewPasswordForm";
+import OnboardingForm from "../components/auth/OnBoardingForm";
+import type { OnboardingData } from "../types/onboardingdata"
 import ResetPasswordForm from "../components/auth/ResetPasswordForm";
 import SignInForm from "../components/auth/SignInForm";
 import SignUpForm from "../components/auth/SignUpForm";
 import VisualPanel from "../components/auth/VisualPanel";
+import { uploadProfilePicture, updateProfile } from "../services/profileService";
 import type { AuthMode } from "../types/auth";
 
 function getInitialMode(searchParams: URLSearchParams): AuthMode {
@@ -32,6 +35,12 @@ export default function AuthPage() {
     const [slideDirection, setSlideDirection] = useState<1 | -1>(1);
     const [switchTick, setSwitchTick] = useState(0);
 
+    const [showOnboarding, setShowOnboarding] = useState(false);
+    const [pendingFullName, setPendingFullName] = useState("");
+    const [onboardingLoading, setOnboardingLoading] = useState(false);
+    const [onboardingError, setOnboardingError] = useState("");
+    const onboardingActiveRef = useRef(false);
+
     const {
         user,
         loading,
@@ -45,22 +54,21 @@ export default function AuthPage() {
         resetPassword,
         changePassword,
     } = useAuth();
+
     const isRecoveryRoute =
         isPasswordRecovery ||
         mode === "newpassword" ||
         window.location.pathname === "/reset-password" ||
         window.location.hash.includes("type=recovery");
 
-    //when supabase fires PASSWORD_RECOVERY event=>force newpassword mode
     useEffect(() => {
         if (isPasswordRecovery) {
             setMode("newpassword");
         }
     }, [isPasswordRecovery]);
 
-    //redirect to explore if alrready authenticated and not in password revovery 
     useEffect(() => {
-        if (isAuthenticated && !isRecoveryRoute) {
+        if (isAuthenticated && !isRecoveryRoute && !onboardingActiveRef.current) {
             navigate("/explore", { replace: true });
         }
     }, [isAuthenticated, isRecoveryRoute, navigate]);
@@ -80,7 +88,62 @@ export default function AuthPage() {
         username: string,
         fullName: string,
     ): Promise<boolean> => {
-        return await signUp(email, password, { username, full_name: fullName });
+        const success = await signUp(email, password, { username, full_name: fullName });
+        if (success) {
+            setPendingFullName(fullName);
+            onboardingActiveRef.current = true;
+            setShowOnboarding(true);
+        }
+        return success;
+    };
+
+    const handleOnboardingSubmit = async (data: OnboardingData) => {
+        if (!user) {
+            onboardingActiveRef.current = false;
+            navigate("/explore", { replace: true });
+            return true;
+        }
+
+        setOnboardingLoading(true);
+        setOnboardingError("");
+
+        let profileImageUrl: string | undefined;
+
+        if (data.profilePicFile) {
+            const url = await uploadProfilePicture(user.id, data.profilePicFile);
+            if (url) {
+                profileImageUrl = url;
+            } else {
+                setOnboardingError("Failed to upload profile picture. You can add one later.");
+                setOnboardingLoading(false);
+                return false;
+            }
+        }
+
+        const updates: Record<string, string> = {};
+        if (profileImageUrl) updates.profile_image_url = profileImageUrl;
+        if (data.bio.trim()) updates.bio = data.bio.trim();
+        if (data.institution.trim()) updates.institution = data.institution.trim();
+        if (data.location.trim()) updates.location = data.location.trim();
+
+        if (Object.keys(updates).length > 0) {
+            const { error: updateError } = await updateProfile(user.id, updates);
+            if (updateError) {
+                setOnboardingError("Failed to save profile. You can update it later.");
+                setOnboardingLoading(false);
+                return false;
+            }
+        }
+
+        setOnboardingLoading(false);
+        onboardingActiveRef.current = false;
+        navigate("/explore", { replace: true });
+        return true;
+    };
+
+    const handleOnboardingSkip = () => {
+        onboardingActiveRef.current = false;
+        navigate("/explore", { replace: true });
     };
 
     const handleNewPassword = async (newPassword: string) => {
@@ -89,6 +152,33 @@ export default function AuthPage() {
             setTimeout(() => switchMode("signin"), 2000);
         }
     };
+    //show the onboarding form 
+    if (showOnboarding) {
+        return (
+            <div className="relative h-dvh w-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex items-center justify-center p-4">
+                <div className="pointer-events-none absolute inset-0">
+                    <div className="explore-pulse absolute -left-24 top-16 h-64 w-64 rounded-full bg-indigo-200/25 blur-3xl" />
+                    <div className="explore-float absolute -right-24 top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
+                    <div className="explore-pulse absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-purple-200/20 blur-3xl" />
+                </div>
+
+                <div className="relative z-10 w-full max-w-md">
+                    <div className="rounded-2xl border border-white/70 bg-white/85 shadow-sm backdrop-blur-xl p-8">
+                        <OnboardingForm
+                            fullName={pendingFullName}
+                            onSubmit={handleOnboardingSubmit}
+                            onSkip={handleOnboardingSkip}
+                            loading={onboardingLoading}
+                            error={onboardingError}
+                        />
+                    </div>
+                    <p className="mt-4 text-center text-xs text-slate-400">
+                        All fields are optional — you can update your profile anytime
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     if (isAuthenticated && user && !isRecoveryRoute) {
         return (
@@ -108,6 +198,7 @@ export default function AuthPage() {
         );
     }
 
+    //the main auth forms (signin/signup/reset)
     return (
         <div className="relative h-dvh w-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex items-center justify-center p-2 sm:p-3 lg:p-4">
             <div className="pointer-events-none absolute inset-0">
@@ -135,11 +226,9 @@ export default function AuthPage() {
                     >
                         <div className="relative min-h-170 overflow-hidden">
                             <div
-                                className={`flex w-[200%] min-h-170 transform-gpu transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                                    mode === "signup" ? "-translate-x-1/2" : "translate-x-0"
-                                }`}
+                                className={`flex w-[200%] min-h-170 transform-gpu transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${mode === "signup" ? "-translate-x-1/2" : "translate-x-0"
+                                    }`}
                             >
-                                {/* Left panel: signin / reset / newpassword */}
                                 <div className="grid w-1/2 min-h-170 lg:grid-cols-2">
                                     <div className="flex items-center justify-center overflow-hidden p-4 sm:p-5 lg:p-7">
                                         {mode === "reset" ? (
@@ -171,7 +260,6 @@ export default function AuthPage() {
                                     <VisualPanel mode={mode === "newpassword" ? "reset" : mode} />
                                 </div>
 
-                                {/* Right panel: signup */}
                                 <div className="grid w-1/2 min-h-170 lg:grid-cols-2">
                                     <VisualPanel mode="signup" />
                                     <div className="flex items-center justify-center overflow-hidden p-4 sm:p-5 lg:p-7">
