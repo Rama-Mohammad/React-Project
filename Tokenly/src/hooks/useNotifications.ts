@@ -1,6 +1,5 @@
 import {useState } from "react";
-import type { Notification} from "../types/notification";
-import type { UseNotificationsResult } from "../types/hooks";
+import type { Notification, UseNotificationsResult } from "../types/notification";
 import {
     getNotificationsByUser,
     getUnreadNotifications,

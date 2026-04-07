@@ -1,6 +1,5 @@
 import { useState } from "react";
-import type { Review } from "../types/review";
-import type { ReviewInput, UseReviewsResult } from "../types/hooks";
+import type { Review, ReviewInput, UseReviewsResult } from "../types/review";
 import {
     createReview,
     getReviewsByUser,

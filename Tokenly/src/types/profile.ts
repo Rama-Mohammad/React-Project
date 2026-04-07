@@ -12,6 +12,16 @@ export interface Profile {
   title?: string;
 }
 
+export type EditProfileInput = {
+  username?: string;
+  full_name?: string;
+  bio?: string;
+  profile_image_url?: string;
+  institution?: string;
+  location?: string;
+  title?: string;
+};
+
 export type PortfolioType = "Project" | "Article" | "Contribution";
 export type ProfileSkillLevel = "Expert" | "Advanced" | "Intermediate" | "Beginner";
 export type ReviewSortBy = "newest" | "oldest" | "highest" | "lowest";
@@ -134,3 +144,14 @@ export interface RatingsSummaryProps {
   sortBy?: ReviewSortBy;
   onSortChange?: (value: ReviewSortBy) => void;
 }
+
+export type UseProfilesResult = {
+  profile: Profile | null;
+  results: Profile[];
+  loading: boolean;
+  error: string;
+  fetchProfileById: (id: string) => Promise<void>;
+  fetchProfileByUsername: (username: string) => Promise<void>;
+  editProfile: (id: string, updates: EditProfileInput) => Promise<boolean>;
+  search: (query: string) => Promise<void>;
+};

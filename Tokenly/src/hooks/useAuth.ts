@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { AuthUser, AuthSession } from "../types/auth";
-import type { UseAuthResult } from "../types/hooks";
+import type { AuthUser, AuthSession, UseAuthResult } from "../types/auth";
 import type { SupabaseAuthSession } from "../services/authService";
 import {
     getCurrentSession,

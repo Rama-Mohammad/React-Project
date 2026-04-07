@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { UseInViewResult } from "../types/hooks";
+import type { UseInViewResult } from "../types/common";
 
 const useInView = (): UseInViewResult => {
   const ref = useRef(null);

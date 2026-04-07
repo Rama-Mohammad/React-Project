@@ -1,6 +1,5 @@
 import { useState } from "react";
-import type { Request } from "../types/request";
-import type { RequestFilters, RequestInput, UseRequestsResult } from "../types/hooks";
+import type { Request, RequestFilters, RequestInput, RequestStatus, UseRequestsResult } from "../types/request";
 import {
     createRequest,
     getRequestById,
@@ -9,7 +8,6 @@ import {
     updateRequestStatus,
     deleteRequest,
 } from "../services/requestService";
-import type { RequestStatus } from "../types/request";
 
 export default function useRequests(): UseRequestsResult {
     const [request, setRequest] = useState<Request | null>(null);

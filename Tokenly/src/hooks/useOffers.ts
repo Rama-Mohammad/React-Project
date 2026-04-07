@@ -1,6 +1,5 @@
 import { useState } from "react";
-import type { Offer, OfferStatus } from "../types/offer";
-import type { UseOffersResult } from "../types/hooks";
+import type { Offer, OfferStatus, UseOffersResult } from "../types/offer";
 import {
     createOffer,
     getOffersByRequest,
