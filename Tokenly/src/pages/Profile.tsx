@@ -14,6 +14,7 @@ import useAuth from "../hooks/useAuth";
 import useProfiles from "../hooks/useProfile";
 import useSkills from "../hooks/useSkills";
 import useReviews from "../hooks/useReviews";
+import usePortfolio from "../hooks/usePortfolio";
 import type {
   PortfolioEntry,
   UiReview,
@@ -21,151 +22,12 @@ import type {
 } from "../types/page";
 import type { EditProfileUserInput, ProfileHeaderUser, ReviewSortBy } from "../types/profile";
 
-const mockUser = {
-  name: "Jordan Lee",
-  title: "UC Berkeley",
-  location: "Berkeley, CA",
-  memberSince: "September 2025",
-  bio: "CS student at UC Berkeley, graduating 2027. I love building tools that solve real problems. Strong in React, TypeScript, and Python and always happy to debug code or explain tough concepts.",
-  avatarInitials: "JL",
-  rating: 4.7,
-  totalRatings: 6,
-  stats: {
-    totalSessions: 19,
-    creditsEarned: 4.7,
-    skillsTaught: 17,
-  },
-};
-
-const mockSkills: UiSkill[] = [
-  { id: "1", name: "React", category: "Web Development", level: "Expert" as const, sessions: 8 },
-  { id: "2", name: "TypeScript", category: "Web Development", level: "Advanced" as const, sessions: 6 },
-  { id: "3", name: "Python", category: "Programming", level: "Advanced" as const, sessions: 5 },
-  { id: "4", name: "SQL", category: "Database", level: "Intermediate" as const, sessions: 3 },
-  { id: "5", name: "System Design", category: "Architecture", level: "Intermediate" as const, sessions: 2 },
-];
-
-const mockPortfolio = [
-  {
-    id: "1",
-    type: "Project" as const,
-    title: "PeerFlow - Collaborative Study Scheduler",
-    date: "Jan 2026",
-    description:
-      "A full-stack web app that lets student groups coordinate study sessions, assign topics, and track progress. Built with React, Node.js, and PostgreSQL. 200+ active users at my university.",
-    tags: ["React", "Node.js", "PostgreSQL", "Socket.io"],
-  },
-  {
-    id: "2",
-    type: "Article" as const,
-    title: "TypeScript Generic Patterns Cheat Sheet",
-    date: "Nov 2025",
-    description:
-      "A comprehensive article I wrote covering 10 practical generic patterns with real-world code examples. Published on Dev.to and featured in the TypeScript weekly newsletter.",
-    tags: ["TypeScript", "Technical Writing", "Generics"],
-  },
-  {
-    id: "3",
-    type: "Contribution" as const,
-    title: "Open Source Contribution - React Query Docs",
-    date: "Sep 2025",
-    description:
-      "Rewrote the optimistic updates guide in TanStack Query documentation, added practical examples, and clarified confusing sections. PR merged and now live in docs.",
-    tags: ["React", "Open Source", "Documentation"],
-  },
-  {
-    id: "4",
-    type: "Project" as const,
-    title: "Lightweight CLI Task Manager in Python",
-    date: "Jul 2025",
-    description:
-      "A terminal task tracker with priorities, due dates, and CSV export. Built with a clean OOP structure and high test coverage. Released on PyPI.",
-    tags: ["Python", "CLI", "PyPI", "Testing"],
-  },
-];
-const PROFILE_SKILLS_STORAGE_KEY = "tokenly.profile.skills";
-const PROFILE_PORTFOLIO_STORAGE_KEY = "tokenly.profile.portfolio";
-
-function readStoredValue<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return fallback;
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
-}
-
-const mockReviews = [
-  {
-    id: "1",
-    reviewerName: "Sofia Russo",
-    date: "Mar 27, 2026",
-    rating: 5,
-    comment:
-      "I finally understand window functions. Jordan explained concepts with examples from datasets similar to mine and everything clicked in one session.",
-    skillCategory: "Database",
-    sessionTopic: "Walkthrough of SQL window functions",
-  },
-  {
-    id: "2",
-    reviewerName: "Alex Chen",
-    date: "Mar 25, 2026",
-    rating: 5,
-    comment:
-      "Jordan walked me through why my TypeScript generics were failing and gave reusable patterns immediately. Super clear and patient.",
-    skillCategory: "Web Development",
-    sessionTopic: "Understand TypeScript generics",
-  },
-  {
-    id: "3",
-    reviewerName: "Marcus Webb",
-    date: "Mar 20, 2026",
-    rating: 4,
-    comment:
-      "Great explanations and excellent guidance through Big O notation. I needed repetition in one section but the session was very helpful.",
-    skillCategory: "Algorithms",
-    sessionTopic: "Big O fundamentals",
-  },
-  {
-    id: "4",
-    reviewerName: "Noa Kim",
-    date: "Mar 18, 2026",
-    rating: 5,
-    comment:
-      "Came in confused, left with a clean implementation plan and confidence. Every minute of the session felt useful.",
-    skillCategory: "Architecture",
-    sessionTopic: "Service boundaries and API design",
-  },
-  {
-    id: "5",
-    reviewerName: "Leo Patel",
-    date: "Mar 16, 2026",
-    rating: 4,
-    comment:
-      "Helpful and practical. Jordan explains tradeoffs clearly and keeps the pace easy to follow.",
-    skillCategory: "Programming",
-    sessionTopic: "Python data pipelines",
-  },
-  {
-    id: "6",
-    reviewerName: "Nina Ortega",
-    date: "Mar 11, 2026",
-    rating: 5,
-    comment:
-      "Very strong technical depth without making it overwhelming. I learned exactly what I needed for my project.",
-    skillCategory: "Web Development",
-    sessionTopic: "React app performance",
-  },
-];
-
 const toTitleCase = (value: string) =>
   value ? `${value.charAt(0).toUpperCase()}${value.slice(1).toLowerCase()}` : value;
 
 const toUiSkillLevel = (value: string): UiSkill["level"] => {
   const normalized = toTitleCase(value);
-  if (normalized === "Expert" || normalized === "Advanced") return normalized;
+  if (normalized === "Expert" || normalized === "Advanced" || normalized === "Beginner") return normalized as UiSkill["level"];
   return "Intermediate";
 };
 
@@ -174,12 +36,16 @@ const Profile: React.FC = () => {
   const {
     profile: liveProfile,
     fetchProfileById,
+    editProfile,
     loading: profileLoading,
     error: profileError,
   } = useProfiles();
   const {
     skills: liveSkills,
     fetchSkillsByUser,
+    addSkill,
+    editSkill: editSkillHook,
+    removeSkill,
     loading: skillsLoading,
     error: skillsError,
   } = useSkills();
@@ -189,15 +55,102 @@ const Profile: React.FC = () => {
     loading: reviewsLoading,
     error: reviewsError,
   } = useReviews();
+  const {
+    items: livePortfolio,
+    fetchByUser: fetchPortfolio,
+    add: addPortfolioItem,
+    edit: editPortfolioItem,
+    remove: removePortfolioItem,
+    loading: portfolioLoading,
+    error: portfolioError,
+  } = usePortfolio();
 
-  const [user, setUser] = useState<ProfileHeaderUser>(mockUser);
-  const [skills, setSkills] = useState<UiSkill[]>(() =>
-    readStoredValue<UiSkill[]>(PROFILE_SKILLS_STORAGE_KEY, mockSkills)
-  );
-  const [portfolio, setPortfolio] = useState<PortfolioEntry[]>(() =>
-    readStoredValue<PortfolioEntry[]>(PROFILE_PORTFOLIO_STORAGE_KEY, mockPortfolio)
-  );
-  const [reviews, setReviews] = useState<UiReview[]>(mockReviews);
+  // Derived UI state from live data
+  const user: ProfileHeaderUser = useMemo(() => {
+    if (!liveProfile) {
+      return {
+        name: "",
+        title: "",
+        location: "",
+        memberSince: "",
+        bio: "",
+        avatarInitials: "",
+        profileImageUrl: "",
+        rating: 0,
+        totalRatings: 0,
+        website: "",
+        coverImage: "",
+        stats: { totalSessions: 0, creditsEarned: 0, skillsTaught: 0 },
+      };
+    }
+    const name = liveProfile.full_name || liveProfile.username || "";
+    const initials = name
+      .split(" ")
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+    const memberSince = new Date(liveProfile.created_at).toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
+
+    return {
+      name,
+      title: liveProfile.title || liveProfile.institution || "",
+      location: liveProfile.location || "",
+      memberSince,
+      bio: liveProfile.bio || "",
+      avatarInitials: initials,
+      rating: liveProfile.avg_rating ?? 0,
+      totalRatings: liveReviews.length,
+      website: liveProfile.website || "",
+      coverImage: liveProfile.cover_image_url || "",
+      stats: {
+        totalSessions: 0, // we'll compute below
+        creditsEarned: liveProfile.credit_balance ?? 0,
+        skillsTaught: liveReviews.length,
+      },
+    };
+  }, [liveProfile, liveReviews]);
+
+  const skills: UiSkill[] = useMemo(() => {
+    return liveSkills.map((s) => ({
+      id: s.id,
+      name: s.name,
+      category: s.category,
+      level: toUiSkillLevel(s.level),
+      sessions: s.sessions_count,
+      description: s.description || "",
+    }));
+  }, [liveSkills]);
+
+  const portfolio: PortfolioEntry[] = useMemo(() => {
+    return livePortfolio.map((p) => ({
+      id: p.id,
+      type: toTitleCase(p.type) as PortfolioEntry["type"],
+      title: p.title,
+      date: p.date || "",
+      description: p.description || "",
+      tags: p.tags || [],
+    }));
+  }, [livePortfolio]);
+
+  const reviews: UiReview[] = useMemo(() => {
+    return liveReviews.map((r: any) => ({
+      id: r.id,
+      reviewerName: r.reviewer?.full_name || r.reviewer?.username || "Community Member",
+      date: new Date(r.created_at).toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+      }),
+      rating: r.rating,
+      comment: r.comment || "Great session.",
+      skillCategory: "General",
+      sessionTopic: "Peer session",
+    }));
+  }, [liveReviews]);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddSkillModalOpen, setIsAddSkillModalOpen] = useState(false);
@@ -210,111 +163,86 @@ const Profile: React.FC = () => {
   const [pendingPortfolioDeleteId, setPendingPortfolioDeleteId] = useState<string | null>(null);
   const [reviewSortBy, setReviewSortBy] = useState<ReviewSortBy>("newest");
 
+  // Fetch all data on mount
   useEffect(() => {
     if (!authUser?.id) return;
-
     void fetchProfileById(authUser.id);
     void fetchSkillsByUser(authUser.id);
     void fetchReviewsByUser(authUser.id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    void fetchPortfolio(authUser.id);
   }, [authUser?.id]);
 
-  useEffect(() => {
-    if (!liveProfile) return;
+  const pageError = profileError || skillsError || reviewsError || portfolioError;
 
-    setUser((prev) => ({
-      ...prev,
-      name: liveProfile.full_name || liveProfile.username || prev.name,
-      bio: liveProfile.bio || prev.bio,
-      rating: liveProfile.avg_rating ?? prev.rating,
-    }));
-  }, [liveProfile]);
+  //handlers -> supabaseee
 
-  useEffect(() => {
-    if (liveSkills.length === 0) return;
-
-    const mappedLiveSkills = liveSkills.map((skill) => ({
-      id: skill.id,
-      name: skill.name,
-      category: skill.category,
-      level: toUiSkillLevel(skill.level),
-      sessions: skill.sessions_count,
-    }));
-
-    setSkills((prev) => {
-      const merged = new Map<string, UiSkill>();
-      mappedLiveSkills.forEach((skill) => merged.set(skill.id, skill));
-      prev.forEach((skill) => {
-        if (!merged.has(skill.id)) merged.set(skill.id, skill);
-      });
-      return Array.from(merged.values());
+  const handleEditProfile = async (updatedUser: EditProfileUserInput) => {
+    if (!authUser?.id) return;
+    await editProfile(authUser.id, {
+      full_name: updatedUser.name,
+      title: updatedUser.title,
+      location: updatedUser.location,
+      bio: updatedUser.bio,
+      website: updatedUser.website,
+      profile_image_url: updatedUser.profileImageUrl || undefined,
+      cover_image_url: updatedUser.coverImage || undefined,
     });
-  }, [liveSkills]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(PROFILE_SKILLS_STORAGE_KEY, JSON.stringify(skills));
-  }, [skills]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(PROFILE_PORTFOLIO_STORAGE_KEY, JSON.stringify(portfolio));
-  }, [portfolio]);
-
-  useEffect(() => {
-    if (liveReviews.length === 0) return;
-
-    setReviews(
-      liveReviews.map((review) => ({
-        id: review.id,
-        reviewerName: "Community Member",
-        date: new Date(review.created_at).toLocaleDateString("en-US", {
-          month: "short",
-          day: "2-digit",
-          year: "numeric",
-        }),
-        rating: review.rating,
-        comment: review.comment || "Great session.",
-        skillCategory: "General",
-        sessionTopic: "Peer session",
-      }))
-    );
-  }, [liveReviews]);
-
-  const pageError = profileError || skillsError || reviewsError;
-
-  const handleEditProfile = (updatedUser: EditProfileUserInput) => {
-    setUser((prev) => ({ ...prev, ...updatedUser }));
   };
 
-  const handleUpdateSkill = (updatedSkill: UiSkill) => {
-    setSkills(skills.map((skill) => (skill.id === updatedSkill.id ? updatedSkill : skill)));
+  const handleAddSkill = async (newSkill: Omit<UiSkill, "id">) => {
+    if (!authUser?.id) return;
+    await addSkill({
+      user_id: authUser.id,
+      name: newSkill.name,
+      category: newSkill.category as any,
+      level: newSkill.level.toLowerCase() as any,
+      description: newSkill.description,
+    });
   };
 
-  const handleAddSkill = (newSkill: Omit<UiSkill, "id">) => {
-    const skill = {
-      ...newSkill,
-      level: toUiSkillLevel(newSkill.level),
-      id: Date.now().toString(),
-      sessions: 0,
-    };
-    setSkills([...skills, skill]);
+  const handleUpdateSkill = async (updatedSkill: UiSkill) => {
+    await editSkillHook(updatedSkill.id, {
+      name: updatedSkill.name,
+      category: updatedSkill.category as any,
+      level: updatedSkill.level.toLowerCase() as any,
+      description: updatedSkill.description,
+    });
   };
 
-  const handleDeleteSkill = (id: string) => {
-    setSkills(skills.filter((skill) => skill.id !== id));
+  const handleDeleteSkill = async (id: string) => {
+    await removeSkill(id);
+  };
+
+  const handleEditSkill = (skill: UiSkill) => {
+    setSelectedSkill(skill);
+    setIsEditMode(true);
+    setIsAddSkillModalOpen(true);
+  };
+
+  const handleAddPortfolio = async (newItem: Omit<PortfolioEntry, "id">) => {
+    if (!authUser?.id) return;
+    await addPortfolioItem({
+      user_id: authUser.id,
+      title: newItem.title,
+      description: newItem.description,
+      type: newItem.type.toLowerCase(),
+      tags: newItem.tags,
+      date: newItem.date,
+    });
+  };
+
+  const handleUpdatePortfolio = async (updatedItem: PortfolioEntry) => {
+    await editPortfolioItem(updatedItem.id, {
+      title: updatedItem.title,
+      description: updatedItem.description,
+      type: updatedItem.type.toLowerCase(),
+      tags: updatedItem.tags,
+      date: updatedItem.date,
+    });
   };
 
   const handleViewPortfolio = (id: string) => {
     console.log("View portfolio item:", id);
-  };
-
-  const handleAddPortfolio = (newItem: Omit<PortfolioEntry, "id">) => {
-    setPortfolio((prev) => [{ ...newItem, id: Date.now().toString() }, ...prev]);
-  };
-
-  const handleUpdatePortfolio = (updatedItem: PortfolioEntry) => {
-    setPortfolio((prev) => prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)));
   };
 
   const handleEditPortfolio = (item: PortfolioEntry) => {
@@ -327,22 +255,15 @@ const Profile: React.FC = () => {
     setPendingPortfolioDeleteId(id);
   };
 
-  const handleConfirmDeletePortfolio = () => {
+  const handleConfirmDeletePortfolio = async () => {
     if (!pendingPortfolioDeleteId) return;
-    setPortfolio((prev) => prev.filter((item) => item.id !== pendingPortfolioDeleteId));
+    await removePortfolioItem(pendingPortfolioDeleteId);
     setPendingPortfolioDeleteId(null);
-  };
-
-  const handleEditSkill = (skill: UiSkill) => {
-    setSelectedSkill(skill);
-    setIsEditMode(true);
-    setIsAddSkillModalOpen(true);
   };
 
   const sortedReviews = useMemo(() => {
     const data = [...reviews];
     const getDate = (value: string) => new Date(value).getTime() || 0;
-
     if (reviewSortBy === "newest") data.sort((a, b) => getDate(b.date) - getDate(a.date));
     if (reviewSortBy === "oldest") data.sort((a, b) => getDate(a.date) - getDate(b.date));
     if (reviewSortBy === "highest") data.sort((a, b) => b.rating - a.rating || getDate(b.date) - getDate(a.date));
@@ -363,7 +284,7 @@ const Profile: React.FC = () => {
       <Navbar />
 
       <main className="relative z-10 mx-auto min-h-[calc(100vh-76px)] w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8 lg:py-6 xl:px-10">
-        {(profileLoading || skillsLoading || reviewsLoading) ? (
+        {(profileLoading || skillsLoading || reviewsLoading || portfolioLoading) ? (
           <p className="mb-3 text-xs text-slate-500">Syncing profile data...</p>
         ) : null}
         {pageError ? <p className="mb-3 text-xs text-rose-600">{pageError}</p> : null}
@@ -377,16 +298,14 @@ const Profile: React.FC = () => {
                 <h2 className="text-xl font-semibold text-slate-900">Offered Skills</h2>
                 <p className="text-xs text-slate-500">{skills.length} skills listed</p>
               </div>
-
               <button
-                onClick={() => setIsAddSkillModalOpen(true)}
+                onClick={() => { setIsEditMode(false); setSelectedSkill(null); setIsAddSkillModalOpen(true); }}
                 className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100"
               >
                 <Plus size={14} />
                 Add Skill
               </button>
             </div>
-
             <div className="mt-3 grid gap-1 md:grid-cols-2">
               {skills.length > 0 ? (
                 skills.map((skill) => (
@@ -399,13 +318,7 @@ const Profile: React.FC = () => {
           </section>
 
           <section className="explore-fade-in-up rounded-2xl border border-white/70 bg-white/80 px-5 py-4 backdrop-blur-sm">
-            <RatingsSummary
-              reviews={reviews}
-              embedded
-              sortBy={reviewSortBy}
-              onSortChange={setReviewSortBy}
-            />
-
+            <RatingsSummary reviews={reviews} embedded sortBy={reviewSortBy} onSortChange={setReviewSortBy} />
             <div className="mt-4 space-y-3.5 border-t border-slate-200/70 pt-4">
               {visibleReviews.length > 0 ? (
                 visibleReviews.map((review) => <ReviewCard key={review.id} review={review} />)
@@ -413,11 +326,10 @@ const Profile: React.FC = () => {
                 <p className="py-4 text-center text-slate-500">No reviews yet. Complete sessions to receive feedback.</p>
               )}
             </div>
-
             {reviews.length > 3 ? (
               <button
                 type="button"
-                onClick={() => setShowAllReviews((value) => !value)}
+                onClick={() => setShowAllReviews((v) => !v)}
                 className="mt-3.5 text-sm font-semibold text-indigo-600 transition hover:text-indigo-700"
               >
                 {showAllReviews ? "Show fewer reviews" : `Show all ${reviews.length} reviews`}
@@ -432,30 +344,18 @@ const Profile: React.FC = () => {
               <h2 className="text-xl font-semibold text-slate-900">Portfolio</h2>
               <p className="text-xs text-slate-500">{portfolio.length} items</p>
             </div>
-
             <button
               type="button"
-              onClick={() => {
-                setSelectedPortfolioItem(null);
-                setIsPortfolioEditMode(false);
-                setIsAddPortfolioModalOpen(true);
-              }}
+              onClick={() => { setSelectedPortfolioItem(null); setIsPortfolioEditMode(false); setIsAddPortfolioModalOpen(true); }}
               className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100"
             >
               <Plus size={14} />
               Add Item
             </button>
           </div>
-
           <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             {portfolio.map((item) => (
-              <PortfolioItem
-                key={item.id}
-                item={item}
-                onView={handleViewPortfolio}
-                onEdit={handleEditPortfolio}
-                onDelete={handleDeletePortfolioRequest}
-              />
+              <PortfolioItem key={item.id} item={item} onView={handleViewPortfolio} onEdit={handleEditPortfolio} onDelete={handleDeletePortfolioRequest} />
             ))}
           </div>
         </section>
@@ -467,16 +367,13 @@ const Profile: React.FC = () => {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         user={user}
+        userId={authUser?.id || ""}
         onSave={handleEditProfile}
       />
 
       <AddSkillModal
         isOpen={isAddSkillModalOpen}
-        onClose={() => {
-          setIsAddSkillModalOpen(false);
-          setIsEditMode(false);
-          setSelectedSkill(null);
-        }}
+        onClose={() => { setIsAddSkillModalOpen(false); setIsEditMode(false); setSelectedSkill(null); }}
         onAdd={handleAddSkill}
         onUpdate={handleUpdateSkill}
         editSkill={selectedSkill}
@@ -485,11 +382,7 @@ const Profile: React.FC = () => {
 
       <AddPortfolioModal
         isOpen={isAddPortfolioModalOpen}
-        onClose={() => {
-          setIsAddPortfolioModalOpen(false);
-          setIsPortfolioEditMode(false);
-          setSelectedPortfolioItem(null);
-        }}
+        onClose={() => { setIsAddPortfolioModalOpen(false); setIsPortfolioEditMode(false); setSelectedPortfolioItem(null); }}
         onAdd={handleAddPortfolio}
         onUpdate={handleUpdatePortfolio}
         editItem={selectedPortfolioItem}
@@ -498,29 +391,13 @@ const Profile: React.FC = () => {
 
       {pendingPortfolioDeleteId ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <button
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-            onClick={() => setPendingPortfolioDeleteId(null)}
-            aria-label="Close delete confirmation"
-          />
+          <button className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setPendingPortfolioDeleteId(null)} aria-label="Close delete confirmation" />
           <div className="relative w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
             <h3 className="text-base font-semibold text-slate-900">Delete Portfolio Item?</h3>
             <p className="mt-1 text-sm text-slate-600">This action cannot be undone.</p>
             <div className="mt-4 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setPendingPortfolioDeleteId(null)}
-                className="rounded-lg border border-slate-300 px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmDeletePortfolio}
-                className="rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-100"
-              >
-                Delete
-              </button>
+              <button type="button" onClick={() => setPendingPortfolioDeleteId(null)} className="rounded-lg border border-slate-300 px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">Cancel</button>
+              <button type="button" onClick={handleConfirmDeletePortfolio} className="rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-100">Delete</button>
             </div>
           </div>
         </div>
@@ -530,10 +407,3 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
-
-
-
-
-
-
-

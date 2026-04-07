@@ -4,12 +4,15 @@ export interface Profile {
   full_name?: string;
   bio?: string;
   profile_image_url?: string;
+  cover_image_url?: string;
   credit_balance: number;
   avg_rating: number;
   created_at: string;
-  institution?: string; 
-  location?: string; 
+  email: string;
   title?: string;
+  institution?: string;
+  location?: string;
+  website?: string;
 }
 
 export type PortfolioType = "Project" | "Article" | "Contribution";
@@ -29,6 +32,7 @@ export type ProfileHeaderUser = {
   memberSince: string;
   bio: string;
   avatarInitials: string;
+  profileImageUrl?: string;
   rating?: number;
   totalRatings?: number;
   website?: string;
@@ -47,13 +51,14 @@ export type ProfileSkill = {
   category: string;
   level: ProfileSkillLevel;
   sessions: number;
+  description?: string;
 };
 
 export interface AddSkillModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (skill: Omit<ProfileSkill, "id">) => void;
-  onUpdate?: (skill: ProfileSkill) => void;
+  onAdd: (skill: Omit<ProfileSkill, "id">) => void | Promise<void>;
+  onUpdate?: (skill: ProfileSkill) => void | Promise<void>;
   editSkill?: ProfileSkill | null;
   isEditMode?: boolean;
 }
@@ -70,13 +75,16 @@ export type EditProfileUserInput = {
   location: string;
   bio: string;
   website?: string;
+  profileImageUrl?: string;
+  coverImage?: string;
 };
 
 export interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
   user: EditProfileUserInput;
-  onSave: (updatedUser: EditProfileUserInput) => void;
+  userId: string;
+  onSave: (updatedUser: EditProfileUserInput) => void | Promise<void>;
 }
 
 export type PortfolioItemData = {
@@ -93,8 +101,8 @@ export type AddPortfolioItemInput = Omit<PortfolioItemData, "id">;
 export interface AddPortfolioModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (item: AddPortfolioItemInput) => void;
-  onUpdate?: (item: PortfolioItemData) => void;
+  onAdd: (item: AddPortfolioItemInput) => void | Promise<void>;
+  onUpdate?: (item: PortfolioItemData) => void | Promise<void>;
   editItem?: PortfolioItemData | null;
   isEditMode?: boolean;
 }

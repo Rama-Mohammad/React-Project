@@ -54,9 +54,14 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
       <div className="relative mt-4 flex flex-col gap-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-end gap-3">
-            <div className="-mt-12 flex h-20 w-20 items-center justify-center rounded-2xl border-4 border-white bg-gradient-to-br from-indigo-500 to-sky-500 text-xl font-bold text-white shadow-sm">
-              {user.avatarInitials}
+            <div className="-mt-12 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-linear-to-br from-indigo-500 to-sky-500 text-xl font-bold text-white shadow-sm">
+              {user.profileImageUrl ? (
+                <img src={user.profileImageUrl} alt={user.name} className="h-full w-full object-cover" />
+              ) : (
+                user.avatarInitials
+              )}
             </div>
+            
 
             <div className="pb-1">
               <div className="flex flex-wrap items-center gap-2">

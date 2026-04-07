@@ -23,6 +23,11 @@ export async function updateProfile(
     full_name?: string;
     bio?: string;
     profile_image_url?: string;
+    cover_image_url?: string;
+    title?: string;
+    institution?: string;
+    location?: string;
+    website?: string;
   }
 ) {
   return await supabase
@@ -49,7 +54,7 @@ export async function getEmailByUsername(username: string): Promise<string | nul
     .maybeSingle();
 
   if (error || !data) return null;
-  return data.email;   
+  return data.email;
 }
 
 /**
