@@ -51,6 +51,8 @@ export interface SkillItem {
   avgRating: number;
   sessions: number;
   topHelpers: {
+    name?: string;
+    rating?: number;
     initials: string;
     avatarBg: string;
   }[];

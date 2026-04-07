@@ -1,6 +1,27 @@
 import { supabase } from "../lib/supabaseClient";
 import type { SkillLevel, SkillCategory } from "../types/skill";
 
+export async function getAllSkills() {
+  return await supabase
+    .from("skills")
+    .select(`
+      id,
+      name,
+      category,
+      level,
+      description,
+      sessions_count,
+      user_id,
+      profile:profiles!skills_user_id_fkey(
+        id,
+        full_name,
+        username,
+        avg_rating
+      )
+    `)
+    .order("sessions_count", { ascending: false });
+}
+
 export async function getSkillsByUser(user_id: string) {
   return await supabase
     .from("skills")
