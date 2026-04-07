@@ -17,7 +17,7 @@ export async function createReview(data: {
 export async function getReviewsByUser(reviewee_id: string) {
   return await supabase
     .from("reviews")
-    .select("*, reviewer:profiles(*), session:sessions(*)")
+    .select("*, reviewer:profiles!reviews_reviewer_id_fkey(*), session:sessions(*)")
     .eq("reviewee_id", reviewee_id)
     .order("created_at", { ascending: false });
 }
