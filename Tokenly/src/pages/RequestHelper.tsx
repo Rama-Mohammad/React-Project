@@ -3,15 +3,18 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
-import { helpers } from "../data/mockExploreData";
+import { supabase } from "../lib/supabaseClient";
+import { createRequest } from "../services/requestService";
 import type { NeedBy, RequiredSection, SessionType } from "../types/page";
 
 const durationChoices = [30, 45, 60, 90, 120];
 
 export default function RequestHelper() {
   const { helperId } = useParams<{ helperId: string }>();
-  const helper = helpers.find((entry) => entry.id === helperId);
   const navigate = useNavigate();
+  const [helper, setHelper] = useState<{ creditsPerHour: number } | null>(null);
+  const [isLoadingHelper, setIsLoadingHelper] = useState(true);
+  const [helperLoadError, setHelperLoadError] = useState("");
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -21,6 +24,8 @@ export default function RequestHelper() {
   const [creditsToOffer, setCreditsToOffer] = useState<number>(6);
   const [needBy, setNeedBy] = useState<NeedBy | null>(null);
   const [submitMessage, setSubmitMessage] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [sectionError, setSectionError] = useState<RequiredSection | null>(null);
   const sectionRefs = useRef<Record<RequiredSection, HTMLElement | null>>({
     title: null,
@@ -31,6 +36,79 @@ export default function RequestHelper() {
     urgency: null,
   });
   const availableCredits = 12;
+
+  useEffect(() => {
+    if (!helperId) {
+      setIsLoadingHelper(false);
+      return;
+    }
+
+    let mounted = true;
+    setIsLoadingHelper(true);
+    setHelperLoadError("");
+
+    void (async () => {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", helperId)
+        .maybeSingle();
+
+      if (!mounted) return;
+
+      if (profileError || !profile) {
+        setHelper(null);
+        setHelperLoadError(profileError?.message ?? "Helper not found");
+        setIsLoadingHelper(false);
+        return;
+      }
+
+      const { data: offers, error: offersError } = await supabase
+        .from("help_offers")
+        .select("credit_cost, duration_minutes")
+        .eq("helper_id", helperId);
+
+      if (!mounted) return;
+
+      if (offersError) {
+        setHelper({ creditsPerHour: 6 });
+        setIsLoadingHelper(false);
+        return;
+      }
+
+      const hourlyRates = (offers ?? [])
+        .map((offer) => {
+          if (!offer.duration_minutes || offer.duration_minutes <= 0) return null;
+          if (offer.credit_cost == null) return null;
+          return (offer.credit_cost / offer.duration_minutes) * 60;
+        })
+        .filter((rate): rate is number => rate !== null && Number.isFinite(rate));
+
+      const creditsPerHour =
+        hourlyRates.length > 0
+          ? Math.max(1, Math.round(hourlyRates.reduce((sum, rate) => sum + rate, 0) / hourlyRates.length))
+          : 6;
+
+      setHelper({ creditsPerHour });
+      setIsLoadingHelper(false);
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [helperId]);
+
+  useEffect(() => {
+    if (!submitMessage) return;
+    const timeoutId = window.setTimeout(() => setSubmitMessage(""), 3000);
+    return () => window.clearTimeout(timeoutId);
+  }, [submitMessage]);
+
+  useEffect(() => {
+    if (!submitError) return;
+    const timeoutId = window.setTimeout(() => setSubmitError(""), 4500);
+    return () => window.clearTimeout(timeoutId);
+  }, [submitError]);
 
   const allSkills = [
     "Programming",
@@ -45,13 +123,26 @@ export default function RequestHelper() {
     "Database",
   ];
 
+  if (isLoadingHelper) {
+    return (
+      <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
+        <Navbar />
+        <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
+          <h1 className="text-3xl font-bold text-slate-900">Loading helper...</h1>
+        </main>
+      </div>
+    );
+  }
+
   if (!helper) {
     return (
       <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
         <Navbar />
         <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
           <h1 className="text-3xl font-bold text-slate-900">Helper not found</h1>
-          <p className="mt-2 text-slate-600">This helper profile may no longer be available.</p>
+          <p className="mt-2 text-slate-600">
+            {helperLoadError || "This helper profile may no longer be available."}
+          </p>
           <Link
             to="/explore"
             className="mt-6 rounded-xl border border-slate-200 bg-white px-5 py-2.5 font-semibold text-slate-800 transition hover:bg-slate-50"
@@ -70,12 +161,6 @@ export default function RequestHelper() {
     if (sectionError === "skills") setSectionError(null);
   };
 
-  useEffect(() => {
-    if (!submitMessage) return;
-    const timeoutId = window.setTimeout(() => setSubmitMessage(""), 3000);
-    return () => window.clearTimeout(timeoutId);
-  }, [submitMessage]);
-
   const resetForm = () => {
     setTitle("");
     setDescription("");
@@ -86,7 +171,7 @@ export default function RequestHelper() {
     setNeedBy(null);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const orderedChecks: Array<{ key: RequiredSection; invalid: boolean }> = [
@@ -102,13 +187,77 @@ export default function RequestHelper() {
     if (firstInvalid) {
       setSectionError(firstInvalid.key);
       setSubmitMessage("");
+      setSubmitError("");
       sectionRefs.current[firstInvalid.key]?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
     setSectionError(null);
-    setSubmitMessage("Request sent successfully.");
-    resetForm();
+    setSubmitMessage("");
+    setSubmitError("");
+    setIsSubmitting(true);
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData.user?.id) {
+        setSubmitError("Please sign in first to send a request.");
+        return;
+      }
+
+      const urgency =
+        needBy === "urgent" ? "high" : needBy === "soon" ? "medium" : "low";
+      const category = selectedSkills[0] ?? "Other";
+
+      const { data: createdRequest, error: createError } = await createRequest({
+        requester_id: authData.user.id,
+        title: title.trim(),
+        description: description.trim(),
+        category,
+        urgency,
+        duration_minutes: durationMinutes ?? undefined,
+        credit_cost: creditsToOffer,
+        status: "open",
+      });
+
+      if (createError || !createdRequest?.id) {
+        setSubmitError(createError?.message ?? "Could not create request. Please try again.");
+        return;
+      }
+
+      if (selectedSkills.length > 0) {
+        const { data: matchedSkills } = await supabase
+          .from("skills")
+          .select("id,name")
+          .in("name", selectedSkills);
+
+        const skillIds = (matchedSkills ?? []).map((item) => item.id).filter(Boolean);
+        if (skillIds.length > 0) {
+          const links = skillIds.map((skillId) => ({
+            request_id: createdRequest.id,
+            skill_id: skillId,
+          }));
+          const { error: linkError } = await supabase.from("request_skills").insert(links);
+          if (linkError) {
+            // Keep request creation successful even if request_skills insertion fails.
+            console.warn("Request created but request_skills linking failed:", linkError.message);
+          }
+        }
+      }
+
+      setSubmitMessage("Request sent successfully.");
+      resetForm();
+      setTimeout(() => {
+        navigate("/explore?tab=requests#explore-tabs-bar");
+      }, 700);
+    } catch (error) {
+      const message =
+        typeof error === "object" && error && "message" in error
+          ? String((error as { message?: string }).message)
+          : "Could not create request. Please try again.";
+      setSubmitError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -383,14 +532,24 @@ export default function RequestHelper() {
 
             <button
               type="submit"
-              className="h-11 w-full rounded-xl bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 text-sm font-semibold text-white transition hover:brightness-105"
+              disabled={isSubmitting}
+              className={`h-11 w-full rounded-xl text-sm font-semibold text-white transition ${
+                isSubmitting
+                  ? "cursor-not-allowed bg-slate-300"
+                  : "bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 hover:brightness-105"
+              }`}
             >
-              Send Session Request
+              {isSubmitting ? "Sending..." : "Send Session Request"}
             </button>
 
             {submitMessage ? (
               <p className="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm font-medium text-indigo-700">
                 {submitMessage}
+              </p>
+            ) : null}
+            {submitError ? (
+              <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+                {submitError}
               </p>
             ) : null}
           </form>

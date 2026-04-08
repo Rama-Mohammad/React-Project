@@ -20,6 +20,9 @@ import PrivacyPolicy from "../pages/PrivacyPolicy";
 import TermsOfService from "../pages/TermsOfService";
 import CookiePolicy from "../pages/CookiePolicy";
 import SessionRequestDetails from "../pages/SessionRequestDetails";
+import MyOffers from "../pages/MyOffers";
+import CreateOffer from "../pages/CreateOffer";
+import IndependentOfferDetails from "../pages/IndependentOfferDetails";
 
 function ScrollToTopLayout() {
   const { pathname } = useLocation();
@@ -74,6 +77,18 @@ export const router = createBrowserRouter([
       {
         path: "/sessions",
         element: <Sessions />,
+      },
+      {
+        path: "/my-offers",
+        element: <MyOffers />,
+      },
+      {
+        path: "/create-offer",
+        element: <CreateOffer />,
+      },
+      {
+        path: "/my-offers/independent/:offerId",
+        element: <IndependentOfferDetails />,
       },
       {
         path: "/profile",

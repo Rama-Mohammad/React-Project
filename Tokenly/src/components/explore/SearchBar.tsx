@@ -7,12 +7,14 @@ const sortOptionsMap: Record<ExploreTab, string[]> = {
   requests: ["Newest", "Most Offers", "Lowest Credits", "Highest Credits"],
   helpers: ["Top Rated", "Fastest Response", "Most Sessions"],
   skills: ["Most Helpers", "Top Rated", "Most Sessions"],
+  offers: ["Newest", "Oldest", "Highest Credits"],
 };
 
 const placeholderMap: Record<ExploreTab, string> = {
   requests: "Search by title, skill, or keyword...",
   helpers: "Search by name, skill, or expertise...",
   skills: "Search skills by name or description...",
+  offers: "Search by request title, helper, or message...",
 };
 
 export default function SearchBar({

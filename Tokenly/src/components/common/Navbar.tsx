@@ -133,6 +133,13 @@ export default function Navbar() {
                     >
                       <User size={15} /> View profile
                     </Link>
+                    <Link
+                      to="/my-offers"
+                      onClick={() => setAvatarOpen(false)}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50"
+                    >
+                      <CalendarDays size={15} /> My offers
+                    </Link>
                     <button
                       onClick={handleSignOut}
                       className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50"

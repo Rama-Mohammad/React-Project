@@ -17,12 +17,13 @@ export default function useOffers(): UseOffersResult {
     async function submitOffer(
         request_id: string,
         helper_id: string,
-        message?: string
+        message?: string,
+        availability?: string
     ) {
         setLoading(true);
         setError("");
 
-        const { error } = await createOffer(request_id, helper_id, message);
+        const { error } = await createOffer(request_id, helper_id, message, availability);
 
         if (error) {
             setError(error.message);

@@ -11,6 +11,7 @@ import {
   Send,
   Star,
   Timer,
+  Trash2,
   User,
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -18,6 +19,8 @@ import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import RatingStars from "../components/common/RatingStars";
 import { activityItems } from "../data/activityItems";
+import { supabase } from "../lib/supabaseClient";
+import { deleteRequest, getRequestsByUser } from "../services/requestService";
 import type {
   DashboardOfferItem,
   DashboardRequestItem,
@@ -114,25 +117,6 @@ const initialSessionItems: DashboardSessionItem[] = [
   },
 ];
 
-const openRequests: DashboardRequestItem[] = [
-  {
-    id: "r1",
-    title: "Debug my React useEffect causing infinite re-renders",
-    urgency: "High",
-    offers: 3,
-    age: "6d ago",
-    credits: 4,
-  },
-  {
-    id: "r2",
-    title: "Help me fix a Python data pipeline that keeps crashing",
-    urgency: "High",
-    offers: 0,
-    age: "6d ago",
-    credits: 4,
-  },
-];
-
 const submittedOffers: DashboardOfferItem[] = [
   {
     id: "o1",
@@ -184,9 +168,33 @@ function statusTone(status: DashboardSessionItem["status"]) {
   return "bg-slate-100 text-slate-600";
 }
 
+function toRelativeAge(dateValue?: string | null) {
+  if (!dateValue) return "just now";
+
+  const date = new Date(dateValue);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+
+  if (!Number.isFinite(diffMs) || diffMs < 0) return "just now";
+
+  const minutes = Math.floor(diffMs / (1000 * 60));
+  if (minutes < 60) return `${Math.max(1, minutes)}m ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
 export default function Dashboard() {
   const [activeSessionTab, setActiveSessionTab] = useState<SessionTabLabel>("All");
   const [sessions, setSessions] = useState<DashboardSessionItem[]>(initialSessionItems);
+  const [openRequests, setOpenRequests] = useState<DashboardRequestItem[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(true);
+  const [requestsError, setRequestsError] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [deletingRequestId, setDeletingRequestId] = useState<string | null>(null);
   const [pendingCompleteId, setPendingCompleteId] = useState<string | null>(null);
   const [transferToast, setTransferToast] = useState<{ credits: number } | null>(null);
   const [showCreditDetails, setShowCreditDetails] = useState(false);
@@ -226,6 +234,76 @@ export default function Dashboard() {
     return () => window.clearTimeout(timer);
   }, [transferToast]);
 
+  useEffect(() => {
+    let mounted = true;
+
+    void (async () => {
+      setRequestsLoading(true);
+      setRequestsError("");
+
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (!mounted) return;
+
+      if (authError || !authData.user?.id) {
+        setCurrentUserId(null);
+        setOpenRequests([]);
+        setRequestsLoading(false);
+        setRequestsError("Please sign in to view your requests.");
+        return;
+      }
+
+      const userId = authData.user.id;
+      setCurrentUserId(userId);
+
+      const { data, error } = await getRequestsByUser(userId);
+      if (!mounted) return;
+
+      if (error) {
+        setOpenRequests([]);
+        setRequestsLoading(false);
+        setRequestsError(error.message ?? "Could not load your requests.");
+        return;
+      }
+
+      const ownRequests = (data ?? []).filter((item) => item.status === "open");
+      const requestIds = ownRequests.map((item) => item.id);
+
+      let offerCountMap: Record<string, number> = {};
+      if (requestIds.length > 0) {
+        const { data: offersData, error: offersError } = await supabase
+          .from("offers")
+          .select("request_id")
+          .in("request_id", requestIds);
+
+        if (!mounted) return;
+        if (!offersError) {
+          offerCountMap = (offersData ?? []).reduce<Record<string, number>>((acc, row) => {
+            const requestId = row.request_id as string | undefined;
+            if (!requestId) return acc;
+            acc[requestId] = (acc[requestId] ?? 0) + 1;
+            return acc;
+          }, {});
+        }
+      }
+
+      const mapped: DashboardRequestItem[] = ownRequests.map((item) => ({
+        id: item.id,
+        title: item.title,
+        urgency: item.urgency ? `${item.urgency.charAt(0).toUpperCase()}${item.urgency.slice(1)}` : "Low",
+        offers: offerCountMap[item.id] ?? 0,
+        age: toRelativeAge(item.created_at),
+        credits: item.credit_cost ?? 0,
+      }));
+
+      setOpenRequests(mapped);
+      setRequestsLoading(false);
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const handleMarkComplete = (id: string) => {
     setSessions((prev) =>
       prev.map((item) => {
@@ -246,6 +324,29 @@ export default function Dashboard() {
   const pendingSession = pendingCompleteId
     ? sessions.find((item) => item.id === pendingCompleteId) ?? null
     : null;
+
+  const handleDeleteMyRequest = async (requestId: string) => {
+    if (!currentUserId) {
+      setRequestsError("Please sign in to delete requests.");
+      return;
+    }
+
+    const confirmed = window.confirm("Delete this request? This action cannot be undone.");
+    if (!confirmed) return;
+
+    setDeletingRequestId(requestId);
+    try {
+      const { error } = await deleteRequest(requestId, currentUserId);
+      if (error) {
+        setRequestsError(error.message ?? "Could not delete this request.");
+        return;
+      }
+
+      setOpenRequests((prev) => prev.filter((item) => item.id !== requestId));
+    } finally {
+      setDeletingRequestId(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
@@ -529,27 +630,56 @@ export default function Dashboard() {
               </Link>
             </div>
             <div className="space-y-2 p-4">
-              {openRequests.map((item) => (
-                <div key={item.id} className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-base leading-tight">{item.title}</p>
-                      <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-500">
-                        <span className="rounded-full bg-rose-100 px-3 py-0.5 text-rose-700">{item.urgency}</span>
-                        <span className="inline-flex items-center gap-1">
-                          <MessageCircle size={14} />
-                          {item.offers} offers
+              {requestsLoading ? (
+                <div className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-sm text-slate-600">
+                  Loading your requests...
+                </div>
+              ) : requestsError ? (
+                <div className="rounded-2xl border border-rose-300/80 bg-rose-50/80 p-4 text-sm text-rose-700">
+                  {requestsError}
+                </div>
+              ) : openRequests.length === 0 ? (
+                <div className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-sm text-slate-600">
+                  You don't have any open requests yet.
+                </div>
+              ) : (
+                openRequests.map((item) => (
+                  <div key={item.id} className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-base leading-tight">{item.title}</p>
+                        <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-500">
+                          <span className="rounded-full bg-rose-100 px-3 py-0.5 text-rose-700">{item.urgency}</span>
+                          <span className="inline-flex items-center gap-1">
+                            <MessageCircle size={14} />
+                            {item.offers} offers
+                          </span>
+                          <span>{item.age}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3.5 py-1 text-sm font-semibold text-indigo-700">
+                          <Coins size={14} />
+                          {item.credits}
                         </span>
-                        <span>{item.age}</span>
+                        <button
+                          type="button"
+                          onClick={() => void handleDeleteMyRequest(item.id)}
+                          disabled={deletingRequestId === item.id}
+                          className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
+                            deletingRequestId === item.id
+                              ? "cursor-not-allowed border-rose-200 bg-rose-100 text-rose-400"
+                              : "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
+                          }`}
+                        >
+                          <Trash2 size={12} />
+                          {deletingRequestId === item.id ? "Deleting..." : "Delete"}
+                        </button>
                       </div>
                     </div>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3.5 py-1 text-sm font-semibold text-indigo-700">
-                      <Coins size={14} />
-                      {item.credits}
-                    </span>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </article>
 

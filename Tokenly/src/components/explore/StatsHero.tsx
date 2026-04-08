@@ -6,7 +6,6 @@ import {
   Handshake,
   X,
   FileText,
-  PlayCircle,
   Sparkles,
   Users,
 } from "lucide-react";
@@ -101,14 +100,13 @@ export default function StatsHero({ stats, defaultHelperId, openHowItWorks = fal
                 Post a Request
               </Link>
 
-              <button
-                type="button"
-                onClick={() => setIsHowItWorksOpen(true)}
+              <Link
+                to="/create-offer"
                 className="inline-flex items-center gap-2 rounded-lg border border-white/60 bg-white/85 px-4 py-2.5 text-sm font-semibold text-slate-700 transition duration-300 hover:bg-white"
               >
-                <PlayCircle size={17} />
-                How it works
-              </button>
+                <Handshake size={17} />
+                Create an Offer
+              </Link>
             </div>
 
             <div className="explore-fade-in-up mt-4 flex flex-wrap items-center gap-2.5 text-xs text-slate-500">

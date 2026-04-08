@@ -28,7 +28,7 @@ export type RequestInput = {
   urgency: Urgency;
   duration_minutes?: number;
   credit_cost: number;
-  tags?: string[];
+  status?: RequestStatus;
 };
 
 export type UseRequestsResult = {
