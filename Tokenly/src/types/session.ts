@@ -1,6 +1,15 @@
 export type SessionStatus = "upcoming" | "active" | "completed" | "cancelled";
 export type ReactionType = 'like' | 'love' | 'laugh' | 'wow';
 
+export type SessionStartInput = {
+  request_id: string;
+  offer_id: string;
+  helper_id: string;
+  requester_id: string;
+  scheduled_at?: string;
+  duration_minutes?: number;
+};
+
 
 export interface Session {
   id: string;
@@ -109,3 +118,15 @@ export interface SessionFiltersProps {
     completed: number;
   };
 }
+
+export type UseSessionsResult = {
+  session: Session | null;
+  sessions: Session[];
+  loading: boolean;
+  error: string;
+  fetchSessionById: (id: string) => Promise<void>;
+  fetchSessionsByUser: (user_id: string) => Promise<void>;
+  fetchSessionsByStatus: (user_id: string, status: SessionStatus) => Promise<void>;
+  startSession: (data: SessionStartInput) => Promise<boolean>;
+  changeSessionStatus: (id: string, status: SessionStatus) => Promise<boolean>;
+};

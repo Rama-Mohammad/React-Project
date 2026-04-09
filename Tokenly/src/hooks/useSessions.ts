@@ -1,6 +1,5 @@
 import { useState } from "react";
-import type { Session, SessionStatus } from "../types/session";
-import type { SessionStartInput, UseSessionsResult } from "../types/hooks";
+import type { Session, SessionStartInput, SessionStatus, UseSessionsResult } from "../types/session";
 import {
     createSession,
     getSessionById,

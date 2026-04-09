@@ -29,9 +29,9 @@ export async function getSessionsByUser(user_id: string) {
     .from("sessions")
     .select(`
       *,
-      request:requests(*),
-      helper:profiles!helper_id(*),
-      requester:profiles!requester_id(*)
+      request:requests(title, category, credit_cost),
+      helper:profiles!helper_id(id, full_name, username, profile_image_url),
+      requester:profiles!requester_id(id, full_name, username, profile_image_url)
     `)
     .or(`helper_id.eq.${user_id},requester_id.eq.${user_id}`)
     .order("scheduled_at", { ascending: false });

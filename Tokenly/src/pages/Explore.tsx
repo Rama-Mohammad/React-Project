@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import CategoryTabs from "../components/explore/CategoryTabs";
@@ -11,15 +11,21 @@ import SearchBar from "../components/explore/SearchBar";
 import SkillCard from "../components/explore/SkillCard";
 import StatsHero from "../components/explore/StatsHero";
 import {
+  mapRequestToExploreItem,
+  mapSkillToExploreItem,
+  type SkillWithRelations,
+} from "../utils/exploreMappers";
+import {
   helperCategories,
-  helpers,
   requestCategories,
-  requests,
   skillCategories,
-  skills,
 } from "../data/mockExploreData";
-import type { ExploreTab, RequestItem, HelperItem, SkillItem } from "../types/explore";
+import type { ExploreTab, RequestItem, HelperItem, SkillItem, OfferItem } from "../types/explore";
 import useRequests from "../hooks/useRequest";
+import { getAllSkills } from "../services/skillService";
+import { getExploreHelpers } from "../services/helperExploreService";
+import { mapProfileToHelperItem } from "../utils/helperExploreMapper";
+import { supabase } from "../lib/supabaseClient";
 
 function matchesSearch(text: string, search: string) {
   return text.toLowerCase().includes(search.toLowerCase().trim());
@@ -29,6 +35,25 @@ function getEnterStyle(index: number): CSSProperties {
   return {
     "--enter-delay": `${Math.min(index, 10) * 60}ms`,
   } as CSSProperties;
+}
+
+function toRelativeAge(dateValue?: string | null) {
+  if (!dateValue) return "just now";
+
+  const date = new Date(dateValue);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+
+  if (!Number.isFinite(diffMs) || diffMs < 0) return "just now";
+
+  const minutes = Math.floor(diffMs / (1000 * 60));
+  if (minutes < 60) return `${Math.max(1, minutes)}m ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
 
 export default function Explore() {
@@ -49,13 +74,22 @@ export default function Explore() {
   const [rating, setRating] = useState("Any rating");
   const [onlineOnly, setOnlineOnly] = useState(false);
   const [level, setLevel] = useState("All");
+  const [liveSkills, setLiveSkills] = useState<SkillWithRelations[]>([]);
+  const [skillsLoading, setSkillsLoading] = useState(false);
+  const [skillsError, setSkillsError] = useState("");
+  const [liveHelpers, setLiveHelpers] = useState<HelperItem[]>([]);
+  const [helpersLoading, setHelpersLoading] = useState(false);
+  const [helpersError, setHelpersError] = useState("");
+  const [liveOffers, setLiveOffers] = useState<OfferItem[]>([]);
+  const [offersLoading, setOffersLoading] = useState(false);
+  const [offersError, setOffersError] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const requestedTab = params.get("tab");
 
-    if (requestedTab === "requests") {
-      setActiveTab("requests");
+    if (requestedTab === "requests" || requestedTab === "helpers" || requestedTab === "skills" || requestedTab === "offers") {
+      setActiveTab(requestedTab);
     }
   }, [location.search]);
 
@@ -91,44 +125,216 @@ export default function Explore() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, duration, selectedCategory, urgency]);
 
-  const filteredRequests: RequestItem[] = useMemo(() => {
-    let data = [...requests];
+  useEffect(() => {
+    if (activeTab !== "skills") return;
 
-    if (selectedCategory !== "All") {
-      data = data.filter((item) => item.category === selectedCategory);
-    }
+    let mounted = true;
+    setSkillsLoading(true);
+    setSkillsError("");
 
-    if (urgency !== "All") {
-      data = data.filter((item) => item.urgency === urgency);
-    }
+    void getAllSkills().then(({ data, error }) => {
+      if (!mounted) return;
 
-    if (duration !== "Any") {
-      const maxDuration = duration === "<=30 min" ? 30 : duration === "<=45 min" ? 45 : 60;
-      data = data.filter((item) => item.duration <= maxDuration);
-    }
+      if (error) {
+        setSkillsError(error.message);
+        setLiveSkills([]);
+        setSkillsLoading(false);
+        return;
+      }
 
-    if (search.trim()) {
-      data = data.filter((item) =>
-        matchesSearch(
-          [item.title, item.description, item.category, item.author.name, ...item.tags].join(" "),
-          search
-        )
+      setLiveSkills(((data ?? []) as SkillWithRelations[]));
+      setSkillsLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== "helpers") return;
+
+    let mounted = true;
+    setHelpersLoading(true);
+    setHelpersError("");
+
+    void getExploreHelpers().then(({ data, error }) => {
+      if (!mounted) return;
+
+      if (error || !data) {
+        setHelpersError(error?.message ?? "Failed to load helpers");
+        setLiveHelpers([]);
+        setHelpersLoading(false);
+        return;
+      }
+
+      const mapped = data.profiles.map((profile) =>
+        mapProfileToHelperItem(profile, data.skills, data.sessions, data.helpOffers)
       );
-    }
+      setLiveHelpers(mapped);
+      setHelpersLoading(false);
+    });
 
-    if (sortBy === "Most Offers") {
-      data.sort((a, b) => b.offers - a.offers);
-    } else if (sortBy === "Lowest Credits") {
-      data.sort((a, b) => a.credits - b.credits);
-    } else if (sortBy === "Highest Credits") {
-      data.sort((a, b) => b.credits - a.credits);
-    }
+    return () => {
+      mounted = false;
+    };
+  }, [activeTab]);
 
-    return data;
-  }, [selectedCategory, urgency, duration, search, sortBy]);
+  useEffect(() => {
+    if (activeTab !== "offers") return;
+
+    let mounted = true;
+    setOffersLoading(true);
+    setOffersError("");
+
+    void Promise.all([
+      supabase
+        .from("offers")
+        .select(`
+          id,
+          request_id,
+          helper_id,
+          message,
+          availability,
+          status,
+          created_at,
+          request:requests!offers_request_id_fkey(
+            title,
+            category,
+            credit_cost,
+            duration_minutes
+          ),
+          helper:profiles!offers_helper_id_fkey(
+            full_name,
+            username
+          )
+        `)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("help_offers")
+        .select("id, helper_id, title, description, category, urgency, duration_minutes, credit_cost, status, created_at")
+        .order("created_at", { ascending: false }),
+    ]).then(([requestOffersResult, independentOffersResult]) => {
+      if (!mounted) return;
+
+      if (requestOffersResult.error) {
+        setOffersError(requestOffersResult.error.message ?? "Failed to load offers");
+        setLiveOffers([]);
+        setOffersLoading(false);
+        return;
+      }
+
+      if (independentOffersResult.error) {
+        setOffersError(independentOffersResult.error.message ?? "Failed to load independent offers");
+        setLiveOffers([]);
+        setOffersLoading(false);
+        return;
+      }
+
+      const requestMapped: OfferItem[] = ((requestOffersResult.data ?? []) as Array<Record<string, unknown>>).map((row) => {
+        const helperRaw = row.helper as
+          | { full_name?: string | null; username?: string | null }
+          | { full_name?: string | null; username?: string | null }[]
+          | null;
+        const requestRaw = row.request as
+          | { title?: string | null; category?: string | null; credit_cost?: number | null; duration_minutes?: number | null }
+          | { title?: string | null; category?: string | null; credit_cost?: number | null; duration_minutes?: number | null }[]
+          | null;
+
+        const helper = Array.isArray(helperRaw) ? helperRaw[0] : helperRaw;
+        const request = Array.isArray(requestRaw) ? requestRaw[0] : requestRaw;
+
+        return {
+          id: String(row.id ?? ""),
+          source: "request",
+          helperId: String(row.helper_id ?? ""),
+          requestId: String(row.request_id ?? ""),
+          createdAt: String(row.created_at ?? ""),
+          requestTitle: request?.title ?? "Unknown request",
+          category: request?.category ?? "General",
+          helperName: helper?.full_name ?? helper?.username ?? "Unknown helper",
+          message: String(row.message ?? "No message provided."),
+          availability: String(row.availability ?? "Availability not provided."),
+          status: String(row.status ?? "pending"),
+          credits: request?.credit_cost ?? 0,
+          duration: request?.duration_minutes ?? 0,
+          submittedAgo: toRelativeAge((row.created_at as string | null) ?? null),
+        };
+      });
+
+      const helperNameById = requestMapped.reduce<Record<string, string>>((acc, item) => {
+        if (item.helperId) acc[item.helperId] = item.helperName;
+        return acc;
+      }, {});
+
+      const independentMapped: OfferItem[] = ((independentOffersResult.data ?? []) as Array<Record<string, unknown>>).map((row) => ({
+        id: String(row.id ?? ""),
+        source: "independent",
+        helperId: String(row.helper_id ?? ""),
+        requestId: "",
+        createdAt: String(row.created_at ?? ""),
+        requestTitle: String(row.title ?? "Independent offer"),
+        category: String(row.category ?? "General"),
+        helperName: helperNameById[String(row.helper_id ?? "")] ?? "Helper",
+        message: String(row.description ?? "No description provided."),
+        availability: String(row.urgency ? `Urgency: ${row.urgency}` : "Independent offer"),
+        status: String(row.status ?? "open"),
+        credits: Number(row.credit_cost ?? 0),
+        duration: Number(row.duration_minutes ?? 0),
+        submittedAgo: toRelativeAge((row.created_at as string | null) ?? null),
+      }));
+
+      const merged = [...requestMapped, ...independentMapped].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+
+      setLiveOffers(merged);
+      setOffersLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [activeTab]);
+
+ const filteredRequests: RequestItem[] = useMemo(() => {
+  let data = liveOpenRequests.map((item) => mapRequestToExploreItem(item as never));
+
+  if (selectedCategory !== "All") {
+    data = data.filter((item) => item.category === selectedCategory);
+  }
+
+  if (urgency !== "All") {
+    data = data.filter((item) => item.urgency === urgency);
+  }
+
+  if (duration !== "Any") {
+    const maxDuration = duration === "<=30 min" ? 30 : duration === "<=45 min" ? 45 : 60;
+    data = data.filter((item) => item.duration <= maxDuration);
+  }
+
+  if (search.trim()) {
+    data = data.filter((item) =>
+      matchesSearch(
+        [item.title, item.description, item.category, item.author.name, ...item.tags].join(" "),
+        search
+      )
+    );
+  }
+
+  if (sortBy === "Most Offers") {
+    data.sort((a, b) => b.offers - a.offers);
+  } else if (sortBy === "Lowest Credits") {
+    data.sort((a, b) => a.credits - b.credits);
+  } else if (sortBy === "Highest Credits") {
+    data.sort((a, b) => b.credits - a.credits);
+  }
+
+  return data;
+}, [liveOpenRequests, selectedCategory, urgency, duration, search, sortBy]);
 
   const filteredHelpers: HelperItem[] = useMemo(() => {
-    let data = [...helpers];
+    let data = [...liveHelpers];
 
     if (selectedCategory !== "All") {
       data = data.filter(
@@ -175,10 +381,10 @@ export default function Explore() {
     }
 
     return data;
-  }, [selectedCategory, onlineOnly, rating, search, sortBy]);
+  }, [liveHelpers, onlineOnly, rating, search, selectedCategory, sortBy]);
 
   const filteredSkills: SkillItem[] = useMemo(() => {
-    let data = [...skills];
+    let data = liveSkills.map((item) => mapSkillToExploreItem(item));
 
     if (selectedCategory !== "All") {
       data = data.filter((item) => item.category === selectedCategory);
@@ -203,34 +409,64 @@ export default function Explore() {
     }
 
     return data;
-  }, [selectedCategory, level, search, sortBy]);
+  }, [level, liveSkills, search, selectedCategory, sortBy]);
+
+  const filteredOffers: OfferItem[] = useMemo(() => {
+    let data = [...liveOffers];
+
+    if (selectedCategory !== "All") {
+      data = data.filter((item) => item.category === selectedCategory);
+    }
+
+    if (search.trim()) {
+      data = data.filter((item) =>
+        matchesSearch(
+          [item.requestTitle, item.category, item.helperName, item.message, item.availability].join(" "),
+          search
+        )
+      );
+    }
+
+    if (sortBy === "Oldest") {
+      data.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    } else if (sortBy === "Highest Credits") {
+      data.sort((a, b) => b.credits - a.credits);
+    }
+
+    return data;
+  }, [liveOffers, search, selectedCategory, sortBy]);
 
   const currentCategories =
     activeTab === "requests"
       ? requestCategories
       : activeTab === "helpers"
       ? helperCategories
-      : skillCategories;
+      : activeTab === "skills"
+      ? skillCategories
+      : requestCategories;
 
   const totalCount =
     activeTab === "requests"
       ? filteredRequests.length
       : activeTab === "helpers"
       ? filteredHelpers.length
-      : filteredSkills.length;
+      : activeTab === "skills"
+      ? filteredSkills.length
+      : filteredOffers.length;
 
   const tabCounts = useMemo(
     () => ({
       requests: filteredRequests.length,
       helpers: filteredHelpers.length,
       skills: filteredSkills.length,
+      offers: filteredOffers.length,
     }),
-    [filteredRequests.length, filteredHelpers.length, filteredSkills.length]
+    [filteredRequests.length, filteredHelpers.length, filteredSkills.length, filteredOffers.length]
   );
 
   const dynamicStats = useMemo(() => {
-    const totalSessions = helpers.reduce((sum, helper) => sum + helper.sessions, 0);
-    const totalCredits = helpers.reduce((sum, helper) => sum + helper.creditsPerHour, 0);
+    const totalSessions = liveHelpers.reduce((sum, helper) => sum + helper.sessions, 0);
+    const totalCredits = liveHelpers.reduce((sum, helper) => sum + helper.creditsPerHour, 0);
     const liveCount = liveOpenRequests.length;
 
     return {
@@ -239,10 +475,10 @@ export default function Explore() {
       sessionsToday: Math.max(1, Math.round(totalSessions / 20)),
       creditsExchanged: `${Math.max(1, Math.round(totalCredits / 10))}k`,
     };
-  }, [filteredHelpers, filteredRequests.length, liveOpenRequests.length]);
+  }, [filteredHelpers, filteredRequests.length, liveHelpers, liveOpenRequests.length]);
 
   const defaultHelperId = useMemo(() => {
-    return filteredHelpers.find((helper) => helper.online)?.id ?? helpers[0]?.id ?? "h1";
+    return filteredHelpers.find((helper) => helper.online)?.id ?? liveHelpers[0]?.id ?? "h1";
   }, [filteredHelpers]);
 
   const titleText =
@@ -250,7 +486,9 @@ export default function Explore() {
       ? "Browse open help requests from peers"
       : activeTab === "helpers"
       ? "Find experts ready to help you"
-      : "Explore skills available in the community";
+      : activeTab === "skills"
+      ? "Explore skills available in the community"
+      : "See offers submitted by helpers across requests";
 
   const handleTabChange = (tab: ExploreTab) => {
     setActiveTab(tab);
@@ -265,6 +503,7 @@ export default function Explore() {
     if (tab === "requests") setSortBy("Newest");
     if (tab === "helpers") setSortBy("Top Rated");
     if (tab === "skills") setSortBy("Most Helpers");
+    if (tab === "offers") setSortBy("Newest");
   };
 
   return (
@@ -300,13 +539,8 @@ export default function Explore() {
               {titleText}
             </p>
           </div>
-          {activeTab === "requests" ? (
-            <p className="mb-4 text-xs text-slate-500">
-              {requestsLoading ? "Syncing live open requests..." : `Live open requests: ${liveOpenRequests.length}`}
-            </p>
-          ) : null}
-          {requestsError ? (
-            <p className="mb-4 text-xs text-rose-600">{requestsError}</p>
+          {activeTab === "requests" && !requestsLoading && !requestsError ? (
+            <p className="mb-4 text-xs text-slate-500">Live open requests: {liveOpenRequests.length}</p>
           ) : null}
 
           <div className="explore-glass explore-fade-in-up rounded-[1.25rem] border border-white/50 bg-white/70 p-4 backdrop-blur-xl md:p-5">
@@ -339,7 +573,15 @@ export default function Explore() {
             </div>
           </div>
 
-          {activeTab === "requests" && (
+          {activeTab === "requests" && requestsLoading ? (
+            <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
+              Loading requests...
+            </div>
+          ) : activeTab === "requests" && requestsError ? (
+            <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
+              {requestsError}
+            </div>
+          ) : activeTab === "requests" ? (
             <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {filteredRequests.map((item, index) => (
                 <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
@@ -347,9 +589,17 @@ export default function Explore() {
                 </div>
               ))}
             </div>
-          )}
+          ) : null}
 
-          {activeTab === "helpers" && (
+          {activeTab === "helpers" && helpersLoading ? (
+            <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
+              Loading helpers...
+            </div>
+          ) : activeTab === "helpers" && helpersError ? (
+            <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
+              {helpersError}
+            </div>
+          ) : activeTab === "helpers" ? (
             <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {filteredHelpers.map((item, index) => (
                 <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
@@ -357,9 +607,17 @@ export default function Explore() {
                 </div>
               ))}
             </div>
-          )}
+          ) : null}
 
-          {activeTab === "skills" && (
+          {activeTab === "skills" && skillsLoading ? (
+            <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
+              Loading skills...
+            </div>
+          ) : activeTab === "skills" && skillsError ? (
+            <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
+              {skillsError}
+            </div>
+          ) : activeTab === "skills" ? (
             <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {filteredSkills.map((item, index) => (
                 <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
@@ -367,7 +625,69 @@ export default function Explore() {
                 </div>
               ))}
             </div>
-          )}
+          ) : null}
+
+          {activeTab === "offers" && offersLoading ? (
+            <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
+              Loading offers...
+            </div>
+          ) : activeTab === "offers" && offersError ? (
+            <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
+              {offersError}
+            </div>
+          ) : activeTab === "offers" ? (
+            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {filteredOffers.map((item, index) => (
+                <article
+                  key={item.id}
+                  className="explore-fade-in-up flex h-full flex-col rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur"
+                  style={getEnterStyle(index)}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-xs text-slate-500">{item.submittedAgo}</p>
+                      <h3 className="mt-1 text-base font-semibold text-slate-900">{item.requestTitle}</h3>
+                    </div>
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        item.status === "accepted"
+                          ? "bg-emerald-50 text-emerald-700"
+                          : item.status === "rejected"
+                          ? "bg-rose-50 text-rose-700"
+                          : "bg-amber-50 text-amber-700"
+                      }`}
+                    >
+                      {item.status}
+                    </span>
+                  </div>
+
+                  <p className="mt-2 text-xs text-slate-500">{item.category} by {item.helperName}</p>
+                  <p className="mt-3 text-sm text-slate-700">{item.message}</p>
+                  <p className="mt-2 text-xs text-slate-600">Availability: {item.availability}</p>
+
+                  <div className="mt-3 flex items-center gap-2 text-xs text-slate-600">
+                    <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 font-semibold text-indigo-700">
+                      {item.duration} min
+                    </span>
+                    <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 font-semibold text-indigo-700">
+                      {item.credits} credits
+                    </span>
+                  </div>
+
+                  <div className="mt-4">
+                    {item.source === "request" ? (
+                      <Link
+                        to={`/requests/${item.requestId}`}
+                        className="inline-flex h-9 items-center rounded-xl border border-slate-300/70 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                      >
+                        View Request
+                      </Link>
+                    ) : null}
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : null}
 
           {totalCount === 0 && (
             <div className="explore-fade-in-up mt-6 rounded-[1.5rem] border border-dashed border-white/40 bg-white/70 p-8 text-center shadow-sm backdrop-blur-xl">

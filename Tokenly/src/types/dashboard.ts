@@ -1,4 +1,4 @@
-import type { Session, Transaction } from ".";
+import type { Transaction } from ".";
 
 export interface ActivityFeedProps {
   transactions: Transaction[];
@@ -8,11 +8,6 @@ export interface ActivityFeedProps {
 export interface CreditBalanceCardProps {
   balance: number;
   onViewHistory: () => void;
-}
-
-export interface MiniSessionCardProps {
-  sessions: Session[];
-  onJoinSession: (sessionId: string) => void;
 }
 
 export type SessionTabLabel = "All" | "Upcoming" | "Active" | "Completed";

@@ -1,6 +1,5 @@
 import { useState } from "react";
-import type { Transaction } from "../types/transaction";
-import type { CreditSummary, TransactionInput, UseTransactionsResult } from "../types/hooks";
+import type { CreditSummary, Transaction, TransactionInput, UseTransactionsResult } from "../types/transaction";
 import {
     getTransactionsByUser,
     getTransactionsBySession,

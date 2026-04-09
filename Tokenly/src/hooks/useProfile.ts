@@ -1,6 +1,5 @@
 import { useState } from "react";
-import type { Profile } from "../types/profile";
-import type { EditProfileInput, UseProfilesResult } from "../types/hooks";
+import type { EditProfileInput, Profile, UseProfilesResult } from "../types/profile";
 import {
     getProfileById,
     getProfileByUsername,

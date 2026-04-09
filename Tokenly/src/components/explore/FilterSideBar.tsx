@@ -135,6 +135,17 @@ export default function FilterSideBar({
             </p>
           </div>
         )}
+
+        {activeTab === "offers" && (
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            <p className="text-xs text-slate-500">
+              Browse all submitted offers from helpers across the platform.
+            </p>
+            <p className="text-xs text-slate-500">
+              <span className="font-semibold text-indigo-500">{totalCount}</span> offers
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,10 +1,17 @@
-﻿import { ArrowLeft, Code2, Search, Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ArrowLeft, ChevronDown, Code2, Search, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import HelperCard from "../components/explore/HelperCard";
-import { helpers, skills } from "../data/mockExploreData";
+import type { HelperItem, SkillItem } from "../types/explore";
+import { getExploreHelpers } from "../services/helperExploreService";
+import { mapProfileToHelperItem } from "../utils/helperExploreMapper";
+import { getAllSkills } from "../services/skillService";
+import {
+  mapSkillToExploreItem,
+  type SkillWithRelations,
+} from "../utils/exploreMappers";
 
 const levelStyles: Record<string, string> = {
   Beginner: "bg-emerald-50 text-emerald-700",
@@ -14,12 +21,90 @@ const levelStyles: Record<string, string> = {
 
 export default function SkillHelpers() {
   const { skillId } = useParams<{ skillId: string }>();
-  const skill = skills.find((entry) => entry.id === skillId);
+  const sortRef = useRef<HTMLDivElement | null>(null);
+  const [skill, setSkill] = useState<SkillItem | null>(null);
+  const [isLoadingSkill, setIsLoadingSkill] = useState(true);
+  const [skillLoadError, setSkillLoadError] = useState("");
+  const [helpers, setHelpers] = useState<HelperItem[]>([]);
+  const [helpersLoadError, setHelpersLoadError] = useState("");
 
   const [search, setSearch] = useState("");
   const [minRating, setMinRating] = useState("Any");
   const [onlineOnly, setOnlineOnly] = useState(true);
   const [sortBy, setSortBy] = useState("Top Rated");
+  const [isSortOpen, setIsSortOpen] = useState(false);
+
+  useEffect(() => {
+    if (!skillId) {
+      setIsLoadingSkill(false);
+      return;
+    }
+
+    let mounted = true;
+    setIsLoadingSkill(true);
+    setSkillLoadError("");
+
+    void getAllSkills().then(({ data, error }) => {
+      if (!mounted) return;
+
+      if (error) {
+        setSkillLoadError(error.message);
+        setSkill(null);
+        setIsLoadingSkill(false);
+        return;
+      }
+
+      const mappedSkills = ((data ?? []) as SkillWithRelations[]).map((item) =>
+        mapSkillToExploreItem(item)
+      );
+      const selectedSkill = mappedSkills.find((entry) => entry.id === skillId) ?? null;
+
+      setSkill(selectedSkill);
+      setIsLoadingSkill(false);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [skillId]);
+
+  useEffect(() => {
+    let mounted = true;
+    setHelpersLoadError("");
+
+    void getExploreHelpers().then(({ data, error }) => {
+      if (!mounted) return;
+
+      if (error || !data) {
+        setHelpersLoadError(error?.message ?? "Failed to load helpers");
+        setHelpers([]);
+        return;
+      }
+
+      const mapped = data.profiles.map((profile) =>
+        mapProfileToHelperItem(profile, data.skills, data.sessions, data.helpOffers)
+      );
+      setHelpers(mapped);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isSortOpen) return;
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!sortRef.current) return;
+      if (!sortRef.current.contains(event.target as Node)) {
+        setIsSortOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [isSortOpen]);
 
   const matchedHelpers = useMemo(() => {
     if (!skill) return [];
@@ -68,15 +153,28 @@ export default function SkillHelpers() {
     }
 
     return data;
-  }, [skill, search, minRating, onlineOnly, sortBy]);
+  }, [skill, helpers, search, minRating, onlineOnly, sortBy]);
 
   if (!skill) {
+    if (isLoadingSkill) {
+      return (
+        <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
+          <Navbar />
+          <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
+            <h1 className="text-3xl font-bold text-slate-900">Loading skill...</h1>
+          </main>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
         <Navbar />
         <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
           <h1 className="text-3xl font-bold text-slate-900">Skill not found</h1>
-          <p className="mt-2 text-slate-600">This skill page is not available.</p>
+          <p className="mt-2 text-slate-600">
+            {skillLoadError || "This skill page is not available."}
+          </p>
           <Link
             to="/explore"
             className="mt-6 rounded-xl border border-slate-200 bg-white px-5 py-2.5 font-semibold text-slate-800 transition hover:bg-slate-50"
@@ -156,8 +254,11 @@ export default function SkillHelpers() {
           <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
           {onlineCount} helpers available right now
         </p>
+        {helpersLoadError ? (
+          <p className="mt-2 text-sm font-medium text-rose-600">{helpersLoadError}</p>
+        ) : null}
 
-        <section className="explore-glass explore-fade-in-up mt-4 rounded-3xl border border-white/55 bg-white/80 p-4 backdrop-blur-xl md:p-5">
+        <section className="explore-glass explore-fade-in-up relative z-40 mt-4 overflow-visible rounded-3xl border border-white/55 bg-white/80 p-4 backdrop-blur-xl md:p-5">
           <div className="flex flex-col gap-3 lg:flex-row">
             <label className="relative block flex-1">
               <Search size={16} className="pointer-events-none absolute left-3 top-3 text-slate-400" />
@@ -169,15 +270,41 @@ export default function SkillHelpers() {
               />
             </label>
 
-            <select
-              value={sortBy}
-              onChange={(event) => setSortBy(event.target.value)}
-              className="h-11 rounded-2xl border border-slate-200/80 bg-white px-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
-            >
-              <option>Top Rated</option>
-              <option>Fastest Response</option>
-              <option>Most Sessions</option>
-            </select>
+            <div ref={sortRef} className="relative z-50">
+              <button
+                type="button"
+                onClick={() => setIsSortOpen((prev) => !prev)}
+                className="inline-flex h-11 min-w-[190px] items-center justify-between gap-3 rounded-2xl border border-indigo-200 bg-white/90 px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              >
+                <span>{sortBy}</span>
+                <ChevronDown
+                  size={16}
+                  className={`text-slate-500 transition-transform ${isSortOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {isSortOpen ? (
+                <div className="absolute left-0 top-[calc(100%+8px)] z-[120] w-full overflow-hidden rounded-2xl border border-indigo-200 bg-white/95 p-1 shadow-xl backdrop-blur">
+                  {["Top Rated", "Fastest Response", "Most Sessions"].map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => {
+                        setSortBy(option);
+                        setIsSortOpen(false);
+                      }}
+                      className={`block w-full rounded-xl px-3 py-2 text-left text-sm font-medium transition ${
+                        sortBy === option
+                          ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white"
+                          : "text-slate-700 hover:bg-indigo-50"
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -214,7 +341,7 @@ export default function SkillHelpers() {
         </section>
 
         {matchedHelpers.length > 0 ? (
-          <section className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <section className="relative z-10 mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {matchedHelpers.map((helper) => (
               <div key={helper.id} className="explore-fade-in-up h-full">
                 <HelperCard item={helper} />
@@ -222,7 +349,7 @@ export default function SkillHelpers() {
             ))}
           </section>
         ) : (
-          <section className="explore-fade-in-up mt-6 rounded-[1.5rem] border border-dashed border-white/40 bg-white/70 p-8 text-center shadow-sm backdrop-blur-xl">
+          <section className="explore-fade-in-up relative z-10 mt-6 rounded-[1.5rem] border border-dashed border-white/40 bg-white/70 p-8 text-center shadow-sm backdrop-blur-xl">
             <h3 className="text-xl font-bold text-slate-900">No helpers found</h3>
             <p className="mt-2 text-sm text-slate-500">
               Try relaxing filters or searching with another keyword.
@@ -247,7 +374,3 @@ export default function SkillHelpers() {
     </div>
   );
 }
-
-
-
-

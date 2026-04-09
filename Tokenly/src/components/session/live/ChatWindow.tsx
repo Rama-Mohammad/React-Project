@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import MessageBubble from './MessageBubble';
-import type { ChatWindowProps } from '../../../types/session';
+import React, { useEffect, useRef, useState } from "react";
+import MessageBubble from "./MessageBubble";
+import type { ChatWindowProps } from "../../../types/session";
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
   messages,
@@ -8,60 +8,47 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   isActive,
   currentUserId,
 }) => {
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSend = () => {
-    if (inputText.trim() && isActive) {
-      onSendMessage(inputText.trim());
-      setInputText('');
-      inputRef.current?.focus();
-    }
+    if (!inputText.trim() || !isActive) return;
+    onSendMessage(inputText.trim());
+    setInputText("");
+    inputRef.current?.focus();
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-xl border border-gray-200">
-      <div className="p-3 border-b border-gray-200">
-        <h3 className="font-semibold text-gray-900">Chat</h3>
-        <p className="text-xs text-gray-500">
-          {isActive ? 'Connected' : 'Reconnecting...'}
-        </p>
+    <div className="flex h-full flex-col rounded-xl border border-indigo-200/70 bg-white/75 shadow-[0_12px_28px_-22px_rgba(99,102,241,0.5)] backdrop-blur">
+      <div className="border-b border-indigo-200/70 bg-indigo-50/60 p-3">
+        <h3 className="font-semibold text-slate-900">Chat</h3>
+        <p className="text-xs text-slate-500">{isActive ? "Connected" : "Reconnecting..."}</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-3">
+      <div className="flex-1 space-y-3 overflow-y-auto p-3">
         {messages.length === 0 ? (
-          <div className="text-center text-gray-400 text-sm mt-8">
-            No messages yet. Start the conversation!
-          </div>
+          <div className="mt-8 text-center text-sm text-slate-400">No messages yet. Start the conversation.</div>
         ) : (
           messages.map((message) => (
-            <MessageBubble
-              key={message.id}
-              message={message}
-              isOwn={message.senderId === currentUserId}
-            />
+            <MessageBubble key={message.id} message={message} isOwn={message.senderId === currentUserId} />
           ))
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-3 border-t border-gray-200">
+      <div className="border-t border-indigo-200/70 p-3">
         <div className="flex gap-2">
           <textarea
             ref={inputRef}
@@ -70,13 +57,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             onKeyPress={handleKeyPress}
             disabled={!isActive}
             placeholder={isActive ? "Type a message..." : "Chat is disabled"}
-            className="flex-1 resize-none border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-400"
             rows={2}
+            className="flex-1 resize-none rounded-lg border border-indigo-200 bg-indigo-50/40 p-2 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-100 disabled:text-slate-400"
           />
           <button
             onClick={handleSend}
             disabled={!isActive || !inputText.trim()}
-            className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors self-end"
+            className="self-end rounded-lg bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] px-3 py-2 text-sm font-medium text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             Send
           </button>

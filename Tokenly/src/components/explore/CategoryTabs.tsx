@@ -1,4 +1,4 @@
-import { BookOpen, FileText, Users } from "lucide-react";
+import { BookOpen, FileText, Send, Users } from "lucide-react";
 import type { CategoryTabsProps } from "../../types/explore";
 
 export default function CategoryTabs({
@@ -48,6 +48,16 @@ export default function CategoryTabs({
         <BookOpen size={16} />
         Skills
         <span className={badgeClass(activeTab === "skills")}>{counts.skills}</span>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onChange("offers")}
+        className={tabClass(activeTab === "offers")}
+      >
+        <Send size={16} />
+        Offers
+        <span className={badgeClass(activeTab === "offers")}>{counts.offers}</span>
       </button>
     </div>
   );

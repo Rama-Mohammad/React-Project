@@ -1,9 +1,10 @@
-﻿import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Calendar,
   Check,
   CheckCheck,
+  ChevronDown,
   Circle,
   Clock3,
   Coins,
@@ -24,6 +25,7 @@ type SortBy = "newest" | "oldest";
 
 const SessionsPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [activeFilter, setActiveFilter] = useState<SessionFilter>("all");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [creditsBalance] = useState(12);
@@ -33,104 +35,10 @@ const SessionsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [sortBy, setSortBy] = useState<SortBy>("newest");
+
+   const [isSortOpen, setIsSortOpen] = useState(false);
+   const sortRef = useRef<HTMLDivElement>(null);
   
-
-  // useEffect(() => {
-  //   // const mockSessions: Session[] = [
-  //   //   {
-  //   //     id: "1",
-  //   //     title: "Help structure my technical blog post about Docker",
-  //   //     category: "Writing",
-  //   //     status: "upcoming",
-  //   //     role: "receiving",
-  //   //     otherParticipant: { name: "Liam Park" },
-  //   //     datetime: new Date(2026, 2, 29, 20, 0),
-  //   //     duration: 30,
-  //   //     credits: -3,
-  //   //   },
-  //   //   {
-  //   //     id: "2",
-  //   //     title: "Debug React useEffect causing infinite re-renders",
-  //   //     category: "Programming",
-  //   //     status: "upcoming",
-  //   //     role: "receiving",
-  //   //     otherParticipant: { name: "Priya Nair" },
-  //   //     datetime: new Date(2026, 2, 28, 22, 0),
-  //   //     duration: 30,
-  //   //     credits: -4,
-  //   //   },
-  //   //   {
-  //   //     id: "3",
-  //   //     title: "Walkthrough of SQL window functions (RANK, LAG, LEAD)",
-  //   //     category: "Database",
-  //   //     status: "active",
-  //   //     role: "helping",
-  //   //     otherParticipant: { name: "Sofia Russo" },
-  //   //     datetime: new Date(2026, 2, 27, 18, 30),
-  //   //     duration: 30,
-  //   //     credits: 3,
-  //   //   },
-  //   //   {
-  //   //     id: "4",
-  //   //     title: "Understand TypeScript generics with practical examples",
-  //   //     category: "Web Development",
-  //   //     status: "completed",
-  //   //     role: "helping",
-  //   //     otherParticipant: { name: "Alex Chen" },
-  //   //     datetime: new Date(2026, 2, 25),
-  //   //     duration: 30,
-  //   //     credits: 3,
-  //   //   },
-  //   //   {
-  //   //     id: "5",
-  //   //     title: "Help me understand Big O notation for interview prep",
-  //   //     category: "Algorithms",
-  //   //     status: "completed",
-  //   //     role: "receiving",
-  //   //     otherParticipant: { name: "Marcus Webb" },
-  //   //     datetime: new Date(2026, 2, 20),
-  //   //     duration: 60,
-  //   //     credits: -6,
-  //   //   },
-  //   //   {
-  //   //     id: "6",
-  //   //     title: "Explain gradient descent and backpropagation intuitively",
-  //   //     category: "Machine Learning",
-  //   //     status: "completed",
-  //   //     role: "helping",
-  //   //     otherParticipant: { name: "Alex Chen" },
-  //   //     datetime: new Date(2026, 2, 18),
-  //   //     duration: 45,
-  //   //     credits: 5,
-  //   //   },
-  //   //   {
-  //   //     id: "7",
-  //   //     title: "Explain hypothesis testing (t-test, p-value)",
-  //   //     category: "Statistics",
-  //   //     status: "completed",
-  //   //     role: "helping",
-  //   //     otherParticipant: { name: "Sofia Russo" },
-  //   //     datetime: new Date(2026, 2, 15),
-  //   //     duration: 45,
-  //   //     credits: 4,
-  //   //   },
-  //   //   {
-  //   //     id: "8",
-  //   //     title: "Review my system design for a URL shortener",
-  //   //     category: "System Design",
-  //   //     status: "completed",
-  //   //     role: "receiving",
-  //   //     otherParticipant: { name: "Liam Park" },
-  //   //     datetime: new Date(2026, 2, 12),
-  //   //     duration: 45,
-  //   //     credits: -5,
-  //   //   },
-  //   // ];
-
-  //   // setSessions(mockSessions);
-
-  // }, []);
-
 useEffect(() => {
   const fetchSessions = async () => {
     const { data: userData, error: userError } = await getCurrentUser();
@@ -149,27 +57,36 @@ useEffect(() => {
       return;
     }
 
-    // Transform Supabase data → UI Session type
-    const mappedSessions = (data || []).map((s: any) => ({
-      id: s.id,
-      title: s.request?.title || "Untitled",
-      category: s.request?.category || "General",
-      status: s.status,
-      role: s.helper_id === userId ? "helping" : "receiving",
-      otherParticipant: {
-        name:
-          s.helper_id === userId
-            ? s.requester_id
-            : s.helper_id,
-      },
-      datetime: new Date(s.scheduled_at),
-      duration: s.duration_minutes || 30,
-      credits: s.request?.credit_cost
-        ? s.helper_id === userId
-          ? s.request.credit_cost
-          : -s.request.credit_cost
-        : 0,
-    }));
+   const mappedSessions = (data || []).map((s: any) => {
+  const isHelper = s.helper_id === userId;
+
+  const otherUser = isHelper ? s.requester : s.helper;
+
+  return {
+    id: s.id,
+    title: s.request?.title || "Untitled Session",
+    category: s.request?.category || "General",
+    status: s.status,
+
+    role: (isHelper ? "helping" : "receiving") as "helping" | "receiving",
+
+    otherParticipant: {
+      name: otherUser?.full_name || otherUser?.username || "Unknown",
+      avatar: otherUser?.profile_image_url,
+      id: otherUser?.id,
+    },
+
+    datetime: s.scheduled_at ? new Date(s.scheduled_at) : new Date(),
+
+    duration: s.duration_minutes || 30,
+
+    credits: s.request?.credit_cost
+      ? isHelper
+        ? s.request.credit_cost
+        : -s.request.credit_cost
+      : 0,
+  };
+});
 
     setSessions(mappedSessions);
   };
@@ -275,7 +192,7 @@ useEffect(() => {
     return "bg-slate-100 text-slate-600";
   };
 
-  const handleViewRequest = (sessionId: string) => navigate(`/requests/${sessionId}`);
+  const handleViewRequest = (sessionId: string) => navigate(`/sessions/request/${sessionId}`);
   const handleJoin = (sessionId: string) => navigate(`/session/${sessionId}`);
 
   const handleMarkComplete = (sessionId: string) => {
@@ -283,10 +200,13 @@ useEffect(() => {
     setShowConfirmModal(true);
   };
 
- const confirmMarkComplete = async () => {
+const confirmMarkComplete = async () => {
   if (!selectedSessionId) return;
 
-  const { error } = await updateSessionStatus(selectedSessionId, "completed");
+  const { data, error } = await updateSessionStatus(
+    selectedSessionId,
+    "completed"
+  );
 
   if (error) {
     console.error(error);
@@ -301,7 +221,6 @@ useEffect(() => {
     )
   );
 
-  setActiveFilter("completed");
   setShowConfirmModal(false);
   setSelectedSessionId(null);
 };
@@ -379,7 +298,7 @@ useEffect(() => {
           </div>
           </div>
 
-          <div className="mt-3 rounded-2xl bg-transparent p-3 backdrop-blur-sm sm:p-4">
+          <div className="relative z-30 mt-3 overflow-visible rounded-2xl bg-transparent p-3 backdrop-blur-sm sm:p-4">
           <div className="rounded-xl border border-slate-300 bg-transparent p-1">
             <div className="grid grid-cols-2 gap-1.5 lg:grid-cols-4">
               {statusTabs.map((tab) => (
@@ -438,16 +357,54 @@ useEffect(() => {
               </div>
             </div>
 
-            <div className="relative">
-              <ListFilter size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortBy)}
-                className="h-10 w-full appearance-none rounded-xl border border-slate-300/90 bg-transparent pl-9 pr-3 text-xs font-medium text-slate-700 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+            <div className="relative z-50" ref={sortRef}>
+              <button
+                type="button"
+                onClick={() => setIsSortOpen((prev) => !prev)}
+                className="flex h-10 w-full items-center justify-between rounded-xl border border-indigo-200/80 bg-white/75 px-3 text-xs font-semibold text-slate-700 shadow-[0_8px_20px_-18px_rgba(99,102,241,0.7)] transition hover:bg-white"
               >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-              </select>
+                <span className="inline-flex items-center gap-2">
+                  <ListFilter size={16} className="text-slate-500" />
+                  {sortBy === "newest" ? "Newest First" : "Oldest First"}
+                </span>
+                <ChevronDown
+                  size={15}
+                  className={`text-slate-500 transition ${isSortOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {isSortOpen ? (
+                <div className="absolute left-0 top-full z-[100] mt-1 w-full overflow-hidden rounded-xl border border-indigo-200 bg-white shadow-[0_16px_28px_-18px_rgba(99,102,241,0.5)]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSortBy("newest");
+                      setIsSortOpen(false);
+                    }}
+                    className={`block w-full px-3 py-2 text-left text-xs font-semibold transition ${
+                      sortBy === "newest"
+                        ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white"
+                        : "text-slate-700 hover:bg-indigo-50"
+                    }`}
+                  >
+                    Newest First
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSortBy("oldest");
+                      setIsSortOpen(false);
+                    }}
+                    className={`block w-full px-3 py-2 text-left text-xs font-semibold transition ${
+                      sortBy === "oldest"
+                        ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white"
+                        : "text-slate-700 hover:bg-indigo-50"
+                    }`}
+                  >
+                    Oldest First
+                  </button>
+                </div>
+              ) : null}
             </div>
           </div>
 
@@ -547,7 +504,7 @@ useEffect(() => {
                         <Circle size={14} className="text-slate-300" />
                         {isCompleted && rating > 0 ? (
                           <>
-                            <span className="text-amber-500">{"★".repeat(rating)}{"☆".repeat(5 - rating)}</span>
+                            <span className="text-amber-500">{"?".repeat(rating)}{"?".repeat(5 - rating)}</span>
                             <span>{sessionNote(session)}</span>
                           </>
                         ) : (
@@ -645,4 +602,5 @@ useEffect(() => {
 };
 
 export default SessionsPage;
+
 

@@ -1,222 +1,209 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import VideoPlaceholder from '../components/session/live/VideoPlaceHolder';
-import ChatWindow from '../components/session/live/ChatWindow';
-import FileManager from '../components/session/live/FileManager';
-import Checklist from '../components/session/live/Checklist';
-import type { Message, ChecklistItem, FileAttachment } from '../types/session';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClipboardList, faPaperclip } from '@fortawesome/free-solid-svg-icons';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { CircleDot, ClipboardList, Paperclip } from "lucide-react";
+import VideoPlaceholder from "../components/session/live/VideoPlaceHolder";
+import ChatWindow from "../components/session/live/ChatWindow";
+import FileManager from "../components/session/live/FileManager";
+import Checklist from "../components/session/live/Checklist";
+import type { ChecklistItem, FileAttachment, Message } from "../types/session";
 
-type TabType = 'agenda' | 'files';
+type TabType = "agenda" | "files";
 
 const SessionLivePage: React.FC = () => {
-    const navigate = useNavigate();
-    const { sessionId } = useParams();
+  const navigate = useNavigate();
+  const { sessionId } = useParams();
 
-    const [activeTab, setActiveTab] = useState<TabType>('agenda');
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([
-        { id: '1', text: 'Introduction and goal setting', completed: false },
-        { id: '2', text: 'Main topic discussion', completed: false },
-        { id: '3', text: 'Q&A and clarification', completed: false },
-        { id: '4', text: 'Action items and next steps', completed: false },
+  const [activeTab, setActiveTab] = useState<TabType>("agenda");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([
+    { id: "1", text: "Confirm goals and expected outcomes", completed: false },
+    { id: "2", text: "Work through key blockers together", completed: false },
+    { id: "3", text: "Summarize takeaways and next steps", completed: false },
+  ]);
+  const [files, setFiles] = useState<FileAttachment[]>([]);
+  const [isVideoEnabled, setIsVideoEnabled] = useState(true);
+
+  const currentUserId = "current-user-123";
+  const isActive = true;
+
+  useEffect(() => {
+    setMessages([
+      {
+        id: "1",
+        text: "Hi! Ready to start the session?",
+        senderId: "other-user",
+        senderName: "Alex Chen",
+        timestamp: new Date(Date.now() - 6 * 60000),
+      },
+      {
+        id: "2",
+        text: "Yes, let's start. I want to focus on generics today.",
+        senderId: currentUserId,
+        senderName: "You",
+        timestamp: new Date(Date.now() - 3 * 60000),
+      },
     ]);
-    const [files, setFiles] = useState<FileAttachment[]>([]);
-    const [isVideoEnabled, setIsVideoEnabled] = useState(true);
-    const [isActive, setIsActive] = useState(true);
 
-    // Mock current user
-    const currentUserId = 'current-user-123';
+    setFiles([
+      {
+        id: "1",
+        name: "session_notes.pdf",
+        size: 1024000,
+        type: "application/pdf",
+        url: "#",
+        uploadedBy: "Alex Chen",
+        uploadedAt: new Date(Date.now() - 20 * 60000),
+      },
+    ]);
+  }, []);
 
-    useEffect(() => {
-        // Mock initial messages
-        setMessages([
-            {
-                id: '1',
-                text: 'Hi! Ready to start the session?',
-                senderId: 'other-user',
-                senderName: 'Alex Chen',
-                timestamp: new Date(),
-            },
-            {
-                id: '2',
-                text: "Yes, let's get started! I have some questions about TypeScript generics.",
-                senderId: currentUserId,
-                senderName: 'You',
-                timestamp: new Date(Date.now() - 5 * 60000),
-            },
-        ]);
-
-        // Mock files
-        setFiles([
-            {
-                id: '1',
-                name: 'session_notes.pdf',
-                size: 1024000,
-                type: 'application/pdf',
-                url: '#',
-                uploadedBy: 'Alex Chen',
-                uploadedAt: new Date(),
-            },
-            {
-                id: '2',
-                name: 'code_examples.zip',
-                size: 2048000,
-                type: 'application/zip',
-                url: '#',
-                uploadedBy: 'You',
-                uploadedAt: new Date(),
-            },
-        ]);
-    }, []);
-
-    const handleSendMessage = (text: string) => {
-        const newMessage: Message = {
-            id: Date.now().toString(),
-            text,
-            senderId: currentUserId,
-            senderName: 'You',
-            timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, newMessage]);
+  const handleSendMessage = (text: string) => {
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      text,
+      senderId: currentUserId,
+      senderName: "You",
+      timestamp: new Date(),
     };
+    setMessages((prev) => [...prev, newMessage]);
+  };
 
-    const handleToggleItem = (itemId: string) => {
-        setChecklistItems(prev =>
-            prev.map(item =>
-                item.id === itemId ? { ...item, completed: !item.completed } : item
-            )
-        );
-    };
-
-    const handleDeleteFile = (fileId: string) => {
-        setFiles(prev => prev.filter(file => file.id !== fileId));
-    };
-
-    const handleAddItem = (text: string) => {
-        const newItem: ChecklistItem = {
-            id: Date.now().toString(),
-            text,
-            completed: false,
-        };
-        setChecklistItems(prev => [...prev, newItem]);
-    };
-
-    const handleFileUpload = async (file: File) => {
-        // Simulate upload
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        const newFile: FileAttachment = {
-            id: Date.now().toString(),
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            url: URL.createObjectURL(file),
-            uploadedBy: 'You',
-            uploadedAt: new Date(),
-        };
-        setFiles(prev => [...prev, newFile]);
-    };
-
-    const handleDownload = (fileId: string) => {
-        const file = files.find(f => f.id === fileId);
-        if (file) {
-            window.open(file.url, '_blank');
-        }
-    };
-
-    const handleLeaveSession = () => {
-        navigate('/sessions');
-    };
-
-    return (
-        <div className="h-screen flex flex-col bg-gray-50">
-            {/* Main content */}
-            <div className="flex-1 flex overflow-hidden p-4 gap-4">
-                {/* Left column - Video */}
-                <div className="flex-1 flex flex-col gap-4">
-                    <VideoPlaceholder
-                        isVideoEnabled={isVideoEnabled}
-                        participantCount={2}
-                        onToggleVideo={() => setIsVideoEnabled(!isVideoEnabled)}
-                        onToggleAudio={() => console.log('Toggle audio')}
-                        onShareScreen={() => console.log('Share screen')}
-                    />
-                </div>
-
-                {/* Right column - Chat and Tabs */}
-                <div className="w-96 flex flex-col gap-4">
-                    {/* Chat Window */}
-                    <div className="flex-1">
-                        <ChatWindow
-                            sessionId={sessionId || ''}
-                            messages={messages}
-                            onSendMessage={handleSendMessage}
-                            isActive={isActive}
-                            currentUserId={currentUserId}
-                        />
-                    </div>
-
-                    {/* Tabs for Agenda and Files */}
-                    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                        {/* Tab Headers */}
-                        <div className="flex border-b border-gray-200">
-                            <button
-                                onClick={() => setActiveTab('agenda')}
-                                className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'agenda'
-                                    ? 'bg-emerald-50 text-emerald-600 border-b-2 border-emerald-600'
-                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                                    }`}
-                            >
-                                <FontAwesomeIcon icon={faClipboardList} className="mr-2" />
-                                Agenda              </button>
-                            <button
-                                onClick={() => setActiveTab('files')}
-                                className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'files'
-                                    ? 'bg-emerald-50 text-emerald-600 border-b-2 border-emerald-600'
-                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                                    }`}
-                            >
-                                <FontAwesomeIcon icon={faPaperclip} className="mr-2" />
-                                Files ({files.length})              </button>
-                        </div>
-
-                        {/* Tab Content */}
-                        <div className="p-4 max-h-80 overflow-y-auto">
-                            {activeTab === 'agenda' ? (
-                                <Checklist
-                                    items={checklistItems}
-                                    onToggleItem={handleToggleItem}
-                                    onAddItem={handleAddItem}
-                                    isEditable={true}
-                                />
-                            ) : (
-                                <FileManager
-                                    sessionId={sessionId || ''}
-                                    onFileUpload={handleFileUpload}
-                                    files={files}
-                                    onDownload={handleDownload}
-                                    onDelete={handleDeleteFile}
-
-                                />
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Leave button */}
-            <div className="bg-white border-t border-gray-200 px-6 py-3 flex justify-center">
-                <button
-                    onClick={handleLeaveSession}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                    Leave Session
-                </button>
-            </div>
-        </div>
+  const handleToggleItem = (itemId: string) => {
+    setChecklistItems((prev) =>
+      prev.map((item) => (item.id === itemId ? { ...item, completed: !item.completed } : item))
     );
+  };
+
+  const handleAddItem = (text: string) => {
+    const newItem: ChecklistItem = {
+      id: Date.now().toString(),
+      text,
+      completed: false,
+    };
+    setChecklistItems((prev) => [...prev, newItem]);
+  };
+
+  const handleFileUpload = async (file: File) => {
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    const newFile: FileAttachment = {
+      id: Date.now().toString(),
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      url: URL.createObjectURL(file),
+      uploadedBy: "You",
+      uploadedAt: new Date(),
+    };
+    setFiles((prev) => [...prev, newFile]);
+  };
+
+  const handleDownload = (fileId: string) => {
+    const file = files.find((f) => f.id === fileId);
+    if (file) window.open(file.url, "_blank");
+  };
+
+  const handleDeleteFile = (fileId: string) => {
+    setFiles((prev) => prev.filter((file) => file.id !== fileId));
+  };
+
+  return (
+    <div className="flex h-screen flex-col bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_52%,#f3e8ff_100%)] text-slate-900">
+      <header className="border-b border-indigo-200/70 bg-white/55 px-5 py-3 backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-indigo-500">Live Session</p>
+            <h1 className="text-lg font-semibold text-slate-900">Session #{sessionId ?? "unknown"}</h1>
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/70 px-3 py-1.5 text-xs font-medium text-indigo-700">
+            <CircleDot size={13} className="text-indigo-600" />
+            Connected
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto flex w-full max-w-[1600px] flex-1 gap-4 overflow-hidden p-4">
+        <section className="flex min-w-0 flex-1 flex-col">
+          <VideoPlaceholder
+            isVideoEnabled={isVideoEnabled}
+            participantCount={2}
+            onToggleVideo={() => setIsVideoEnabled((prev) => !prev)}
+            onToggleAudio={() => {}}
+            onShareScreen={() => {}}
+          />
+        </section>
+
+        <aside className="flex w-[390px] min-w-[350px] flex-col gap-4">
+          <div className="min-h-0 flex-1">
+            <ChatWindow
+              sessionId={sessionId ?? ""}
+              messages={messages}
+              onSendMessage={handleSendMessage}
+              isActive={isActive}
+              currentUserId={currentUserId}
+            />
+          </div>
+
+          <div className="overflow-hidden rounded-xl border border-indigo-200/70 bg-white/75 shadow-[0_12px_28px_-22px_rgba(99,102,241,0.5)] backdrop-blur">
+            <div className="flex border-b border-indigo-200/70 bg-indigo-50/60 p-1">
+              <button
+                onClick={() => setActiveTab("agenda")}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  activeTab === "agenda"
+                    ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white shadow-[0_10px_20px_-14px_rgba(99,102,241,0.8)]"
+                    : "text-slate-600 hover:bg-indigo-50 hover:text-slate-800"
+                }`}
+              >
+                <ClipboardList size={15} />
+                Agenda
+              </button>
+              <button
+                onClick={() => setActiveTab("files")}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  activeTab === "files"
+                    ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white shadow-[0_10px_20px_-14px_rgba(99,102,241,0.8)]"
+                    : "text-slate-600 hover:bg-indigo-50 hover:text-slate-800"
+                }`}
+              >
+                <Paperclip size={15} />
+                Files ({files.length})
+              </button>
+            </div>
+
+            <div className="max-h-80 overflow-y-auto p-4">
+              {activeTab === "agenda" ? (
+                <Checklist
+                  items={checklistItems}
+                  onToggleItem={handleToggleItem}
+                  onAddItem={handleAddItem}
+                  isEditable
+                />
+              ) : (
+                <FileManager
+                  sessionId={sessionId ?? ""}
+                  onFileUpload={handleFileUpload}
+                  files={files}
+                  onDownload={handleDownload}
+                  onDelete={handleDeleteFile}
+                />
+              )}
+            </div>
+          </div>
+        </aside>
+      </main>
+
+      <footer className="border-t border-indigo-200/70 bg-white/55 px-6 py-3 backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-[1600px] justify-center">
+          <button
+            onClick={() => navigate("/sessions")}
+            className="rounded-lg bg-[linear-gradient(90deg,#ef4444,#f97316)] px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_22px_-16px_rgba(239,68,68,0.85)] transition hover:opacity-95"
+          >
+            Leave Session
+          </button>
+        </div>
+      </footer>
+    </div>
+  );
 };
 
 export default SessionLivePage;
+

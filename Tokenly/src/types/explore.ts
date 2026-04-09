@@ -1,4 +1,4 @@
-export type ExploreTab = "requests" | "helpers" | "skills";
+export type ExploreTab = "requests" | "helpers" | "skills" | "offers";
 
 export type Urgency = "High" | "Medium" | "Low";
 export type SkillLevel = "Beginner" | "Intermediate" | "Advanced";
@@ -51,9 +51,28 @@ export interface SkillItem {
   avgRating: number;
   sessions: number;
   topHelpers: {
+    name?: string;
+    rating?: number;
     initials: string;
     avatarBg: string;
   }[];
+}
+
+export interface OfferItem {
+  id: string;
+  source: "request" | "independent";
+  helperId: string;
+  requestId: string;
+  createdAt: string;
+  requestTitle: string;
+  category: string;
+  helperName: string;
+  message: string;
+  availability: string;
+  status: string;
+  credits: number;
+  duration: number;
+  submittedAgo: string;
 }
 
 export interface ExploreStats {
@@ -88,6 +107,7 @@ export interface CategoryTabsProps {
     requests: number;
     helpers: number;
     skills: number;
+    offers: number;
   };
 }
 

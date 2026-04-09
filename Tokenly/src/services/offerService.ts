@@ -1,14 +1,229 @@
 import { supabase } from "../lib/supabaseClient";
 import type { OfferStatus } from "../types/offer";
+import type { Request } from "../types/request";
 
 export async function createOffer(
   request_id: string,
   helper_id: string,
-  message?: string
+  message?: string,
+  availability?: string
 ) {
   return await supabase
     .from("offers")
-    .insert({ request_id, helper_id, message, status: "pending" })
+    .insert({ request_id, helper_id, message, availability, status: "pending" })
+    .select()
+    .single();
+}
+
+export type OfferForRequestRow = {
+  id: string;
+  request_id: string;
+  helper_id: string;
+  message: string | null;
+  availability: string | null;
+  status: OfferStatus;
+  created_at: string;
+  helper: {
+    id: string;
+    full_name: string | null;
+    username: string | null;
+    avg_rating: number | null;
+    profile_image_url: string | null;
+  } | null;
+};
+
+export type OfferForHelperRow = {
+  id: string;
+  request_id: string;
+  helper_id: string;
+  message: string | null;
+  availability: string | null;
+  status: OfferStatus;
+  created_at: string;
+  request: {
+    id: string;
+    title: string;
+    category: string | null;
+    status: string;
+    urgency: string | null;
+    credit_cost: number | null;
+    duration_minutes: number | null;
+  } | null;
+};
+
+export async function getOffersForRequest(requestId: string) {
+  const result = await supabase
+    .from("offers")
+    .select(`
+      id,
+      request_id,
+      helper_id,
+      message,
+      availability,
+      status,
+      created_at,
+      helper:profiles!offers_helper_id_fkey(
+        id,
+        full_name,
+        username,
+        avg_rating,
+        profile_image_url
+      )
+    `)
+    .eq("request_id", requestId)
+    .order("created_at", { ascending: false });
+
+  if (result.error || !result.data) {
+    return { data: [] as OfferForRequestRow[], error: result.error };
+  }
+
+  const normalized = result.data.map((row) => {
+    const helperValue = (
+      row as {
+        helper:
+          | OfferForRequestRow["helper"]
+          | OfferForRequestRow["helper"][];
+      }
+    ).helper;
+
+    return {
+      ...row,
+      helper: Array.isArray(helperValue) ? helperValue[0] ?? null : helperValue ?? null,
+    } as OfferForRequestRow;
+  });
+
+  return { data: normalized, error: null };
+}
+
+export async function getOffersForHelper(helperId: string) {
+  const result = await supabase
+    .from("offers")
+    .select(`
+      id,
+      request_id,
+      helper_id,
+      message,
+      availability,
+      status,
+      created_at,
+      request:requests!offers_request_id_fkey(
+        id,
+        title,
+        category,
+        status,
+        urgency,
+        credit_cost,
+        duration_minutes
+      )
+    `)
+    .eq("helper_id", helperId)
+    .order("created_at", { ascending: false });
+
+  if (result.error || !result.data) {
+    return { data: [] as OfferForHelperRow[], error: result.error };
+  }
+
+  const normalized = result.data.map((row) => {
+    const requestValue = (
+      row as {
+        request:
+          | OfferForHelperRow["request"]
+          | OfferForHelperRow["request"][];
+      }
+    ).request;
+
+    return {
+      ...row,
+      request: Array.isArray(requestValue) ? requestValue[0] ?? null : requestValue ?? null,
+    } as OfferForHelperRow;
+  });
+
+  return { data: normalized, error: null };
+}
+
+export async function acceptOffer(
+  offerId: string,
+  request: Pick<Request, "id" | "requester_id" | "duration_minutes">
+) {
+  const { data: offer, error: offerFetchError } = await supabase
+    .from("offers")
+    .select("id, request_id, helper_id, status")
+    .eq("id", offerId)
+    .single();
+
+  if (offerFetchError) {
+    return { data: null, error: offerFetchError };
+  }
+
+  const { error: acceptError } = await supabase
+    .from("offers")
+    .update({ status: "accepted" })
+    .eq("id", offerId);
+
+  if (acceptError) {
+    return { data: null, error: acceptError };
+  }
+
+  const { error: rejectOthersError } = await supabase
+    .from("offers")
+    .update({ status: "rejected" })
+    .eq("request_id", request.id)
+    .neq("id", offerId)
+    .eq("status", "pending");
+
+  if (rejectOthersError) {
+    return { data: null, error: rejectOthersError };
+  }
+
+  const { data: existingSession, error: existingSessionError } = await supabase
+    .from("sessions")
+    .select("id")
+    .eq("offer_id", offerId)
+    .maybeSingle();
+
+  if (existingSessionError) {
+    return { data: null, error: existingSessionError };
+  }
+
+  let sessionData = existingSession;
+  if (!sessionData?.id) {
+    const { data: createdSession, error: createSessionError } = await supabase
+      .from("sessions")
+      .insert({
+        request_id: request.id,
+        offer_id: offer.id,
+        helper_id: offer.helper_id,
+        requester_id: request.requester_id,
+        duration_minutes: request.duration_minutes,
+        status: "upcoming",
+      })
+      .select()
+      .single();
+
+    if (createSessionError) {
+      return { data: null, error: createSessionError };
+    }
+
+    sessionData = createdSession;
+  }
+
+  const { error: requestUpdateError } = await supabase
+    .from("requests")
+    .update({ status: "accepted" })
+    .eq("id", request.id);
+
+  if (requestUpdateError) {
+    return { data: null, error: requestUpdateError };
+  }
+
+  return { data: sessionData, error: null };
+}
+
+export async function rejectOffer(offerId: string) {
+  return await supabase
+    .from("offers")
+    .update({ status: "rejected" })
+    .eq("id", offerId)
     .select()
     .single();
 }

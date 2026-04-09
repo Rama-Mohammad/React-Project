@@ -6,15 +6,25 @@
   MessageCircle,
   Share2,
   ShieldCheck,
+  Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import RatingStars from "../components/common/RatingStars";
-import { helpers, requests } from "../data/mockExploreData";
+import { helpers } from "../data/mockExploreData";
 import { supabase } from "../lib/supabaseClient";
-import { createOffer } from "../services/offerService";
+import {
+  acceptOffer,
+  createOffer,
+  getOffersForRequest,
+  rejectOffer,
+  type OfferForRequestRow,
+} from "../services/offerService";
+import { deleteRequest, getRequestById } from "../services/requestService";
+import { mapRequestToExploreItem } from "../utils/exploreMappers";
+import type { RequestItem } from "../types/explore";
 
 const urgencyStyles: Record<string, string> = {
   High: "bg-rose-50 text-rose-600",
@@ -24,14 +34,104 @@ const urgencyStyles: Record<string, string> = {
 
 export default function RequestDetails() {
   const { requestId } = useParams<{ requestId: string }>();
-  const request = requests.find((item) => item.id === requestId);
   const navigate = useNavigate();
+  const [request, setRequest] = useState<RequestItem | null>(null);
+  const [requestOwnerId, setRequestOwnerId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isDeletingRequest, setIsDeletingRequest] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isLoadingRequest, setIsLoadingRequest] = useState(true);
+  const [requestLoadError, setRequestLoadError] = useState("");
   const [actionFeedback, setActionFeedback] = useState<string>("");
   const [offerMessage, setOfferMessage] = useState("");
   const [availability, setAvailability] = useState("");
   const [isSubmittingOffer, setIsSubmittingOffer] = useState(false);
   const [offerFeedback, setOfferFeedback] = useState("");
   const [offerError, setOfferError] = useState("");
+  const [offers, setOffers] = useState<OfferForRequestRow[]>([]);
+  const [offersLoading, setOffersLoading] = useState(false);
+  const [offersError, setOffersError] = useState("");
+  const [offerActionId, setOfferActionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!requestId) {
+      setIsLoadingRequest(false);
+      return;
+    }
+
+    let mounted = true;
+    setIsLoadingRequest(true);
+    setRequestLoadError("");
+
+    void getRequestById(requestId).then(({ data, error }) => {
+      if (!mounted) return;
+
+      if (error || !data) {
+        setRequest(null);
+        setRequestLoadError(error?.message ?? "Request not found");
+        setIsLoadingRequest(false);
+        return;
+      }
+
+      setRequest(mapRequestToExploreItem(data as never));
+      setRequestOwnerId((data as { requester_id?: string | null }).requester_id ?? null);
+      setIsLoadingRequest(false);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [requestId]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    void supabase.auth.getUser().then(({ data }) => {
+      if (!mounted) return;
+      setCurrentUserId(data.user?.id ?? null);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!request?.id) return;
+
+    let mounted = true;
+    setOffersLoading(true);
+    setOffersError("");
+
+    void getOffersForRequest(request.id).then(({ data, error }) => {
+      if (!mounted) return;
+
+      if (error) {
+        setOffers([]);
+        setOffersError(error.message ?? "Could not load offers.");
+        setOffersLoading(false);
+        return;
+      }
+
+      setOffers(data ?? []);
+      setOffersLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [request?.id]);
+
+  if (isLoadingRequest) {
+    return (
+      <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
+        <Navbar />
+        <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
+          <h1 className="text-3xl font-bold text-slate-900">Loading request...</h1>
+        </main>
+      </div>
+    );
+  }
 
   // to handle errors
   if (!request) {
@@ -41,7 +141,7 @@ export default function RequestDetails() {
         <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
           <h1 className="text-3xl font-bold text-slate-900">Request not found</h1>
           <p className="mt-2 text-slate-600">
-            We couldn't find this request. It may have been removed.
+            {requestLoadError || "We couldn't find this request. It may have been removed."}
           </p>
           <Link
             to="/explore"
@@ -58,6 +158,24 @@ export default function RequestDetails() {
   const authorSkills = authorHelper?.skills.slice(0, 3) ?? request.tags.slice(0, 3);
   const sessionsCompleted = authorHelper?.sessions ?? 12;
   const canSubmitOffer = offerMessage.trim().length > 0 && availability.trim().length > 0 && !isSubmittingOffer;
+  const canDeleteRequest = Boolean(currentUserId && requestOwnerId && currentUserId === requestOwnerId);
+  const canManageOffers = canDeleteRequest;
+
+  const refreshOffers = async () => {
+    if (!request?.id) return;
+
+    setOffersLoading(true);
+    setOffersError("");
+    const { data, error } = await getOffersForRequest(request.id);
+    if (error) {
+      setOffersError(error.message ?? "Could not refresh offers.");
+      setOffersLoading(false);
+      return;
+    }
+
+    setOffers(data ?? []);
+    setOffersLoading(false);
+  };
 
   const handleShare = async () => {
     const shareUrl = window.location.href;
@@ -98,8 +216,105 @@ export default function RequestDetails() {
     setActionFeedback("Opened your email app to submit a report.");
   };
 
+  const handleDeleteRequest = async () => {
+    if (!canDeleteRequest) {
+      setActionFeedback("Only the request creator can delete this request.");
+      return;
+    }
+
+    setIsDeletingRequest(true);
+    try {
+      const { error } = await deleteRequest(request.id, currentUserId ?? undefined);
+      if (error) {
+        setActionFeedback("Could not delete request right now.");
+        return;
+      }
+
+      navigate("/explore?tab=requests#explore-tabs-bar");
+    } finally {
+      setIsDeletingRequest(false);
+    }
+  };
+
+  const handleAcceptOffer = async (offerId: string) => {
+    if (!currentUserId) {
+      setOffersError("Please sign in first.");
+      return;
+    }
+
+    if (!canManageOffers || !requestOwnerId) {
+      setOffersError("Only the requester can accept offers.");
+      return;
+    }
+
+    if (!request?.id) {
+      setOffersError("Request not found.");
+      return;
+    }
+
+    setOfferActionId(offerId);
+    setOffersError("");
+    try {
+      const { error } = await acceptOffer(offerId, {
+        id: request.id,
+        requester_id: requestOwnerId,
+        duration_minutes: request.duration,
+      });
+
+      if (error) {
+        setOffersError(error.message ?? "Could not accept offer.");
+        return;
+      }
+
+      setOfferFeedback("Offer accepted. Session created successfully.");
+      await refreshOffers();
+    } finally {
+      setOfferActionId(null);
+    }
+  };
+
+  const handleRejectOffer = async (offerId: string) => {
+    if (!currentUserId) {
+      setOffersError("Please sign in first.");
+      return;
+    }
+
+    if (!canManageOffers) {
+      setOffersError("Only the requester can reject offers.");
+      return;
+    }
+
+    setOfferActionId(offerId);
+    setOffersError("");
+    try {
+      const { error } = await rejectOffer(offerId);
+      if (error) {
+        setOffersError(error.message ?? "Could not reject offer.");
+        return;
+      }
+
+      setOfferFeedback("Offer rejected.");
+      await refreshOffers();
+    } finally {
+      setOfferActionId(null);
+    }
+  };
+
   const handleSubmitOffer = async () => {
-    if (!canSubmitOffer) return;
+    const messageValue = offerMessage.trim();
+    const availabilityValue = availability.trim();
+
+    if (!messageValue || !availabilityValue) {
+      setOfferError("Please fill in both fields.");
+      setOfferFeedback("");
+      return;
+    }
+
+    if (!request?.id) {
+      setOfferError("Request not found.");
+      setOfferFeedback("");
+      return;
+    }
 
     setOfferError("");
     setOfferFeedback("");
@@ -108,55 +323,21 @@ export default function RequestDetails() {
     try {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError) {
-        const authMessage = String((userError as { message?: string }).message ?? "").toLowerCase();
-        if (authMessage.includes("auth session missing")) {
-          setOfferError("Please sign in first to submit an offer.");
-          return;
-        }
         throw userError;
       }
 
       const helperId = userData.user?.id;
       if (!helperId) {
-        setOfferError("Please sign in first to submit an offer.");
+        setOfferError("You must be signed in to submit an offer.");
         return;
       }
 
-      const roleFromAuth = userData.user.user_metadata?.role ?? userData.user.app_metadata?.role;
-      const normalizedRole = typeof roleFromAuth === "string" ? roleFromAuth.toLowerCase() : "";
-
-      let isHelper = normalizedRole === "helper" || normalizedRole === "both";
-
-      if (!isHelper) {
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles")
-          .select("role, is_helper")
-          .eq("id", helperId)
-          .maybeSingle();
-
-        if (profileError) {
-          // Some projects don't yet have role/is_helper columns. Don't hard-fail here.
-          const message = String((profileError as { message?: string }).message ?? "").toLowerCase();
-          const isMissingColumn =
-            message.includes("column") && (message.includes("role") || message.includes("is_helper"));
-          if (!isMissingColumn) throw profileError;
-        } else {
-          const profileRole = typeof profile?.role === "string" ? profile.role.toLowerCase() : "";
-          isHelper =
-            profile?.is_helper === true ||
-            profileRole === "helper" ||
-            profileRole === "both";
-        }
-      }
-
-      if (!isHelper) {
-        setOfferError("Only helper accounts can submit offers.");
+      if (requestOwnerId && helperId === requestOwnerId) {
+        setOfferError("You cannot submit an offer on your own request.");
         return;
       }
 
-      const isMockRequestId = /^r\d+$/i.test(request.id);
-
-      if (!isMockRequestId) {
+      if (!requestOwnerId) {
         const { data: requestOwner, error: requestOwnerError } = await supabase
           .from("requests")
           .select("requester_id")
@@ -164,47 +345,45 @@ export default function RequestDetails() {
           .maybeSingle();
 
         if (requestOwnerError) throw requestOwnerError;
-
         if (requestOwner?.requester_id && requestOwner.requester_id === helperId) {
           setOfferError("You cannot submit an offer on your own request.");
           return;
         }
-
-        const { data: existingOffer, error: duplicateCheckError } = await supabase
-          .from("offers")
-          .select("id")
-          .eq("request_id", request.id)
-          .eq("helper_id", helperId)
-          .maybeSingle();
-
-        if (duplicateCheckError) throw duplicateCheckError;
-
-        if (existingOffer?.id) {
-          setOfferError("You already submitted an offer for this request.");
-          return;
-        }
-
-        const fullMessage = `${offerMessage.trim()}\n\nAvailability: ${availability.trim()}`;
-        const { error } = await createOffer(request.id, helperId, fullMessage);
-        if (error) throw error;
-      } else {
-        await new Promise((resolve) => setTimeout(resolve, 700));
       }
 
-      setOfferFeedback("Offer submitted successfully. Redirecting to your dashboard...");
+      const { data: existingOffer, error: duplicateCheckError } = await supabase
+        .from("offers")
+        .select("id")
+        .eq("request_id", request.id)
+        .eq("helper_id", helperId)
+        .maybeSingle();
+
+      if (duplicateCheckError) throw duplicateCheckError;
+
+      if (existingOffer?.id) {
+        setOfferError("You already submitted an offer for this request.");
+        return;
+      }
+
+      const { error } = await createOffer(
+        request.id,
+        helperId,
+        messageValue,
+        availabilityValue
+      );
+      if (error) throw error;
+
+      setOfferFeedback("Offer submitted successfully.");
       setOfferMessage("");
       setAvailability("");
-
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 900);
+      await refreshOffers();
     } catch (error) {
       const detailedMessage =
         typeof error === "object" && error && "message" in error
           ? String((error as { message?: string }).message)
-          : "Please try again.";
+          : "Failed to submit offer.";
       console.error("Offer submission failed:", error);
-      setOfferError(`Could not submit your offer right now. ${detailedMessage}`);
+      setOfferError(detailedMessage || "Failed to submit offer.");
     } finally {
       setIsSubmittingOffer(false);
     }
@@ -316,6 +495,104 @@ export default function RequestDetails() {
                 </div>
               </div>
             </section>
+
+            <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/50 bg-white/80 p-5 backdrop-blur-xl md:p-6">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Submitted Offers</p>
+                <span className="rounded-full border border-slate-200 bg-white/85 px-2.5 py-1 text-xs font-medium text-slate-600">
+                  {offers.length}
+                </span>
+              </div>
+
+              {offersLoading ? (
+                <div className="mt-4 rounded-2xl border border-slate-200/80 bg-white/90 p-4 text-sm text-slate-600">
+                  Loading offers...
+                </div>
+              ) : offersError ? (
+                <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
+                  {offersError}
+                </div>
+              ) : offers.length === 0 ? (
+                <div className="mt-4 rounded-2xl border border-slate-200/80 bg-white/90 p-4 text-sm text-slate-600">
+                  No offers yet. Once helpers submit offers, they will appear here.
+                </div>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {offers.map((offer) => {
+                    const helperName =
+                      offer.helper?.full_name ??
+                      offer.helper?.username ??
+                      "Unknown helper";
+                    const helperRating = offer.helper?.avg_rating ?? 0;
+                    const isPending = offer.status === "pending";
+                    const isActionLoading = offerActionId === offer.id;
+
+                    return (
+                      <article
+                        key={offer.id}
+                        className="rounded-2xl border border-slate-200/80 bg-white/90 p-4"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-semibold text-slate-900">{helperName}</p>
+                            <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-600">
+                              <RatingStars value={helperRating} />
+                              {helperRating.toFixed(1)}
+                            </p>
+                          </div>
+                          <span
+                            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                              offer.status === "accepted"
+                                ? "bg-emerald-50 text-emerald-700"
+                                : offer.status === "rejected"
+                                  ? "bg-rose-50 text-rose-700"
+                                  : "bg-amber-50 text-amber-700"
+                            }`}
+                          >
+                            {offer.status}
+                          </span>
+                        </div>
+
+                        <p className="mt-3 text-sm text-slate-700">{offer.message || "No message provided."}</p>
+                        <p className="mt-2 text-xs text-slate-600">
+                          <span className="font-semibold text-slate-700">Availability:</span>{" "}
+                          {offer.availability || "Not provided"}
+                        </p>
+
+                        {canManageOffers ? (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              disabled={!isPending || isActionLoading}
+                              onClick={() => void handleAcceptOffer(offer.id)}
+                              className={`h-9 rounded-xl px-3 text-sm font-semibold text-white transition ${
+                                !isPending || isActionLoading
+                                  ? "cursor-not-allowed bg-slate-300"
+                                  : "bg-gradient-to-r from-indigo-500 to-violet-500 hover:brightness-105"
+                              }`}
+                            >
+                              {isActionLoading ? "Saving..." : "Accept"}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={!isPending || isActionLoading}
+                              onClick={() => void handleRejectOffer(offer.id)}
+                              className={`h-9 rounded-xl border px-3 text-sm font-semibold transition ${
+                                !isPending || isActionLoading
+                                  ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
+                                  : "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
+                              }`}
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        ) : null}
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
           </div>
 
           <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
@@ -405,7 +682,7 @@ export default function RequestDetails() {
             </div>
 
             <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/78 p-4 backdrop-blur-xl">
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className={`grid gap-2.5 ${canDeleteRequest ? "grid-cols-3" : "grid-cols-2"}`}>
                 <button
                   type="button"
                   onClick={handleShare}
@@ -422,6 +699,21 @@ export default function RequestDetails() {
                   <Flag size={14} className="text-slate-500" />
                   <span className="leading-none">Report</span>
                 </button>
+                {canDeleteRequest ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    disabled={isDeletingRequest}
+                    className={`group flex h-11 items-center justify-center gap-2 rounded-2xl border border-rose-200/80 px-4 text-sm font-semibold transition ${
+                      isDeletingRequest
+                        ? "cursor-not-allowed bg-rose-100/60 text-rose-400"
+                        : "bg-rose-50/80 text-rose-600 hover:bg-rose-100"
+                    }`}
+                  >
+                    <Trash2 size={14} className="text-current" />
+                    <span className="leading-none">{isDeletingRequest ? "Deleting..." : "Delete"}</span>
+                  </button>
+                ) : null}
               </div>
               {actionFeedback ? (
                 <p className="mt-3 text-center text-sm text-slate-600">{actionFeedback}</p>
@@ -430,6 +722,41 @@ export default function RequestDetails() {
           </aside>
         </div>
       </main>
+
+      {showDeleteConfirm ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl border border-white/55 bg-[linear-gradient(135deg,#eef4ff_0%,#ede9ff_100%)] p-6 shadow-2xl">
+            <h3 className="text-xl font-semibold text-slate-900">Delete this request?</h3>
+            <p className="mt-2 text-sm text-slate-600">
+              This action cannot be undone. The request will be removed permanently.
+            </p>
+            <div className="mt-5 flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="h-10 rounded-xl border border-slate-300/80 bg-white/80 px-4 text-sm font-semibold text-slate-700 transition hover:bg-white"
+              >
+                Cancel
+              </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await handleDeleteRequest();
+                    setShowDeleteConfirm(false);
+                  }}
+                  disabled={isDeletingRequest}
+                  className={`h-10 rounded-xl px-4 text-sm font-semibold text-white transition ${
+                  isDeletingRequest
+                    ? "cursor-not-allowed bg-indigo-300"
+                    : "bg-gradient-to-r from-indigo-500 to-violet-500 hover:brightness-105"
+                }`}
+                >
+                  {isDeletingRequest ? "Deleting..." : "Delete Request"}
+                </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <Footer />
     </div>

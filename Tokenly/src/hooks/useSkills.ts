@@ -1,6 +1,5 @@
 import { useState } from "react";
-import type { Skill } from "../types/skill";
-import type { SkillInput, SkillUpdateInput, UseSkillsResult } from "../types/hooks";
+import type { Skill, SkillInput, SkillUpdateInput, UseSkillsResult } from "../types/skill";
 import {
     getSkillsByUser,
     createSkill,

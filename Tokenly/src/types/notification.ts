@@ -20,3 +20,16 @@ export type Notification = {
   is_read: boolean;
   created_at: string;
 };
+
+export type UseNotificationsResult = {
+  notifications: Notification[];
+  unreadCount: number;
+  loading: boolean;
+  error: string;
+  fetchNotifications: (user_id: string) => Promise<void>;
+  fetchUnread: (user_id: string) => Promise<void>;
+  markAsRead: (id: string) => Promise<boolean>;
+  markAllAsRead: (user_id: string) => Promise<boolean>;
+  removeNotification: (id: string) => Promise<boolean>;
+  subscribeToLive: (user_id: string) => () => void;
+};
