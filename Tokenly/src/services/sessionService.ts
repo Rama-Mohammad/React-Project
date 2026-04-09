@@ -27,7 +27,12 @@ export async function getSessionById(id: string) {
 export async function getSessionsByUser(user_id: string) {
   return await supabase
     .from("sessions")
-    .select("*, request:requests(*)")
+    .select(`
+      *,
+      request:requests(*),
+      helper:profiles!helper_id(*),
+      requester:profiles!requester_id(*)
+    `)
     .or(`helper_id.eq.${user_id},requester_id.eq.${user_id}`)
     .order("scheduled_at", { ascending: false });
 }
@@ -35,7 +40,12 @@ export async function getSessionsByUser(user_id: string) {
 export async function getSessionsByStatus(user_id: string, status: SessionStatus) {
   return await supabase
     .from("sessions")
-    .select("*, request:requests(*)")
+    .select(`
+      *,
+      request:requests(*),
+      helper:profiles!helper_id(*),
+      requester:profiles!requester_id(*)
+    `)
     .or(`helper_id.eq.${user_id},requester_id.eq.${user_id}`)
     .eq("status", status)
     .order("scheduled_at", { ascending: true });

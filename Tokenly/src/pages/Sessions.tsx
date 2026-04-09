@@ -14,6 +14,9 @@ import {
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import type { Session } from "../types/session";
+import { getSessionsByUser } from "../services/sessionService";
+import { getCurrentUser } from "../services/authService";
+import { updateSessionStatus } from "../services/sessionService";
 
 type SessionFilter = "upcoming" | "active" | "completed" | "all";
 type RoleFilter = "all" | "helping" | "receiving";
@@ -30,101 +33,149 @@ const SessionsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [sortBy, setSortBy] = useState<SortBy>("newest");
+  
 
-  useEffect(() => {
-    const mockSessions: Session[] = [
-      {
-        id: "1",
-        title: "Help structure my technical blog post about Docker",
-        category: "Writing",
-        status: "upcoming",
-        role: "receiving",
-        otherParticipant: { name: "Liam Park" },
-        datetime: new Date(2026, 2, 29, 20, 0),
-        duration: 30,
-        credits: -3,
-      },
-      {
-        id: "2",
-        title: "Debug React useEffect causing infinite re-renders",
-        category: "Programming",
-        status: "upcoming",
-        role: "receiving",
-        otherParticipant: { name: "Priya Nair" },
-        datetime: new Date(2026, 2, 28, 22, 0),
-        duration: 30,
-        credits: -4,
-      },
-      {
-        id: "3",
-        title: "Walkthrough of SQL window functions (RANK, LAG, LEAD)",
-        category: "Database",
-        status: "active",
-        role: "helping",
-        otherParticipant: { name: "Sofia Russo" },
-        datetime: new Date(2026, 2, 27, 18, 30),
-        duration: 30,
-        credits: 3,
-      },
-      {
-        id: "4",
-        title: "Understand TypeScript generics with practical examples",
-        category: "Web Development",
-        status: "completed",
-        role: "helping",
-        otherParticipant: { name: "Alex Chen" },
-        datetime: new Date(2026, 2, 25),
-        duration: 30,
-        credits: 3,
-      },
-      {
-        id: "5",
-        title: "Help me understand Big O notation for interview prep",
-        category: "Algorithms",
-        status: "completed",
-        role: "receiving",
-        otherParticipant: { name: "Marcus Webb" },
-        datetime: new Date(2026, 2, 20),
-        duration: 60,
-        credits: -6,
-      },
-      {
-        id: "6",
-        title: "Explain gradient descent and backpropagation intuitively",
-        category: "Machine Learning",
-        status: "completed",
-        role: "helping",
-        otherParticipant: { name: "Alex Chen" },
-        datetime: new Date(2026, 2, 18),
-        duration: 45,
-        credits: 5,
-      },
-      {
-        id: "7",
-        title: "Explain hypothesis testing (t-test, p-value)",
-        category: "Statistics",
-        status: "completed",
-        role: "helping",
-        otherParticipant: { name: "Sofia Russo" },
-        datetime: new Date(2026, 2, 15),
-        duration: 45,
-        credits: 4,
-      },
-      {
-        id: "8",
-        title: "Review my system design for a URL shortener",
-        category: "System Design",
-        status: "completed",
-        role: "receiving",
-        otherParticipant: { name: "Liam Park" },
-        datetime: new Date(2026, 2, 12),
-        duration: 45,
-        credits: -5,
-      },
-    ];
+  // useEffect(() => {
+  //   // const mockSessions: Session[] = [
+  //   //   {
+  //   //     id: "1",
+  //   //     title: "Help structure my technical blog post about Docker",
+  //   //     category: "Writing",
+  //   //     status: "upcoming",
+  //   //     role: "receiving",
+  //   //     otherParticipant: { name: "Liam Park" },
+  //   //     datetime: new Date(2026, 2, 29, 20, 0),
+  //   //     duration: 30,
+  //   //     credits: -3,
+  //   //   },
+  //   //   {
+  //   //     id: "2",
+  //   //     title: "Debug React useEffect causing infinite re-renders",
+  //   //     category: "Programming",
+  //   //     status: "upcoming",
+  //   //     role: "receiving",
+  //   //     otherParticipant: { name: "Priya Nair" },
+  //   //     datetime: new Date(2026, 2, 28, 22, 0),
+  //   //     duration: 30,
+  //   //     credits: -4,
+  //   //   },
+  //   //   {
+  //   //     id: "3",
+  //   //     title: "Walkthrough of SQL window functions (RANK, LAG, LEAD)",
+  //   //     category: "Database",
+  //   //     status: "active",
+  //   //     role: "helping",
+  //   //     otherParticipant: { name: "Sofia Russo" },
+  //   //     datetime: new Date(2026, 2, 27, 18, 30),
+  //   //     duration: 30,
+  //   //     credits: 3,
+  //   //   },
+  //   //   {
+  //   //     id: "4",
+  //   //     title: "Understand TypeScript generics with practical examples",
+  //   //     category: "Web Development",
+  //   //     status: "completed",
+  //   //     role: "helping",
+  //   //     otherParticipant: { name: "Alex Chen" },
+  //   //     datetime: new Date(2026, 2, 25),
+  //   //     duration: 30,
+  //   //     credits: 3,
+  //   //   },
+  //   //   {
+  //   //     id: "5",
+  //   //     title: "Help me understand Big O notation for interview prep",
+  //   //     category: "Algorithms",
+  //   //     status: "completed",
+  //   //     role: "receiving",
+  //   //     otherParticipant: { name: "Marcus Webb" },
+  //   //     datetime: new Date(2026, 2, 20),
+  //   //     duration: 60,
+  //   //     credits: -6,
+  //   //   },
+  //   //   {
+  //   //     id: "6",
+  //   //     title: "Explain gradient descent and backpropagation intuitively",
+  //   //     category: "Machine Learning",
+  //   //     status: "completed",
+  //   //     role: "helping",
+  //   //     otherParticipant: { name: "Alex Chen" },
+  //   //     datetime: new Date(2026, 2, 18),
+  //   //     duration: 45,
+  //   //     credits: 5,
+  //   //   },
+  //   //   {
+  //   //     id: "7",
+  //   //     title: "Explain hypothesis testing (t-test, p-value)",
+  //   //     category: "Statistics",
+  //   //     status: "completed",
+  //   //     role: "helping",
+  //   //     otherParticipant: { name: "Sofia Russo" },
+  //   //     datetime: new Date(2026, 2, 15),
+  //   //     duration: 45,
+  //   //     credits: 4,
+  //   //   },
+  //   //   {
+  //   //     id: "8",
+  //   //     title: "Review my system design for a URL shortener",
+  //   //     category: "System Design",
+  //   //     status: "completed",
+  //   //     role: "receiving",
+  //   //     otherParticipant: { name: "Liam Park" },
+  //   //     datetime: new Date(2026, 2, 12),
+  //   //     duration: 45,
+  //   //     credits: -5,
+  //   //   },
+  //   // ];
 
-    setSessions(mockSessions);
-  }, []);
+  //   // setSessions(mockSessions);
+
+  // }, []);
+
+useEffect(() => {
+  const fetchSessions = async () => {
+    const { data: userData, error: userError } = await getCurrentUser();
+
+    if (userError || !userData?.user) {
+      console.error("No user found");
+      return;
+    }
+
+    const userId = userData.user.id;
+
+    const { data, error } = await getSessionsByUser(userId);
+
+    if (error) {
+      console.error("Error fetching sessions:", error);
+      return;
+    }
+
+    // Transform Supabase data → UI Session type
+    const mappedSessions = (data || []).map((s: any) => ({
+      id: s.id,
+      title: s.request?.title || "Untitled",
+      category: s.request?.category || "General",
+      status: s.status,
+      role: s.helper_id === userId ? "helping" : "receiving",
+      otherParticipant: {
+        name:
+          s.helper_id === userId
+            ? s.requester_id
+            : s.helper_id,
+      },
+      datetime: new Date(s.scheduled_at),
+      duration: s.duration_minutes || 30,
+      credits: s.request?.credit_cost
+        ? s.helper_id === userId
+          ? s.request.credit_cost
+          : -s.request.credit_cost
+        : 0,
+    }));
+
+    setSessions(mappedSessions);
+  };
+
+  fetchSessions();
+}, []);
 
   const counts = useMemo(
     () => ({
@@ -232,18 +283,28 @@ const SessionsPage: React.FC = () => {
     setShowConfirmModal(true);
   };
 
-  const confirmMarkComplete = () => {
-    if (!selectedSessionId) return;
+ const confirmMarkComplete = async () => {
+  if (!selectedSessionId) return;
 
-    setSessions((prev) =>
-      prev.map((session) =>
-        session.id === selectedSessionId ? { ...session, status: "completed" } : session
-      )
-    );
-    setActiveFilter("completed");
-    setShowConfirmModal(false);
-    setSelectedSessionId(null);
-  };
+  const { error } = await updateSessionStatus(selectedSessionId, "completed");
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  setSessions((prev) =>
+    prev.map((session) =>
+      session.id === selectedSessionId
+        ? { ...session, status: "completed" }
+        : session
+    )
+  );
+
+  setActiveFilter("completed");
+  setShowConfirmModal(false);
+  setSelectedSessionId(null);
+};
 
   return (
     <div className="min-h-screen bg-[linear-gradient(135deg,#eef4ff_0%,#eef1ff_46%,#f5ecff_100%)] text-slate-900">
