@@ -23,6 +23,12 @@ import SessionRequestDetails from "../pages/SessionRequestDetails";
 import MyOffers from "../pages/MyOffers";
 import CreateOffer from "../pages/CreateOffer";
 import IndependentOfferDetails from "../pages/IndependentOfferDetails";
+import ErrorPage from "../pages/ErrorPage";
+import NotFound from "../pages/NotFound";
+
+function ErrorTestPage() {
+  throw new Error("This is a test route for the Tokenly error page.");
+}
 
 function ScrollToTopLayout() {
   const { pathname } = useLocation();
@@ -37,6 +43,7 @@ function ScrollToTopLayout() {
 export const router = createBrowserRouter([
   {
     element: <ScrollToTopLayout />,
+    errorElement: <ErrorPage />,
     children: [
       {
         path: "/",
@@ -134,6 +141,14 @@ export const router = createBrowserRouter([
       {
         path: "/reset-password",
         element: <AuthPage />,
+      },
+      {
+        path: "/error-test",
+        element: <ErrorTestPage />,
+      },
+      {
+        path: "*",
+        element: <NotFound />,
       },
     ],
   },
