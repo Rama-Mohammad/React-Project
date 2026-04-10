@@ -21,6 +21,9 @@ export function signUpWithEmail(
     password,
     options: {
       data: metadata ?? {},
+      // Keep a stable marker in the redirect URL so the app can reliably
+      // open onboarding after email confirmation.
+      emailRedirectTo: `${window.location.origin}/auth?mode=signup&from=email-confirmation`,
     },
   });
 }

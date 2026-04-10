@@ -9,8 +9,22 @@ import SignInForm from "../components/auth/SignInForm";
 import SignUpForm from "../components/auth/SignUpForm";
 import VisualPanel from "../components/auth/VisualPanel";
 import { getCurrentSession } from "../services/authService";
-import { uploadProfilePicture, updateProfile } from "../services/profileService";
+import { getProfileById, uploadProfilePicture, updateProfile } from "../services/profileService";
 import type { AuthMode } from "../types/auth";
+
+const ONBOARDING_STORAGE_PREFIX = "tokenly:onboarding-complete:";
+
+function getOnboardingStorageKey(userId: string) {
+    return `${ONBOARDING_STORAGE_PREFIX}${userId}`;
+}
+
+function hasCompletedOnboarding(userId: string) {
+    return localStorage.getItem(getOnboardingStorageKey(userId)) === "1";
+}
+
+function markOnboardingCompleted(userId: string) {
+    localStorage.setItem(getOnboardingStorageKey(userId), "1");
+}
 
 function getInitialMode(searchParams: URLSearchParams): AuthMode {
     const queryMode = searchParams.get("mode");
@@ -41,6 +55,11 @@ export default function AuthPage() {
     const [onboardingLoading, setOnboardingLoading] = useState(false);
     const [onboardingError, setOnboardingError] = useState("");
     const onboardingActiveRef = useRef(false);
+    const signupConfirmationIntentRef = useRef(
+        window.location.hash.includes("type=signup") ||
+        searchParams.get("type") === "signup" ||
+        searchParams.get("from") === "email-confirmation"
+    );
 
     const {
         user,
@@ -61,6 +80,26 @@ export default function AuthPage() {
         mode === "newpassword" ||
         window.location.pathname === "/reset-password" ||
         window.location.hash.includes("type=recovery");
+    const isSignupConfirmation =
+        signupConfirmationIntentRef.current ||
+        window.location.hash.includes("type=signup") ||
+        searchParams.get("type") === "signup" ||
+        searchParams.get("from") === "email-confirmation";
+    const shouldForceOnboarding =
+        !!user &&
+        isSignupConfirmation &&
+        !isRecoveryRoute &&
+        !hasCompletedOnboarding(user.id);
+
+    useEffect(() => {
+        if (
+            window.location.hash.includes("type=signup") ||
+            searchParams.get("type") === "signup" ||
+            searchParams.get("from") === "email-confirmation"
+        ) {
+            signupConfirmationIntentRef.current = true;
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         if (isPasswordRecovery) {
@@ -69,10 +108,32 @@ export default function AuthPage() {
     }, [isPasswordRecovery]);
 
     useEffect(() => {
-        if (isAuthenticated && !isRecoveryRoute && !onboardingActiveRef.current) {
+        if (isAuthenticated && !isRecoveryRoute && !onboardingActiveRef.current && !showOnboarding && !shouldForceOnboarding) {
             navigate("/explore", { replace: true });
         }
-    }, [isAuthenticated, isRecoveryRoute, navigate]);
+    }, [isAuthenticated, isRecoveryRoute, navigate, showOnboarding, shouldForceOnboarding]);
+
+    useEffect(() => {
+        if (!shouldForceOnboarding || !user || onboardingActiveRef.current || showOnboarding) return;
+
+        const userId = user.id;
+        const userEmail = user.email;
+        let cancelled = false;
+
+        async function openOnboarding() {
+            const { data } = await getProfileById(userId);
+            const resolvedFullName = data?.full_name?.trim() || userEmail.split("@")[0] || "";
+            if (cancelled) return;
+            setPendingFullName(resolvedFullName);
+            onboardingActiveRef.current = true;
+            setShowOnboarding(true);
+        }
+
+        void openOnboarding();
+        return () => {
+            cancelled = true;
+        };
+    }, [shouldForceOnboarding, user, showOnboarding]);
 
     const switchMode = (nextMode: AuthMode) => {
         if (nextMode === mode) return;
@@ -92,7 +153,7 @@ export default function AuthPage() {
         const success = await signUp(email, password, { username, full_name: fullName });
         if (success) {
             const { data } = await getCurrentSession();
-            if (data.session?.user) {
+            if (data.session?.user && !hasCompletedOnboarding(data.session.user.id)) {
                 setPendingFullName(fullName);
                 onboardingActiveRef.current = true;
                 setShowOnboarding(true);
@@ -140,12 +201,14 @@ export default function AuthPage() {
         }
 
         setOnboardingLoading(false);
+        markOnboardingCompleted(user.id);
         onboardingActiveRef.current = false;
         navigate("/explore", { replace: true });
         return true;
     };
 
     const handleOnboardingSkip = () => {
+        if (user) markOnboardingCompleted(user.id);
         onboardingActiveRef.current = false;
         navigate("/explore", { replace: true });
     };
@@ -156,6 +219,18 @@ export default function AuthPage() {
             setTimeout(() => switchMode("signin"), 2000);
         }
     };
+
+    if (loading && isSignupConfirmation && !showOnboarding) {
+        return (
+            <div className="relative h-dvh w-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex items-center justify-center p-4">
+                <div className="relative z-10 rounded-2xl border border-white/70 bg-white/85 p-8 text-center shadow-sm backdrop-blur-xl">
+                    <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-500" />
+                    <p className="text-sm font-medium text-slate-700">Finalizing your email confirmation...</p>
+                </div>
+            </div>
+        );
+    }
+
     //show the onboarding form 
     if (showOnboarding) {
         return (
