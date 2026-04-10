@@ -18,141 +18,17 @@ import { Link } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import RatingStars from "../components/common/RatingStars";
-import { activityItems } from "../data/activityItems";
 import { supabase } from "../lib/supabaseClient";
 import { deleteRequest, getRequestsByUser } from "../services/requestService";
+import useDashboard from "../hooks/useDashboard";
+import useTransactions from "../hooks/useTransactions";
 import type {
-  DashboardOfferItem,
   DashboardRequestItem,
   DashboardSessionItem,
   SessionTabLabel,
 } from "../types/dashboard";
 
 const sessionTabs: SessionTabLabel[] = ["All", "Upcoming", "Active", "Completed"];
-
-const initialSessionItems: DashboardSessionItem[] = [
-  {
-    id: "s1",
-    topic: "Debug React useEffect causing infinite re-renders",
-    skill: "Programming",
-    status: "Upcoming",
-    role: "Receiving help",
-    person: "Priya Nair",
-    date: "Mar 28, 04:00 PM",
-    duration: "30 min",
-    credits: -4,
-    action: "Mark Complete",
-  },
-  {
-    id: "s2",
-    topic: "Walkthrough of SQL window functions (RANK, LAG, LEAD)",
-    skill: "Database",
-    status: "Active Now",
-    role: "Helping",
-    person: "Sofia Russo",
-    date: "Mar 27, 02:20 PM",
-    duration: "45 min",
-    credits: 3,
-    action: "Mark Complete",
-  },
-  {
-    id: "s3",
-    topic: "Understand TypeScript generics with practical examples",
-    skill: "Web Development",
-    status: "Completed",
-    role: "Helping",
-    person: "Alex Chen",
-    date: "Completed Mar 25, 01:35 PM",
-    duration: "30 min",
-    credits: 3,
-    rating: 5,
-  },
-  {
-    id: "s4",
-    topic: "Help me understand Big O notation for interview prep",
-    skill: "Algorithms",
-    status: "Completed",
-    role: "Receiving help",
-    person: "Marcus Webb",
-    date: "Completed Mar 20, 01:05 PM",
-    duration: "60 min",
-    credits: -6,
-    rating: 5,
-  },
-  {
-    id: "s5",
-    topic: "Explain gradient descent and backpropagation intuitively",
-    skill: "Machine Learning",
-    status: "Completed",
-    role: "Helping",
-    person: "Alex Chen",
-    date: "Completed Mar 18, 05:50 PM",
-    duration: "45 min",
-    credits: 5,
-    rating: 4,
-  },
-  {
-    id: "s6",
-    topic: "Explain hypothesis testing (t-test, p-value)",
-    skill: "Statistics",
-    status: "Completed",
-    role: "Helping",
-    person: "Sofia Russo",
-    date: "Completed Mar 15, 11:48 AM",
-    duration: "45 min",
-    credits: 4,
-    rating: 5,
-  },
-  {
-    id: "s7",
-    topic: "Review my system design for a URL shortener",
-    skill: "System Design",
-    status: "Completed",
-    role: "Receiving help",
-    person: "Liam Park",
-    date: "Completed Mar 12, 05:20 PM",
-    duration: "45 min",
-    credits: -5,
-    rating: 4,
-  },
-];
-
-const submittedOffers: DashboardOfferItem[] = [
-  {
-    id: "o1",
-    title: "Help me understand Big O notation for interview prep",
-    status: "Accepted",
-    user: "Marcus Webb",
-    age: "6d ago",
-    credits: 6,
-  },
-  {
-    id: "o2",
-    title: "Walkthrough of SQL window functions (RANK, LAG, LEAD)",
-    status: "Accepted",
-    user: "Sofia Russo",
-    age: "7d ago",
-    credits: 3,
-  },
-  {
-    id: "o3",
-    title: "Explain gradient descent and backpropagation intuitively",
-    status: "Pending",
-    user: "Priya Nair",
-    age: "6d ago",
-    credits: 5,
-  },
-];
-
-function toneClasses(tone: string) {
-  if (tone === "teal") return "bg-violet-100 text-violet-700";
-  if (tone === "blue") return "bg-sky-100 text-sky-700";
-  if (tone === "amber") return "bg-amber-100 text-amber-700";
-  if (tone === "gold") return "bg-yellow-100 text-yellow-700";
-  if (tone === "green") return "bg-violet-100 text-violet-700";
-  if (tone === "rose") return "bg-rose-100 text-rose-700";
-  return "bg-slate-100 text-slate-600";
-}
 
 function skillTone(skill: string) {
   if (skill === "Programming" || skill === "Web Development") return "bg-sky-100 text-sky-700";
@@ -168,28 +44,38 @@ function statusTone(status: DashboardSessionItem["status"]) {
   return "bg-slate-100 text-slate-600";
 }
 
+function toneClasses(type: string) {
+  if (type === "earn" || type === "bonus") return "bg-violet-100 text-violet-700";
+  return "bg-rose-100 text-rose-700";
+}
+
 function toRelativeAge(dateValue?: string | null) {
   if (!dateValue) return "just now";
-
   const date = new Date(dateValue);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
-
   if (!Number.isFinite(diffMs) || diffMs < 0) return "just now";
-
   const minutes = Math.floor(diffMs / (1000 * 60));
   if (minutes < 60) return `${Math.max(1, minutes)}m ago`;
-
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
-
   const days = Math.floor(hours / 24);
   return `${days}d ago`;
 }
 
+function getInitials(name: string | null | undefined) {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 export default function Dashboard() {
   const [activeSessionTab, setActiveSessionTab] = useState<SessionTabLabel>("All");
-  const [sessions, setSessions] = useState<DashboardSessionItem[]>(initialSessionItems);
+  const [sessions, setSessions] = useState<DashboardSessionItem[]>([]);
   const [openRequests, setOpenRequests] = useState<DashboardRequestItem[]>([]);
   const [requestsLoading, setRequestsLoading] = useState(true);
   const [requestsError, setRequestsError] = useState("");
@@ -199,41 +85,52 @@ export default function Dashboard() {
   const [transferToast, setTransferToast] = useState<{ credits: number } | null>(null);
   const [showCreditDetails, setShowCreditDetails] = useState(false);
 
-  const earned = 47;
-  const spent = 35;
+  const { profile, stats, loading: dashLoading, fetchDashboard, mapSessions, mapOffers, rawOffers } = useDashboard();
+  const { transactions, summary, fetchTransactionsByUser, fetchCreditSummary } = useTransactions();
+
+  // Derived credit stats from real data
+  const earned = summary?.earned ?? 0;
+  const spent = summary?.spent ?? 0;
   const total = earned + spent;
-  const earnedPct = Math.round((earned / total) * 100);
+  const earnedPct = total > 0 ? Math.round((earned / total) * 100) : 0;
+
+  const submittedOffers = useMemo(
+    () => (currentUserId ? mapOffers() : []),
+    [rawOffers, currentUserId]
+  );
 
   const sessionTabCounts = useMemo(
     () => ({
       All: sessions.length,
-      Upcoming: sessions.filter((item) => item.status === "Upcoming").length,
-      Active: sessions.filter((item) => item.status === "Active Now").length,
-      Completed: sessions.filter((item) => item.status === "Completed").length,
+      Upcoming: sessions.filter((s) => s.status === "Upcoming").length,
+      Active: sessions.filter((s) => s.status === "Active Now").length,
+      Completed: sessions.filter((s) => s.status === "Completed").length,
     }),
     [sessions]
   );
 
   const visibleSessions = useMemo(() => {
     if (activeSessionTab === "All") return sessions;
-    if (activeSessionTab === "Upcoming") return sessions.filter((item) => item.status === "Upcoming");
-    if (activeSessionTab === "Active") return sessions.filter((item) => item.status === "Active Now");
-    return sessions.filter((item) => item.status === "Completed");
+    if (activeSessionTab === "Upcoming") return sessions.filter((s) => s.status === "Upcoming");
+    if (activeSessionTab === "Active") return sessions.filter((s) => s.status === "Active Now");
+    return sessions.filter((s) => s.status === "Completed");
   }, [activeSessionTab, sessions]);
 
   const previewSessions = useMemo(() => visibleSessions.slice(0, 3), [visibleSessions]);
-  const activityPreview = useMemo(() => activityItems.slice(0, 3), []);
 
+  const activityPreview = useMemo(
+    () => transactions.slice(0, 5),
+    [transactions]
+  );
+
+  // Auto-dismiss toast
   useEffect(() => {
     if (!transferToast) return;
-
-    const timer = window.setTimeout(() => {
-      setTransferToast(null);
-    }, 2600);
-
+    const timer = window.setTimeout(() => setTransferToast(null), 2600);
     return () => window.clearTimeout(timer);
   }, [transferToast]);
 
+  // Main data load
   useEffect(() => {
     let mounted = true;
 
@@ -248,13 +145,23 @@ export default function Dashboard() {
         setCurrentUserId(null);
         setOpenRequests([]);
         setRequestsLoading(false);
-        setRequestsError("Please sign in to view your requests.");
+        setRequestsError("Please sign in to view your dashboard.");
         return;
       }
 
       const userId = authData.user.id;
       setCurrentUserId(userId);
 
+      // Load all dashboard data in parallel
+      await Promise.all([
+        fetchDashboard(userId),
+        fetchTransactionsByUser(userId),
+        fetchCreditSummary(userId),
+      ]);
+
+      if (!mounted) return;
+
+      // Load open requests + offer counts
       const { data, error } = await getRequestsByUser(userId);
       if (!mounted) return;
 
@@ -278,9 +185,9 @@ export default function Dashboard() {
         if (!mounted) return;
         if (!offersError) {
           offerCountMap = (offersData ?? []).reduce<Record<string, number>>((acc, row) => {
-            const requestId = row.request_id as string | undefined;
-            if (!requestId) return acc;
-            acc[requestId] = (acc[requestId] ?? 0) + 1;
+            const rid = row.request_id as string | undefined;
+            if (!rid) return acc;
+            acc[rid] = (acc[rid] ?? 0) + 1;
             return acc;
           }, {});
         }
@@ -289,7 +196,9 @@ export default function Dashboard() {
       const mapped: DashboardRequestItem[] = ownRequests.map((item) => ({
         id: item.id,
         title: item.title,
-        urgency: item.urgency ? `${item.urgency.charAt(0).toUpperCase()}${item.urgency.slice(1)}` : "Low",
+        urgency: item.urgency
+          ? `${item.urgency.charAt(0).toUpperCase()}${item.urgency.slice(1)}`
+          : "Low",
         offers: offerCountMap[item.id] ?? 0,
         age: toRelativeAge(item.created_at),
         credits: item.credit_cost ?? 0,
@@ -304,18 +213,29 @@ export default function Dashboard() {
     };
   }, []);
 
-  const handleMarkComplete = (id: string) => {
+  // Once dashboard data loads and we have userId, map sessions
+  useEffect(() => {
+    if (currentUserId) {
+      setSessions(mapSessions(currentUserId));
+    }
+  }, [currentUserId, rawOffers]); // rawOffers is a proxy for "dashboard data loaded"
+
+  const handleMarkComplete = async (id: string) => {
+    const { error } = await supabase
+      .from("sessions")
+      .update({ status: "completed", completed_at: new Date().toISOString() })
+      .eq("id", id);
+
+    if (error) return;
+
     setSessions((prev) =>
       prev.map((item) => {
         if (item.id !== id) return item;
-        if (!item.action) return item;
-
         return {
           ...item,
           status: "Completed",
           date: `Completed ${item.date}`,
           action: undefined,
-          rating: item.rating ?? 5,
         };
       })
     );
@@ -326,11 +246,7 @@ export default function Dashboard() {
     : null;
 
   const handleDeleteMyRequest = async (requestId: string) => {
-    if (!currentUserId) {
-      setRequestsError("Please sign in to delete requests.");
-      return;
-    }
-
+    if (!currentUserId) return;
     const confirmed = window.confirm("Delete this request? This action cannot be undone.");
     if (!confirmed) return;
 
@@ -341,18 +257,24 @@ export default function Dashboard() {
         setRequestsError(error.message ?? "Could not delete this request.");
         return;
       }
-
       setOpenRequests((prev) => prev.filter((item) => item.id !== requestId));
     } finally {
       setDeletingRequestId(null);
     }
   };
 
+  const fullName = profile?.full_name ?? "Loading...";
+  const initials = getInitials(profile?.full_name);
+  const creditBalance = profile?.credit_balance ?? 0;
+  const avgRating = profile?.avg_rating ?? 0;
+  const reviewCount = stats ? stats.completedSessions : 0; // approximation
+
   return (
     <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <Navbar />
 
-      <main className="mx-auto w-full max-w-[1420px] px-4 py-6 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-355 px-4 py-6 sm:px-6 lg:px-8">
+        {/* ── Header / profile strip ── */}
         <section className="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-transparent p-5 shadow-none sm:p-6">
           <div className="pointer-events-none absolute -right-20 -top-24 h-52 w-52 rounded-full bg-indigo-300/30 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-24 left-1/3 h-52 w-52 rounded-full bg-violet-300/20 blur-3xl" />
@@ -360,19 +282,26 @@ export default function Dashboard() {
           <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex items-start gap-4">
               <div className="h-14 w-14 rounded-2xl bg-[linear-gradient(145deg,#bae6fd_0%,#a7f3d0_100%)] p-0.5">
-                <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white text-sm font-semibold text-slate-700">
-                  JL
-                </div>
+                {profile?.profile_image_url ? (
+                  <img
+                    src={profile.profile_image_url}
+                    alt={fullName}
+                    className="h-full w-full rounded-2xl object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white text-sm font-semibold text-slate-700">
+                    {dashLoading ? "..." : initials}
+                  </div>
+                )}
               </div>
               <div>
                 <p className="text-sm text-slate-500">Welcome back</p>
-                <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">Jordan Lee</h1>
+                <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+                  {dashLoading ? "Loading..." : fullName}
+                </h1>
                 <div className="mt-3 flex flex-wrap items-center gap-2.5">
-                  <RatingStars value={5} />
-                  <span className="text-sm text-slate-500">4.7 rating</span>
-                  <span className="rounded-full border border-slate-200 bg-white/85 px-3 py-1 text-xs font-medium text-slate-600">React</span>
-                  <span className="rounded-full border border-slate-200 bg-white/85 px-3 py-1 text-xs font-medium text-slate-600">TypeScript</span>
-                  <span className="rounded-full border border-slate-200 bg-white/85 px-3 py-1 text-xs font-medium text-slate-600">Python</span>
+                  <RatingStars value={Math.round(avgRating)} />
+                  <span className="text-sm text-slate-500">{avgRating.toFixed(1)} rating</span>
                 </div>
               </div>
             </div>
@@ -395,7 +324,9 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* ── Stats row ── */}
           <div className="relative mt-5 grid grid-cols-1 items-start gap-3 xl:grid-cols-[1.8fr_1fr_1fr_1fr_1fr]">
+            {/* Credit balance card */}
             <article className="rounded-2xl border border-indigo-300/80 bg-transparent p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -405,7 +336,8 @@ export default function Dashboard() {
                   <div>
                     <p className="text-sm text-slate-500">Credit Balance</p>
                     <p className="text-2xl font-semibold leading-none">
-                      12 <span className="text-lg font-normal text-slate-500">credits</span>
+                      {dashLoading ? "—" : creditBalance}{" "}
+                      <span className="text-lg font-normal text-slate-500">credits</span>
                     </p>
                   </div>
                 </div>
@@ -415,13 +347,16 @@ export default function Dashboard() {
                   className="inline-flex items-center gap-2 text-sm text-slate-500"
                 >
                   {showCreditDetails ? "Hide" : "Details"}
-                  <ChevronDown size={16} className={showCreditDetails ? "rotate-180 transition" : "transition"} />
+                  <ChevronDown
+                    size={16}
+                    className={showCreditDetails ? "rotate-180 transition" : "transition"}
+                  />
                 </button>
               </div>
 
               <div className="mt-5 flex items-center justify-between text-sm text-slate-500">
                 <span>Earned vs Spent</span>
-                <span>82 total transacted</span>
+                <span>{total} total transacted</span>
               </div>
 
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200/80">
@@ -434,82 +369,99 @@ export default function Dashboard() {
               <div className="mt-3 flex flex-wrap items-center gap-6 text-sm">
                 <span className="inline-flex items-center gap-2 text-slate-600">
                   <span className="h-2.5 w-2.5 rounded-full bg-blue-300" />
-                  Earned <strong className="text-slate-900">47</strong>
+                  Earned <strong className="text-slate-900">{earned}</strong>
                 </span>
                 <span className="inline-flex items-center gap-2 text-slate-600">
-                  <span className="h-2.5 w-2.5 rounded-full bg-blue-300" />
-                  Spent <strong className="text-slate-900">35</strong>
+                  <span className="h-2.5 w-2.5 rounded-full bg-violet-300" />
+                  Spent <strong className="text-slate-900">{spent}</strong>
                 </span>
               </div>
 
               {showCreditDetails ? (
                 <>
                   <div className="my-4 h-px bg-indigo-200/70" />
-
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <article className="rounded-2xl border border-indigo-200/70 bg-indigo-100/45 px-4 py-3">
                       <p className="text-sm font-semibold text-indigo-700">As Helper</p>
-                      <p className="mt-1 text-4xl font-semibold leading-none text-indigo-700">11</p>
+                      <p className="mt-1 text-4xl font-semibold leading-none text-indigo-700">
+                        {stats?.totalHelpGiven ?? "—"}
+                      </p>
                       <p className="mt-1 text-sm text-indigo-700">sessions completed</p>
                     </article>
-
                     <article className="rounded-2xl border border-sky-200/70 bg-sky-100/45 px-4 py-3">
                       <p className="text-sm font-semibold text-sky-700">As Requester</p>
-                      <p className="mt-1 text-4xl font-semibold leading-none text-sky-700">8</p>
+                      <p className="mt-1 text-4xl font-semibold leading-none text-sky-700">
+                        {stats?.totalHelpReceived ?? "—"}
+                      </p>
                       <p className="mt-1 text-sm text-sky-700">sessions received</p>
                     </article>
                   </div>
-
                   <div className="mt-3 flex items-center justify-between rounded-2xl border border-indigo-200/70 bg-indigo-50/80 px-4 py-3">
                     <p className="text-sm font-semibold text-slate-700">Average Rating as Helper</p>
                     <div className="flex items-center gap-1.5 text-slate-700">
-                      <RatingStars value={5} />
-                      <span className="text-lg font-semibold leading-none">4.7</span>
-                      <span className="text-sm font-medium">(17)</span>
+                      <RatingStars value={Math.round(avgRating)} />
+                      <span className="text-lg font-semibold leading-none">{avgRating.toFixed(1)}</span>
                     </div>
                   </div>
                 </>
               ) : null}
             </article>
 
+            {/* Sessions done */}
             <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
               <div className="w-fit rounded-2xl bg-sky-100 p-3 text-sky-700">
                 <Check size={20} />
               </div>
-              <p className="mt-4 text-2xl font-semibold">19</p>
+              <p className="mt-4 text-2xl font-semibold">
+                {dashLoading ? "—" : stats?.completedSessions ?? 0}
+              </p>
               <p className="text-sm text-slate-700">Sessions Done</p>
-              <p className="mt-2 text-sm text-slate-500">11 as helper - 8 as requester</p>
+              <p className="mt-2 text-sm text-slate-500">
+                {stats ? `${stats.totalHelpGiven} as helper · ${stats.totalHelpReceived} as requester` : "—"}
+              </p>
             </article>
 
+            {/* Requests posted */}
             <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
               <div className="w-fit rounded-2xl bg-violet-100 p-3 text-violet-700">
                 <MessageCircle size={20} />
               </div>
-              <p className="mt-4 text-2xl font-semibold">8</p>
+              <p className="mt-4 text-2xl font-semibold">
+                {dashLoading ? "—" : stats?.activeRequests ?? 0}
+              </p>
               <p className="text-sm text-slate-700">Requests Posted</p>
               <p className="mt-2 text-sm text-slate-500">Total help requests</p>
             </article>
 
+            {/* Offers submitted */}
             <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
               <div className="w-fit rounded-2xl bg-indigo-100 p-3 text-indigo-700">
                 <Send size={20} />
               </div>
-              <p className="mt-4 text-2xl font-semibold">15</p>
+              <p className="mt-4 text-2xl font-semibold">
+                {dashLoading ? "—" : stats?.offersSubmitted ?? 0}
+              </p>
               <p className="text-sm text-slate-700">Offers Submitted</p>
-              <p className="mt-2 text-sm text-slate-500">11 accepted</p>
+              <p className="mt-2 text-sm text-slate-500">
+                {stats ? `${stats.offersAccepted} accepted` : "—"}
+              </p>
             </article>
 
+            {/* Avg rating */}
             <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
               <div className="w-fit rounded-2xl bg-amber-100 p-3 text-amber-700">
                 <Star size={20} />
               </div>
-              <p className="mt-4 text-2xl font-semibold">4.7</p>
+              <p className="mt-4 text-2xl font-semibold">
+                {dashLoading ? "—" : avgRating.toFixed(1)}
+              </p>
               <p className="text-sm text-slate-700">Avg. Rating</p>
-              <p className="mt-2 text-sm text-slate-500">From 17 ratings</p>
+              <p className="mt-2 text-sm text-slate-500">From {reviewCount} sessions</p>
             </article>
           </div>
         </section>
 
+        {/* ── Sessions ── */}
         <section className="relative mt-4 overflow-hidden rounded-3xl border border-indigo-200/70 bg-[linear-gradient(140deg,rgba(238,242,255,0.95)_0%,rgba(237,233,254,0.92)_45%,rgba(224,231,255,0.95)_100%)] p-4 shadow-[0_14px_34px_-26px_rgba(99,102,241,0.45)] sm:p-5">
           <div className="pointer-events-none absolute -top-16 right-6 h-40 w-40 rounded-full bg-indigo-300/20 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-16 left-10 h-36 w-36 rounded-full bg-violet-300/20 blur-3xl" />
@@ -547,80 +499,85 @@ export default function Dashboard() {
           </div>
 
           <div className="relative mt-3 space-y-2.5">
-            {previewSessions.map((item) => (
-              <article
-                key={item.id}
-                className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3.5 transition hover:shadow-sm lg:flex-row lg:items-center lg:justify-between"
-              >
-                <div>
-                  <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                    <span className={`rounded-full px-2.5 py-0.5 font-medium ${skillTone(item.skill)}`}>
-                      {item.skill}
-                    </span>
-                    <span className={`rounded-full px-2.5 py-0.5 font-medium ${statusTone(item.status)}`}>
-                      {item.status}
-                    </span>
-                    <span
-                      className={`rounded-full px-2.5 py-0.5 font-medium ${
-                        item.role === "Helping"
-                          ? "bg-violet-100 text-violet-700"
-                          : "bg-indigo-100 text-indigo-700"
-                      }`}
-                    >
-                      {item.role}
-                    </span>
-                  </div>
-
-                  <h3 className="mt-2 text-sm font-medium leading-tight text-slate-900">{item.topic}</h3>
-
-                  <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                    <span className="inline-flex items-center gap-1.5">
-                      <User size={13} />
-                      {item.role === "Helping" ? "For" : "With"} {item.person}
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <Clock3 size={13} />
-                      {item.date}
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <Timer size={13} />
-                      {item.duration}
-                    </span>
-                    {item.rating ? <RatingStars value={item.rating} /> : null}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 self-end lg:self-center">
-                  <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-0.5 text-xs font-semibold text-indigo-700">
-                    <Coins size={12} />
-                    {item.credits > 0 ? `+${item.credits}` : item.credits}
-                  </span>
-                  {item.action ? (
-                    <button
-                      type="button"
-                      onClick={() => setPendingCompleteId(item.id)}
-                      className="rounded-lg bg-slate-900 px-3 py-1 text-xs font-semibold text-white transition hover:bg-slate-800"
-                    >
-                      {item.action}
-                    </button>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-violet-700">
-                      <Check size={12} />
-                      Done
-                    </span>
-                  )}
-                </div>
-              </article>
-            ))}
-
-            {visibleSessions.length === 0 ? (
+            {dashLoading ? (
+              <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
+                Loading sessions...
+              </div>
+            ) : previewSessions.length === 0 ? (
               <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
                 No sessions in this tab yet.
               </div>
-            ) : null}
+            ) : (
+              previewSessions.map((item) => (
+                <article
+                  key={item.id}
+                  className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3.5 transition hover:shadow-sm lg:flex-row lg:items-center lg:justify-between"
+                >
+                  <div>
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                      <span className={`rounded-full px-2.5 py-0.5 font-medium ${skillTone(item.skill)}`}>
+                        {item.skill}
+                      </span>
+                      <span className={`rounded-full px-2.5 py-0.5 font-medium ${statusTone(item.status)}`}>
+                        {item.status}
+                      </span>
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 font-medium ${
+                          item.role === "Helping"
+                            ? "bg-violet-100 text-violet-700"
+                            : "bg-indigo-100 text-indigo-700"
+                        }`}
+                      >
+                        {item.role}
+                      </span>
+                    </div>
+
+                    <h3 className="mt-2 text-sm font-medium leading-tight text-slate-900">{item.topic}</h3>
+
+                    <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                      <span className="inline-flex items-center gap-1.5">
+                        <User size={13} />
+                        {item.role === "Helping" ? "For" : "With"} {item.person}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Clock3 size={13} />
+                        {item.date}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Timer size={13} />
+                        {item.duration}
+                      </span>
+                      {item.rating ? <RatingStars value={item.rating} /> : null}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-end lg:self-center">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-0.5 text-xs font-semibold text-indigo-700">
+                      <Coins size={12} />
+                      {item.credits > 0 ? `+${item.credits}` : item.credits === 0 ? "0" : item.credits}
+                    </span>
+                    {item.action ? (
+                      <button
+                        type="button"
+                        onClick={() => setPendingCompleteId(item.id)}
+                        className="rounded-lg bg-slate-900 px-3 py-1 text-xs font-semibold text-white transition hover:bg-slate-800"
+                      >
+                        {item.action}
+                      </button>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-violet-700">
+                        <Check size={12} />
+                        Done
+                      </span>
+                    )}
+                  </div>
+                </article>
+              ))
+            )}
           </div>
         </section>
 
+        {/* ── Open Requests + Submitted Offers ── */}
         <section className="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-2">
           <article className="rounded-3xl border border-slate-300/80 bg-transparent shadow-none">
             <div className="flex items-center justify-between border-b border-slate-300/80 p-4">
@@ -649,7 +606,9 @@ export default function Dashboard() {
                       <div>
                         <p className="text-base leading-tight">{item.title}</p>
                         <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-500">
-                          <span className="rounded-full bg-rose-100 px-3 py-0.5 text-rose-700">{item.urgency}</span>
+                          <span className="rounded-full bg-rose-100 px-3 py-0.5 text-rose-700">
+                            {item.urgency}
+                          </span>
                           <span className="inline-flex items-center gap-1">
                             <MessageCircle size={14} />
                             {item.offers} offers
@@ -691,36 +650,47 @@ export default function Dashboard() {
               </Link>
             </div>
             <div className="space-y-2 p-4">
-              {submittedOffers.map((item) => (
-                <div key={item.id} className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-base leading-tight">{item.title}</p>
-                      <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-500">
-                        <span
-                          className={`rounded-full px-3 py-0.5 ${
-                            item.status === "Accepted"
-                              ? "bg-violet-100 text-violet-700"
-                              : "bg-amber-100 text-amber-700"
-                          }`}
-                        >
-                          {item.status}
-                        </span>
-                        <span>by {item.user}</span>
-                        <span>{item.age}</span>
-                      </div>
-                    </div>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3.5 py-1 text-sm font-semibold text-indigo-700">
-                      <Coins size={14} />
-                      {item.credits}
-                    </span>
-                  </div>
+              {dashLoading ? (
+                <div className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-sm text-slate-600">
+                  Loading offers...
                 </div>
-              ))}
+              ) : submittedOffers.length === 0 ? (
+                <div className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-sm text-slate-600">
+                  You haven't submitted any offers yet.
+                </div>
+              ) : (
+                submittedOffers.map((item) => (
+                  <div key={item.id} className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-base leading-tight">{item.title}</p>
+                        <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-500">
+                          <span
+                            className={`rounded-full px-3 py-0.5 ${
+                              item.status === "Accepted"
+                                ? "bg-violet-100 text-violet-700"
+                                : "bg-amber-100 text-amber-700"
+                            }`}
+                          >
+                            {item.status}
+                          </span>
+                          <span>by {item.user}</span>
+                          <span>{item.age}</span>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3.5 py-1 text-sm font-semibold text-indigo-700">
+                        <Coins size={14} />
+                        {item.credits}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </article>
         </section>
 
+        {/* ── Activity Feed ── */}
         <section className="relative mt-4 overflow-hidden rounded-3xl border border-indigo-200/70 bg-[linear-gradient(140deg,rgba(238,242,255,0.95)_0%,rgba(237,233,254,0.92)_45%,rgba(224,231,255,0.95)_100%)] shadow-[0_14px_34px_-26px_rgba(99,102,241,0.45)]">
           <div className="pointer-events-none absolute -top-16 right-6 h-40 w-40 rounded-full bg-indigo-300/20 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-16 left-10 h-36 w-36 rounded-full bg-violet-300/20 blur-3xl" />
@@ -736,63 +706,66 @@ export default function Dashboard() {
           </div>
 
           <div className="relative">
-            {activityPreview.map((item) => (
-              <article
-                key={item.id}
-                className="flex items-center justify-between border-b border-indigo-200/70 px-4 py-5 last:border-b-0"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`rounded-full p-3 ${toneClasses(item.tone)}`}>
-                    {item.id === "a1" ? (
-                      <Plus size={15} />
-                    ) : item.id === "a2" ? (
-                      <Check size={15} />
-                    ) : item.id === "a3" ? (
-                      <Send size={15} />
-                    ) : item.id === "a4" ? (
-                      <Star size={15} />
-                    ) : (
-                      <Calendar size={15} />
-                    )}
+            {activityPreview.length === 0 ? (
+              <div className="px-4 py-5 text-sm text-slate-500">No activity yet.</div>
+            ) : (
+              activityPreview.map((item) => (
+                <article
+                  key={item.id}
+                  className="flex items-center justify-between border-b border-indigo-200/70 px-4 py-5 last:border-b-0"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`rounded-full p-3 ${toneClasses(item.type)}`}>
+                      {item.type === "earn" || item.type === "bonus" ? (
+                        <Plus size={15} />
+                      ) : (
+                        <Coins size={15} />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-base leading-tight">{item.description ?? "Credit transaction"}</p>
+                      <p className="mt-1 text-sm text-slate-500">
+                        {toRelativeAge(item.created_at)}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-base leading-tight">{item.text}</p>
-                    <p className="mt-1 text-sm text-slate-500">{item.date}</p>
-                  </div>
-                </div>
-
-                {item.credits ? (
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold ${
-                      item.credits > 0 ? "bg-violet-100 text-violet-700" : "bg-rose-100 text-rose-700"
+                      item.type === "earn" || item.type === "bonus"
+                        ? "bg-violet-100 text-violet-700"
+                        : "bg-rose-100 text-rose-700"
                     }`}
                   >
                     <Coins size={14} />
-                    {item.credits > 0 ? `+${item.credits}` : item.credits}
+                    {item.type === "earn" || item.type === "bonus" ? `+${item.amount}` : `-${item.amount}`}
                   </span>
-                ) : null}
-              </article>
-            ))}
+                </article>
+              ))
+            )}
           </div>
         </section>
       </main>
 
       <Footer />
 
+      {/* ── Credit transfer toast ── */}
       {transferToast ? (
-        <div className="pointer-events-none fixed bottom-5 right-5 z-[60]">
-          <div className="flex min-w-[260px] items-center gap-2.5 rounded-2xl border border-indigo-300 bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-4 py-3 text-white shadow-xl shadow-indigo-900/20">
+        <div className="pointer-events-none fixed bottom-5 right-5 z-60">
+          <div className="flex min-w-65 items-center gap-2.5 rounded-2xl border border-indigo-300 bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-4 py-3 text-white shadow-xl shadow-indigo-900/20">
             <div className="rounded-full bg-white/20 p-1.5 text-white">
               <Coins size={15} />
             </div>
             <div>
-              <p className="text-base font-semibold leading-tight">{transferToast.credits} credits released</p>
+              <p className="text-base font-semibold leading-tight">
+                {transferToast.credits} credits released
+              </p>
               <p className="mt-0.5 text-sm text-indigo-100">Session marked as complete</p>
             </div>
           </div>
         </div>
       ) : null}
 
+      {/* ── Mark complete confirm modal ── */}
       {pendingSession ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <button
@@ -801,7 +774,6 @@ export default function Dashboard() {
             onClick={() => setPendingCompleteId(null)}
             aria-label="Close confirmation"
           />
-
           <div className="relative w-full max-w-md rounded-2xl border border-indigo-100 bg-white p-4 shadow-xl">
             <div className="flex items-start gap-3">
               <div className="rounded-xl bg-indigo-100 p-2.5 text-indigo-700">
@@ -809,10 +781,9 @@ export default function Dashboard() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-slate-900">Mark Session Complete?</h3>
-                <p className="mt-0.5 text-sm text-slate-500">This will trigger credit transfer</p>
+                <p className="mt-0.5 text-sm text-slate-500">This will update the session status</p>
               </div>
             </div>
-
             <div className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50/50 p-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -821,18 +792,8 @@ export default function Dashboard() {
                     {pendingSession.role === "Helping" ? "for" : "with"} {pendingSession.person}
                   </p>
                 </div>
-                <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700">
-                  <Coins size={14} />
-                  {pendingSession.credits > 0 ? `+${pendingSession.credits}` : pendingSession.credits}
-                </span>
               </div>
             </div>
-
-            <p className="mt-3 text-sm text-slate-500">
-              {Math.abs(pendingSession.credits)} credits will be transferred{" "}
-              {pendingSession.credits > 0 ? "to your balance." : "from your balance."}
-            </p>
-
             <div className="mt-4 grid grid-cols-2 gap-2.5">
               <button
                 type="button"
@@ -844,14 +805,13 @@ export default function Dashboard() {
               <button
                 type="button"
                 onClick={() => {
-                  const releasedCredits = Math.abs(pendingSession.credits);
-                  handleMarkComplete(pendingSession.id);
+                  void handleMarkComplete(pendingSession.id);
                   setPendingCompleteId(null);
-                  setTransferToast({ credits: releasedCredits });
+                  setTransferToast({ credits: Math.abs(pendingSession.credits) });
                 }}
                 className="rounded-xl bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-3 py-2 text-sm font-semibold text-white transition hover:brightness-105"
               >
-                Confirm & Transfer
+                Confirm
               </button>
             </div>
           </div>
@@ -860,14 +820,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
