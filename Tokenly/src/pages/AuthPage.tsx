@@ -8,6 +8,7 @@ import ResetPasswordForm from "../components/auth/ResetPasswordForm";
 import SignInForm from "../components/auth/SignInForm";
 import SignUpForm from "../components/auth/SignUpForm";
 import VisualPanel from "../components/auth/VisualPanel";
+import { getCurrentSession } from "../services/authService";
 import { uploadProfilePicture, updateProfile } from "../services/profileService";
 import type { AuthMode } from "../types/auth";
 
@@ -90,9 +91,12 @@ export default function AuthPage() {
     ): Promise<boolean> => {
         const success = await signUp(email, password, { username, full_name: fullName });
         if (success) {
-            setPendingFullName(fullName);
-            onboardingActiveRef.current = true;
-            setShowOnboarding(true);
+            const { data } = await getCurrentSession();
+            if (data.session?.user) {
+                setPendingFullName(fullName);
+                onboardingActiveRef.current = true;
+                setShowOnboarding(true);
+            }
         }
         return success;
     };

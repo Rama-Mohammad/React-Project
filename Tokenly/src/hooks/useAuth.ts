@@ -117,7 +117,7 @@ export default function useAuth(): UseAuthResult {
         setError(""); setSuccessMessage("");
         const { error } = await signUpWithEmail(email, password, metadata);
         if (error) { setError(formatError(error.message)); return false; }
-        setSuccessMessage("Account created successfully.");
+        setSuccessMessage("Account created. We've sent a verification email to your inbox.");
         return true;
     }
 
