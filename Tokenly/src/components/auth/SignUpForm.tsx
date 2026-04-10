@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import type { SignUpFormProps } from "../../types/auth";
 import { getEmailByUsername } from "../../services/profileService";
 
@@ -335,7 +336,14 @@ export default function SignUpForm({
         </div>
 
         <p className="text-[11px] text-slate-400">
-          By creating an account, you agree to Tokenly's <a href="#" className="text-indigo-600 hover:text-indigo-700">Terms of Service</a> and <a href="#" className="text-indigo-600 hover:text-indigo-700">Privacy Policy</a>
+          By creating an account, you agree to Tokenly's{" "}
+          <Link to="/terms" className="text-indigo-600 hover:text-indigo-700">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link to="/privacy" className="text-indigo-600 hover:text-indigo-700">
+            Privacy Policy
+          </Link>
         </p>
 
         <button
