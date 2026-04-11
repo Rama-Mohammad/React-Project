@@ -15,13 +15,9 @@ import {
   mapSkillToExploreItem,
   type SkillWithRelations,
 } from "../utils/exploreMappers";
-import {
-  helperCategories,
-  requestCategories,
-  skillCategories,
-} from "../data/mockExploreData";
-import type { ExploreTab, RequestItem, HelperItem, SkillItem, OfferItem } from "../types/explore";
+import type { ExploreTab, RequestItem, HelperItem, SkillItem, OfferItem, Urgency, SkillLevel } from "../types/explore";
 import useRequests from "../hooks/useRequest";
+import { extractAvailabilityFromOfferDescription } from "../services/offerService";
 import { getAllSkills } from "../services/skillService";
 import { getExploreHelpers } from "../services/helperExploreService";
 import { mapProfileToHelperItem } from "../utils/helperExploreMapper";
@@ -54,6 +50,18 @@ function toRelativeAge(dateValue?: string | null) {
 
   const days = Math.floor(hours / 24);
   return `${days}d ago`;
+}
+
+function buildDynamicOptions(values: Array<string | null | undefined>, fallback: string) {
+  const unique = Array.from(
+    new Set(
+      values
+        .map((value) => value?.trim())
+        .filter((value): value is string => Boolean(value))
+    )
+  ).sort((a, b) => a.localeCompare(b));
+
+  return ["All", ...(unique.length > 0 ? unique : [fallback])];
 }
 
 export default function Explore() {
@@ -267,22 +275,26 @@ export default function Explore() {
         return acc;
       }, {});
 
-      const independentMapped: OfferItem[] = ((independentOffersResult.data ?? []) as Array<Record<string, unknown>>).map((row) => ({
-        id: String(row.id ?? ""),
-        source: "independent",
-        helperId: String(row.helper_id ?? ""),
-        requestId: "",
-        createdAt: String(row.created_at ?? ""),
-        requestTitle: String(row.title ?? "Independent offer"),
-        category: String(row.category ?? "General"),
-        helperName: helperNameById[String(row.helper_id ?? "")] ?? "Helper",
-        message: String(row.description ?? "No description provided."),
-        availability: String(row.urgency ? `Urgency: ${row.urgency}` : "Independent offer"),
-        status: String(row.status ?? "open"),
-        credits: Number(row.credit_cost ?? 0),
-        duration: Number(row.duration_minutes ?? 0),
-        submittedAgo: toRelativeAge((row.created_at as string | null) ?? null),
-      }));
+      const independentMapped: OfferItem[] = ((independentOffersResult.data ?? []) as Array<Record<string, unknown>>).map((row) => {
+        const parsedOffer = extractAvailabilityFromOfferDescription(String(row.description ?? ""));
+
+        return {
+          id: String(row.id ?? ""),
+          source: "independent",
+          helperId: String(row.helper_id ?? ""),
+          requestId: "",
+          createdAt: String(row.created_at ?? ""),
+          requestTitle: String(row.title ?? "Independent offer"),
+          category: String(row.category ?? "General"),
+          helperName: helperNameById[String(row.helper_id ?? "")] ?? "Helper",
+          message: parsedOffer.summary,
+          availability: parsedOffer.availability,
+          status: String(row.status ?? "open"),
+          credits: Number(row.credit_cost ?? 0),
+          duration: Number(row.duration_minutes ?? 0),
+          submittedAgo: toRelativeAge((row.created_at as string | null) ?? null),
+        };
+      });
 
       const merged = [...requestMapped, ...independentMapped].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -309,8 +321,12 @@ export default function Explore() {
   }
 
   if (duration !== "Any") {
-    const maxDuration = duration === "<=30 min" ? 30 : duration === "<=45 min" ? 45 : 60;
-    data = data.filter((item) => item.duration <= maxDuration);
+    if (duration === ">60 min") {
+      data = data.filter((item) => item.duration > 60);
+    } else {
+      const maxDuration = duration === "<=30 min" ? 30 : duration === "<=45 min" ? 45 : 60;
+      data = data.filter((item) => item.duration <= maxDuration);
+    }
   }
 
   if (search.trim()) {
@@ -436,14 +452,103 @@ export default function Explore() {
     return data;
   }, [liveOffers, search, selectedCategory, sortBy]);
 
+  const requestCategoryOptions = useMemo(
+    () => buildDynamicOptions(liveOpenRequests.map((item) => item.category), "General"),
+    [liveOpenRequests]
+  );
+
+  const helperCategoryOptions = useMemo(
+    () =>
+      buildDynamicOptions(
+        liveHelpers.flatMap((item) => [...item.categories, ...item.skills]),
+        "General"
+      ),
+    [liveHelpers]
+  );
+
+  const skillCategoryOptions = useMemo(
+    () => buildDynamicOptions(liveSkills.map((item) => item.category ?? "Other"), "Other"),
+    [liveSkills]
+  );
+
+  const offerCategoryOptions = useMemo(
+    () => buildDynamicOptions(liveOffers.map((item) => item.category), "General"),
+    [liveOffers]
+  );
+
+  const requestUrgencyOptions = useMemo(() => {
+    const priorities: Array<"All" | Urgency> = ["All", "High", "Medium", "Low"];
+    const available = new Set<Urgency>(liveOpenRequests.map((item) =>
+      item.urgency === "high" ? "High" : item.urgency === "medium" ? "Medium" : "Low"
+    ));
+    return priorities.filter((item) => item === "All" || available.has(item));
+  }, [liveOpenRequests]);
+
+  const requestDurationOptions = useMemo(() => {
+    const availableDurations = liveOpenRequests.map((item) => item.duration_minutes ?? 0);
+    const options = ["Any"];
+
+    if (availableDurations.some((value) => value > 0 && value <= 30)) options.push("<=30 min");
+    if (availableDurations.some((value) => value > 30 && value <= 45)) options.push("<=45 min");
+    if (availableDurations.some((value) => value > 45 && value <= 60)) options.push("<=60 min");
+    if (availableDurations.some((value) => value > 60)) options.push(">60 min");
+
+    return options;
+  }, [liveOpenRequests]);
+
+  const helperRatingOptions = useMemo(() => {
+    const maxRating = liveHelpers.reduce((highest, item) => Math.max(highest, item.rating), 0);
+    const options = ["Any rating"];
+    if (maxRating >= 4) options.push("4.0+");
+    if (maxRating >= 4.5) options.push("4.5+");
+    if (maxRating >= 4.8) options.push("4.8+");
+    return options;
+  }, [liveHelpers]);
+
+  const skillLevelOptions = useMemo(() => {
+    const priorities: Array<"All" | SkillLevel> = ["All", "Beginner", "Intermediate", "Advanced"];
+    const available = new Set<SkillLevel>(liveSkills.map((item) => mapSkillToExploreItem(item).level));
+    return priorities.filter((item) => item === "All" || available.has(item));
+  }, [liveSkills]);
+
   const currentCategories =
     activeTab === "requests"
-      ? requestCategories
+      ? requestCategoryOptions
       : activeTab === "helpers"
-      ? helperCategories
+      ? helperCategoryOptions
       : activeTab === "skills"
-      ? skillCategories
-      : requestCategories;
+      ? skillCategoryOptions
+      : offerCategoryOptions;
+
+  useEffect(() => {
+    if (!currentCategories.includes(selectedCategory)) {
+      setSelectedCategory("All");
+    }
+  }, [currentCategories, selectedCategory]);
+
+  useEffect(() => {
+    if (activeTab === "requests" && !(requestUrgencyOptions as string[]).includes(urgency)) {
+      setUrgency("All");
+    }
+  }, [activeTab, requestUrgencyOptions, urgency]);
+
+  useEffect(() => {
+    if (activeTab === "requests" && !requestDurationOptions.includes(duration)) {
+      setDuration("Any");
+    }
+  }, [activeTab, duration, requestDurationOptions]);
+
+  useEffect(() => {
+    if (activeTab === "helpers" && !helperRatingOptions.includes(rating)) {
+      setRating("Any rating");
+    }
+  }, [activeTab, helperRatingOptions, rating]);
+
+  useEffect(() => {
+    if (activeTab === "skills" && !(skillLevelOptions as string[]).includes(level)) {
+      setLevel("All");
+    }
+  }, [activeTab, level, skillLevelOptions]);
 
   const totalCount =
     activeTab === "requests"
@@ -556,6 +661,10 @@ export default function Explore() {
               <FilterSideBar
                 activeTab={activeTab}
                 categories={currentCategories}
+                urgencyOptions={requestUrgencyOptions}
+                durationOptions={requestDurationOptions}
+                ratingOptions={helperRatingOptions}
+                levelOptions={skillLevelOptions}
                 selectedCategory={selectedCategory}
                 onCategoryChange={setSelectedCategory}
                 urgency={urgency}
@@ -675,14 +784,31 @@ export default function Explore() {
                   </div>
 
                   <div className="mt-4">
-                    {item.source === "request" ? (
-                      <Link
-                        to={`/requests/${item.requestId}`}
-                        className="inline-flex h-9 items-center rounded-xl border border-slate-300/70 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                      >
-                        View Request
-                      </Link>
-                    ) : null}
+                    <div className="flex flex-wrap gap-2">
+                      {item.source === "request" ? (
+                        <>
+                          <Link
+                            to={`/requests/${item.requestId}`}
+                            className="inline-flex h-9 items-center rounded-xl border border-slate-300/70 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                          >
+                            View Request
+                          </Link>
+                          <Link
+                            to={`/offers/${item.id}/appointment`}
+                            className="inline-flex h-9 items-center rounded-xl bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 px-3 text-sm font-semibold text-white transition hover:brightness-105"
+                          >
+                            Accept Offer
+                          </Link>
+                        </>
+                      ) : (
+                        <Link
+                          to={`/offers/${item.id}/appointment?source=independent`}
+                          className="inline-flex h-9 items-center rounded-xl bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 px-3 text-sm font-semibold text-white transition hover:brightness-105"
+                        >
+                          Accept Offer
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </article>
               ))}

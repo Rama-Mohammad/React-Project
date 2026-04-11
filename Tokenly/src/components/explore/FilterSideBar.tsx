@@ -27,6 +27,10 @@ function ChipButton({
 export default function FilterSideBar({
   activeTab,
   categories,
+  urgencyOptions,
+  durationOptions,
+  ratingOptions,
+  levelOptions,
   selectedCategory,
   onCategoryChange,
   urgency,
@@ -59,7 +63,7 @@ export default function FilterSideBar({
         {activeTab === "requests" && (
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex flex-wrap gap-1.5">
-              {["All", "High", "Medium", "Low"].map((item) => (
+              {urgencyOptions.map((item) => (
                 <ChipButton
                   key={item}
                   active={urgency === item}
@@ -69,7 +73,7 @@ export default function FilterSideBar({
                 </ChipButton>
               ))}
 
-              {["Any", "<=30 min", "<=45 min", "<=60 min"].map((item) => (
+              {durationOptions.map((item) => (
                 <ChipButton
                   key={item}
                   active={duration === item}
@@ -89,7 +93,7 @@ export default function FilterSideBar({
         {activeTab === "helpers" && (
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex flex-wrap gap-1.5">
-              {["Any rating", "4.0+", "4.5+", "4.8+"].map((item) => (
+              {ratingOptions.map((item) => (
                 <ChipButton
                   key={item}
                   active={rating === item}
@@ -119,7 +123,7 @@ export default function FilterSideBar({
         {activeTab === "skills" && (
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex flex-wrap gap-1.5">
-              {["All", "Beginner", "Intermediate", "Advanced"].map((item) => (
+              {levelOptions.map((item) => (
                 <ChipButton
                   key={item}
                   active={level === item}

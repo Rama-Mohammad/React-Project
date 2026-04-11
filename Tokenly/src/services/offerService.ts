@@ -2,6 +2,35 @@ import { supabase } from "../lib/supabaseClient";
 import type { OfferStatus } from "../types/offer";
 import type { Request } from "../types/request";
 
+export function extractAvailabilityFromOfferDescription(description?: string | null) {
+  if (!description) {
+    return { summary: "No description provided.", availability: "Availability not provided." };
+  }
+
+  const parts = description
+    .split(/\n\s*\n/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  const availabilityPart = parts.find((part) => /^availability:/i.test(part));
+  const summaryParts = parts.filter((part) => !/^availability:/i.test(part) && !/^note:/i.test(part));
+  const notePart = parts.find((part) => /^note:/i.test(part));
+
+  const availability = availabilityPart
+    ? availabilityPart.replace(/^availability:\s*/i, "").trim()
+    : "Availability not provided.";
+  const note = notePart ? notePart.replace(/^note:\s*/i, "").trim() : "";
+  const summary = [summaryParts.join("\n\n"), note ? `Note: ${note}` : ""]
+    .filter(Boolean)
+    .join("\n\n")
+    .trim();
+
+  return {
+    summary: summary || "No description provided.",
+    availability,
+  };
+}
+
 export async function createOffer(
   request_id: string,
   helper_id: string,
@@ -48,6 +77,54 @@ export type OfferForHelperRow = {
     urgency: string | null;
     credit_cost: number | null;
     duration_minutes: number | null;
+  } | null;
+};
+
+export type OfferAppointmentRow = {
+  id: string;
+  request_id: string;
+  helper_id: string;
+  message: string | null;
+  availability: string | null;
+  status: OfferStatus;
+  created_at: string;
+  request: {
+    id: string;
+    requester_id: string;
+    title: string;
+    description: string;
+    category: string | null;
+    urgency: string | null;
+    credit_cost: number | null;
+    duration_minutes: number | null;
+    status: string;
+  } | null;
+  helper: {
+    id: string;
+    full_name: string | null;
+    username: string | null;
+    avg_rating: number | null;
+    profile_image_url: string | null;
+  } | null;
+};
+
+export type IndependentOfferAppointmentRow = {
+  id: string;
+  helper_id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  urgency: string | null;
+  duration_minutes: number | null;
+  credit_cost: number | null;
+  status: string;
+  created_at: string;
+  helper: {
+    id: string;
+    full_name: string | null;
+    username: string | null;
+    avg_rating: number | null;
+    profile_image_url: string | null;
   } | null;
 };
 
@@ -143,7 +220,8 @@ export async function getOffersForHelper(helperId: string) {
 
 export async function acceptOffer(
   offerId: string,
-  request: Pick<Request, "id" | "requester_id" | "duration_minutes">
+  request: Pick<Request, "id" | "requester_id" | "duration_minutes">,
+  scheduledAt?: string
 ) {
   const { data: offer, error: offerFetchError } = await supabase
     .from("offers")
@@ -194,6 +272,7 @@ export async function acceptOffer(
         offer_id: offer.id,
         helper_id: offer.helper_id,
         requester_id: request.requester_id,
+        scheduled_at: scheduledAt,
         duration_minutes: request.duration_minutes,
         status: "upcoming",
       })
@@ -205,6 +284,19 @@ export async function acceptOffer(
     }
 
     sessionData = createdSession;
+  } else if (scheduledAt) {
+    const { data: updatedSession, error: updateSessionError } = await supabase
+      .from("sessions")
+      .update({ scheduled_at: scheduledAt })
+      .eq("id", sessionData.id)
+      .select()
+      .single();
+
+    if (updateSessionError) {
+      return { data: null, error: updateSessionError };
+    }
+
+    sessionData = updatedSession;
   }
 
   const { error: requestUpdateError } = await supabase
@@ -226,6 +318,120 @@ export async function rejectOffer(offerId: string) {
     .eq("id", offerId)
     .select()
     .single();
+}
+
+export async function getOfferAppointmentDetails(offerId: string) {
+  const result = await supabase
+    .from("offers")
+    .select(`
+      id,
+      request_id,
+      helper_id,
+      message,
+      availability,
+      status,
+      created_at,
+      request:requests!offers_request_id_fkey(
+        id,
+        requester_id,
+        title,
+        description,
+        category,
+        urgency,
+        credit_cost,
+        duration_minutes,
+        status
+      ),
+      helper:profiles!offers_helper_id_fkey(
+        id,
+        full_name,
+        username,
+        avg_rating,
+        profile_image_url
+      )
+    `)
+    .eq("id", offerId)
+    .maybeSingle();
+
+  if (result.error || !result.data) {
+    return { data: null as OfferAppointmentRow | null, error: result.error };
+  }
+
+  const requestValue = (
+    result.data as {
+      request:
+        | OfferAppointmentRow["request"]
+        | OfferAppointmentRow["request"][];
+      helper:
+        | OfferAppointmentRow["helper"]
+        | OfferAppointmentRow["helper"][];
+    }
+  ).request;
+  const helperValue = (
+    result.data as {
+      request:
+        | OfferAppointmentRow["request"]
+        | OfferAppointmentRow["request"][];
+      helper:
+        | OfferAppointmentRow["helper"]
+        | OfferAppointmentRow["helper"][];
+    }
+  ).helper;
+
+  return {
+    data: {
+      ...result.data,
+      request: Array.isArray(requestValue) ? requestValue[0] ?? null : requestValue ?? null,
+      helper: Array.isArray(helperValue) ? helperValue[0] ?? null : helperValue ?? null,
+    } as OfferAppointmentRow,
+    error: null,
+  };
+}
+
+export async function getIndependentOfferAppointmentDetails(offerId: string) {
+  const result = await supabase
+    .from("help_offers")
+    .select(`
+      id,
+      helper_id,
+      title,
+      description,
+      category,
+      urgency,
+      duration_minutes,
+      credit_cost,
+      status,
+      created_at,
+      helper:profiles!help_offers_helper_id_fkey(
+        id,
+        full_name,
+        username,
+        avg_rating,
+        profile_image_url
+      )
+    `)
+    .eq("id", offerId)
+    .maybeSingle();
+
+  if (result.error || !result.data) {
+    return { data: null as IndependentOfferAppointmentRow | null, error: result.error };
+  }
+
+  const helperValue = (
+    result.data as {
+      helper:
+        | IndependentOfferAppointmentRow["helper"]
+        | IndependentOfferAppointmentRow["helper"][];
+    }
+  ).helper;
+
+  return {
+    data: {
+      ...result.data,
+      helper: Array.isArray(helperValue) ? helperValue[0] ?? null : helperValue ?? null,
+    } as IndependentOfferAppointmentRow,
+    error: null,
+  };
 }
 
 export async function getOffersByRequest(request_id: string) {

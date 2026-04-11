@@ -1,95 +1,170 @@
-import React, { useState, useEffect } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
-import type { AddSkillModalProps, ProfileSkill } from '../../types/profile';
+import React, { useEffect, useState } from "react";
+import { Sparkles, X } from "lucide-react";
+import ThemedSelect from "../common/ThemedSelect";
+import type { AddSkillModalProps, ProfileSkill } from "../../types/profile";
+
+const levelOptions: ProfileSkill["level"][] = [
+  "Expert",
+  "Advanced",
+  "Intermediate",
+  "Beginner",
+];
+
+const initialFormData = {
+  name: "",
+  category: "",
+  level: "Intermediate" as ProfileSkill["level"],
+  sessions: 0,
+  description: "",
+};
 
 const AddSkillModal: React.FC<AddSkillModalProps> = ({
-  isOpen, onClose, onAdd, onUpdate, editSkill, isEditMode
+  isOpen,
+  onClose,
+  onAdd,
+  onUpdate,
+  editSkill,
+  isEditMode,
 }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    category: '',
-    level: 'Intermediate' as ProfileSkill['level'],
-    sessions: 0,
-    description: '',
-  });
+  const [formData, setFormData] = useState(initialFormData);
 
   useEffect(() => {
-    if (isOpen) document.body.style.overflow = 'hidden';
-    else document.body.style.overflow = 'auto';
-    return () => { document.body.style.overflow = 'auto'; };
+    document.body.style.overflow = isOpen ? "hidden" : "auto";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
   }, [isOpen]);
 
   useEffect(() => {
     if (editSkill && isEditMode) {
       setFormData({
-        name: editSkill.name || '',
-        category: editSkill.category || '',
-        level: (editSkill.level || 'Intermediate') as ProfileSkill['level'],
+        name: editSkill.name || "",
+        category: editSkill.category || "",
+        level: (editSkill.level || "Intermediate") as ProfileSkill["level"],
         sessions: editSkill.sessions || 0,
-        description: editSkill.description || '',
+        description: editSkill.description || "",
       });
+      return;
     }
-  }, [editSkill, isEditMode]);
 
-  useEffect(() => {
-    if (!isEditMode && isOpen) {
-      setFormData({ name: '', category: '', level: 'Intermediate', sessions: 0, description: '' });
+    if (isOpen) {
+      setFormData(initialFormData);
     }
-  }, [isEditMode, isOpen]);
+  }, [editSkill, isEditMode, isOpen]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+
     if (isEditMode && editSkill) {
-      onUpdate && onUpdate({ ...formData, id: editSkill.id });
+      onUpdate?.({ ...formData, id: editSkill.id });
     } else {
       onAdd(formData);
     }
+
     onClose();
-    setFormData({ name: '', category: '', level: 'Intermediate', sessions: 0, description: '' });
+    setFormData(initialFormData);
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl max-w-md w-full mx-auto shadow-xl">
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">{isEditMode ? "Edit Skill" : "Add New Skill"}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <FontAwesomeIcon icon={faTimes} className="text-xl" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <button
+        type="button"
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+        onClick={onClose}
+        aria-label="Close add skill modal"
+      />
+
+      <div className="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+          <h2 className="text-lg font-semibold text-slate-900">
+            {isEditMode ? "Edit Skill" : "Add New Skill"}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+            aria-label="Close modal"
+          >
+            <X size={18} />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+
+        <form onSubmit={handleSubmit} className="space-y-4 p-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Skill Name</label>
-            <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" placeholder="e.g., React, Python, Guitar" required />
+            <label className="block text-sm font-medium text-slate-700">Skill Name</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(event) => setFormData({ ...formData, name: event.target.value })}
+              className="mt-1 h-[46px] w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+              placeholder="e.g., React, Python, Guitar"
+              required
+            />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <input type="text" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" placeholder="e.g., Programming, Design, Music" required />
+            <label className="block text-sm font-medium text-slate-700">Category</label>
+            <input
+              type="text"
+              value={formData.category}
+              onChange={(event) => setFormData({ ...formData, category: event.target.value })}
+              className="mt-1 h-[46px] w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+              placeholder="e.g., Programming, Design, Music"
+              required
+            />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Proficiency Level</label>
-            <select value={formData.level} onChange={(e) => setFormData({ ...formData, level: e.target.value as ProfileSkill['level'] })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white">
-              <option value="Expert">Expert</option>
-              <option value="Advanced">Advanced</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Beginner">Beginner</option>
-            </select>
+            <label className="block text-sm font-medium text-slate-700">Proficiency Level</label>
+            <ThemedSelect
+              value={formData.level}
+              onChange={(value) => setFormData({ ...formData, level: value })}
+              options={levelOptions.map((option) => ({ value: option, label: option }))}
+              ariaLabel="Skill level"
+              icon={<Sparkles size={14} />}
+              className="mt-1"
+            />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
-            <textarea rows={2} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none" placeholder="Brief description of your experience..." />
+            <label className="block text-sm font-medium text-slate-700">Description (optional)</label>
+            <textarea
+              rows={2}
+              value={formData.description}
+              onChange={(event) => setFormData({ ...formData, description: event.target.value })}
+              className="mt-1 w-full resize-none rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+              placeholder="Brief description of your experience..."
+            />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sessions Completed</label>
-            <input type="number" value={formData.sessions} onChange={(e) => setFormData({ ...formData, sessions: parseInt(e.target.value) || 0 })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all" placeholder="0" min="0" />
+            <label className="block text-sm font-medium text-slate-700">Sessions Completed</label>
+            <input
+              type="number"
+              value={formData.sessions}
+              onChange={(event) => setFormData({ ...formData, sessions: parseInt(event.target.value, 10) || 0 })}
+              className="mt-1 h-[46px] w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+              placeholder="0"
+              min="0"
+            />
           </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-            <button type="button" onClick={onClose} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">{isEditMode ? "Update Skill" : "Add Skill"}</button>
+
+          <div className="flex justify-end gap-3 border-t border-slate-200 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="rounded-lg bg-[linear-gradient(135deg,#2563eb_0%,#4f46e5_55%,#7c3aed_100%)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105"
+            >
+              {isEditMode ? "Update Skill" : "Add Skill"}
+            </button>
           </div>
         </form>
       </div>

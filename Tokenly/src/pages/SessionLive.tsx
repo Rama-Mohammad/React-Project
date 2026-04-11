@@ -5,6 +5,7 @@ import VideoPlaceholder from "../components/session/live/VideoPlaceHolder";
 import ChatWindow from "../components/session/live/ChatWindow";
 import FileManager from "../components/session/live/FileManager";
 import Checklist from "../components/session/live/Checklist";
+import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import type { ChecklistItem, FileAttachment, Message } from "../types/session";
 
 type TabType = "agenda" | "files";
@@ -22,6 +23,7 @@ const SessionLivePage: React.FC = () => {
   ]);
   const [files, setFiles] = useState<FileAttachment[]>([]);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
+  const [pendingDeleteFileId, setPendingDeleteFileId] = useState<string | null>(null);
 
   const currentUserId = "current-user-123";
   const isActive = true;
@@ -104,7 +106,12 @@ const SessionLivePage: React.FC = () => {
 
   const handleDeleteFile = (fileId: string) => {
     setFiles((prev) => prev.filter((file) => file.id !== fileId));
+    setPendingDeleteFileId(null);
   };
+
+  const pendingDeleteFile = pendingDeleteFileId
+    ? files.find((file) => file.id === pendingDeleteFileId) ?? null
+    : null;
 
   return (
     <div className="flex h-screen flex-col bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_52%,#f3e8ff_100%)] text-slate-900">
@@ -183,7 +190,7 @@ const SessionLivePage: React.FC = () => {
                   onFileUpload={handleFileUpload}
                   files={files}
                   onDownload={handleDownload}
-                  onDelete={handleDeleteFile}
+                  onDelete={setPendingDeleteFileId}
                 />
               )}
             </div>
@@ -201,9 +208,19 @@ const SessionLivePage: React.FC = () => {
           </button>
         </div>
       </footer>
+
+      <ConfirmDeleteModal
+        isOpen={Boolean(pendingDeleteFile)}
+        title="Delete this file?"
+        message="This shared file will be removed from the session."
+        itemName={pendingDeleteFile?.name}
+        details={pendingDeleteFile ? `${pendingDeleteFile.uploadedBy} · ${(pendingDeleteFile.size / 1024).toFixed(1)} KB` : undefined}
+        confirmLabel="Delete File"
+        onCancel={() => setPendingDeleteFileId(null)}
+        onConfirm={() => pendingDeleteFile && handleDeleteFile(pendingDeleteFile.id)}
+      />
     </div>
   );
 };
 
 export default SessionLivePage;
-

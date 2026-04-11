@@ -33,7 +33,7 @@ const SkillCard: React.FC<ProfileSkillCardProps> = ({ skill, onDelete, onEdit })
           <button onClick={() => onEdit?.(skill)} className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-indigo-500" aria-label="Edit skill">
             <PenLine size={14} />
           </button>
-          <button onClick={() => { if (onDelete && confirm("Are you sure you want to delete this skill?")) onDelete(skill.id); }} className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-rose-500" aria-label="Delete skill">
+          <button onClick={() => onDelete?.(skill.id)} className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-rose-500" aria-label="Delete skill">
             <Trash2 size={14} />
           </button>
         </div>

@@ -1,6 +1,7 @@
 import { Clock3, MessageSquareText, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import { supabase } from "../lib/supabaseClient";
@@ -26,6 +27,8 @@ export default function MyOffers() {
   const [error, setError] = useState("");
   const [deletingRequestOfferId, setDeletingRequestOfferId] = useState<string | null>(null);
   const [deletingIndependentOfferId, setDeletingIndependentOfferId] = useState<string | null>(null);
+  const [pendingDeleteRequestOfferId, setPendingDeleteRequestOfferId] = useState<string | null>(null);
+  const [pendingDeleteIndependentOfferId, setPendingDeleteIndependentOfferId] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -90,9 +93,6 @@ export default function MyOffers() {
       return;
     }
 
-    const confirmed = window.confirm("Delete this independent offer?");
-    if (!confirmed) return;
-
     setDeletingIndependentOfferId(offerId);
     setError("");
     try {
@@ -108,6 +108,7 @@ export default function MyOffers() {
       }
 
       setIndependentOffers((prev) => prev.filter((offer) => offer.id !== offerId));
+      setPendingDeleteIndependentOfferId(null);
     } finally {
       setDeletingIndependentOfferId(null);
     }
@@ -118,9 +119,6 @@ export default function MyOffers() {
       setError("Please sign in first.");
       return;
     }
-
-    const confirmed = window.confirm("Delete this request-based offer?");
-    if (!confirmed) return;
 
     setDeletingRequestOfferId(offerId);
     setError("");
@@ -137,10 +135,19 @@ export default function MyOffers() {
       }
 
       setRequestOffers((prev) => prev.filter((offer) => offer.id !== offerId));
+      setPendingDeleteRequestOfferId(null);
     } finally {
       setDeletingRequestOfferId(null);
     }
   };
+
+  const pendingIndependentOffer = pendingDeleteIndependentOfferId
+    ? independentOffers.find((offer) => offer.id === pendingDeleteIndependentOfferId) ?? null
+    : null;
+
+  const pendingRequestOffer = pendingDeleteRequestOfferId
+    ? requestOffers.find((offer) => offer.id === pendingDeleteRequestOfferId) ?? null
+    : null;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
@@ -218,7 +225,7 @@ export default function MyOffers() {
                             </Link>
                             <button
                               type="button"
-                              onClick={() => void handleDeleteIndependentOffer(offer.id)}
+                              onClick={() => setPendingDeleteIndependentOfferId(offer.id)}
                               disabled={deletingIndependentOfferId === offer.id}
                               className={`inline-flex h-9 items-center rounded-xl border px-3 text-sm font-semibold transition ${
                                 deletingIndependentOfferId === offer.id
@@ -298,13 +305,13 @@ export default function MyOffers() {
                             <div className="flex gap-2">
                               <Link
                                 to={`/requests/${offer.request_id}`}
-                                className="inline-flex h-9 items-center rounded-xl border border-slate-300/70 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                              >
-                                View Offer
-                              </Link>
-                              <button
-                                type="button"
-                                onClick={() => void handleDeleteRequestOffer(offer.id)}
+                              className="inline-flex h-9 items-center rounded-xl border border-slate-300/70 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                            >
+                              View Offer
+                            </Link>
+                            <button
+                              type="button"
+                                onClick={() => setPendingDeleteRequestOfferId(offer.id)}
                                 disabled={deletingRequestOfferId === offer.id}
                                 className={`inline-flex h-9 items-center rounded-xl border px-3 text-sm font-semibold transition ${
                                   deletingRequestOfferId === offer.id
@@ -326,6 +333,28 @@ export default function MyOffers() {
           )}
         </section>
       </main>
+      <ConfirmDeleteModal
+        isOpen={Boolean(pendingIndependentOffer)}
+        title="Delete this independent offer?"
+        message="This offer will be removed from your public listings."
+        itemName={pendingIndependentOffer?.title}
+        details={pendingIndependentOffer ? `${pendingIndependentOffer.duration_minutes ?? 0} min · ${pendingIndependentOffer.credit_cost ?? 0} credits` : undefined}
+        confirmLabel="Delete Offer"
+        loading={Boolean(pendingIndependentOffer && deletingIndependentOfferId === pendingIndependentOffer.id)}
+        onCancel={() => setPendingDeleteIndependentOfferId(null)}
+        onConfirm={() => pendingIndependentOffer && handleDeleteIndependentOffer(pendingIndependentOffer.id)}
+      />
+      <ConfirmDeleteModal
+        isOpen={Boolean(pendingRequestOffer)}
+        title="Delete this request-based offer?"
+        message="This submitted offer will be removed from the request."
+        itemName={pendingRequestOffer?.request?.title ?? "Unknown request"}
+        details={pendingRequestOffer ? `${pendingRequestOffer.request?.duration_minutes ?? 0} min · ${pendingRequestOffer.request?.credit_cost ?? 0} credits` : undefined}
+        confirmLabel="Delete Offer"
+        loading={Boolean(pendingRequestOffer && deletingRequestOfferId === pendingRequestOffer.id)}
+        onCancel={() => setPendingDeleteRequestOfferId(null)}
+        onConfirm={() => pendingRequestOffer && handleDeleteRequestOffer(pendingRequestOffer.id)}
+      />
       <Footer />
     </div>
   );

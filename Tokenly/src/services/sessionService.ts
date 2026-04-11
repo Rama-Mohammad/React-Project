@@ -29,7 +29,7 @@ export async function getSessionsByUser(user_id: string) {
     .from("sessions")
     .select(`
       *,
-      request:requests(title, category, credit_cost),
+      request:requests(id, title, category, credit_cost),
       helper:profiles!helper_id(id, full_name, username, profile_image_url),
       requester:profiles!requester_id(id, full_name, username, profile_image_url)
     `)

@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { helpers } from "../../data/mockExploreData";
 import type { StatsHeroProps } from "../../types/explore";
 
 function StatCard({
@@ -55,8 +54,7 @@ function Step({
   );
 }
 
-export default function StatsHero({ stats, defaultHelperId, openHowItWorks = false }: StatsHeroProps) {
-  const fallbackHelperId = defaultHelperId ?? helpers[0]?.id ?? "h1";
+export default function StatsHero({ stats, openHowItWorks = false }: StatsHeroProps) {
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
 
   useEffect(() => {
@@ -93,7 +91,7 @@ export default function StatsHero({ stats, defaultHelperId, openHowItWorks = fal
 
             <div className="explore-fade-in-up mt-5 flex flex-wrap gap-2.5">
               <Link
-                to={`/helpers/${fallbackHelperId}/request`}
+                to="/request/new"
                 className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition duration-300 hover:bg-slate-50"
               >
                 <FileText size={17} />

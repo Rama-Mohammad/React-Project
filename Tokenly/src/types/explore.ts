@@ -85,6 +85,10 @@ export interface ExploreStats {
 export interface FilterSideBarProps {
   activeTab: ExploreTab;
   categories: string[];
+  urgencyOptions: string[];
+  durationOptions: string[];
+  ratingOptions: string[];
+  levelOptions: string[];
   selectedCategory: string;
   onCategoryChange: (value: string) => void;
   urgency: string;

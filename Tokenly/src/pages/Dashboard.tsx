@@ -17,6 +17,7 @@ import {
 import { Link } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
+import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import RatingStars from "../components/common/RatingStars";
 import { supabase } from "../lib/supabaseClient";
 import { deleteRequest, getRequestsByUser } from "../services/requestService";
@@ -81,6 +82,7 @@ export default function Dashboard() {
   const [requestsError, setRequestsError] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [deletingRequestId, setDeletingRequestId] = useState<string | null>(null);
+  const [pendingDeleteRequestId, setPendingDeleteRequestId] = useState<string | null>(null);
   const [pendingCompleteId, setPendingCompleteId] = useState<string | null>(null);
   const [transferToast, setTransferToast] = useState<{ credits: number } | null>(null);
   const [showCreditDetails, setShowCreditDetails] = useState(false);
@@ -119,7 +121,7 @@ export default function Dashboard() {
   const previewSessions = useMemo(() => visibleSessions.slice(0, 3), [visibleSessions]);
 
   const activityPreview = useMemo(
-    () => transactions.slice(0, 5),
+    () => transactions.slice(0, 3),
     [transactions]
   );
 
@@ -247,8 +249,6 @@ export default function Dashboard() {
 
   const handleDeleteMyRequest = async (requestId: string) => {
     if (!currentUserId) return;
-    const confirmed = window.confirm("Delete this request? This action cannot be undone.");
-    if (!confirmed) return;
 
     setDeletingRequestId(requestId);
     try {
@@ -258,10 +258,15 @@ export default function Dashboard() {
         return;
       }
       setOpenRequests((prev) => prev.filter((item) => item.id !== requestId));
+      setPendingDeleteRequestId(null);
     } finally {
       setDeletingRequestId(null);
     }
   };
+
+  const pendingDeleteRequest = pendingDeleteRequestId
+    ? openRequests.find((item) => item.id === pendingDeleteRequestId) ?? null
+    : null;
 
   const fullName = profile?.full_name ?? "Loading...";
   const initials = getInitials(profile?.full_name);
@@ -315,7 +320,7 @@ export default function Dashboard() {
                 Explore
               </Link>
               <Link
-                to="/helpers/h1/request"
+                to="/request/new"
                 className="inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-indigo-900/20 transition hover:brightness-105"
               >
                 <Plus size={17} />
@@ -582,7 +587,7 @@ export default function Dashboard() {
           <article className="rounded-3xl border border-slate-300/80 bg-transparent shadow-none">
             <div className="flex items-center justify-between border-b border-slate-300/80 p-4">
               <h3 className="text-lg font-semibold">Open Requests</h3>
-              <Link to="/helpers/h1/request" className="text-sm font-semibold text-indigo-700">
+              <Link to="/request/new" className="text-sm font-semibold text-indigo-700">
                 + New
               </Link>
             </div>
@@ -623,7 +628,7 @@ export default function Dashboard() {
                         </span>
                         <button
                           type="button"
-                          onClick={() => void handleDeleteMyRequest(item.id)}
+                          onClick={() => setPendingDeleteRequestId(item.id)}
                           disabled={deletingRequestId === item.id}
                           className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
                             deletingRequestId === item.id
@@ -697,12 +702,14 @@ export default function Dashboard() {
 
           <div className="relative flex items-center justify-between border-b border-indigo-200/70 p-4">
             <h3 className="text-lg font-semibold">Activity</h3>
-            <Link
-              to="/activity"
-              className="inline-flex items-center gap-2 rounded-xl border border-indigo-300/70 bg-white/80 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-white"
-            >
-              View all
-            </Link>
+            {transactions.length > 3 ? (
+              <Link
+                to="/activity"
+                className="inline-flex items-center gap-2 rounded-xl border border-indigo-300/70 bg-white/80 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-white"
+              >
+                View more
+              </Link>
+            ) : null}
           </div>
 
           <div className="relative">
@@ -817,6 +824,21 @@ export default function Dashboard() {
           </div>
         </div>
       ) : null}
+
+      <ConfirmDeleteModal
+        isOpen={Boolean(pendingDeleteRequest)}
+        title="Delete this request?"
+        message="This request will be removed from your dashboard."
+        itemName={pendingDeleteRequest?.title}
+        details={pendingDeleteRequest ? `${pendingDeleteRequest.offers} offers · ${pendingDeleteRequest.credits} credits` : undefined}
+        confirmLabel="Delete Request"
+        loading={Boolean(pendingDeleteRequest && deletingRequestId === pendingDeleteRequest.id)}
+        onCancel={() => setPendingDeleteRequestId(null)}
+        onConfirm={() => {
+          if (!pendingDeleteRequest) return;
+          return handleDeleteMyRequest(pendingDeleteRequest.id);
+        }}
+      />
     </div>
   );
 }

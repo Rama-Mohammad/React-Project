@@ -1,6 +1,7 @@
-import { ArrowLeft, ChevronDown, Code2, Search, Sparkles } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, Code2, Search, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import ThemedSelect from "../components/common/ThemedSelect";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import HelperCard from "../components/explore/HelperCard";
@@ -21,7 +22,6 @@ const levelStyles: Record<string, string> = {
 
 export default function SkillHelpers() {
   const { skillId } = useParams<{ skillId: string }>();
-  const sortRef = useRef<HTMLDivElement | null>(null);
   const [skill, setSkill] = useState<SkillItem | null>(null);
   const [isLoadingSkill, setIsLoadingSkill] = useState(true);
   const [skillLoadError, setSkillLoadError] = useState("");
@@ -32,7 +32,6 @@ export default function SkillHelpers() {
   const [minRating, setMinRating] = useState("Any");
   const [onlineOnly, setOnlineOnly] = useState(true);
   const [sortBy, setSortBy] = useState("Top Rated");
-  const [isSortOpen, setIsSortOpen] = useState(false);
 
   useEffect(() => {
     if (!skillId) {
@@ -91,20 +90,6 @@ export default function SkillHelpers() {
       mounted = false;
     };
   }, []);
-
-  useEffect(() => {
-    if (!isSortOpen) return;
-
-    const handleOutsideClick = (event: MouseEvent) => {
-      if (!sortRef.current) return;
-      if (!sortRef.current.contains(event.target as Node)) {
-        setIsSortOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [isSortOpen]);
 
   const matchedHelpers = useMemo(() => {
     if (!skill) return [];
@@ -270,41 +255,17 @@ export default function SkillHelpers() {
               />
             </label>
 
-            <div ref={sortRef} className="relative z-50">
-              <button
-                type="button"
-                onClick={() => setIsSortOpen((prev) => !prev)}
-                className="inline-flex h-11 min-w-[190px] items-center justify-between gap-3 rounded-2xl border border-indigo-200 bg-white/90 px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100"
-              >
-                <span>{sortBy}</span>
-                <ChevronDown
-                  size={16}
-                  className={`text-slate-500 transition-transform ${isSortOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              {isSortOpen ? (
-                <div className="absolute left-0 top-[calc(100%+8px)] z-[120] w-full overflow-hidden rounded-2xl border border-indigo-200 bg-white/95 p-1 shadow-xl backdrop-blur">
-                  {["Top Rated", "Fastest Response", "Most Sessions"].map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => {
-                        setSortBy(option);
-                        setIsSortOpen(false);
-                      }}
-                      className={`block w-full rounded-xl px-3 py-2 text-left text-sm font-medium transition ${
-                        sortBy === option
-                          ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white"
-                          : "text-slate-700 hover:bg-indigo-50"
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
+            <ThemedSelect
+              value={sortBy}
+              onChange={setSortBy}
+              options={["Top Rated", "Fastest Response", "Most Sessions"].map((option) => ({
+                value: option,
+                label: option,
+              }))}
+              ariaLabel="Helper sort"
+              size="md"
+              className="min-w-[190px]"
+            />
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">

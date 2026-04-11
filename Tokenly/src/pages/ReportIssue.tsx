@@ -1,8 +1,12 @@
 import { AlertTriangle, Paperclip } from "lucide-react";
+import { useState } from "react";
+import ThemedSelect from "../components/common/ThemedSelect";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 
 export default function ReportIssue() {
+  const [issueType, setIssueType] = useState("");
+
   return (
     <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <Navbar />
@@ -49,20 +53,20 @@ export default function ReportIssue() {
               <label htmlFor="issueType" className="mb-1.5 block text-sm font-medium text-slate-700">
                 Issue Type
               </label>
-              <select
-                id="issueType"
-                className="w-full rounded-xl border border-indigo-200/70 bg-indigo-50/50 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
-                defaultValue=""
-              >
-                <option value="" disabled>
-                  Select an issue type
-                </option>
-                <option value="account">Account access</option>
-                <option value="session">Session problem</option>
-                <option value="payment">Credits or balance issue</option>
-                <option value="abuse">Abuse or harassment</option>
-                <option value="bug">Technical bug</option>
-              </select>
+              <ThemedSelect
+                value={issueType}
+                onChange={setIssueType}
+                placeholder="Select an issue type"
+                ariaLabel="Issue type"
+                className="mt-0"
+                options={[
+                  { value: "account", label: "Account access" },
+                  { value: "session", label: "Session problem" },
+                  { value: "payment", label: "Credits or balance issue" },
+                  { value: "abuse", label: "Abuse or harassment" },
+                  { value: "bug", label: "Technical bug" },
+                ]}
+              />
             </div>
 
             <div>

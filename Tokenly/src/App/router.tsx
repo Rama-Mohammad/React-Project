@@ -23,10 +23,11 @@ import SessionRequestDetails from "../pages/SessionRequestDetails";
 import MyOffers from "../pages/MyOffers";
 import CreateOffer from "../pages/CreateOffer";
 import IndependentOfferDetails from "../pages/IndependentOfferDetails";
+import OfferAppointment from "../pages/OfferAppointment";
 import ErrorPage from "../pages/ErrorPage";
 import NotFound from "../pages/NotFound";
 
-function ErrorTestPage() {
+function ErrorTestPage(): never {
   throw new Error("This is a test route for the Tokenly error page.");
 }
 
@@ -74,6 +75,10 @@ export const router = createBrowserRouter([
         element: <RequestHelper />,
       },
       {
+        path: "/request/new",
+        element: <RequestHelper />,
+      },
+      {
         path: "/skills/:skillId/helpers",
         element: <SkillHelpers />,
       },
@@ -96,6 +101,10 @@ export const router = createBrowserRouter([
       {
         path: "/my-offers/independent/:offerId",
         element: <IndependentOfferDetails />,
+      },
+      {
+        path: "/offers/:offerId/appointment",
+        element: <OfferAppointment />,
       },
       {
         path: "/profile",

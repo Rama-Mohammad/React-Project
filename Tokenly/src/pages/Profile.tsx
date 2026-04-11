@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import ProfileHeader from "../components/profile/ProfileHeader";
 import SkillCard from "../components/profile/SkillCard";
 import PortfolioItem from "../components/profile/PortfolioItem";
@@ -161,6 +162,7 @@ const Profile: React.FC = () => {
   const [isPortfolioEditMode, setIsPortfolioEditMode] = useState(false);
   const [selectedPortfolioItem, setSelectedPortfolioItem] = useState<PortfolioEntry | null>(null);
   const [pendingPortfolioDeleteId, setPendingPortfolioDeleteId] = useState<string | null>(null);
+  const [pendingSkillDeleteId, setPendingSkillDeleteId] = useState<string | null>(null);
   const [reviewSortBy, setReviewSortBy] = useState<ReviewSortBy>("newest");
 
   // Fetch all data on mount
@@ -211,6 +213,7 @@ const Profile: React.FC = () => {
 
   const handleDeleteSkill = async (id: string) => {
     await removeSkill(id);
+    setPendingSkillDeleteId(null);
   };
 
   const handleEditSkill = (skill: UiSkill) => {
@@ -261,6 +264,14 @@ const Profile: React.FC = () => {
     setPendingPortfolioDeleteId(null);
   };
 
+  const pendingSkill = pendingSkillDeleteId
+    ? skills.find((item) => item.id === pendingSkillDeleteId) ?? null
+    : null;
+
+  const pendingPortfolioItem = pendingPortfolioDeleteId
+    ? portfolio.find((item) => item.id === pendingPortfolioDeleteId) ?? null
+    : null;
+
   const sortedReviews = useMemo(() => {
     const data = [...reviews];
     const getDate = (value: string) => new Date(value).getTime() || 0;
@@ -309,7 +320,7 @@ const Profile: React.FC = () => {
             <div className="mt-3 grid gap-1 md:grid-cols-2">
               {skills.length > 0 ? (
                 skills.map((skill) => (
-                  <SkillCard key={skill.id} skill={skill} onDelete={handleDeleteSkill} onEdit={handleEditSkill} />
+                  <SkillCard key={skill.id} skill={skill} onDelete={setPendingSkillDeleteId} onEdit={handleEditSkill} />
                 ))
               ) : (
                 <p className="py-4 text-center text-slate-500">No skills added yet. Click "Add Skill" to get started.</p>
@@ -389,19 +400,27 @@ const Profile: React.FC = () => {
         isEditMode={isPortfolioEditMode}
       />
 
-      {pendingPortfolioDeleteId ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <button className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setPendingPortfolioDeleteId(null)} aria-label="Close delete confirmation" />
-          <div className="relative w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
-            <h3 className="text-base font-semibold text-slate-900">Delete Portfolio Item?</h3>
-            <p className="mt-1 text-sm text-slate-600">This action cannot be undone.</p>
-            <div className="mt-4 flex justify-end gap-2">
-              <button type="button" onClick={() => setPendingPortfolioDeleteId(null)} className="rounded-lg border border-slate-300 px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">Cancel</button>
-              <button type="button" onClick={handleConfirmDeletePortfolio} className="rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-100">Delete</button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmDeleteModal
+        isOpen={Boolean(pendingSkill)}
+        title="Delete this skill?"
+        message="This skill will be removed from your profile."
+        itemName={pendingSkill?.name}
+        details={pendingSkill ? `${pendingSkill.level} · ${pendingSkill.category}` : undefined}
+        confirmLabel="Delete Skill"
+        onCancel={() => setPendingSkillDeleteId(null)}
+        onConfirm={() => pendingSkill && handleDeleteSkill(pendingSkill.id)}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={Boolean(pendingPortfolioItem)}
+        title="Delete this portfolio item?"
+        message="This portfolio entry will be removed from your profile."
+        itemName={pendingPortfolioItem?.title}
+        details={pendingPortfolioItem ? `${pendingPortfolioItem.type} · ${pendingPortfolioItem.date}` : undefined}
+        confirmLabel="Delete Item"
+        onCancel={() => setPendingPortfolioDeleteId(null)}
+        onConfirm={handleConfirmDeletePortfolio}
+      />
     </div>
   );
 };

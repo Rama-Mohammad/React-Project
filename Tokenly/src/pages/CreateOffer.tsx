@@ -1,5 +1,7 @@
+import { Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import ThemedSelect from "../components/common/ThemedSelect";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import { supabase } from "../lib/supabaseClient";
@@ -10,6 +12,14 @@ type UserSkill = {
   category: string | null;
   level: string | null;
 };
+
+type UrgencyOption = "low" | "medium" | "high";
+
+const urgencyOptions: Array<{ value: UrgencyOption; label: string }> = [
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+];
 
 export default function CreateOffer() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -24,7 +34,7 @@ export default function CreateOffer() {
   const [description, setDescription] = useState("");
   const [availability, setAvailability] = useState("");
   const [note, setNote] = useState("");
-  const [urgency, setUrgency] = useState<"low" | "medium" | "high">("medium");
+  const [urgency, setUrgency] = useState<UrgencyOption>("medium");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -193,19 +203,18 @@ export default function CreateOffer() {
           <div className="mt-5 space-y-4">
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-slate-800">Skill</label>
-              <select
+              <ThemedSelect
                 value={selectedSkillId}
-                onChange={(event) => setSelectedSkillId(event.target.value)}
-                className="h-11 w-full rounded-2xl border border-slate-200/80 bg-white/90 px-4 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                onChange={setSelectedSkillId}
+                options={skills.map((skill) => ({
+                  value: skill.id,
+                  label: `${skill.name} (${skill.level ?? "General"})`,
+                }))}
+                placeholder="Select one of your skills..."
+                ariaLabel="Offer skill"
+                icon={<Sparkles size={14} />}
                 disabled={skillsLoading || skills.length === 0}
-              >
-                <option value="">Select one of your skills...</option>
-                {skills.map((skill) => (
-                  <option key={skill.id} value={skill.id}>
-                    {skill.name} ({skill.level ?? "General"})
-                  </option>
-                ))}
-              </select>
+              />
               {skillsLoading ? <p className="mt-1 text-xs text-slate-500">Loading your skills...</p> : null}
               {skillsError ? <p className="mt-1 text-xs text-rose-600">{skillsError}</p> : null}
             </div>
@@ -252,15 +261,13 @@ export default function CreateOffer() {
 
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-slate-800">Urgency</label>
-              <select
+              <ThemedSelect
                 value={urgency}
-                onChange={(event) => setUrgency(event.target.value as "low" | "medium" | "high")}
-                className="h-11 w-full rounded-2xl border border-slate-200/80 bg-white/90 px-4 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
+                onChange={setUrgency}
+                options={urgencyOptions}
+                ariaLabel="Offer urgency"
+                icon={<Sparkles size={14} />}
+              />
             </div>
 
             <div>

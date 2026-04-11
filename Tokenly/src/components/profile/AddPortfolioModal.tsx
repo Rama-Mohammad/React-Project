@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { Sparkles, X } from "lucide-react";
+import ThemedSelect from "../common/ThemedSelect";
 import type { AddPortfolioModalProps, PortfolioForm } from "../../types/profile";
 
 const initialForm: PortfolioForm = {
@@ -9,6 +10,12 @@ const initialForm: PortfolioForm = {
   description: "",
   tags: "",
 };
+
+const portfolioTypeOptions: Array<PortfolioForm["type"]> = [
+  "Project",
+  "Article",
+  "Contribution",
+];
 
 const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
   isOpen,
@@ -90,15 +97,14 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="text-sm font-medium text-slate-700">
               Item Type
-              <select
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+              <ThemedSelect
                 value={form.type}
-                onChange={(event) => setForm((prev) => ({ ...prev, type: event.target.value as typeof form.type }))}
-              >
-                <option value="Project">Project</option>
-                <option value="Article">Article</option>
-                <option value="Contribution">Contribution</option>
-              </select>
+                onChange={(value) => setForm((prev) => ({ ...prev, type: value }))}
+                options={portfolioTypeOptions.map((option) => ({ value: option, label: option }))}
+                ariaLabel="Portfolio item type"
+                icon={<Sparkles size={14} />}
+                className="mt-1"
+              />
             </label>
 
             <label className="text-sm font-medium text-slate-700">
@@ -107,7 +113,7 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                 type="text"
                 required
                 placeholder="e.g. Mar 2026"
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 h-[46px] w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
                 value={form.date}
                 onChange={(event) => setForm((prev) => ({ ...prev, date: event.target.value }))}
               />

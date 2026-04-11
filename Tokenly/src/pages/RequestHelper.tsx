@@ -1,6 +1,6 @@
 import { CheckCircle2, Coins, Lightbulb } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import { supabase } from "../lib/supabaseClient";
@@ -12,6 +12,7 @@ const durationChoices = [30, 45, 60, 90, 120];
 export default function RequestHelper() {
   const { helperId } = useParams<{ helperId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [helper, setHelper] = useState<{ creditsPerHour: number } | null>(null);
   const [isLoadingHelper, setIsLoadingHelper] = useState(true);
   const [helperLoadError, setHelperLoadError] = useState("");
@@ -38,7 +39,44 @@ export default function RequestHelper() {
   const availableCredits = 12;
 
   useEffect(() => {
+    const offerTitle = searchParams.get("offerTitle");
+    const offerCategory = searchParams.get("offerCategory");
+    const offerDuration = searchParams.get("offerDuration");
+    const offerCredits = searchParams.get("offerCredits");
+    const offerMessage = searchParams.get("offerMessage");
+
+    if (offerTitle) {
+      setTitle((current) => current || offerTitle);
+    }
+
+    if (offerCategory) {
+      setSelectedSkills((current) => (current.length > 0 ? current : [offerCategory]));
+    }
+
+    if (offerDuration) {
+      const parsedDuration = Number(offerDuration);
+      if (Number.isFinite(parsedDuration) && parsedDuration > 0) {
+        setDurationMinutes((current) => current ?? parsedDuration);
+      }
+    }
+
+    if (offerCredits) {
+      const parsedCredits = Number(offerCredits);
+      if (Number.isFinite(parsedCredits) && parsedCredits > 0) {
+        setCreditsToOffer(parsedCredits);
+      }
+    }
+
+    if (offerMessage) {
+      setDescription((current) =>
+        current || `I'm interested in this offer:\n\n${offerMessage}`
+      );
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     if (!helperId) {
+      setHelper({ creditsPerHour: 6 });
       setIsLoadingHelper(false);
       return;
     }
@@ -123,12 +161,16 @@ export default function RequestHelper() {
     "Database",
   ];
 
+  const isGenericRequestFlow = !helperId;
+
   if (isLoadingHelper) {
     return (
       <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
         <Navbar />
         <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
-          <h1 className="text-3xl font-bold text-slate-900">Loading helper...</h1>
+          <h1 className="text-3xl font-bold text-slate-900">
+            {isGenericRequestFlow ? "Opening request form..." : "Loading helper..."}
+          </h1>
         </main>
       </div>
     );
@@ -285,7 +327,9 @@ export default function RequestHelper() {
             <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
               <h1 className="text-3xl font-bold tracking-tight text-slate-900">Request a Session</h1>
               <p className="mt-2 text-sm text-slate-600">
-                Describe what you need clearly so the right helper can find you quickly.
+                {isGenericRequestFlow
+                  ? "Describe what you need clearly so the right helper can discover your request."
+                  : "Describe what you need clearly so the right helper can find you quickly."}
               </p>
             </section>
 

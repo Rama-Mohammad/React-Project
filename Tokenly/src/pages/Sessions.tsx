@@ -4,7 +4,6 @@ import {
   Calendar,
   Check,
   CheckCheck,
-  ChevronDown,
   Circle,
   Clock3,
   Coins,
@@ -14,6 +13,7 @@ import {
 } from "lucide-react";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import ThemedSelect from "../components/common/ThemedSelect";
 import type { Session } from "../types/session";
 import { getSessionsByUser } from "../services/sessionService";
 import { getCurrentUser } from "../services/authService";
@@ -25,7 +25,7 @@ type SortBy = "newest" | "oldest";
 
 const SessionsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [_searchParams] = useSearchParams();
   const [activeFilter, setActiveFilter] = useState<SessionFilter>("all");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [creditsBalance] = useState(12);
@@ -36,9 +36,6 @@ const SessionsPage: React.FC = () => {
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [sortBy, setSortBy] = useState<SortBy>("newest");
 
-   const [isSortOpen, setIsSortOpen] = useState(false);
-   const sortRef = useRef<HTMLDivElement>(null);
-  
 useEffect(() => {
   const fetchSessions = async () => {
     const { data: userData, error: userError } = await getCurrentUser();
@@ -57,13 +54,14 @@ useEffect(() => {
       return;
     }
 
-   const mappedSessions = (data || []).map((s: any) => {
+  const mappedSessions = (data || []).map((s: any) => {
   const isHelper = s.helper_id === userId;
 
   const otherUser = isHelper ? s.requester : s.helper;
 
   return {
     id: s.id,
+    requestId: s.request?.id || s.request_id || undefined,
     title: s.request?.title || "Untitled Session",
     category: s.request?.category || "General",
     status: s.status,
@@ -192,7 +190,7 @@ useEffect(() => {
     return "bg-slate-100 text-slate-600";
   };
 
-  const handleViewRequest = (sessionId: string) => navigate(`/sessions/request/${sessionId}`);
+  const handleViewRequest = (requestId: string) => navigate(`/requests/${requestId}`);
   const handleJoin = (sessionId: string) => navigate(`/session/${sessionId}`);
 
   const handleMarkComplete = (sessionId: string) => {
@@ -357,55 +355,17 @@ const confirmMarkComplete = async () => {
               </div>
             </div>
 
-            <div className="relative z-50" ref={sortRef}>
-              <button
-                type="button"
-                onClick={() => setIsSortOpen((prev) => !prev)}
-                className="flex h-10 w-full items-center justify-between rounded-xl border border-indigo-200/80 bg-white/75 px-3 text-xs font-semibold text-slate-700 shadow-[0_8px_20px_-18px_rgba(99,102,241,0.7)] transition hover:bg-white"
-              >
-                <span className="inline-flex items-center gap-2">
-                  <ListFilter size={16} className="text-slate-500" />
-                  {sortBy === "newest" ? "Newest First" : "Oldest First"}
-                </span>
-                <ChevronDown
-                  size={15}
-                  className={`text-slate-500 transition ${isSortOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              {isSortOpen ? (
-                <div className="absolute left-0 top-full z-[100] mt-1 w-full overflow-hidden rounded-xl border border-indigo-200 bg-white shadow-[0_16px_28px_-18px_rgba(99,102,241,0.5)]">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSortBy("newest");
-                      setIsSortOpen(false);
-                    }}
-                    className={`block w-full px-3 py-2 text-left text-xs font-semibold transition ${
-                      sortBy === "newest"
-                        ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white"
-                        : "text-slate-700 hover:bg-indigo-50"
-                    }`}
-                  >
-                    Newest First
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSortBy("oldest");
-                      setIsSortOpen(false);
-                    }}
-                    className={`block w-full px-3 py-2 text-left text-xs font-semibold transition ${
-                      sortBy === "oldest"
-                        ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white"
-                        : "text-slate-700 hover:bg-indigo-50"
-                    }`}
-                  >
-                    Oldest First
-                  </button>
-                </div>
-              ) : null}
-            </div>
+            <ThemedSelect
+              value={sortBy}
+              onChange={setSortBy}
+              options={[
+                { value: "newest", label: "Newest First" },
+                { value: "oldest", label: "Oldest First" },
+              ]}
+              ariaLabel="Sessions sort"
+              icon={<ListFilter size={14} />}
+              size="sm"
+            />
           </div>
 
           <p className="mt-2 text-xs text-slate-500">{filteredSessions.length} sessions found</p>
@@ -515,8 +475,9 @@ const confirmMarkComplete = async () => {
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => handleViewRequest(session.id)}
-                          className="rounded-lg border border-indigo-300/90 bg-transparent px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-50/70"
+                          onClick={() => session.requestId && handleViewRequest(session.requestId)}
+                          disabled={!session.requestId}
+                          className="rounded-lg border border-indigo-300/90 bg-transparent px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-50/70 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400 disabled:hover:bg-transparent"
                         >
                           View Request
                         </button>

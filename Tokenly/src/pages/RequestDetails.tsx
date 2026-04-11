@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
+import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import RatingStars from "../components/common/RatingStars";
 import { helpers } from "../data/mockExploreData";
 import { supabase } from "../lib/supabaseClient";
@@ -723,40 +724,20 @@ export default function RequestDetails() {
         </div>
       </main>
 
-      {showDeleteConfirm ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl border border-white/55 bg-[linear-gradient(135deg,#eef4ff_0%,#ede9ff_100%)] p-6 shadow-2xl">
-            <h3 className="text-xl font-semibold text-slate-900">Delete this request?</h3>
-            <p className="mt-2 text-sm text-slate-600">
-              This action cannot be undone. The request will be removed permanently.
-            </p>
-            <div className="mt-5 flex items-center justify-end gap-2.5">
-              <button
-                type="button"
-                onClick={() => setShowDeleteConfirm(false)}
-                className="h-10 rounded-xl border border-slate-300/80 bg-white/80 px-4 text-sm font-semibold text-slate-700 transition hover:bg-white"
-              >
-                Cancel
-              </button>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await handleDeleteRequest();
-                    setShowDeleteConfirm(false);
-                  }}
-                  disabled={isDeletingRequest}
-                  className={`h-10 rounded-xl px-4 text-sm font-semibold text-white transition ${
-                  isDeletingRequest
-                    ? "cursor-not-allowed bg-indigo-300"
-                    : "bg-gradient-to-r from-indigo-500 to-violet-500 hover:brightness-105"
-                }`}
-                >
-                  {isDeletingRequest ? "Deleting..." : "Delete Request"}
-                </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmDeleteModal
+        isOpen={showDeleteConfirm}
+        title="Delete this request?"
+        message="This request will be removed permanently."
+        itemName={request.title}
+        details={`${request.offers} offers · ${request.credits} credits`}
+        confirmLabel="Delete Request"
+        loading={isDeletingRequest}
+        onCancel={() => setShowDeleteConfirm(false)}
+        onConfirm={async () => {
+          await handleDeleteRequest();
+          setShowDeleteConfirm(false);
+        }}
+      />
 
       <Footer />
     </div>

@@ -1,11 +1,9 @@
 ﻿import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartLine, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
-import { helpers } from "../../data/mockExploreData";
 import useAuth from "../../hooks/useAuth";
 
 const CTASection = () => {
-  const defaultHelperId = helpers[0]?.id ?? "h1";
   const { isAuthenticated } = useAuth();
   const gatedLink = "/auth?mode=signup";
 
@@ -44,7 +42,7 @@ const CTASection = () => {
                   Browse Requests
                 </Link>
                 <Link
-                  to={isAuthenticated ? `/helpers/${defaultHelperId}/request` : gatedLink}
+                  to={isAuthenticated ? "/request/new" : gatedLink}
                   className="rounded-xl border border-indigo-200/70 bg-[linear-gradient(135deg,rgba(129,140,248,0.24)_0%,rgba(56,189,248,0.2)_48%,rgba(168,139,250,0.24)_100%)] px-6 py-2.5 text-center font-semibold text-indigo-800 shadow-[0_10px_30px_-18px_rgba(79,70,229,0.6)] backdrop-blur-md transition hover:brightness-105"
                 >
                   Post a Request
