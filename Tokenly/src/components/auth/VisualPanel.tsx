@@ -1,10 +1,11 @@
 import type { VisualPanelProps } from "../../types/auth";
+import tokelyGraphic from '../../assets/tokenly-graphic.svg';
 
 export default function VisualPanel({ mode }: VisualPanelProps) {
   return (
     <div className="hidden lg:flex flex-col items-center justify-center bg-[linear-gradient(140deg,#eef4ff_0%,#e8f8ff_45%,#f3efff_100%)] p-8 xl:p-10">
       <div className="mb-5">
-        <img src="/images/logo-nobg.png" alt="Tokenly" className="h-44 w-auto object-contain" />
+        <img src="/images/tokenly-logo.svg" alt="Tokenly" className="h-44 w-auto object-contain" />
       </div>
 
       <h2 className="mb-3 text-center text-2xl font-bold text-slate-900">
@@ -37,8 +38,12 @@ export default function VisualPanel({ mode }: VisualPanelProps) {
         </div>
       </div>
 
-      <div className="mt-6 flex h-40 w-full max-w-sm items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-white/60 text-sm text-slate-400">
-        Image / Animation placeholder
+      <div className="mt-10 flex w-full max-w-sm justify-center">
+        <img
+          src={tokelyGraphic}
+          alt="Tokenly peer learning illustration"
+          className="h-64 w-auto object-contain"
+        />
       </div>
     </div>
   );

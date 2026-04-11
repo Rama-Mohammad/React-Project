@@ -71,19 +71,19 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/40 bg-white/75 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-1.5 sm:px-5 lg:px-6">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 sm:px-5 lg:px-6">
 
         {/* Left: logo + desktop nav */}
-        <div className="flex items-center gap-8">
-          <NavLink to="/" className="flex items-center">
+        <div className="flex items-center gap-10">
+          <NavLink to="/" className="flex items-center shrink-0">
             <img
-              src="/images/logo-nobg.png"
-              alt="PeerCredit"
-              className="h-14 w-auto origin-left scale-170 object-contain"
+              src="/images/tokenly-logo.svg"
+              alt="Tokenly Logo"
+              className="h-15 w-auto object-contain"
             />
           </NavLink>
 
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden items-center gap-2 md:flex">
             <NavLink to="/" className={getNavClass}>
               <Compass size={16} /> Home
             </NavLink>
