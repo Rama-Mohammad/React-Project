@@ -144,7 +144,7 @@ export default function SignUpForm({
     <div className="mx-auto w-full max-w-md rounded-2xl border border-white/70 bg-white/60 p-4 shadow-[0_20px_60px_-30px_rgba(79,70,229,0.55)] backdrop-blur-md sm:p-5">
       <div className="mb-4">
         <h1 className="mb-1 text-2xl font-bold text-slate-900">Create your account</h1>
-        <p className="text-sm text-slate-500">Join Tokenly and start earning credits by helping others</p>
+        <p className="text-sm text-slate-500">Join Tokenly and start earning tokens by helping others</p>
       </div>
 
       {error && (

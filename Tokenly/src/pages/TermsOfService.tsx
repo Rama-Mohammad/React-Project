@@ -18,9 +18,9 @@ const sections = [
       "Participants are expected to show up on time, stay on topic, and confirm session outcomes honestly. Repeated no-shows or misuse can affect account standing.",
   },
   {
-    title: "Credits and Fair Use",
+    title: "Tokens and Fair Use",
     body:
-      "Credits should be used fairly within Tokenly flows. Attempts to manipulate credits, ratings, or session records are not allowed.",
+      "Tokens should be used fairly within Tokenly flows. Attempts to manipulate tokens, ratings, or session records are not allowed.",
   },
   {
     title: "Limitations of Liability",

@@ -28,9 +28,9 @@ const helpSections = [
     icon: <PlayCircle size={18} />,
   },
   {
-    title: "Credits and Rewards Overview",
+    title: "Tokens and Rewards Overview",
     description:
-      "You earn credits when helping others and spend credits when receiving help. Completed sessions update balances automatically.",
+      "You earn tokens when helping others and spend tokens when receiving help. Completed sessions update balances automatically.",
     icon: <Coins size={18} />,
   },
   {

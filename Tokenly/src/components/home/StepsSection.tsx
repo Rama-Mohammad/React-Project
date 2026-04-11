@@ -13,7 +13,7 @@ const StepsSection = () => {
         </h2>
 
         <p className="mx-auto mb-8 max-w-2xl text-center text-slate-600">
-          The whole flow - from posting to completed session - happens right inside PeerCredit.
+          The whole flow - from posting to completed session - happens right inside Tokenly.
         </p>
 
         <div className="relative">
@@ -23,7 +23,7 @@ const StepsSection = () => {
             <StepCard
               step="01"
               title="Post a Request"
-              description="Describe what you need help with - a skill, a topic, a problem. Set your budget in credits and timeline."
+              description="Describe what you need help with - a skill, a topic, a problem. Set your budget in tokens and timeline."
             />
             <StepCard
               step="02"
@@ -37,8 +37,8 @@ const StepsSection = () => {
             />
             <StepCard
               step="04"
-              title="Credits Transfer"
-              description="Both parties confirm completion. Credits move instantly. Earn more by helping others in return."
+              title="Tokens Transfer"
+              description="Both parties confirm completion. Tokens move instantly. Earn more by helping others in return."
             />
           </div>
         </div>

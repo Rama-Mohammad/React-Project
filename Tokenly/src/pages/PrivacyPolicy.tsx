@@ -15,7 +15,7 @@ const sections = [
   {
     title: "Session and Activity Data",
     body:
-      "We store session-related details such as schedule, status, credits, and participant actions to keep records accurate and help resolve issues fairly.",
+      "We store session-related details such as schedule, status, tokens, and participant actions to keep records accurate and help resolve issues fairly.",
   },
   {
     title: "Data Protection",

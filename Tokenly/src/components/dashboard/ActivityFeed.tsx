@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { formatDistanceToNow } from '../../utils/dateHelpers';
 import type { ActivityFeedProps } from '../../types/dashboard';
 
@@ -23,7 +23,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ transactions, onViewAll }) 
               }`}
             >
               {transaction.type === 'earned' ? '+' : '-'}
-              {Math.abs(transaction.amount)} credits
+              {Math.abs(transaction.amount)} tokens
             </div>
           </div>
         ))}
@@ -33,7 +33,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ transactions, onViewAll }) 
           onClick={onViewAll}
           className="text-sm text-blue-600 hover:text-blue-800 font-medium"
         >
-          View all activity →
+          View all activity â†’
         </button>
       </div>
     </div>
@@ -41,4 +41,5 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ transactions, onViewAll }) 
 };
 
 export default ActivityFeed;
+
 

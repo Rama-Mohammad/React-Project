@@ -121,7 +121,7 @@ export default function CreateOffer() {
     }
 
     if (!creditCost || creditCost <= 0) {
-      setSubmitError("Please enter a valid credit cost.");
+      setSubmitError("Please enter a valid token cost.");
       return;
     }
 
@@ -248,7 +248,7 @@ export default function CreateOffer() {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-semibold text-slate-800">Credit cost</label>
+                <label className="mb-1.5 block text-sm font-semibold text-slate-800">Token cost</label>
                 <input
                   type="number"
                   min={1}

@@ -1,4 +1,4 @@
-import { Clock3, MessageSquareText, Sparkles } from "lucide-react";
+﻿import { Clock3, MessageSquareText, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
@@ -207,7 +207,7 @@ export default function MyOffers() {
                           </p>
                           <p className="inline-flex items-start gap-2">
                             <Clock3 size={15} className="mt-0.5 text-indigo-500" />
-                            <span>{offer.duration_minutes ?? 0} min - {offer.credit_cost ?? 0} credits</span>
+                            <span>{offer.duration_minutes ?? 0} min - {offer.credit_cost ?? 0} tokens</span>
                           </p>
                           <p className="inline-flex items-start gap-2">
                             <Sparkles size={15} className="mt-0.5 text-indigo-500" />
@@ -296,7 +296,7 @@ export default function MyOffers() {
                             <p className="inline-flex items-start gap-2">
                               <Sparkles size={15} className="mt-0.5 text-indigo-500" />
                               <span>
-                                {offer.request?.duration_minutes ?? 0} min - {offer.request?.credit_cost ?? 0} credits
+                                {offer.request?.duration_minutes ?? 0} min - {offer.request?.credit_cost ?? 0} tokens
                               </span>
                             </p>
                           </div>
@@ -338,7 +338,7 @@ export default function MyOffers() {
         title="Delete this independent offer?"
         message="This offer will be removed from your public listings."
         itemName={pendingIndependentOffer?.title}
-        details={pendingIndependentOffer ? `${pendingIndependentOffer.duration_minutes ?? 0} min · ${pendingIndependentOffer.credit_cost ?? 0} credits` : undefined}
+        details={pendingIndependentOffer ? `${pendingIndependentOffer.duration_minutes ?? 0} min Â· ${pendingIndependentOffer.credit_cost ?? 0} tokens` : undefined}
         confirmLabel="Delete Offer"
         loading={Boolean(pendingIndependentOffer && deletingIndependentOfferId === pendingIndependentOffer.id)}
         onCancel={() => setPendingDeleteIndependentOfferId(null)}
@@ -349,7 +349,7 @@ export default function MyOffers() {
         title="Delete this request-based offer?"
         message="This submitted offer will be removed from the request."
         itemName={pendingRequestOffer?.request?.title ?? "Unknown request"}
-        details={pendingRequestOffer ? `${pendingRequestOffer.request?.duration_minutes ?? 0} min · ${pendingRequestOffer.request?.credit_cost ?? 0} credits` : undefined}
+        details={pendingRequestOffer ? `${pendingRequestOffer.request?.duration_minutes ?? 0} min Â· ${pendingRequestOffer.request?.credit_cost ?? 0} tokens` : undefined}
         confirmLabel="Delete Offer"
         loading={Boolean(pendingRequestOffer && deletingRequestOfferId === pendingRequestOffer.id)}
         onCancel={() => setPendingDeleteRequestOfferId(null)}
@@ -359,3 +359,4 @@ export default function MyOffers() {
     </div>
   );
 }
+

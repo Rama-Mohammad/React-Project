@@ -62,7 +62,7 @@ export default function ReportIssue() {
                 options={[
                   { value: "account", label: "Account access" },
                   { value: "session", label: "Session problem" },
-                  { value: "payment", label: "Credits or balance issue" },
+                  { value: "payment", label: "Tokens or balance issue" },
                   { value: "abuse", label: "Abuse or harassment" },
                   { value: "bug", label: "Technical bug" },
                 ]}

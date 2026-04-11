@@ -90,7 +90,7 @@ export default function Dashboard() {
   const { profile, stats, loading: dashLoading, fetchDashboard, mapSessions, mapOffers, rawOffers } = useDashboard();
   const { transactions, summary, fetchTransactionsByUser, fetchCreditSummary } = useTransactions();
 
-  // Derived credit stats from real data
+  // Derived token stats from real data
   const earned = summary?.earned ?? 0;
   const spent = summary?.spent ?? 0;
   const total = earned + spent;
@@ -331,7 +331,7 @@ export default function Dashboard() {
 
           {/* ── Stats row ── */}
           <div className="relative mt-5 grid grid-cols-1 items-start gap-3 xl:grid-cols-[1.8fr_1fr_1fr_1fr_1fr]">
-            {/* Credit balance card */}
+            {/* Token balance card */}
             <article className="rounded-2xl border border-indigo-300/80 bg-transparent p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -339,10 +339,10 @@ export default function Dashboard() {
                     <Coins size={20} />
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500">Credit Balance</p>
+                    <p className="text-sm text-slate-500">Token Balance</p>
                     <p className="text-2xl font-semibold leading-none">
                       {dashLoading ? "—" : creditBalance}{" "}
-                      <span className="text-lg font-normal text-slate-500">credits</span>
+                      <span className="text-lg font-normal text-slate-500">tokens</span>
                     </p>
                   </div>
                 </div>
@@ -730,7 +730,7 @@ export default function Dashboard() {
                       )}
                     </div>
                     <div>
-                      <p className="text-base leading-tight">{item.description ?? "Credit transaction"}</p>
+                      <p className="text-base leading-tight">{item.description ?? "Token transaction"}</p>
                       <p className="mt-1 text-sm text-slate-500">
                         {toRelativeAge(item.created_at)}
                       </p>
@@ -755,7 +755,7 @@ export default function Dashboard() {
 
       <Footer />
 
-      {/* ── Credit transfer toast ── */}
+      {/* ── Token transfer toast ── */}
       {transferToast ? (
         <div className="pointer-events-none fixed bottom-5 right-5 z-60">
           <div className="flex min-w-65 items-center gap-2.5 rounded-2xl border border-indigo-300 bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-4 py-3 text-white shadow-xl shadow-indigo-900/20">
@@ -764,7 +764,7 @@ export default function Dashboard() {
             </div>
             <div>
               <p className="text-base font-semibold leading-tight">
-                {transferToast.credits} credits released
+                {transferToast.credits} tokens released
               </p>
               <p className="mt-0.5 text-sm text-indigo-100">Session marked as complete</p>
             </div>
@@ -830,7 +830,7 @@ export default function Dashboard() {
         title="Delete this request?"
         message="This request will be removed from your dashboard."
         itemName={pendingDeleteRequest?.title}
-        details={pendingDeleteRequest ? `${pendingDeleteRequest.offers} offers · ${pendingDeleteRequest.credits} credits` : undefined}
+        details={pendingDeleteRequest ? `${pendingDeleteRequest.offers} offers · ${pendingDeleteRequest.credits} tokens` : undefined}
         confirmLabel="Delete Request"
         loading={Boolean(pendingDeleteRequest && deletingRequestId === pendingDeleteRequest.id)}
         onCancel={() => setPendingDeleteRequestId(null)}

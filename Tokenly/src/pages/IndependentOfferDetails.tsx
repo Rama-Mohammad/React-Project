@@ -124,7 +124,7 @@ export default function IndependentOfferDetails() {
                   </p>
                 </div>
                 <div className="rounded-2xl border border-slate-200/80 bg-white/90 p-3">
-                  <p className="text-xs text-slate-500">Credits</p>
+                  <p className="text-xs text-slate-500">Tokens</p>
                   <p className="mt-1 text-sm font-semibold text-slate-800">{offer.credit_cost ?? 0}</p>
                 </div>
                 <div className="rounded-2xl border border-slate-200/80 bg-white/90 p-3">
@@ -143,4 +143,3 @@ export default function IndependentOfferDetails() {
     </div>
   );
 }
-

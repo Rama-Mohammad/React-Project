@@ -437,7 +437,7 @@ export default function RequestDetails() {
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-sm font-semibold text-indigo-700">
                   <Coins size={15} />
-                  {request.credits} credits offered
+                  {request.credits} tokens offered
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm text-slate-700">
                   <MessageCircle size={15} />
@@ -601,7 +601,7 @@ export default function RequestDetails() {
               <h3 className="text-xl font-semibold text-slate-900">Can you help?</h3>
               <p className="mt-2 text-base text-slate-600">
                 Submit an offer to help with this request. You'll earn{" "}
-                <span className="font-semibold text-indigo-600">{request.credits} credits</span>{" "}
+                <span className="font-semibold text-indigo-600">{request.credits} tokens</span>{" "}
                 on completion.
               </p>
 
@@ -661,9 +661,9 @@ export default function RequestDetails() {
                 <div className="flex items-center justify-between text-slate-600">
                   <span className="inline-flex items-center gap-2">
                     <Coins size={15} className="text-indigo-400" />
-                    Credits earned
+                    Tokens earned
                   </span>
-                  <span className="font-semibold text-indigo-600">{request.credits} credits</span>
+                  <span className="font-semibold text-indigo-600">{request.credits} tokens</span>
                 </div>
                 <div className="flex items-center justify-between text-slate-600">
                   <span className="inline-flex items-center gap-2">
@@ -675,7 +675,7 @@ export default function RequestDetails() {
                 <div className="flex items-center justify-between text-slate-600">
                   <span className="inline-flex items-center gap-2">
                     <ShieldCheck size={15} className="text-indigo-400" />
-                    Credits escrowed
+                    Tokens escrowed
                   </span>
                   <span className="font-semibold text-slate-800">After acceptance</span>
                 </div>
@@ -729,7 +729,7 @@ export default function RequestDetails() {
         title="Delete this request?"
         message="This request will be removed permanently."
         itemName={request.title}
-        details={`${request.offers} offers · ${request.credits} credits`}
+        details={`${request.offers} offers · ${request.credits} tokens`}
         confirmLabel="Delete Request"
         loading={isDeletingRequest}
         onCancel={() => setShowDeleteConfirm(false)}

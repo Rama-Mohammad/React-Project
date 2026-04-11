@@ -16,13 +16,13 @@ const TestimonialsSection = () => {
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
           <TestimonialCard
-            quote="I was stuck on dynamic programming for weeks. Posted a request, got a session with an expert in 2 hours. Used the credits I earned from teaching Python. Zero dollars spent."
+            quote="I was stuck on dynamic programming for weeks. Posted a request, got a session with an expert in 2 hours. Used the tokens I earned from teaching Python. Zero dollars spent."
             name="Priya Sharma"
             title="CS Student, MIT"
             rating={8}
           />
           <TestimonialCard
-            quote="I help people with Figma and UI design on weekends and earn credits. Then I use those credits to get help with accounting and tax filing. It's genuinely a fair deal."
+            quote="I help people with Figma and UI design on weekends and earn tokens. Then I use those tokens to get help with accounting and tax filing. It's genuinely a fair deal."
             name="Marcus Reid"
             title="UX Designer, Freelancer"
             rating={34}

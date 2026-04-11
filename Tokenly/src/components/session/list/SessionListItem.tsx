@@ -140,7 +140,7 @@ const handleConfirm = async () => {
                   Session Marked Complete!
                 </h4>
                 <p className="text-sm text-emerald-700">
-                  {session.credits} credits have been transferred to {session.otherParticipant.name}. Both parties have been notified.
+                  {session.credits} tokens have been transferred to {session.otherParticipant.name}. Both parties have been notified.
                 </p>
               </div>
               <button
@@ -237,7 +237,7 @@ const handleConfirm = async () => {
                 </h2>
               </div>
               <p className="text-gray-500 text-sm mt-1">
-                This action will trigger a credit transfer
+                This action will trigger a token transfer
               </p>
             </div>
 
@@ -270,7 +270,7 @@ const handleConfirm = async () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-700">
-                      Credits to be released
+                      Tokens to be released
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5">
                       Released from escrow to {session.otherParticipant.name}

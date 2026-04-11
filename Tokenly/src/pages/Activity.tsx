@@ -102,7 +102,7 @@ export default function Activity() {
                       )}
                     </div>
                     <div>
-                      <p className="text-base leading-tight">{item.description ?? "Credit transaction"}</p>
+                      <p className="text-base leading-tight">{item.description ?? "Token transaction"}</p>
                       <p className="mt-1 text-sm text-slate-500">{toRelativeAge(item.created_at)}</p>
                     </div>
                   </div>

@@ -132,7 +132,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
           <div className="flex items-center gap-2 rounded-lg bg-white/55 px-3 py-2 text-sm text-slate-600">
             <Sparkles size={15} className="text-indigo-500" />
             <span className="text-lg font-bold text-slate-900">{user.stats.creditsEarned}</span>
-            Credits
+            Tokens
           </div>
           <div className="flex items-center gap-2 rounded-lg bg-white/55 px-3 py-2 text-sm text-slate-600">
             <MessageSquareMore size={15} className="text-indigo-500" />

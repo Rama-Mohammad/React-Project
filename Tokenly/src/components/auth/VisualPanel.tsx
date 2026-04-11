@@ -17,7 +17,7 @@ export default function VisualPanel({ mode }: VisualPanelProps) {
         {mode === "signin" &&
           "Your peers are waiting. Pick up where you left off - check new offers, join live sessions, and keep building your skills."}
         {mode === "signup" &&
-          "Start with 10 free credits. Help others with what you know, learn what you don't. Every session makes both sides stronger."}
+          "Start with 10 free tokens. Help others with what you know, learn what you don't. Every session makes both sides stronger."}
         {mode === "reset" &&
           "No worries - it happens to everyone. We'll send you a link to set a new password."}
       </p>

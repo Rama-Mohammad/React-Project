@@ -340,9 +340,9 @@ export default function Explore() {
 
   if (sortBy === "Most Offers") {
     data.sort((a, b) => b.offers - a.offers);
-  } else if (sortBy === "Lowest Credits") {
+  } else if (sortBy === "Lowest Tokens") {
     data.sort((a, b) => a.credits - b.credits);
-  } else if (sortBy === "Highest Credits") {
+  } else if (sortBy === "Highest Tokens") {
     data.sort((a, b) => b.credits - a.credits);
   }
 
@@ -445,7 +445,7 @@ export default function Explore() {
 
     if (sortBy === "Oldest") {
       data.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    } else if (sortBy === "Highest Credits") {
+    } else if (sortBy === "Highest Tokens") {
       data.sort((a, b) => b.credits - a.credits);
     }
 
@@ -779,7 +779,7 @@ export default function Explore() {
                       {item.duration} min
                     </span>
                     <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 font-semibold text-indigo-700">
-                      {item.credits} credits
+                      {item.credits} tokens
                     </span>
                   </div>
 

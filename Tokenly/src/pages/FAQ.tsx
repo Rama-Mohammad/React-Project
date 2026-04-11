@@ -17,8 +17,8 @@ const faqItems = [
     a: "When a request is accepted, the session appears in your Sessions page. Join at the scheduled time from the Active tab.",
   },
   {
-    q: "How do credits work?",
-    a: "You earn credits by helping others and spend credits when receiving help. Transfer happens once sessions are marked complete.",
+    q: "How do tokens work?",
+    a: "You earn tokens by helping others and spend tokens when receiving help. Transfer happens once sessions are marked complete.",
   },
   {
     q: "Can I cancel a session?",
@@ -34,7 +34,7 @@ const faqItems = [
   },
   {
     q: "What if my session had technical issues?",
-    a: "Report the issue with a short timeline and details. Our support review helps resolve credits and session status fairly.",
+    a: "Report the issue with a short timeline and details. Our support review helps resolve tokens and session status fairly.",
   },
 ];
 
@@ -55,7 +55,7 @@ export default function FAQ() {
           </div>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Frequently Asked Questions</h1>
           <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base">
-            Quick answers to common questions about requests, sessions, credits, and safety on Tokenly.
+            Quick answers to common questions about requests, sessions, tokens, and safety on Tokenly.
           </p>
 
           <div className="mt-6 space-y-3">

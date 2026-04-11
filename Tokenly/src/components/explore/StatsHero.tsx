@@ -71,7 +71,7 @@ export default function StatsHero({ stats, openHowItWorks = false }: StatsHeroPr
           <div>
             <div className="explore-fade-in-up mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/60 bg-white/85 px-3 py-1.5 text-xs font-semibold text-slate-700">
               <BadgeCheck size={14} />
-              Credit-based peer assistance
+              Token-based peer assistance
             </div>
 
             <h1 className="explore-fade-in-up max-w-3xl text-3xl font-bold leading-tight tracking-tight text-slate-950 md:text-4xl">
@@ -84,7 +84,7 @@ export default function StatsHero({ stats, openHowItWorks = false }: StatsHeroPr
             </h1>
 
             <p className="explore-fade-in-up mt-3.5 max-w-2xl text-sm leading-6 text-slate-600">
-              Earn credits by helping others, then spend them to get help yourself.
+              Earn tokens by helping others, then spend them to get help yourself.
               Every session is time-bounded, skill-tagged, and designed to feel fair,
               simple, and useful.
             </p>
@@ -114,7 +114,7 @@ export default function StatsHero({ stats, openHowItWorks = false }: StatsHeroPr
               </div>
               <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5">
                 <Coins size={14} className="text-amber-500" />
-                Credit-based help
+                Token-based help
               </div>
             </div>
           </div>
@@ -144,7 +144,7 @@ export default function StatsHero({ stats, openHowItWorks = false }: StatsHeroPr
             <StatCard
               icon={<Coins size={19} />}
               value={stats.creditsExchanged}
-              label="Credits Exchanged"
+              label="Tokens Exchanged"
               iconWrapClass="bg-amber-100"
               iconClass="text-amber-500"
             />
@@ -156,7 +156,7 @@ export default function StatsHero({ stats, openHowItWorks = false }: StatsHeroPr
         <Step icon={<FileText size={16} />} label="1. Post a request" />
         <Step icon={<Users size={16} />} label="2. Receive offers" />
         <Step icon={<ArrowRight size={16} />} label="3. Complete session" />
-        <Step icon={<Coins size={16} />} label="4. Credits transfer" />
+        <Step icon={<Coins size={16} />} label="4. Tokens transfer" />
       </div>
       </section>
 
@@ -173,7 +173,7 @@ export default function StatsHero({ stats, openHowItWorks = false }: StatsHeroPr
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">How It Works</p>
                 <h3 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
-                  Learn, help, and earn credits
+                  Learn, help, and earn tokens
                 </h3>
               </div>
               <button
@@ -220,9 +220,9 @@ export default function StatsHero({ stats, openHowItWorks = false }: StatsHeroPr
                 <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
                   <Coins size={18} />
                 </div>
-                <p className="text-base font-semibold text-slate-900">4. Credits transfer safely</p>
+                <p className="text-base font-semibold text-slate-900">4. Tokens transfer safely</p>
                 <p className="mt-1 text-sm leading-6 text-slate-600">
-                  Credits are held in escrow and released only after you mark the session complete.
+                  Tokens are held in escrow and released only after you mark the session complete.
                 </p>
               </div>
             </div>

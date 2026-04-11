@@ -5,10 +5,10 @@ import type { ExploreTab } from "../../types/explore";
 import type { SearchBarProps } from "../../types/explore";
 
 const sortOptionsMap: Record<ExploreTab, string[]> = {
-  requests: ["Newest", "Most Offers", "Lowest Credits", "Highest Credits"],
+  requests: ["Newest", "Most Offers", "Lowest Tokens", "Highest Tokens"],
   helpers: ["Top Rated", "Fastest Response", "Most Sessions"],
   skills: ["Most Helpers", "Top Rated", "Most Sessions"],
-  offers: ["Newest", "Oldest", "Highest Credits"],
+  offers: ["Newest", "Oldest", "Highest Tokens"],
 };
 
 const placeholderMap: Record<ExploreTab, string> = {

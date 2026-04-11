@@ -32,13 +32,13 @@ const HeroSection = () => {
             <h1 className="mb-6 text-5xl font-bold tracking-tight text-slate-900 md:text-6xl lg:text-7xl">
               Share skills.
               <span className="block bg-gradient-to-r from-indigo-400 via-sky-300 to-purple-300 bg-clip-text text-transparent">
-                Earn credits.
+                Earn tokens.
               </span>
               Grow together.
             </h1>
 
             <p className="mb-8 max-w-2xl text-xl leading-relaxed text-slate-600">
-              Tokenly is a credit-based peer learning network. Help someone today, earn credits - use them to get help when you need it. No money, just reciprocity.
+              Tokenly is a token-based peer learning network. Help someone today, earn tokens - use them to get help when you need it. No money, just reciprocity.
             </p>
 
             <div className="flex flex-col items-center justify-start gap-4 sm:flex-row">
@@ -80,7 +80,7 @@ const HeroSection = () => {
             <div className="flex items-center justify-between border-b border-white/40 px-5 py-4 sm:px-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">How It Works</p>
-                <h3 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">Simple credit flow</h3>
+                <h3 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">Simple token flow</h3>
               </div>
               <button
                 type="button"
@@ -98,7 +98,7 @@ const HeroSection = () => {
                     <tr>
                       <th className="px-4 py-3">Step</th>
                       <th className="px-4 py-3">What happens</th>
-                      <th className="px-4 py-3">Credit status</th>
+                      <th className="px-4 py-3">Token status</th>
                     </tr>
                   </thead>
                   <tbody className="text-slate-700">
@@ -119,7 +119,7 @@ const HeroSection = () => {
                     </tr>
                     <tr className="border-t border-slate-100">
                       <td className="px-4 py-3 font-semibold text-slate-900">4. Confirm transfer</td>
-                      <td className="px-4 py-3">Credits move only after confirmation.</td>
+                      <td className="px-4 py-3">Tokens move only after confirmation.</td>
                       <td className="px-4 py-3">Transferred safely</td>
                     </tr>
                   </tbody>

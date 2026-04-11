@@ -21,7 +21,7 @@ const StatsSection = () => {
         <div className="grid grid-cols-2 gap-5 text-center md:grid-cols-4">
           <StatCard icon={faUsers} number="12,500+" label="Active Members" />
           <StatCard icon={faPlay} number="28,400+" label="Sessions Completed" />
-          <StatCard icon={faCoins} number="42,100" label="Credits Exchanged" />
+          <StatCard icon={faCoins} number="42,100" label="Tokens Exchanged" />
           <StatCard icon={faLightbulb} number="340+" label="Skills Available" />
         </div>
       </div>

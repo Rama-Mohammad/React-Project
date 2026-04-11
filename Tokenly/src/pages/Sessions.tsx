@@ -241,7 +241,7 @@ const confirmMarkComplete = async () => {
             <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-indigo-700">
               <Coins size={14} />
               <span className="text-base font-semibold">{creditsBalance}</span>
-              <span className="text-xs font-medium">credits balance</span>
+              <span className="text-xs font-medium">tokens balance</span>
             </div>
           </div>
 
@@ -289,7 +289,7 @@ const confirmMarkComplete = async () => {
                 </span>
                 <div>
                   <p className="text-2xl font-semibold text-indigo-700">{counts.earned}</p>
-                  <p className="text-sm text-slate-600">Credits Earned</p>
+                  <p className="text-sm text-slate-600">Tokens Earned</p>
                 </div>
               </div>
             </div>

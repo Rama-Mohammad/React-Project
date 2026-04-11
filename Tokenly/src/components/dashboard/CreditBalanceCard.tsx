@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { CreditCard, History } from 'lucide-react';
 import Button from '../common/Button';
 import type { CreditBalanceCardProps } from '../../types/dashboard';
@@ -9,7 +9,7 @@ const CreditBalanceCard: React.FC<CreditBalanceCardProps> = ({ balance, onViewHi
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <CreditCard className="w-6 h-6" />
-          <span className="text-sm font-medium opacity-90">Available Credits</span>
+          <span className="text-sm font-medium opacity-90">Available Tokens</span>
         </div>
         <Button
           variant="ghost"
@@ -22,14 +22,15 @@ const CreditBalanceCard: React.FC<CreditBalanceCardProps> = ({ balance, onViewHi
       </div>
       <div className="mb-4">
         <span className="text-4xl font-bold">{balance}</span>
-        <span className="text-lg ml-1 opacity-90">credits</span>
+        <span className="text-lg ml-1 opacity-90">tokens</span>
       </div>
       <div className="text-sm opacity-90">
-        Earn by helping others. Each session = 10-50 credits
+        Earn by helping others. Each session = 10-50 tokens
       </div>
     </div>
   );
 };
 
 export default CreditBalanceCard;
+
 

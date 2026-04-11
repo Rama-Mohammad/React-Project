@@ -491,8 +491,8 @@ export default function RequestHelper() {
                 })}
               </div>
               <p className="mt-3 text-xs text-slate-500">
-                Estimated cost: <span className="font-semibold text-indigo-700">{creditsToOffer} credits</span>{" "}
-                at {helper.creditsPerHour} credits/hr
+                Estimated cost: <span className="font-semibold text-indigo-700">{creditsToOffer} tokens</span>{" "}
+                at {helper.creditsPerHour} tokens/hr
               </p>
               {sectionError === "duration" ? (
                 <p className="mt-2 text-xs font-medium text-rose-600">Please fill out this section.</p>
@@ -501,10 +501,10 @@ export default function RequestHelper() {
 
             <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-4 backdrop-blur-xl">
               <p className="text-lg font-semibold text-slate-800">
-                Credits to Offer <span className="text-rose-500">*</span>
+                Tokens to Offer <span className="text-rose-500">*</span>
               </p>
               <p className="mt-1 text-xs text-slate-500">
-                Higher credits attract more experienced helpers. You currently have <span className="font-semibold text-slate-700">{availableCredits} credits</span>.
+                Higher token amounts attract more experienced helpers. You currently have <span className="font-semibold text-slate-700">{availableCredits} tokens</span>.
               </p>
 
               <div className="mt-3 grid items-center gap-3 md:grid-cols-[1fr_auto]">
@@ -600,11 +600,11 @@ export default function RequestHelper() {
 
           <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
             <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
-              <h4 className="text-sm font-semibold text-slate-900">Credit Estimate</h4>
+              <h4 className="text-sm font-semibold text-slate-900">Token Estimate</h4>
               <div className="mt-3 space-y-2 text-sm">
                 <div className="flex items-center justify-between text-slate-600">
                   <span>Rate</span>
-                  <span className="font-semibold text-slate-900">{helper.creditsPerHour} credits/hr</span>
+                  <span className="font-semibold text-slate-900">{helper.creditsPerHour} tokens/hr</span>
                 </div>
                 <div className="flex items-center justify-between text-slate-600">
                   <span>Duration</span>
@@ -618,7 +618,7 @@ export default function RequestHelper() {
                 </div>
               </div>
               <p className="mt-3 text-xs text-slate-500">
-                Credits are held securely and released only after the session is completed.
+                Tokens are held securely and released only after the session is completed.
               </p>
             </section>
 
@@ -642,7 +642,7 @@ export default function RequestHelper() {
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-indigo-500" />
-                  Set a fair credit amount for the complexity
+                  Set a fair token amount for the complexity
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-indigo-500" />
@@ -654,12 +654,12 @@ export default function RequestHelper() {
             <section className="explore-fade-in-up rounded-3xl border border-indigo-200 bg-indigo-50/70 p-4">
               <h4 className="inline-flex items-center gap-2 text-lg font-semibold text-indigo-800">
                 <Coins size={16} className="text-indigo-600" />
-                How Credits Work
+                How Tokens Work
               </h4>
               <p className="mt-2 text-sm leading-6 text-indigo-800/90">
-                Credits are <span className="font-semibold">reserved</span> when a session is created and{" "}
+                Tokens are <span className="font-semibold">reserved</span> when a session is created and{" "}
                 <span className="font-semibold">transferred</span> only after you confirm the session was
-                completed. If a session fails, credits are returned to you automatically.
+                completed. If a session fails, tokens are returned to you automatically.
               </p>
             </section>
           </aside>

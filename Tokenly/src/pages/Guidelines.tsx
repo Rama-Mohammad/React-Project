@@ -30,7 +30,7 @@ const guidelineItems = [
   {
     title: "Fair Use of the Platform",
     detail:
-      "Use credits responsibly, avoid manipulation, and complete sessions honestly before confirming outcomes.",
+      "Use tokens responsibly, avoid manipulation, and complete sessions honestly before confirming outcomes.",
     icon: <Sparkles size={18} />,
   },
   {

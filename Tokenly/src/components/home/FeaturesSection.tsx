@@ -22,8 +22,8 @@ const FeaturesSection = () => {
             category="Core System"
             icon={faCoins}
             bgImage="/images/core_system.png"
-            title="Credit-Based Economy"
-            description="Every help session runs on credits - no cash, no awkward payment. Earn by helping, spend to get help."
+            title="Token-Based Economy"
+            description="Every help session runs on tokens - no cash, no awkward payment. Earn by helping, spend to get help."
           />
 
           <FeatureCard
@@ -63,7 +63,7 @@ const FeaturesSection = () => {
             icon={faStar}
             bgImage="/images/progress.png"
             title="Progress Dashboard"
-            description="Track your sessions, credits earned and spent, skills taught and learned - all with rich analytics."
+            description="Track your sessions, tokens earned and spent, skills taught and learned - all with rich analytics."
           />
         </div>
       </div>

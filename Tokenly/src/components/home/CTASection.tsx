@@ -13,7 +13,7 @@ const CTASection = () => {
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
           <div>
             <div className="mb-6 inline-block rounded-full bg-indigo-50 px-5 py-2 text-sm font-medium text-indigo-600">
-              Free to join - start with 5 credits
+              Free to join - start with 5 tokens
             </div>
 
             <h2 className="mb-6 text-4xl font-bold text-slate-900 md:text-5xl">
@@ -25,14 +25,14 @@ const CTASection = () => {
             </h2>
 
             <p className="text-lg leading-relaxed text-slate-600">
-              Join 8,500+ peers already helping each other. Every new member gets 5 starter credits - enough to book your first session.
+              Join 8,500+ peers already helping each other. Every new member gets 5 starter tokens - enough to book your first session.
             </p>
           </div>
 
           <div className="rounded-2xl border border-white/50 bg-white/80 p-8 shadow-sm backdrop-blur">
             <div className="text-center">
               <h2 className="mb-2 text-2xl font-bold text-slate-900">Get started today</h2>
-              <p className="mb-6 text-slate-600">No credit card. No payments. Just skills.</p>
+              <p className="mb-6 text-slate-600">No bank card. No payments. Just skills.</p>
 
               <div className="mb-6 flex flex-col justify-center gap-3 sm:flex-row">
                 <Link
@@ -65,7 +65,7 @@ const CTASection = () => {
                     <span className="inline-flex w-4 shrink-0 justify-center">
                       <FontAwesomeIcon icon={faCheck} className="text-sm text-emerald-500" />
                     </span>
-                    <span className="text-sm text-slate-700">5 free starter credits on sign-up</span>
+                    <span className="text-sm text-slate-700">5 free starter tokens on sign-up</span>
                   </div>
 
                   <div className="flex items-center gap-3 text-left">
