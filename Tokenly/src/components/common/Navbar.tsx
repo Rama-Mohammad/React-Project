@@ -1,15 +1,26 @@
-﻿import { useEffect, useRef, useState } from "react";
-import { Compass, CalendarDays, LayoutDashboard, Menu, User, LogOut, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  BriefcaseBusiness,
+  CalendarDays,
+  Compass,
+  Home,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  User,
+  X,
+} from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import useProfiles from "../../hooks/useProfile";
+import tokenlyLogo from "../../assets/tokenly-logo-cropped.png";
 
 const navLinkBase =
-  "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition border";
+  "inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition duration-200";
 const navLinkInactive =
-  "bg-white/50 border-white/40 text-slate-500 hover:bg-white/60";
+  "text-slate-500 hover:bg-white/85 hover:text-slate-900";
 const navLinkActive =
-  "bg-white text-slate-900 border-slate-200 shadow-sm";
+  "bg-white text-slate-900 shadow-[0_10px_24px_-18px_rgba(79,70,229,0.65)] ring-1 ring-slate-200/80";
 
 function getNavClass({ isActive }: { isActive: boolean }) {
   return `${navLinkBase} ${isActive ? navLinkActive : navLinkInactive}`;
@@ -23,33 +34,50 @@ export default function Navbar() {
   const avatarRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Fetch profile once authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
       void fetchProfileById(user.id);
     }
-  }, [isAuthenticated, user?.id]);
+  }, [fetchProfileById, isAuthenticated, user]);
 
-  // Close avatar dropdown on outside click
   useEffect(() => {
-    function onOutsideClick(e: MouseEvent) {
-      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
+    function onOutsideClick(event: MouseEvent) {
+      if (avatarRef.current && !avatarRef.current.contains(event.target as Node)) {
         setAvatarOpen(false);
       }
     }
+
     document.addEventListener("mousedown", onOutsideClick);
     return () => document.removeEventListener("mousedown", onOutsideClick);
   }, []);
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    function onResize() {
+      if (window.innerWidth >= 768) {
+        setMobileOpen(false);
+      }
+    }
+
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [mobileOpen]);
+
   async function handleSignOut() {
     await signOut();
     setAvatarOpen(false);
+    setMobileOpen(false);
     navigate("/");
   }
 
-  // Fallback initials for avatar
   const initials = profile?.full_name
-    ? profile.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+    ? profile.full_name
+        .split(" ")
+        .map((name) => name[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
     : (user?.email?.[0].toUpperCase() ?? "?");
 
   const authedLinks = (onClick?: () => void) => (
@@ -70,46 +98,45 @@ export default function Navbar() {
   );
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/40 bg-white/75 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 sm:px-5 lg:px-6">
-
-        {/* Left: logo + desktop nav */}
-        <div className="flex items-center gap-10">
-          <NavLink to="/" className="flex items-center shrink-0">
+    <header className="sticky top-0 z-40 border-b border-white/55 bg-white/72 backdrop-blur-2xl">
+      <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center justify-start pl-12 sm:pl-16 lg:pl-20">
+          <NavLink
+            to="/"
+            className="flex shrink-0 items-center transition hover:opacity-95"
+          >
             <img
-              src="/images/tokenly-logo.svg"
-              alt="Tokenly Logo"
-              className="h-15 w-auto object-contain"
+              src={tokenlyLogo}
+              alt="Tokenly"
+              className="h-9 w-auto max-w-[146px] object-contain sm:max-w-[170px] lg:max-w-[186px]"
             />
           </NavLink>
+        </div>
 
-          <nav className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center justify-center md:flex">
+          <nav className="flex items-center gap-1 rounded-full border border-white/70 bg-white/45 p-1.5 shadow-[0_14px_30px_-28px_rgba(79,70,229,0.5)]">
             <NavLink to="/" className={getNavClass}>
-              <Compass size={16} /> Home
+              <Home size={16} /> Home
             </NavLink>
             {isAuthenticated && authedLinks()}
           </nav>
         </div>
 
-        {/* Right: auth area */}
-        <div className="flex items-center gap-2">
-
-          {/* Loading skeleton */}
-          {loading && (
-            <div className="h-9 w-9 animate-pulse rounded-full bg-slate-100" />
-          )}
-
-          {/* Signed in: avatar + dropdown */}
-          {!loading && isAuthenticated && (
+        <div className="flex items-center justify-end gap-2 sm:gap-3">
+          {loading ? (
+            <div className="h-10 w-10 animate-pulse rounded-full bg-slate-100" />
+          ) : isAuthenticated ? (
             <div className="relative" ref={avatarRef}>
               <button
-                onClick={() => setAvatarOpen((prev) => !prev)}
-                className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border-2 border-slate-200 bg-purple-50 text-sm font-semibold text-purple-700 transition hover:border-purple-400"
+                type="button"
+                onClick={() => setAvatarOpen((previous) => !previous)}
+                className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-indigo-200/80 bg-[linear-gradient(135deg,#eef2ff_0%,#f5f3ff_100%)] text-sm font-bold text-indigo-700 shadow-[0_14px_26px_-24px_rgba(79,70,229,0.7)] transition hover:border-indigo-300 hover:shadow-[0_18px_32px_-24px_rgba(79,70,229,0.9)]"
+                aria-label="Open profile menu"
               >
                 {profile?.profile_image_url ? (
                   <img
                     src={profile.profile_image_url}
-                    alt="avatar"
+                    alt="User avatar"
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -117,89 +144,98 @@ export default function Navbar() {
                 )}
               </button>
 
-              {avatarOpen && (
-                <div className="absolute right-0 mt-2 w-52 rounded-xl border border-slate-200 bg-white shadow-lg">
-                  <div className="border-b border-slate-100 px-4 py-3">
+              {avatarOpen ? (
+                <div className="absolute right-0 mt-3 w-60 overflow-hidden rounded-2xl border border-white/80 bg-white/95 shadow-[0_24px_60px_-32px_rgba(79,70,229,0.45)] backdrop-blur-xl">
+                  <div className="border-b border-slate-100 bg-[linear-gradient(135deg,rgba(238,242,255,0.9)_0%,rgba(245,243,255,0.95)_100%)] px-4 py-4">
                     <p className="truncate text-sm font-semibold text-slate-900">
                       {profile?.full_name ?? profile?.username ?? "User"}
                     </p>
-                    <p className="truncate text-xs text-slate-500">{user?.email}</p>
+                    <p className="mt-1 truncate text-xs text-slate-500">{user?.email}</p>
                   </div>
-                  <div className="p-1">
+
+                  <div className="p-2">
                     <Link
                       to="/profile"
                       onClick={() => setAvatarOpen(false)}
-                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50"
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                     >
                       <User size={15} /> View profile
                     </Link>
                     <Link
                       to="/my-offers"
                       onClick={() => setAvatarOpen(false)}
-                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50"
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                     >
-                      <CalendarDays size={15} /> My offers
+                      <BriefcaseBusiness size={15} /> My offers
                     </Link>
                     <button
+                      type="button"
                       onClick={handleSignOut}
-                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50"
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
                     >
                       <LogOut size={15} /> Sign out
                     </button>
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
-          )}
-
-          {/* Signed out: sign in + sign up */}
-          {!loading && !isAuthenticated && (
-            <>
+          ) : (
+            <div className="hidden items-center gap-2 md:flex">
               <Link
                 to="/auth"
-                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-full border border-slate-200/90 bg-white/85 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-white hover:text-slate-900"
               >
                 Sign in
               </Link>
               <Link
                 to="/auth?mode=signup"
-                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="rounded-full bg-[linear-gradient(135deg,#4f46e5_0%,#7c3aed_100%)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_18px_34px_-22px_rgba(79,70,229,0.75)] transition hover:brightness-105"
               >
                 Sign up
               </Link>
-            </>
+            </div>
           )}
 
-          {/* Mobile hamburger */}
           <button
-            onClick={() => setMobileOpen((prev) => !prev)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 md:hidden"
+            type="button"
+            onClick={() => setMobileOpen((previous) => !previous)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/90 bg-white/90 text-slate-700 shadow-[0_14px_30px_-28px_rgba(79,70,229,0.6)] transition hover:bg-white md:hidden"
+            aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
           >
             {mobileOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="border-t border-slate-100 bg-white/95 px-4 py-3 md:hidden">
-          <nav className="flex flex-col gap-1">
+      {mobileOpen ? (
+        <div className="border-t border-white/70 bg-white/92 px-4 pb-4 pt-3 shadow-[0_18px_36px_-32px_rgba(79,70,229,0.45)] backdrop-blur-xl md:hidden">
+          <nav className="flex flex-col gap-2">
             <NavLink to="/" className={getNavClass} onClick={() => setMobileOpen(false)}>
-              <Compass size={16} /> Home
+              <Home size={16} /> Home
             </NavLink>
-            {isAuthenticated && authedLinks(() => setMobileOpen(false))}
-            {!isAuthenticated && (
-              <Link
-                to="/auth"
-                className={`${navLinkBase} ${navLinkInactive}`}
-                onClick={() => setMobileOpen(false)}
-              >
-                Sign in
-              </Link>
+            {isAuthenticated ? (
+              authedLinks(() => setMobileOpen(false))
+            ) : (
+              <>
+                <Link
+                  to="/auth"
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  to="/auth?mode=signup"
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-2xl bg-[linear-gradient(135deg,#4f46e5_0%,#7c3aed_100%)] px-4 py-3 text-sm font-semibold text-white transition hover:brightness-105"
+                >
+                  Sign up
+                </Link>
+              </>
             )}
           </nav>
         </div>
-      )}
+      ) : null}
     </header>
   );
 }
