@@ -1,4 +1,5 @@
 import { supabase } from "../lib/supabaseClient";
+import { getSessionsAuthDebugContext, logSessionsQuery } from "./sessionDebug";
 
 export async function getDashboardProfile(user_id: string) {
   return await supabase
@@ -9,6 +10,18 @@ export async function getDashboardProfile(user_id: string) {
 }
 
 export async function getDashboardStats(user_id: string) {
+  const { session, user, authError } = await getSessionsAuthDebugContext();
+  logSessionsQuery("getDashboardStats sessions query start", {
+    session,
+    user,
+    payload: {
+      user_id,
+      filter: `.or(helper_id.eq.${user_id},requester_id.eq.${user_id})`,
+      select: "id, status, helper_id, requester_id",
+    },
+    error: authError,
+  });
+
   const [sessionsRes, requestsRes, offersRes] = await Promise.all([
     supabase
       .from("sessions")
@@ -25,6 +38,17 @@ export async function getDashboardStats(user_id: string) {
       .select("id, status")
       .eq("helper_id", user_id),
   ]);
+
+  logSessionsQuery("getDashboardStats sessions query result", {
+    session,
+    user,
+    payload: {
+      user_id,
+      filter: `.or(helper_id.eq.${user_id},requester_id.eq.${user_id})`,
+      select: "id, status, helper_id, requester_id",
+    },
+    error: authError ?? sessionsRes.error,
+  });
 
   const sessions = sessionsRes.data ?? [];
   const requests = requestsRes.data ?? [];
@@ -44,7 +68,19 @@ export async function getDashboardStats(user_id: string) {
 }
 
 export async function getDashboardSessions(user_id: string) {
-  return await supabase
+  const { session, user, authError } = await getSessionsAuthDebugContext();
+  const payload = {
+    user_id,
+    filter: `.or(helper_id.eq.${user_id},requester_id.eq.${user_id})`,
+    limit: 20,
+  };
+
+  logSessionsQuery("getDashboardSessions start", { session, user, payload, error: authError });
+  if (authError) {
+    return { data: null, error: authError };
+  }
+
+  const result = await supabase
     .from("sessions")
     .select(`
       id,
@@ -60,6 +96,8 @@ export async function getDashboardSessions(user_id: string) {
     .or(`helper_id.eq.${user_id},requester_id.eq.${user_id}`)
     .order("scheduled_at", { ascending: false })
     .limit(20);
+  logSessionsQuery("getDashboardSessions result", { session, user, payload, error: result.error });
+  return result;
 }
 
 export async function getDashboardOffers(user_id: string) {

@@ -11,6 +11,7 @@ export type Transaction = {
 };
 
 export type CreditSummary = {
+  available: number;
   earned: number;
   spent: number;
   total: number;

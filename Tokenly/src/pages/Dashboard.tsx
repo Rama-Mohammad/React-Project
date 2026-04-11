@@ -21,6 +21,8 @@ import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import RatingStars from "../components/common/RatingStars";
 import { supabase } from "../lib/supabaseClient";
 import { deleteRequest, getRequestsByUser } from "../services/requestService";
+import { getSessionsAuthDebugContext, logSessionsQuery } from "../services/sessionDebug";
+import { updateSessionStatus } from "../services/sessionService";
 import useDashboard from "../hooks/useDashboard";
 import useTransactions from "../hooks/useTransactions";
 import type {
@@ -91,10 +93,10 @@ export default function Dashboard() {
   const { transactions, summary, fetchTransactionsByUser, fetchCreditSummary } = useTransactions();
 
   // Derived token stats from real data
-  const earned = summary?.earned ?? 0;
+  const available = summary?.available ?? profile?.credit_balance ?? 0;
   const spent = summary?.spent ?? 0;
-  const total = earned + spent;
-  const earnedPct = total > 0 ? Math.round((earned / total) * 100) : 0;
+  const total = available + spent;
+  const availablePct = total > 0 ? Math.round((available / total) * 100) : 0;
 
   const submittedOffers = useMemo(
     () => (currentUserId ? mapOffers() : []),
@@ -223,12 +225,36 @@ export default function Dashboard() {
   }, [currentUserId, rawOffers]); // rawOffers is a proxy for "dashboard data loaded"
 
   const handleMarkComplete = async (id: string) => {
-    const { error } = await supabase
-      .from("sessions")
-      .update({ status: "completed", completed_at: new Date().toISOString() })
-      .eq("id", id);
+    const { session, user, authError } = await getSessionsAuthDebugContext();
+    const payload = { id, status: "completed" };
+
+    logSessionsQuery("Dashboard handleMarkComplete start", {
+      session,
+      user,
+      payload,
+      error: authError,
+    });
+
+    if (authError) return;
+
+    const { error } = await updateSessionStatus(id, "completed");
+
+    logSessionsQuery("Dashboard handleMarkComplete result", {
+      session,
+      user,
+      payload,
+      error,
+    });
 
     if (error) return;
+
+    if (currentUserId) {
+      await Promise.all([
+        fetchDashboard(currentUserId),
+        fetchTransactionsByUser(currentUserId),
+        fetchCreditSummary(currentUserId),
+      ]);
+    }
 
     setSessions((prev) =>
       prev.map((item) => {
@@ -360,21 +386,21 @@ export default function Dashboard() {
               </div>
 
               <div className="mt-5 flex items-center justify-between text-sm text-slate-500">
-                <span>Earned vs Spent</span>
-                <span>{total} total transacted</span>
+                <span>Available vs Spent</span>
+                <span>{total} total tracked</span>
               </div>
 
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200/80">
                 <div
                   className="h-full bg-[linear-gradient(90deg,#93c5fd_0%,#93c5fd_58%,#c4b5fd_58%,#c4b5fd_100%)]"
-                  style={{ width: `${earnedPct}%` }}
+                  style={{ width: `${availablePct}%` }}
                 />
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-6 text-sm">
                 <span className="inline-flex items-center gap-2 text-slate-600">
                   <span className="h-2.5 w-2.5 rounded-full bg-blue-300" />
-                  Earned <strong className="text-slate-900">{earned}</strong>
+                  Available <strong className="text-slate-900">{available}</strong>
                 </span>
                 <span className="inline-flex items-center gap-2 text-slate-600">
                   <span className="h-2.5 w-2.5 rounded-full bg-violet-300" />

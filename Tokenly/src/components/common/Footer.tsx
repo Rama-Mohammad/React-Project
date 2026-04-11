@@ -1,6 +1,8 @@
-﻿import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
 
 export default function Footer() {
+  const { isAuthenticated } = useAuth();
   const year = new Date().getFullYear();
   const iconHoverClass =
     "inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white/70 transition duration-500 hover:-translate-y-1 hover:scale-110 hover:rotate-3 hover:border-indigo-300 hover:bg-[linear-gradient(135deg,#eef2ff_0%,#ede9fe_100%)] hover:text-indigo-600 hover:shadow-[0_12px_24px_-14px_rgba(99,102,241,0.85)]";
@@ -10,6 +12,7 @@ export default function Footer() {
     "group relative isolate block -mx-2 overflow-hidden rounded-lg px-2 py-1 transition duration-300 hover:translate-x-1 hover:bg-[linear-gradient(90deg,rgba(224,231,255,0.6)_0%,rgba(237,233,254,0.7)_100%)] hover:text-indigo-700 hover:shadow-[0_10px_20px_-14px_rgba(99,102,241,0.9)] before:absolute before:inset-y-0 before:-left-10 before:w-8 before:skew-x-12 before:bg-white/70 before:opacity-0 before:transition-all before:duration-500 hover:before:left-[120%] hover:before:opacity-100";
   const policyHoverClass =
     "group relative isolate -mx-1.5 overflow-hidden rounded-md px-1.5 py-0.5 transition duration-300 hover:bg-[linear-gradient(90deg,rgba(224,231,255,0.6)_0%,rgba(237,233,254,0.7)_100%)] hover:text-indigo-700 before:absolute before:inset-y-0 before:-left-8 before:w-6 before:skew-x-12 before:bg-white/70 before:opacity-0 before:transition-all before:duration-500 hover:before:left-[115%] hover:before:opacity-100";
+  const gatedLink = (path: string) => (isAuthenticated ? path : "/auth");
 
   return (
     <footer className="relative mt-10 border-t border-slate-300/70 bg-white/60 backdrop-blur-xl">
@@ -18,7 +21,6 @@ export default function Footer() {
       <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-5 lg:px-6">
         <div className="grid gap-8 md:grid-cols-[1.5fr_0.75fr_0.75fr_0.75fr]">
           <div>
-
             <p className="mt-4 max-w-md text-sm leading-6 text-slate-600">
               Connect, learn, and earn through real-time peer sessions.
               Exchange skills, gain experience, and grow together.
@@ -48,20 +50,20 @@ export default function Footer() {
             <div className="mt-3 space-y-2 text-sm text-slate-700">
               <Link to="/home" className={linkHoverClass}>Home</Link>
               <Link to="/explore" className={linkHoverClass}>Explore</Link>
-              <Link to="/dashboard" className={linkHoverClass}>Dashboard</Link>
-              <Link to="/sessions" className={linkHoverClass}>Sessions</Link>
-              <Link to="/profile" className={linkHoverClass}>Profile</Link>
+              <Link to={gatedLink("/dashboard")} className={linkHoverClass}>Dashboard</Link>
+              <Link to={gatedLink("/sessions")} className={linkHoverClass}>Sessions</Link>
+              <Link to={gatedLink("/profile")} className={linkHoverClass}>Profile</Link>
             </div>
           </div>
 
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Company</p>
             <div className="mt-3 space-y-2 text-sm text-slate-700">
-              <Link to="/explore" className={linkHoverClass}>Browse Requests</Link>
-              <Link to="/explore?tab=helpers#explore-tabs-bar" className={linkHoverClass}>Find Helpers</Link>
-              <Link to="/explore?tab=skills#explore-tabs-bar" className={linkHoverClass}>Explore Skills</Link>
-              <Link to="/sessions?status=active" className={linkHoverClass}>Live Sessions</Link>
-              <Link to="/helpers/h1/request" className={linkHoverClass}>Create Request</Link>
+              <Link to={gatedLink("/explore")} className={linkHoverClass}>Browse Requests</Link>
+              <Link to={gatedLink("/explore?tab=helpers#explore-tabs-bar")} className={linkHoverClass}>Find Helpers</Link>
+              <Link to={gatedLink("/explore?tab=skills#explore-tabs-bar")} className={linkHoverClass}>Explore Skills</Link>
+              <Link to={gatedLink("/sessions?status=active")} className={linkHoverClass}>Live Sessions</Link>
+              <Link to={gatedLink("/helpers/h1/request")} className={linkHoverClass}>Create Request</Link>
             </div>
           </div>
 
@@ -80,7 +82,7 @@ export default function Footer() {
         <div className="mt-8 border-t border-slate-300/70" />
 
         <div className="mt-4 flex flex-col gap-2 text-xs text-slate-500 md:flex-row md:items-center md:justify-between">
-          <p>© {year} Tokenly. All rights reserved.</p>
+          <p>(c) {year} Tokenly. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <Link to="/privacy" className={policyHoverClass}>Privacy Policy</Link>
             <Link to="/terms" className={policyHoverClass}>Terms of Service</Link>
@@ -91,5 +93,3 @@ export default function Footer() {
     </footer>
   );
 }
-
-

@@ -9,7 +9,7 @@
   Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
@@ -23,6 +23,7 @@ import {
   rejectOffer,
   type OfferForRequestRow,
 } from "../services/offerService";
+import { getProfileCreditBalance } from "../services/profileService";
 import { deleteRequest, getRequestById } from "../services/requestService";
 import { mapRequestToExploreItem } from "../utils/exploreMappers";
 import type { RequestItem } from "../types/explore";
@@ -144,12 +145,13 @@ export default function RequestDetails() {
           <p className="mt-2 text-slate-600">
             {requestLoadError || "We couldn't find this request. It may have been removed."}
           </p>
-          <Link
-            to="/explore"
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
             className="mt-6 rounded-xl border border-slate-200 bg-white px-5 py-2.5 font-semibold text-slate-800 transition hover:bg-slate-50"
           >
-            Back to Explore
-          </Link>
+            Go Back
+          </button>
         </main>
       </div>
     );
@@ -256,10 +258,26 @@ export default function RequestDetails() {
     setOfferActionId(offerId);
     setOffersError("");
     try {
+      const { data: profile, error: profileError } = await getProfileCreditBalance(currentUserId);
+      if (profileError) {
+        setOffersError(profileError.message ?? "Could not verify your token balance.");
+        return;
+      }
+
+      const currentBalance = Number(profile?.credit_balance ?? 0);
+      const requiredTokens = Number(request.credits ?? 0);
+
+      if (currentBalance < requiredTokens) {
+        setOffersError("Not enough tokens to accept this offer.");
+        navigate(`/tokens/options?required=${requiredTokens}&balance=${currentBalance}`);
+        return;
+      }
+
       const { error } = await acceptOffer(offerId, {
         id: request.id,
         requester_id: requestOwnerId,
         duration_minutes: request.duration,
+        credit_cost: request.credits,
       });
 
       if (error) {
@@ -366,12 +384,7 @@ export default function RequestDetails() {
         return;
       }
 
-      const { error } = await createOffer(
-        request.id,
-        helperId,
-        messageValue,
-        availabilityValue
-      );
+      const { error } = await createOffer(request.id, messageValue, availabilityValue);
       if (error) throw error;
 
       setOfferFeedback("Offer submitted successfully.");
@@ -401,12 +414,13 @@ export default function RequestDetails() {
 
       <main className="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-5 lg:px-6 lg:py-7">
         <div className="mb-3">
-          <Link
-            to="/explore"
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
             className="inline-flex items-center gap-2 rounded-lg border border-white/50 bg-white/75 px-3 py-1 text-xs font-medium text-slate-700 backdrop-blur transition hover:bg-white"
           >
-            Back to Explore
-          </Link>
+            Back
+          </button>
         </div>
 
         <div className="grid gap-5 lg:grid-cols-[1.9fr_0.8fr]">

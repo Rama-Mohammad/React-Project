@@ -31,20 +31,39 @@ export async function createTransaction(data: {
 }
 
 export async function getUserCreditSummary(user_id: string) {
-  const { data, error } = await supabase
-    .from("credit_transactions")
-    .select("amount, type")
-    .eq("user_id", user_id);
+  const [{ data: transactions, error: transactionsError }, { data: profile, error: profileError }] = await Promise.all([
+    supabase
+      .from("credit_transactions")
+      .select("amount, type")
+      .eq("user_id", user_id),
+    supabase
+      .from("profiles")
+      .select("credit_balance")
+      .eq("id", user_id)
+      .single(),
+  ]);
 
-  if (error || !data) return { data: null, error };
+  if (transactionsError || profileError || !transactions) {
+    return {
+      data: null,
+      error: transactionsError ?? profileError,
+    };
+  }
 
-  const earned = data
+  const available = Number(profile?.credit_balance ?? 0);
+
+  const trackedEarned = transactions
     .filter((t) => t.type === "earn" || t.type === "bonus")
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const spent = data
+  const spent = transactions
     .filter((t) => t.type === "spend")
     .reduce((sum, t) => sum + t.amount, 0);
 
-  return { data: { earned, spent, total: earned - spent }, error: null };
+  // Older balances may exist without matching earn/bonus transactions.
+  // Reconcile the summary with the real profile balance so the dashboard
+  // does not show impossible states like balance 0 with no prior earnings.
+  const earned = Math.max(trackedEarned, available + spent);
+
+  return { data: { available, earned, spent, total: available }, error: null };
 }

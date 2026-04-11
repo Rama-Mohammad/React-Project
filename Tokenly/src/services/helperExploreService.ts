@@ -1,4 +1,5 @@
 import { supabase } from "../lib/supabaseClient";
+import { getSessionsAuthDebugContext, logSessionsQuery } from "./sessionDebug";
 
 export type ExploreProfileRow = {
   id: string;
@@ -59,7 +60,17 @@ export async function getExploreHelpers() {
   const [{ data: skills, error: skillsError }, { data: sessions, error: sessionsError }, { data: helpOffers, error: helpOffersError }] =
     await Promise.all([
       supabase.from("skills").select("id, user_id, name, category, level, sessions_count").in("user_id", helperIds),
-      supabase.from("sessions").select("id, helper_id, status").in("helper_id", helperIds),
+      (async () => {
+        const { session, user, authError } = await getSessionsAuthDebugContext();
+        const payload = { helperIds, select: "id, helper_id, status" };
+        logSessionsQuery("getExploreHelpers sessions query start", { session, user, payload, error: authError });
+        if (authError) {
+          return { data: null, error: authError };
+        }
+        const result = await supabase.from("sessions").select("id, helper_id, status").in("helper_id", helperIds);
+        logSessionsQuery("getExploreHelpers sessions query result", { session, user, payload, error: result.error });
+        return result;
+      })(),
       supabase.from("help_offers").select("id, helper_id, credit_cost, duration_minutes, status").in("helper_id", helperIds),
     ]);
 

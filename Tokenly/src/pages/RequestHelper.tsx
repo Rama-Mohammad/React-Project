@@ -1,6 +1,6 @@
 import { CheckCircle2, Coins, Lightbulb } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import { supabase } from "../lib/supabaseClient";
@@ -185,12 +185,13 @@ export default function RequestHelper() {
           <p className="mt-2 text-slate-600">
             {helperLoadError || "This helper profile may no longer be available."}
           </p>
-          <Link
-            to="/explore"
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
             className="mt-6 rounded-xl border border-slate-200 bg-white px-5 py-2.5 font-semibold text-slate-800 transition hover:bg-slate-50"
           >
-            Back to Explore
-          </Link>
+            Go Back
+          </button>
         </main>
       </div>
     );

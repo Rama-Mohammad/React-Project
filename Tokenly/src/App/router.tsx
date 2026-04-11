@@ -24,6 +24,7 @@ import MyOffers from "../pages/MyOffers";
 import CreateOffer from "../pages/CreateOffer";
 import IndependentOfferDetails from "../pages/IndependentOfferDetails";
 import OfferAppointment from "../pages/OfferAppointment";
+import TokenOptions from "../pages/TokenOptions";
 import ErrorPage from "../pages/ErrorPage";
 import NotFound from "../pages/NotFound";
 
@@ -105,6 +106,10 @@ export const router = createBrowserRouter([
       {
         path: "/offers/:offerId/appointment",
         element: <OfferAppointment />,
+      },
+      {
+        path: "/tokens/options",
+        element: <TokenOptions />,
       },
       {
         path: "/profile",

@@ -8,6 +8,14 @@ export async function getProfileById(id: string) {
     .single();
 }
 
+export async function getProfileCreditBalance(id: string) {
+  return await supabase
+    .from("profiles")
+    .select("credit_balance")
+    .eq("id", id)
+    .single();
+}
+
 export async function getProfileByUsername(username: string) {
   return await supabase
     .from("profiles")

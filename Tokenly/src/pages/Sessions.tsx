@@ -18,6 +18,7 @@ import type { Session } from "../types/session";
 import { getSessionsByUser } from "../services/sessionService";
 import { getCurrentUser } from "../services/authService";
 import { updateSessionStatus } from "../services/sessionService";
+import { getProfileCreditBalance } from "../services/profileService";
 
 type SessionFilter = "upcoming" | "active" | "completed" | "all";
 type RoleFilter = "all" | "helping" | "receiving";
@@ -28,7 +29,7 @@ const SessionsPage: React.FC = () => {
   const [_searchParams] = useSearchParams();
   const [activeFilter, setActiveFilter] = useState<SessionFilter>("all");
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [creditsBalance] = useState(12);
+  const [creditsBalance, setCreditsBalance] = useState(0);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
 
@@ -47,11 +48,23 @@ useEffect(() => {
 
     const userId = userData.user.id;
 
-    const { data, error } = await getSessionsByUser(userId);
+    const [
+      { data, error },
+      { data: balanceData, error: balanceError },
+    ] = await Promise.all([
+      getSessionsByUser(userId),
+      getProfileCreditBalance(userId),
+    ]);
 
     if (error) {
       console.error("Error fetching sessions:", error);
       return;
+    }
+
+    if (balanceError) {
+      console.error("Error fetching token balance:", balanceError);
+    } else {
+      setCreditsBalance(Number(balanceData?.credit_balance ?? 0));
     }
 
   const mappedSessions = (data || []).map((s: any) => {
@@ -98,7 +111,9 @@ useEffect(() => {
       upcoming: sessions.filter((s) => s.status === "upcoming").length,
       active: sessions.filter((s) => s.status === "active").length,
       completed: sessions.filter((s) => s.status === "completed").length,
-      earned: sessions.filter((s) => s.credits > 0).reduce((sum, s) => sum + s.credits, 0),
+      earned: sessions
+        .filter((s) => s.status === "completed" && s.role === "helping" && s.credits > 0)
+        .reduce((sum, s) => sum + s.credits, 0),
     }),
     [sessions]
   );
@@ -201,7 +216,7 @@ useEffect(() => {
 const confirmMarkComplete = async () => {
   if (!selectedSessionId) return;
 
-  const { data, error } = await updateSessionStatus(
+  const { error } = await updateSessionStatus(
     selectedSessionId,
     "completed"
   );
@@ -218,6 +233,12 @@ const confirmMarkComplete = async () => {
         : session
     )
   );
+
+  const { data: userData } = await getCurrentUser();
+  if (userData?.user?.id) {
+    const { data: balanceData } = await getProfileCreditBalance(userData.user.id);
+    setCreditsBalance(Number(balanceData?.credit_balance ?? 0));
+  }
 
   setShowConfirmModal(false);
   setSelectedSessionId(null);

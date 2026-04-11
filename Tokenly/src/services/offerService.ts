@@ -1,6 +1,9 @@
+import type { PostgrestError, Session, User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabaseClient";
 import type { OfferStatus } from "../types/offer";
+import type { Offer } from "../types/offer";
 import type { Request } from "../types/request";
+import { getSessionsAuthDebugContext, logSessionsQuery } from "./sessionDebug";
 
 export function extractAvailabilityFromOfferDescription(description?: string | null) {
   if (!description) {
@@ -31,17 +34,106 @@ export function extractAvailabilityFromOfferDescription(description?: string | n
   };
 }
 
+type CreateOfferPayload = {
+  request_id: string;
+  helper_id: string;
+  message?: string;
+  availability?: string;
+  status: OfferStatus;
+};
+
+type CreateOfferResult = {
+  data: Offer | null;
+  error: PostgrestError | Error | null;
+};
+
+function logOfferInsertDebug(
+  label: string,
+  details: {
+    session: Session | null;
+    user: User | null;
+    payload: CreateOfferPayload | null;
+    error?: PostgrestError | Error | null;
+  }
+) {
+  console.log(`[offers.createOffer] ${label}`, {
+    session: details.session,
+    user: details.user,
+    payload: details.payload,
+    error: details.error ?? null,
+  });
+}
+
 export async function createOffer(
   request_id: string,
-  helper_id: string,
   message?: string,
   availability?: string
-) {
-  return await supabase
+): Promise<CreateOfferResult> {
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  const session = sessionData.session;
+  const user = userData.user;
+
+  if (sessionError || userError) {
+    const authError = sessionError ?? userError ?? new Error("Could not verify authentication.");
+    logOfferInsertDebug("auth lookup failed", {
+      session,
+      user,
+      payload: null,
+      error: authError,
+    });
+    return { data: null, error: authError };
+  }
+
+  if (!session || !user?.id) {
+    const authError = new Error("You must be signed in with an active session to submit an offer.");
+    logOfferInsertDebug("missing authenticated user or session", {
+      session,
+      user,
+      payload: null,
+      error: authError,
+    });
+    return { data: null, error: authError };
+  }
+
+  const payload: CreateOfferPayload = {
+    request_id,
+    helper_id: user.id,
+    message,
+    availability,
+    status: "pending",
+  };
+
+  logOfferInsertDebug("about to insert", {
+    session,
+    user,
+    payload,
+  });
+
+  const { data, error } = await supabase
     .from("offers")
-    .insert({ request_id, helper_id, message, availability, status: "pending" })
+    .insert(payload)
     .select()
     .single();
+
+  if (error) {
+    logOfferInsertDebug("insert failed", {
+      session,
+      user,
+      payload,
+      error,
+    });
+    return { data: null, error };
+  }
+
+  logOfferInsertDebug("insert succeeded", {
+    session,
+    user,
+    payload,
+  });
+
+  return { data: data as Offer, error: null };
 }
 
 export type OfferForRequestRow = {
@@ -220,7 +312,7 @@ export async function getOffersForHelper(helperId: string) {
 
 export async function acceptOffer(
   offerId: string,
-  request: Pick<Request, "id" | "requester_id" | "duration_minutes">,
+  request: Pick<Request, "id" | "requester_id" | "duration_minutes" | "credit_cost">,
   scheduledAt?: string
 ) {
   const { data: offer, error: offerFetchError } = await supabase
@@ -253,11 +345,31 @@ export async function acceptOffer(
     return { data: null, error: rejectOthersError };
   }
 
+  const sessionsDebug = await getSessionsAuthDebugContext();
+  const existingSessionPayload = { offerId };
+  logSessionsQuery("acceptOffer existing session lookup start", {
+    session: sessionsDebug.session,
+    user: sessionsDebug.user,
+    payload: existingSessionPayload,
+    error: sessionsDebug.authError,
+  });
+
+  if (sessionsDebug.authError) {
+    return { data: null, error: sessionsDebug.authError };
+  }
+
   const { data: existingSession, error: existingSessionError } = await supabase
     .from("sessions")
     .select("id")
     .eq("offer_id", offerId)
     .maybeSingle();
+
+  logSessionsQuery("acceptOffer existing session lookup result", {
+    session: sessionsDebug.session,
+    user: sessionsDebug.user,
+    payload: existingSessionPayload,
+    error: existingSessionError,
+  });
 
   if (existingSessionError) {
     return { data: null, error: existingSessionError };
@@ -265,38 +377,64 @@ export async function acceptOffer(
 
   let sessionData = existingSession;
   if (!sessionData?.id) {
-    const { data: createdSession, error: createSessionError } = await supabase
+    const sessionInsertPayload = {
+      request_id: request.id,
+      offer_id: offer.id,
+      helper_id: offer.helper_id,
+      requester_id: request.requester_id,
+      scheduled_at: scheduledAt,
+      duration_minutes: request.duration_minutes,
+      status: "upcoming",
+    };
+
+    logSessionsQuery("acceptOffer create session insert start", {
+      session: sessionsDebug.session,
+      user: sessionsDebug.user,
+      payload: sessionInsertPayload,
+    });
+
+    const { error: createSessionError } = await supabase
       .from("sessions")
-      .insert({
-        request_id: request.id,
-        offer_id: offer.id,
-        helper_id: offer.helper_id,
-        requester_id: request.requester_id,
-        scheduled_at: scheduledAt,
-        duration_minutes: request.duration_minutes,
-        status: "upcoming",
-      })
-      .select()
-      .single();
+      .insert(sessionInsertPayload);
+
+    logSessionsQuery("acceptOffer create session insert result", {
+      session: sessionsDebug.session,
+      user: sessionsDebug.user,
+      payload: sessionInsertPayload,
+      error: createSessionError,
+    });
 
     if (createSessionError) {
       return { data: null, error: createSessionError };
     }
 
-    sessionData = createdSession;
+    sessionData = { id: offer.id };
   } else if (scheduledAt) {
-    const { data: updatedSession, error: updateSessionError } = await supabase
+    const updatePayload = { sessionId: sessionData.id, scheduled_at: scheduledAt };
+
+    logSessionsQuery("acceptOffer update session start", {
+      session: sessionsDebug.session,
+      user: sessionsDebug.user,
+      payload: updatePayload,
+    });
+
+    const { error: updateSessionError } = await supabase
       .from("sessions")
       .update({ scheduled_at: scheduledAt })
-      .eq("id", sessionData.id)
-      .select()
-      .single();
+      .eq("id", sessionData.id);
+
+    logSessionsQuery("acceptOffer update session result", {
+      session: sessionsDebug.session,
+      user: sessionsDebug.user,
+      payload: updatePayload,
+      error: updateSessionError,
+    });
 
     if (updateSessionError) {
       return { data: null, error: updateSessionError };
     }
 
-    sessionData = updatedSession;
+    sessionData = { id: sessionData.id };
   }
 
   const { error: requestUpdateError } = await supabase

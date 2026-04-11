@@ -1,6 +1,6 @@
 import { CalendarDays, CheckCircle2, Clock3, Coins, Sparkles, Video } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
 import { supabase } from "../lib/supabaseClient";
@@ -13,6 +13,7 @@ import {
   type IndependentOfferAppointmentRow,
   type OfferAppointmentRow,
 } from "../services/offerService";
+import { getProfileCreditBalance } from "../services/profileService";
 import { createRequest } from "../services/requestService";
 import type { SessionType } from "../types/page";
 
@@ -195,6 +196,21 @@ export default function OfferAppointment() {
     setSubmitError("");
 
     try {
+      const { data: profile, error: profileError } = await getProfileCreditBalance(currentUserId);
+      if (profileError) {
+        setSubmitError(profileError.message ?? "Could not verify your token balance.");
+        return;
+      }
+
+      const currentBalance = Number(profile?.credit_balance ?? 0);
+      const requiredTokens = Number(credits ?? 0);
+
+      if (currentBalance < requiredTokens) {
+        setSubmitError("Not enough tokens to accept this offer.");
+        navigate(`/tokens/options?required=${requiredTokens}&balance=${currentBalance}`);
+        return;
+      }
+
       const selectedSlotText = [
         `Offerer availability: ${availabilityText}`,
         `Chosen appointment: ${scheduledDate.toLocaleString()}`,
@@ -235,9 +251,13 @@ export default function OfferAppointment() {
           return;
         }
 
+        if (currentUserId === independentOffer.helper_id) {
+          setSubmitError("You cannot book your own offer.");
+          return;
+        }
+
         const { data: createdOffer, error: createOfferError } = await createOffer(
           createdRequest.id,
-          independentOffer.helper_id,
           offerDescription,
           selectedSlotText
         );
@@ -253,6 +273,7 @@ export default function OfferAppointment() {
             id: createdRequest.id,
             requester_id: currentUserId,
             duration_minutes: independentOffer.duration_minutes ?? undefined,
+            credit_cost: independentOffer.credit_cost ?? 0,
           },
           scheduledDate.toISOString()
         );
@@ -283,6 +304,7 @@ export default function OfferAppointment() {
           id: requestOffer.request.id,
           requester_id: requestOffer.request.requester_id,
           duration_minutes: requestOffer.request.duration_minutes ?? undefined,
+          credit_cost: requestOffer.request.credit_cost ?? 0,
         },
         scheduledDate.toISOString()
       );
@@ -326,12 +348,13 @@ export default function OfferAppointment() {
           <section className="explore-glass rounded-3xl border border-white/55 bg-white/80 p-6 text-center backdrop-blur-xl">
             <h1 className="text-3xl font-bold text-slate-900">Offer not found</h1>
             <p className="mt-2 text-slate-600">{error || "This offer may have been removed."}</p>
-            <Link
-              to="/explore?tab=offers#explore-tabs-bar"
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
               className="mt-6 inline-flex rounded-xl border border-slate-200 bg-white px-5 py-2.5 font-semibold text-slate-800 transition hover:bg-slate-50"
             >
-              Back to Offers
-            </Link>
+              Go Back
+            </button>
           </section>
         ) : (
           <div className="grid items-start gap-5 lg:grid-cols-[1.55fr_0.95fr]">

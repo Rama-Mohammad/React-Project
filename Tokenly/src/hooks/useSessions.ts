@@ -91,8 +91,10 @@ export default function useSessions(): UseSessionsResult {
             return false;
         }
 
-        setSession(data);
-        setSessions((prev) => prev.map((s) => (s.id === id ? data : s)));
+        if (data) {
+            setSession(data);
+            setSessions((prev) => prev.map((s) => (s.id === id ? data : s)));
+        }
         setLoading(false);
         return true;
     }
