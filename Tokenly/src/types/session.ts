@@ -1,13 +1,19 @@
 export type SessionStatus = "upcoming" | "active" | "completed" | "cancelled";
 export type ReactionType = 'like' | 'love' | 'laugh' | 'wow';
 
+
 export type SessionStartInput = {
-  request_id: string;
-  offer_id: string;
   helper_id: string;
   requester_id: string;
   scheduled_at?: string;
   duration_minutes?: number;
+  // Flow 1 — requester posted request, helper offered, requester accepted
+  request_id?: string;
+  offer_id?: string;
+  // Flow 2 — helper posted help_offer, user sent help_offer_request, helper accepted
+  help_offer_request_id?: string;
+  // Flow 3 — user sent direct_request to a specific helper, helper accepted
+  direct_request_id?: string;
 };
 
 

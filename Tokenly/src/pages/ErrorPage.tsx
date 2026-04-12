@@ -39,7 +39,7 @@ export default function ErrorPage() {
       <Navbar />
 
       <main className="mx-auto flex w-full max-w-6xl flex-1 items-center px-4 py-10 sm:px-6 lg:px-8">
-        <section className="relative isolate w-full overflow-hidden rounded-[2rem] border border-white/60 bg-white/72 px-6 py-12 shadow-[0_30px_90px_-50px_rgba(79,70,229,0.42)] backdrop-blur-xl sm:px-10">
+        <section className="relative isolate w-full overflow-hidden rounded-4xl border border-white/60 bg-white/72 px-6 py-12 shadow-[0_30px_90px_-50px_rgba(79,70,229,0.42)] backdrop-blur-xl sm:px-10">
           <div className="absolute -left-12 top-10 h-40 w-40 rounded-full bg-sky-200/40 blur-3xl" />
           <div className="absolute -right-8 bottom-4 h-44 w-44 rounded-full bg-indigo-200/40 blur-3xl" />
 

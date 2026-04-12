@@ -4,6 +4,7 @@ import {
   getDashboardStats,
   getDashboardSessions,
   getDashboardOffers,
+  getDashboardDirectRequests,
 } from "../services/dashboardService";
 import type { DashboardOfferItem, DashboardSessionItem } from "../types/dashboard";
 
@@ -30,6 +31,7 @@ export default function useDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [rawSessions, setRawSessions] = useState<any[]>([]);
   const [rawOffers, setRawOffers] = useState<any[]>([]);
+  const [rawDirectRequests, setRawDirectRequests] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -37,11 +39,13 @@ export default function useDashboard() {
     setLoading(true);
     setError("");
 
-    const [profileRes, statsData, sessionsRes, offersRes] = await Promise.all([
+    // All 5 calls properly destructured
+    const [profileRes, statsData, sessionsRes, offersRes, directRequestsRes] = await Promise.all([
       getDashboardProfile(user_id),
       getDashboardStats(user_id),
       getDashboardSessions(user_id),
       getDashboardOffers(user_id),
+      getDashboardDirectRequests(user_id),
     ]);
 
     if (profileRes.error) setError(profileRes.error.message);
@@ -50,6 +54,7 @@ export default function useDashboard() {
     setStats(statsData);
     setRawSessions(sessionsRes.data ?? []);
     setRawOffers(offersRes.data ?? []);
+    setRawDirectRequests(directRequestsRes.data ?? []);
     setLoading(false);
   }
 
@@ -62,8 +67,8 @@ export default function useDashboard() {
         dbStatus === "upcoming"
           ? "Upcoming"
           : dbStatus === "active"
-          ? "Active Now"
-          : "Completed";
+            ? "Active Now"
+            : "Completed";
 
       const scheduledDate = s.scheduled_at ? new Date(s.scheduled_at) : null;
       const dateStr = scheduledDate
@@ -81,7 +86,7 @@ export default function useDashboard() {
         person: otherPerson ?? "Unknown",
         date: dateStr,
         duration: s.duration_minutes ? `${s.duration_minutes} min` : "—",
-        credits: 0, // populated from credit_transactions if needed
+        credits: 0,
         action: uiStatus !== "Completed" ? "Mark Complete" : undefined,
       };
     });
@@ -98,16 +103,46 @@ export default function useDashboard() {
     }));
   }
 
+  function mapDirectRequests(): Array<{
+    id: string;
+    title: string;
+    requesterName: string;
+    message: string;
+    credits: number;
+    duration: number | null;
+    age: string;
+  }> {
+    return rawDirectRequests.map((r: unknown) => {
+      const req = r as Record<string, unknown>;
+      const requesterRaw = req.requester as
+        | { full_name?: string | null; username?: string | null }
+        | Array<{ full_name?: string | null; username?: string | null }>
+        | null;
+      const requester = Array.isArray(requesterRaw) ? requesterRaw[0] : requesterRaw;
+      return {
+        id: String(req.id ?? ""),
+        title: String(req.title ?? ""),
+        requesterName: requester?.full_name ?? requester?.username ?? "User",
+        message: String(req.message ?? ""),
+        credits: Number(req.credit_cost ?? 0),
+        duration: req.duration_minutes != null ? Number(req.duration_minutes) : null,
+        age: toRelativeAge(req.created_at as string | null),
+      };
+    });
+  }
+
   return {
     profile,
     stats,
     rawSessions,
     rawOffers,
+    rawDirectRequests,
     loading,
     error,
     fetchDashboard,
     mapSessions,
     mapOffers,
+    mapDirectRequests,
   };
 }
 

@@ -108,7 +108,7 @@ export default function Navbar() {
             <img
               src={tokenlyLogo}
               alt="Tokenly"
-              className="h-9 w-auto max-w-[146px] object-contain sm:max-w-[170px] lg:max-w-[186px]"
+              className="h-9 w-auto max-w-36.5 object-contain sm:max-w-42.5 lg:max-w-46.5"
             />
           </NavLink>
         </div>

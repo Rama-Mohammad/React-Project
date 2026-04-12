@@ -1,13 +1,21 @@
 export type NotificationType =
-  | 'offer_received'
-  | 'offer_accepted'
-  | 'offer_rejected'
-  | 'session_starting'
-  | 'session_completed'
-  | 'review_received'
-  | 'credits_earned'
-  | 'credits_spent'
-  | 'request_expired';
+  | "offer_received"
+  | "offer_accepted"
+  | "offer_rejected"
+  | "session_starting"
+  | "session_completed"
+  | "review_received"
+  | "credits_earned"
+  | "credits_spent"
+  | "request_expired"
+  // Flow 2 — help_offer events
+  | "help_offer_request_received"   // helper gets this when someone requests their help_offer
+  | "help_offer_request_accepted"   // requester gets this when helper accepts
+  | "help_offer_request_rejected"   // requester gets this when helper rejects
+  // Flow 3 — direct_request events
+  | "direct_request_received"       // helper gets this when someone sends them a direct request
+  | "direct_request_accepted"       // requester gets this when helper accepts
+  | "direct_request_rejected";      // requester gets this when helper rejects
 
 export type Notification = {
   id: string;
@@ -15,8 +23,8 @@ export type Notification = {
   type: NotificationType;
   title: string;
   message: string;
-  related_id?: string; // could be session_id, request_id, etc.
-  related_type?: 'session' | 'request' | 'offer' | 'review';
+  related_id?: string;
+  related_type?: "session" | "request" | "offer" | "review" | "help_offer" | "direct_request";
   is_read: boolean;
   created_at: string;
 };

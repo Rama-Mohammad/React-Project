@@ -4,24 +4,28 @@ import type { SessionStatus } from "../types/session";
 import { createTransaction } from "./transactionService";
 
 export async function createSession(data: {
-  request_id: string;
-  offer_id: string;
   helper_id: string;
   requester_id: string;
   scheduled_at?: string;
   duration_minutes?: number;
+  request_id?: string;
+  offer_id?: string;
+  help_offer_request_id?: string;
+  direct_request_id?: string;
 }) {
   const { session, user, authError } = await getSessionsAuthDebugContext();
   const payload = { ...data, status: "upcoming" };
-
   logSessionsQuery("createSession insert start", { session, user, payload, error: authError });
-  if (authError) {
-    return { data: null, error: authError };
-  }
+  if (authError) return { data: null, error: authError };
 
-  const { error } = await supabase.from("sessions").insert(payload);
+  const { data: created, error } = await supabase
+    .from("sessions")
+    .insert(payload)
+    .select()
+    .single();
+
   logSessionsQuery("createSession insert result", { session, user, payload, error });
-  return { data: null, error };
+  return { data: created, error };
 }
 
 export async function getSessionById(id: string) {
@@ -96,6 +100,45 @@ export async function getSessionsByStatus(user_id: string, status: SessionStatus
   return result;
 }
 
+async function resolveSessionCreditCost(sessionRow: {
+  request_id: string | null;
+  help_offer_request_id: string | null;
+  direct_request_id: string | null;
+}): Promise<{ creditCost: number; title: string | null }> {
+  if (sessionRow.request_id) {
+    const { data } = await supabase
+      .from("requests")
+      .select("credit_cost, title")
+      .eq("id", sessionRow.request_id)
+      .single();
+    return { creditCost: Number(data?.credit_cost ?? 0), title: data?.title ?? null };
+  }
+
+  if (sessionRow.help_offer_request_id) {
+    const { data } = await supabase
+      .from("help_offer_requests")
+      .select("help_offer:help_offers!help_offer_requests_help_offer_id_fkey(credit_cost, title)")
+      .eq("id", sessionRow.help_offer_request_id)
+      .single();
+    const helpOffer = Array.isArray(data?.help_offer) ? data?.help_offer[0] : data?.help_offer;
+    return {
+      creditCost: Number((helpOffer as { credit_cost?: number } | null)?.credit_cost ?? 0),
+      title: (helpOffer as { title?: string } | null)?.title ?? null,
+    };
+  }
+
+  if (sessionRow.direct_request_id) {
+    const { data } = await supabase
+      .from("direct_requests")
+      .select("credit_cost, title")
+      .eq("id", sessionRow.direct_request_id)
+      .single();
+    return { creditCost: Number(data?.credit_cost ?? 0), title: data?.title ?? null };
+  }
+
+  return { creditCost: 0, title: null };
+}
+
 export async function updateSessionStatus(id: string, status: SessionStatus) {
   const updates: Record<string, unknown> = { status };
   if (status === "completed") updates.completed_at = new Date().toISOString();
@@ -111,13 +154,7 @@ export async function updateSessionStatus(id: string, status: SessionStatus) {
   if (status === "completed") {
     const settlementLookup = await supabase
       .from("sessions")
-      .select(`
-        id,
-        status,
-        helper_id,
-        requester_id,
-        request:requests(id, title, credit_cost)
-      `)
+      .select("id, status, helper_id, requester_id, request_id, help_offer_request_id, direct_request_id")
       .eq("id", id)
       .single();
 
@@ -137,11 +174,17 @@ export async function updateSessionStatus(id: string, status: SessionStatus) {
       status: SessionStatus;
       helper_id: string;
       requester_id: string;
-      request: { id: string; title: string; credit_cost: number | null } | { id: string; title: string; credit_cost: number | null }[] | null;
+      request_id: string | null;
+      help_offer_request_id: string | null;
+      direct_request_id: string | null;
     };
 
-    const requestValue = Array.isArray(sessionRow.request) ? sessionRow.request[0] ?? null : sessionRow.request;
-    const creditCost = Math.max(0, Number(requestValue?.credit_cost ?? 0));
+    // Resolve credit cost from whichever flow created this session
+    const { creditCost, title } = await resolveSessionCreditCost({
+      request_id: sessionRow.request_id,
+      help_offer_request_id: sessionRow.help_offer_request_id,
+      direct_request_id: sessionRow.direct_request_id,
+    });
 
     if (sessionRow.status !== "completed" && creditCost > 0) {
       const existingTransactions = await supabase
@@ -198,7 +241,7 @@ export async function updateSessionStatus(id: string, status: SessionStatus) {
           session_id: id,
           amount: creditCost,
           type: "spend",
-          description: `Spent on completed session${requestValue?.title ? `: ${requestValue.title}` : ""}`,
+          description: `Spent on completed session${title ? `: ${title}` : ""}`,
         });
 
         if (requesterTransactionError) {
@@ -232,7 +275,7 @@ export async function updateSessionStatus(id: string, status: SessionStatus) {
           session_id: id,
           amount: creditCost,
           type: "earn",
-          description: `Earned from completed session${requestValue?.title ? `: ${requestValue.title}` : ""}`,
+          description: `Earned from completed session${title ? `: ${title}` : ""}`,
         });
 
         if (helperTransactionError) {
