@@ -29,8 +29,10 @@ export interface HelperItem {
   name: string;
   initials: string;
   avatarBg: string;
+  profileImageUrl?: string;      
   rating: number;
-  online: boolean;
+  online: boolean;   
+  lastSeen?: string; 
   responseTime: string;
   bio: string;
   badges: string[];
@@ -58,22 +60,30 @@ export interface SkillItem {
   }[];
 }
 
-export interface OfferItem {
+export interface HelpOfferItem {
   id: string;
-  source: "request" | "independent";
   helperId: string;
-  requestId: string;
-  createdAt: string;
-  requestTitle: string;
-  category: string;
   helperName: string;
-  message: string;
-  availability: string;
-  status: string;
+  helperInitials: string;
+  helperAvatarBg: string;
+  helperProfileImageUrl?: string;
+  helperRating: number;
+  title: string;
+  description: string;
+  category: string;
+  urgency: "low" | "medium" | "high" | null;
+  durationMinutes: number | null;
   credits: number;
-  duration: number;
-  submittedAgo: string;
+  status: "open" | "closed" | "accepted";
+  postedAgo: string;
+  createdAt: string;
+  skillNames: string[]; 
 }
+
+// Kept for backwards compat in components that still reference OfferItem
+// Remove this once all consumers are migrated to HelpOfferItem
+/** @deprecated Use HelpOfferItem instead */
+export type OfferItem = HelpOfferItem;
 
 export interface ExploreStats {
   activeRequests: number;
@@ -133,6 +143,10 @@ export interface RequestCardProps {
 
 export interface ExploreSkillCardProps {
   item: SkillItem;
+}
+
+export interface HelpOfferCardProps {
+  item: HelpOfferItem;
 }
 
 export interface StatsHeroProps {

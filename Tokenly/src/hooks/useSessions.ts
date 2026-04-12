@@ -1,5 +1,6 @@
 import { useState } from "react";
-import type { Session, SessionStartInput, SessionStatus, UseSessionsResult } from "../types/session";
+import type { SessionStartInput, SessionStatus, UseSessionsResult } from "../types/session";
+import type { Session } from "../types/session";
 import {
     createSession,
     getSessionById,
@@ -65,7 +66,6 @@ export default function useSessions(): UseSessionsResult {
     async function startSession(data: SessionStartInput) {
         setLoading(true);
         setError("");
-
         const { data: created, error } = await createSession(data);
 
         if (error) {
@@ -74,7 +74,8 @@ export default function useSessions(): UseSessionsResult {
             return false;
         }
 
-        setSession(created);
+        // Store the created session so callers can navigate to it
+        if (created) setSession(created as unknown as Session);
         setLoading(false);
         return true;
     }
@@ -82,8 +83,7 @@ export default function useSessions(): UseSessionsResult {
     async function changeSessionStatus(id: string, status: SessionStatus) {
         setLoading(true);
         setError("");
-
-        const { data, error } = await updateSessionStatus(id, status);
+        const { error } = await updateSessionStatus(id, status);
 
         if (error) {
             setError(error.message);
@@ -91,10 +91,13 @@ export default function useSessions(): UseSessionsResult {
             return false;
         }
 
-        if (data) {
-            setSession(data);
-            setSessions((prev) => prev.map((s) => (s.id === id ? data : s)));
+        setSessions((prev) =>
+            prev.map((s) => (s.id === id ? { ...s, status } : s))
+        );
+        if (session?.id === id) {
+            setSession((prev) => prev ? { ...prev, status } : prev);
         }
+
         setLoading(false);
         return true;
     }

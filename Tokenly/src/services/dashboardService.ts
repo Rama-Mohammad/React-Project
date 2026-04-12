@@ -113,3 +113,31 @@ export async function getDashboardOffers(user_id: string) {
     .order("created_at", { ascending: false })
     .limit(10);
 }
+
+//to get direct requests 
+export async function getDashboardDirectRequests(helper_id: string) {
+  return await supabase
+    .from("direct_requests")
+    .select(`
+      id,
+      requester_id,
+      title,
+      message,
+      category,
+      duration_minutes,
+      credit_cost,
+      status,
+      created_at,
+      requester:profiles!direct_requests_requester_id_fkey(
+        id,
+        full_name,
+        username,
+        avg_rating,
+        profile_image_url
+      )
+    `)
+    .eq("helper_id", helper_id)
+    .eq("status", "pending")
+    .order("created_at", { ascending: false })
+    .limit(10);
+}

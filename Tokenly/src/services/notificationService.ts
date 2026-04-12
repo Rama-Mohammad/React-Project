@@ -41,7 +41,7 @@ export async function createNotification(data: {
   title: string;
   message: string;
   related_id?: string;
-  related_type?: "session" | "request" | "offer" | "review";
+  related_type?: "session" | "request" | "offer" | "review" | "help_offer" | "direct_request";
 }) {
   return await supabase
     .from("notifications")
@@ -49,6 +49,7 @@ export async function createNotification(data: {
     .select()
     .single();
 }
+
 
 export async function deleteNotification(id: string) {
   return await supabase.from("notifications").delete().eq("id", id);

@@ -85,3 +85,46 @@ export async function uploadProfilePicture(
   const { data } = supabase.storage.from("profile-pics").getPublicUrl(path);
   return data.publicUrl ?? null;
 }
+
+export async function updateLastSeen(user_id: string) {
+  return await supabase
+    .from("profiles")
+    .update({ last_seen: new Date().toISOString() })
+    .eq("id", user_id);
+}
+
+
+export async function getPublicHelperProfile(helper_id: string) {
+  const [profileRes, skillsRes, reviewsRes, helpOffersRes] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id, full_name, username, bio, profile_image_url, cover_image_url, avg_rating, created_at, title, institution, location, website, last_seen")
+      .eq("id", helper_id)
+      .single(),
+    supabase
+      .from("skills")
+      .select("id, name, category, level, sessions_count, description")
+      .eq("user_id", helper_id)
+      .order("sessions_count", { ascending: false }),
+    supabase
+      .from("reviews")
+      .select("id, rating, comment, created_at, reviewer:profiles!reviews_reviewer_id_fkey(full_name, username)")
+      .eq("reviewee_id", helper_id)
+      .order("created_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("help_offers")
+      .select("id, title, description, category, urgency, duration_minutes, credit_cost, status, created_at")
+      .eq("helper_id", helper_id)
+      .eq("status", "open")
+      .order("created_at", { ascending: false }),
+  ]);
+
+  return {
+    profile: profileRes.data ?? null,
+    skills: skillsRes.data ?? [],
+    reviews: reviewsRes.data ?? [],
+    helpOffers: helpOffersRes.data ?? [],
+    error: profileRes.error ?? skillsRes.error ?? reviewsRes.error ?? helpOffersRes.error ?? null,
+  };
+}

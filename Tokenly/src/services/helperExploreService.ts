@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabaseClient";
-import { getSessionsAuthDebugContext, logSessionsQuery } from "./sessionDebug";
+// import { getSessionsAuthDebugContext, logSessionsQuery } from "./sessionDebug";
 
 export type ExploreProfileRow = {
   id: string;
@@ -35,15 +35,28 @@ export type ExploreHelpOfferRow = {
 };
 
 export async function getExploreHelpers() {
-  const { data: profiles, error: profilesError } = await supabase
-    .from("profiles")
-    .select("id, full_name, username, avg_rating, title, bio, profile_image_url");
+  // Fetch IDs of profiles that have skills
+  const { data: skillUserIds, error: skillIdsError } = await supabase
+    .from("skills")
+    .select("user_id");
 
-  if (profilesError) {
-    return { data: null, error: profilesError };
+  // Fetch IDs of profiles that have open help_offers
+  const { data: helpOfferUserIds, error: helpOfferIdsError } = await supabase
+    .from("help_offers")
+    .select("helper_id")
+    .eq("status", "open");
+
+  if (skillIdsError || helpOfferIdsError) {
+    return { data: null, error: skillIdsError ?? helpOfferIdsError };
   }
 
-  const helperIds = (profiles ?? []).map((profile) => profile.id);
+  // Union the two sets of IDs
+  const helperIdSet = new Set([
+    ...(skillUserIds ?? []).map((r) => r.user_id),
+    ...(helpOfferUserIds ?? []).map((r) => r.helper_id),
+  ]);
+
+  const helperIds = Array.from(helperIdSet).filter(Boolean) as string[];
 
   if (helperIds.length === 0) {
     return {
@@ -57,28 +70,34 @@ export async function getExploreHelpers() {
     };
   }
 
-  const [{ data: skills, error: skillsError }, { data: sessions, error: sessionsError }, { data: helpOffers, error: helpOffersError }] =
-    await Promise.all([
-      supabase.from("skills").select("id, user_id, name, category, level, sessions_count").in("user_id", helperIds),
-      (async () => {
-        const { session, user, authError } = await getSessionsAuthDebugContext();
-        const payload = { helperIds, select: "id, helper_id, status" };
-        logSessionsQuery("getExploreHelpers sessions query start", { session, user, payload, error: authError });
-        if (authError) {
-          return { data: null, error: authError };
-        }
-        const result = await supabase.from("sessions").select("id, helper_id, status").in("helper_id", helperIds);
-        logSessionsQuery("getExploreHelpers sessions query result", { session, user, payload, error: result.error });
-        return result;
-      })(),
-      supabase.from("help_offers").select("id, helper_id, credit_cost, duration_minutes, status").in("helper_id", helperIds),
-    ]);
+  const { data: profiles, error: profilesError } = await supabase
+    .from("profiles")
+    .select("id, full_name, username, avg_rating, title, bio, profile_image_url, last_seen")
+    .in("id", helperIds);
 
-  const error = skillsError || sessionsError || helpOffersError;
+  if (profilesError) return { data: null, error: profilesError };
 
-  if (error) {
-    return { data: null, error };
-  }
+  const [
+    { data: skills, error: skillsError },
+    { data: sessions, error: sessionsError },
+    { data: helpOffers, error: helpOffersError },
+  ] = await Promise.all([
+    supabase
+      .from("skills")
+      .select("id, user_id, name, category, level, sessions_count")
+      .in("user_id", helperIds),
+    supabase
+      .from("sessions")
+      .select("id, helper_id, status")
+      .in("helper_id", helperIds),
+    supabase
+      .from("help_offers")
+      .select("id, helper_id, credit_cost, duration_minutes, status")
+      .in("helper_id", helperIds),
+  ]);
+
+  const error = skillsError ?? sessionsError ?? helpOffersError;
+  if (error) return { data: null, error };
 
   return {
     data: {

@@ -30,6 +30,7 @@ import type {
   DashboardSessionItem,
   SessionTabLabel,
 } from "../types/dashboard";
+import { acceptDirectRequest, rejectDirectRequest } from "../services/directRequestService";
 
 const sessionTabs: SessionTabLabel[] = ["All", "Upcoming", "Active", "Completed"];
 
@@ -88,8 +89,19 @@ export default function Dashboard() {
   const [pendingCompleteId, setPendingCompleteId] = useState<string | null>(null);
   const [transferToast, setTransferToast] = useState<{ credits: number } | null>(null);
   const [showCreditDetails, setShowCreditDetails] = useState(false);
+  const [directRequestActionId, setDirectRequestActionId] = useState<string | null>(null);
 
-  const { profile, stats, loading: dashLoading, fetchDashboard, mapSessions, mapOffers, rawOffers } = useDashboard();
+  const {
+    profile,
+    stats,
+    loading: dashLoading,
+    fetchDashboard,
+    mapSessions,
+    mapOffers,
+    mapDirectRequests,
+    rawOffers,
+    rawDirectRequests,
+  } = useDashboard();
   const { transactions, summary, fetchTransactionsByUser, fetchCreditSummary } = useTransactions();
 
   // Derived token stats from real data
@@ -101,6 +113,12 @@ export default function Dashboard() {
   const submittedOffers = useMemo(
     () => (currentUserId ? mapOffers() : []),
     [rawOffers, currentUserId]
+  );
+
+  // Direct requests the current user received as a helper — pending only
+  const directRequests = useMemo(
+    () => (currentUserId ? mapDirectRequests() : []),
+    [rawDirectRequests, currentUserId]
   );
 
   const sessionTabCounts = useMemo(
@@ -127,7 +145,24 @@ export default function Dashboard() {
     [transactions]
   );
 
-  // Auto-dismiss toast
+  // Accept a direct request — creates a session with direct_request_id (Flow 3)
+  const handleAcceptDirectRequest = async (id: string) => {
+    setDirectRequestActionId(id);
+    await acceptDirectRequest(id);
+    // Refetch so the accepted request disappears from the list
+    if (currentUserId) void fetchDashboard(currentUserId);
+    setDirectRequestActionId(null);
+  };
+
+  // Reject a direct request — notifies the requester
+  const handleRejectDirectRequest = async (id: string) => {
+    setDirectRequestActionId(id);
+    await rejectDirectRequest(id);
+    if (currentUserId) void fetchDashboard(currentUserId);
+    setDirectRequestActionId(null);
+  };
+
+  // Auto-dismiss token transfer toast
   useEffect(() => {
     if (!transferToast) return;
     const timer = window.setTimeout(() => setTransferToast(null), 2600);
@@ -222,7 +257,7 @@ export default function Dashboard() {
     if (currentUserId) {
       setSessions(mapSessions(currentUserId));
     }
-  }, [currentUserId, rawOffers]); // rawOffers is a proxy for "dashboard data loaded"
+  }, [currentUserId, rawOffers]);
 
   const handleMarkComplete = async (id: string) => {
     const { session, user, authError } = await getSessionsAuthDebugContext();
@@ -298,7 +333,7 @@ export default function Dashboard() {
   const initials = getInitials(profile?.full_name);
   const creditBalance = profile?.credit_balance ?? 0;
   const avgRating = profile?.avg_rating ?? 0;
-  const reviewCount = stats ? stats.completedSessions : 0; // approximation
+  const reviewCount = stats ? stats.completedSessions : 0;
 
   return (
     <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
@@ -607,6 +642,59 @@ export default function Dashboard() {
             )}
           </div>
         </section>
+
+        {/* ── Direct Requests (incoming from users who want this helper) ── */}
+        {/* Only shown when there are pending direct requests — disappears once all resolved */}
+        {directRequests.length > 0 ? (
+          <section className="mt-4 rounded-3xl border border-indigo-200/70 bg-transparent shadow-none">
+            <div className="flex items-center justify-between border-b border-indigo-200/70 p-4">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold">Direct Requests</h3>
+                <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+                  {directRequests.length} pending
+                </span>
+              </div>
+            </div>
+            <div className="space-y-2 p-4">
+              {directRequests.map((item) => (
+                <div key={item.id} className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <p className="text-base font-semibold leading-tight text-slate-900">{item.title}</p>
+                      <p className="mt-1 text-sm text-slate-500">
+                        From {item.requesterName}
+                        {item.duration ? ` · ${item.duration} min` : ""}
+                        {item.credits ? ` · ${item.credits} credits` : ""}
+                        {" · "}{item.age}
+                      </p>
+                      {item.message ? (
+                        <p className="mt-2 line-clamp-2 text-sm text-slate-600">{item.message}</p>
+                      ) : null}
+                    </div>
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      type="button"
+                      disabled={directRequestActionId === item.id}
+                      onClick={() => void handleAcceptDirectRequest(item.id)}
+                      className="inline-flex h-8 items-center rounded-xl bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-3 text-xs font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {directRequestActionId === item.id ? "Accepting..." : "Accept"}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={directRequestActionId === item.id}
+                      onClick={() => void handleRejectDirectRequest(item.id)}
+                      className="inline-flex h-8 items-center rounded-xl border border-rose-200 bg-rose-50 px-3 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {/* ── Open Requests + Submitted Offers ── */}
         <section className="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-2">

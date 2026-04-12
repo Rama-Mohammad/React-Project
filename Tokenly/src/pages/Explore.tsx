@@ -15,13 +15,13 @@ import {
   mapSkillToExploreItem,
   type SkillWithRelations,
 } from "../utils/exploreMappers";
-import type { ExploreTab, RequestItem, HelperItem, SkillItem, OfferItem, Urgency, SkillLevel } from "../types/explore";
+// HelpOfferItem replaces the old broken OfferItem — offers tab now shows help_offers only
+import type { ExploreTab, RequestItem, HelperItem, SkillItem, HelpOfferItem, Urgency, SkillLevel } from "../types/explore";
 import useRequests from "../hooks/useRequest";
-import { extractAvailabilityFromOfferDescription } from "../services/offerService";
 import { getAllSkills } from "../services/skillService";
 import { getExploreHelpers } from "../services/helperExploreService";
-import { mapProfileToHelperItem } from "../utils/helperExploreMapper";
-import { supabase } from "../lib/supabaseClient";
+import { mapProfileToHelperItem } from "../utils/helperExploreMapper";``
+import { getOpenHelpOffers } from "../services/helpOfferService";
 
 function matchesSearch(text: string, search: string) {
   return text.toLowerCase().includes(search.toLowerCase().trim());
@@ -33,34 +33,28 @@ function getEnterStyle(index: number): CSSProperties {
   } as CSSProperties;
 }
 
-function toRelativeAge(dateValue?: string | null) {
+function toRelativeAge(dateValue?: string | null): string {
   if (!dateValue) return "just now";
-
   const date = new Date(dateValue);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
-
   if (!Number.isFinite(diffMs) || diffMs < 0) return "just now";
-
   const minutes = Math.floor(diffMs / (1000 * 60));
   if (minutes < 60) return `${Math.max(1, minutes)}m ago`;
-
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
-
   const days = Math.floor(hours / 24);
   return `${days}d ago`;
 }
 
-function buildDynamicOptions(values: Array<string | null | undefined>, fallback: string) {
-  const unique = Array.from(
-    new Set(
-      values
-        .map((value) => value?.trim())
-        .filter((value): value is string => Boolean(value))
-    )
-  ).sort((a, b) => a.localeCompare(b));
+// A helper is considered online if their last_seen is within the last 15 minutes
+function isOnline(lastSeen?: string | null): boolean {
+  if (!lastSeen) return false;
+  return Date.now() - new Date(lastSeen).getTime() < 15 * 60 * 1000;
+}
 
+function buildDynamicOptions(values: (string | null | undefined)[], fallback: string): string[] {
+  const unique = Array.from(new Set(values.filter(Boolean) as string[])).sort();
   return ["All", ...(unique.length > 0 ? unique : [fallback])];
 }
 
@@ -88,10 +82,13 @@ export default function Explore() {
   const [liveHelpers, setLiveHelpers] = useState<HelperItem[]>([]);
   const [helpersLoading, setHelpersLoading] = useState(false);
   const [helpersError, setHelpersError] = useState("");
-  const [liveOffers, setLiveOffers] = useState<OfferItem[]>([]);
+  // Offers tab: now HelpOfferItem[] — represents help_offers posted by helpers (Flow 2)
+  // NOT the `offers` table — those are private responses to requests and shouldn't be browsed here
+  const [liveOffers, setLiveOffers] = useState<HelpOfferItem[]>([]);
   const [offersLoading, setOffersLoading] = useState(false);
   const [offersError, setOffersError] = useState("");
 
+  // Sync tab from URL param (e.g. /explore?tab=helpers)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const requestedTab = params.get("tab");
@@ -106,6 +103,7 @@ export default function Explore() {
     return params.get("modal") === "how-it-works";
   }, [location.search]);
 
+  // Smooth scroll to tabs bar when navigated via hash
   useEffect(() => {
     if (location.hash !== "#explore-tabs-bar") return;
     if (!tabsBarRef.current) return;
@@ -117,6 +115,7 @@ export default function Explore() {
     return () => window.clearTimeout(id);
   }, [location.hash]);
 
+  // Requests tab: refetch when filters change
   useEffect(() => {
     if (activeTab !== "requests") return;
 
@@ -133,6 +132,7 @@ export default function Explore() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, duration, selectedCategory, urgency]);
 
+  // Skills tab: fetch all skills on mount when tab is active
   useEffect(() => {
     if (activeTab !== "skills") return;
 
@@ -159,6 +159,8 @@ export default function Explore() {
     };
   }, [activeTab]);
 
+  // Helpers tab: fetch only profiles that have skills or open help_offers
+  // online status is derived from last_seen (< 15 min = online)
   useEffect(() => {
     if (activeTab !== "helpers") return;
 
@@ -188,6 +190,8 @@ export default function Explore() {
     };
   }, [activeTab]);
 
+  // Offers tab: fetch open help_offers only (Flow 2 — helper-initiated)
+  // This replaces the old broken fetch that mixed `offers` + `help_offers` together
   useEffect(() => {
     if (activeTab !== "offers") return;
 
@@ -195,112 +199,58 @@ export default function Explore() {
     setOffersLoading(true);
     setOffersError("");
 
-    void Promise.all([
-      supabase
-        .from("offers")
-        .select(`
-          id,
-          request_id,
-          helper_id,
-          message,
-          availability,
-          status,
-          created_at,
-          request:requests!offers_request_id_fkey(
-            title,
-            category,
-            credit_cost,
-            duration_minutes
-          ),
-          helper:profiles!offers_helper_id_fkey(
-            full_name,
-            username
-          )
-        `)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("help_offers")
-        .select("id, helper_id, title, description, category, urgency, duration_minutes, credit_cost, status, created_at")
-        .order("created_at", { ascending: false }),
-    ]).then(([requestOffersResult, independentOffersResult]) => {
+    void getOpenHelpOffers().then(({ data, error }) => {
       if (!mounted) return;
 
-      if (requestOffersResult.error) {
-        setOffersError(requestOffersResult.error.message ?? "Failed to load offers");
+      if (error) {
+        setOffersError(error.message ?? "Failed to load offers");
         setLiveOffers([]);
         setOffersLoading(false);
         return;
       }
 
-      if (independentOffersResult.error) {
-        setOffersError(independentOffersResult.error.message ?? "Failed to load independent offers");
-        setLiveOffers([]);
-        setOffersLoading(false);
-        return;
-      }
-
-      const requestMapped: OfferItem[] = ((requestOffersResult.data ?? []) as Array<Record<string, unknown>>).map((row) => {
-        const helperRaw = row.helper as
-          | { full_name?: string | null; username?: string | null }
-          | { full_name?: string | null; username?: string | null }[]
-          | null;
-        const requestRaw = row.request as
-          | { title?: string | null; category?: string | null; credit_cost?: number | null; duration_minutes?: number | null }
-          | { title?: string | null; category?: string | null; credit_cost?: number | null; duration_minutes?: number | null }[]
-          | null;
-
+      // Map raw DB rows to HelpOfferItem for the UI
+      const mapped: HelpOfferItem[] = ((data ?? []) as Array<Record<string, unknown>>).map((row) => {
+        const helperRaw = row.helper as {
+          id?: string | null;
+          full_name?: string | null;
+          username?: string | null;
+          avg_rating?: number | null;
+          profile_image_url?: string | null;
+        } | null;
         const helper = Array.isArray(helperRaw) ? helperRaw[0] : helperRaw;
-        const request = Array.isArray(requestRaw) ? requestRaw[0] : requestRaw;
+
+        // Extract skill names from the nested help_offer_skills join
+        const skillsRaw = row.skills as Array<{ skill?: { name?: string } | null }> | null;
+        const skillNames = (skillsRaw ?? [])
+          .map((s) => s?.skill?.name)
+          .filter(Boolean) as string[];
+
+        const name = helper?.full_name ?? helper?.username ?? "Helper";
+        const initials = name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
 
         return {
           id: String(row.id ?? ""),
-          source: "request",
           helperId: String(row.helper_id ?? ""),
-          requestId: String(row.request_id ?? ""),
-          createdAt: String(row.created_at ?? ""),
-          requestTitle: request?.title ?? "Unknown request",
-          category: request?.category ?? "General",
-          helperName: helper?.full_name ?? helper?.username ?? "Unknown helper",
-          message: String(row.message ?? "No message provided."),
-          availability: String(row.availability ?? "Availability not provided."),
-          status: String(row.status ?? "pending"),
-          credits: request?.credit_cost ?? 0,
-          duration: request?.duration_minutes ?? 0,
-          submittedAgo: toRelativeAge((row.created_at as string | null) ?? null),
-        };
-      });
-
-      const helperNameById = requestMapped.reduce<Record<string, string>>((acc, item) => {
-        if (item.helperId) acc[item.helperId] = item.helperName;
-        return acc;
-      }, {});
-
-      const independentMapped: OfferItem[] = ((independentOffersResult.data ?? []) as Array<Record<string, unknown>>).map((row) => {
-        const parsedOffer = extractAvailabilityFromOfferDescription(String(row.description ?? ""));
-
-        return {
-          id: String(row.id ?? ""),
-          source: "independent",
-          helperId: String(row.helper_id ?? ""),
-          requestId: "",
-          createdAt: String(row.created_at ?? ""),
-          requestTitle: String(row.title ?? "Independent offer"),
+          helperName: name,
+          helperInitials: initials,
+          helperAvatarBg: "bg-indigo-100",
+          helperProfileImageUrl: helper?.profile_image_url ?? undefined,
+          helperRating: Number(helper?.avg_rating ?? 0),
+          title: String(row.title ?? ""),
+          description: String(row.description ?? ""),
           category: String(row.category ?? "General"),
-          helperName: helperNameById[String(row.helper_id ?? "")] ?? "Helper",
-          message: parsedOffer.summary,
-          availability: parsedOffer.availability,
-          status: String(row.status ?? "open"),
+          urgency: (row.urgency as "low" | "medium" | "high" | null) ?? null,
+          durationMinutes: row.duration_minutes != null ? Number(row.duration_minutes) : null,
           credits: Number(row.credit_cost ?? 0),
-          duration: Number(row.duration_minutes ?? 0),
-          submittedAgo: toRelativeAge((row.created_at as string | null) ?? null),
+          status: (row.status as "open" | "closed" | "accepted") ?? "open",
+          postedAgo: toRelativeAge(row.created_at as string | null),
+          createdAt: String(row.created_at ?? ""),
+          skillNames,
         };
       });
 
-      const merged = [...requestMapped, ...independentMapped].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-
-      setLiveOffers(merged);
+      setLiveOffers(mapped);
       setOffersLoading(false);
     });
 
@@ -309,45 +259,45 @@ export default function Explore() {
     };
   }, [activeTab]);
 
- const filteredRequests: RequestItem[] = useMemo(() => {
-  let data = liveOpenRequests.map((item) => mapRequestToExploreItem(item as never));
+  const filteredRequests: RequestItem[] = useMemo(() => {
+    let data = liveOpenRequests.map((item) => mapRequestToExploreItem(item as never));
 
-  if (selectedCategory !== "All") {
-    data = data.filter((item) => item.category === selectedCategory);
-  }
-
-  if (urgency !== "All") {
-    data = data.filter((item) => item.urgency === urgency);
-  }
-
-  if (duration !== "Any") {
-    if (duration === ">60 min") {
-      data = data.filter((item) => item.duration > 60);
-    } else {
-      const maxDuration = duration === "<=30 min" ? 30 : duration === "<=45 min" ? 45 : 60;
-      data = data.filter((item) => item.duration <= maxDuration);
+    if (selectedCategory !== "All") {
+      data = data.filter((item) => item.category === selectedCategory);
     }
-  }
 
-  if (search.trim()) {
-    data = data.filter((item) =>
-      matchesSearch(
-        [item.title, item.description, item.category, item.author.name, ...item.tags].join(" "),
-        search
-      )
-    );
-  }
+    if (urgency !== "All") {
+      data = data.filter((item) => item.urgency === urgency);
+    }
 
-  if (sortBy === "Most Offers") {
-    data.sort((a, b) => b.offers - a.offers);
-  } else if (sortBy === "Lowest Tokens") {
-    data.sort((a, b) => a.credits - b.credits);
-  } else if (sortBy === "Highest Tokens") {
-    data.sort((a, b) => b.credits - a.credits);
-  }
+    if (duration !== "Any") {
+      if (duration === ">60 min") {
+        data = data.filter((item) => item.duration > 60);
+      } else {
+        const maxDuration = duration === "<=30 min" ? 30 : duration === "<=45 min" ? 45 : 60;
+        data = data.filter((item) => item.duration <= maxDuration);
+      }
+    }
 
-  return data;
-}, [liveOpenRequests, selectedCategory, urgency, duration, search, sortBy]);
+    if (search.trim()) {
+      data = data.filter((item) =>
+        matchesSearch(
+          [item.title, item.description, item.category, item.author.name, ...item.tags].join(" "),
+          search
+        )
+      );
+    }
+
+    if (sortBy === "Most Offers") {
+      data.sort((a, b) => b.offers - a.offers);
+    } else if (sortBy === "Lowest Tokens") {
+      data.sort((a, b) => a.credits - b.credits);
+    } else if (sortBy === "Highest Tokens") {
+      data.sort((a, b) => b.credits - a.credits);
+    }
+
+    return data;
+  }, [liveOpenRequests, selectedCategory, urgency, duration, search, sortBy]);
 
   const filteredHelpers: HelperItem[] = useMemo(() => {
     let data = [...liveHelpers];
@@ -360,8 +310,9 @@ export default function Explore() {
       );
     }
 
+    // Online filter now uses last_seen — a helper is online if seen within 15 minutes
     if (onlineOnly) {
-      data = data.filter((item) => item.online);
+      data = data.filter((item) => isOnline(item.lastSeen));
     }
 
     if (rating !== "Any rating") {
@@ -427,7 +378,9 @@ export default function Explore() {
     return data;
   }, [level, liveSkills, search, selectedCategory, sortBy]);
 
-  const filteredOffers: OfferItem[] = useMemo(() => {
+  // Offers tab filtering: searches title, helper name, category, description, skills
+  // Sorting: Newest (default), Oldest, Highest Tokens
+  const filteredOffers: HelpOfferItem[] = useMemo(() => {
     let data = [...liveOffers];
 
     if (selectedCategory !== "All") {
@@ -437,7 +390,7 @@ export default function Explore() {
     if (search.trim()) {
       data = data.filter((item) =>
         matchesSearch(
-          [item.requestTitle, item.category, item.helperName, item.message, item.availability].join(" "),
+          [item.title, item.category, item.helperName, item.description, ...item.skillNames].join(" "),
           search
         )
       );
@@ -448,6 +401,7 @@ export default function Explore() {
     } else if (sortBy === "Highest Tokens") {
       data.sort((a, b) => b.credits - a.credits);
     }
+    // Default is Newest — already sorted by created_at desc from the service
 
     return data;
   }, [liveOffers, search, selectedCategory, sortBy]);
@@ -471,6 +425,7 @@ export default function Explore() {
     [liveSkills]
   );
 
+  // Offer categories come from help_offers.category — not from the old mixed mess
   const offerCategoryOptions = useMemo(
     () => buildDynamicOptions(liveOffers.map((item) => item.category), "General"),
     [liveOffers]
@@ -520,6 +475,7 @@ export default function Explore() {
       ? skillCategoryOptions
       : offerCategoryOptions;
 
+  // Reset category filter when tab changes and current selection no longer applies
   useEffect(() => {
     if (!currentCategories.includes(selectedCategory)) {
       setSelectedCategory("All");
@@ -576,15 +532,16 @@ export default function Explore() {
 
     return {
       activeRequests: liveCount || filteredRequests.length,
-      helpersOnline: filteredHelpers.filter((helper) => helper.online).length,
+      // Online count now uses last_seen < 15 min instead of a hardcoded boolean
+      helpersOnline: filteredHelpers.filter((helper) => isOnline(helper.lastSeen)).length,
       sessionsToday: Math.max(1, Math.round(totalSessions / 20)),
       creditsExchanged: `${Math.max(1, Math.round(totalCredits / 10))}k`,
     };
   }, [filteredHelpers, filteredRequests.length, liveHelpers, liveOpenRequests.length]);
 
   const defaultHelperId = useMemo(() => {
-    return filteredHelpers.find((helper) => helper.online)?.id ?? liveHelpers[0]?.id ?? "h1";
-  }, [filteredHelpers]);
+    return filteredHelpers.find((helper) => isOnline(helper.lastSeen))?.id ?? liveHelpers[0]?.id ?? "h1";
+  }, [filteredHelpers, liveHelpers]);
 
   const titleText =
     activeTab === "requests"
@@ -593,7 +550,7 @@ export default function Explore() {
       ? "Find experts ready to help you"
       : activeTab === "skills"
       ? "Explore skills available in the community"
-      : "See offers submitted by helpers across requests";
+      : "Browse offers posted by helpers — request one directly";
 
   const handleTabChange = (tab: ExploreTab) => {
     setActiveTab(tab);
@@ -615,7 +572,7 @@ export default function Explore() {
     <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <div className="pointer-events-none absolute inset-0">
         <div className="explore-pulse absolute -left-28 top-24 h-64 w-64 rounded-full bg-indigo-200/25 blur-3xl" />
-        <div className="explore-float absolute right-[-7rem] top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
+        <div className="explore-float absolute -right-28 top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
         <div className="explore-pulse absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-purple-200/20 blur-3xl" />
       </div>
 
@@ -644,6 +601,7 @@ export default function Explore() {
               {titleText}
             </p>
           </div>
+
           {activeTab === "requests" && !requestsLoading && !requestsError ? (
             <p className="mb-4 text-xs text-slate-500">Live open requests: {liveOpenRequests.length}</p>
           ) : null}
@@ -682,6 +640,7 @@ export default function Explore() {
             </div>
           </div>
 
+          {/* ── Requests ── */}
           {activeTab === "requests" && requestsLoading ? (
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
               Loading requests...
@@ -700,6 +659,7 @@ export default function Explore() {
             </div>
           ) : null}
 
+          {/* ── Helpers ── */}
           {activeTab === "helpers" && helpersLoading ? (
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
               Loading helpers...
@@ -718,6 +678,7 @@ export default function Explore() {
             </div>
           ) : null}
 
+          {/* ── Skills ── */}
           {activeTab === "skills" && skillsLoading ? (
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
               Loading skills...
@@ -736,6 +697,10 @@ export default function Explore() {
             </div>
           ) : null}
 
+          {/* ── Offers tab (Flow 2) ──
+               Shows help_offers posted by helpers advertising availability.
+               A user browses these and clicks "Book" to submit a help_offer_request.
+               This is NOT the `offers` table — those are private responses to requests. */}
           {activeTab === "offers" && offersLoading ? (
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
               Loading offers...
@@ -752,75 +717,87 @@ export default function Explore() {
                   className="explore-fade-in-up flex h-full flex-col rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur"
                   style={getEnterStyle(index)}
                 >
+                  {/* Header: category + urgency badge */}
                   <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="text-xs text-slate-500">{item.submittedAgo}</p>
-                      <h3 className="mt-1 text-base font-semibold text-slate-900">{item.requestTitle}</h3>
-                    </div>
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                        item.status === "accepted"
-                          ? "bg-emerald-50 text-emerald-700"
-                          : item.status === "rejected"
-                          ? "bg-rose-50 text-rose-700"
-                          : "bg-amber-50 text-amber-700"
-                      }`}
-                    >
-                      {item.status}
+                    <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">
+                      {item.category}
                     </span>
+                    {item.urgency ? (
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                          item.urgency === "high"
+                            ? "bg-rose-50 text-rose-600"
+                            : item.urgency === "medium"
+                            ? "bg-amber-50 text-amber-600"
+                            : "bg-emerald-50 text-emerald-600"
+                        }`}
+                      >
+                        {item.urgency.charAt(0).toUpperCase() + item.urgency.slice(1)} urgency
+                      </span>
+                    ) : null}
                   </div>
 
-                  <p className="mt-2 text-xs text-slate-500">{item.category} by {item.helperName}</p>
-                  <p className="mt-3 text-sm text-slate-700">{item.message}</p>
-                  <p className="mt-2 text-xs text-slate-600">Availability: {item.availability}</p>
+                  {/* Title + description */}
+                  <h3 className="mt-3 text-base font-semibold text-slate-900">{item.title}</h3>
+                  <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-600">{item.description}</p>
 
-                  <div className="mt-3 flex items-center gap-2 text-xs text-slate-600">
-                    <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 font-semibold text-indigo-700">
-                      {item.duration} min
-                    </span>
-                    <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 font-semibold text-indigo-700">
-                      {item.credits} tokens
-                    </span>
-                  </div>
-
-                  <div className="mt-4">
-                    <div className="flex flex-wrap gap-2">
-                      {item.source === "request" ? (
-                        <>
-                          <Link
-                            to={`/requests/${item.requestId}`}
-                            className="inline-flex h-9 items-center rounded-xl border border-slate-300/70 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                          >
-                            View Request
-                          </Link>
-                          <Link
-                            to={`/offers/${item.id}/appointment`}
-                            className="inline-flex h-9 items-center rounded-xl bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 px-3 text-sm font-semibold text-white transition hover:brightness-105"
-                          >
-                            Accept Offer
-                          </Link>
-                        </>
-                      ) : (
-                        <Link
-                          to={`/offers/${item.id}/appointment?source=independent`}
-                          className="inline-flex h-9 items-center rounded-xl bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 px-3 text-sm font-semibold text-white transition hover:brightness-105"
+                  {/* Skill tags */}
+                  {item.skillNames.length > 0 ? (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {item.skillNames.slice(0, 4).map((skill) => (
+                        <span
+                          key={skill}
+                          className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-600"
                         >
-                          Accept Offer
-                        </Link>
-                      )}
+                          {skill}
+                        </span>
+                      ))}
                     </div>
+                  ) : null}
+
+                  {/* Footer: duration + credits + posted age */}
+                  <div className="mt-auto pt-4 flex items-center justify-between gap-2 text-xs text-slate-500">
+                    <div className="flex items-center gap-3">
+                      {item.durationMinutes ? (
+                        <span>{item.durationMinutes} min</span>
+                      ) : null}
+                      <span className="font-semibold text-indigo-600">{item.credits} credits</span>
+                    </div>
+                    <span>{item.postedAgo}</span>
+                  </div>
+
+                  {/* Helper info + Book button */}
+                  <div className="mt-3 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+                        {item.helperInitials}
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-900">{item.helperName}</p>
+                        {item.helperRating > 0 ? (
+                          <p className="text-xs text-slate-500">★ {item.helperRating.toFixed(1)}</p>
+                        ) : null}
+                      </div>
+                    </div>
+                    {/* Links to the help offer detail page — user can submit a help_offer_request from there */}
+                    <Link
+                      to={`/offers/${item.id}?source=help_offer`}
+                      className="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700"
+                    >
+                      Book
+                    </Link>
                   </div>
                 </article>
               ))}
+
+              {filteredOffers.length === 0 ? (
+                <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">
+                  <p className="text-sm text-slate-500">No open offers match your filters.</p>
+                  <p className="mt-1 text-xs text-slate-400">Try adjusting the category or search.</p>
+                </div>
+              ) : null}
             </div>
           ) : null}
-
-          {totalCount === 0 && (
-            <div className="explore-fade-in-up mt-6 rounded-[1.5rem] border border-dashed border-white/40 bg-white/70 p-8 text-center shadow-sm backdrop-blur-xl">
-              <h3 className="text-xl font-bold text-slate-900">No results found</h3>
-              <p className="mt-2 text-sm text-slate-500">Try changing the filters or search term.</p>
-            </div>
-          )}
         </section>
       </main>
 
@@ -828,7 +805,3 @@ export default function Explore() {
     </div>
   );
 }
-
-
-
-

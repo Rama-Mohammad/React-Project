@@ -200,7 +200,7 @@ export type OfferAppointmentRow = {
   } | null;
 };
 
-export type IndependentOfferAppointmentRow = {
+export type HelpOfferAppointmentRow = {
   id: string;
   helper_id: string;
   title: string;
@@ -219,6 +219,7 @@ export type IndependentOfferAppointmentRow = {
     profile_image_url: string | null;
   } | null;
 };
+
 
 export async function getOffersForRequest(requestId: string) {
   const result = await supabase
@@ -250,8 +251,8 @@ export async function getOffersForRequest(requestId: string) {
     const helperValue = (
       row as {
         helper:
-          | OfferForRequestRow["helper"]
-          | OfferForRequestRow["helper"][];
+        | OfferForRequestRow["helper"]
+        | OfferForRequestRow["helper"][];
       }
     ).helper;
 
@@ -296,8 +297,8 @@ export async function getOffersForHelper(helperId: string) {
     const requestValue = (
       row as {
         request:
-          | OfferForHelperRow["request"]
-          | OfferForHelperRow["request"][];
+        | OfferForHelperRow["request"]
+        | OfferForHelperRow["request"][];
       }
     ).request;
 
@@ -498,21 +499,21 @@ export async function getOfferAppointmentDetails(offerId: string) {
   const requestValue = (
     result.data as {
       request:
-        | OfferAppointmentRow["request"]
-        | OfferAppointmentRow["request"][];
+      | OfferAppointmentRow["request"]
+      | OfferAppointmentRow["request"][];
       helper:
-        | OfferAppointmentRow["helper"]
-        | OfferAppointmentRow["helper"][];
+      | OfferAppointmentRow["helper"]
+      | OfferAppointmentRow["helper"][];
     }
   ).request;
   const helperValue = (
     result.data as {
       request:
-        | OfferAppointmentRow["request"]
-        | OfferAppointmentRow["request"][];
+      | OfferAppointmentRow["request"]
+      | OfferAppointmentRow["request"][];
       helper:
-        | OfferAppointmentRow["helper"]
-        | OfferAppointmentRow["helper"][];
+      | OfferAppointmentRow["helper"]
+      | OfferAppointmentRow["helper"][];
     }
   ).helper;
 
@@ -526,7 +527,7 @@ export async function getOfferAppointmentDetails(offerId: string) {
   };
 }
 
-export async function getIndependentOfferAppointmentDetails(offerId: string) {
+export async function getHelpOfferAppointmentDetails(helpOfferId: string) {
   const result = await supabase
     .from("help_offers")
     .select(`
@@ -548,29 +549,26 @@ export async function getIndependentOfferAppointmentDetails(offerId: string) {
         profile_image_url
       )
     `)
-    .eq("id", offerId)
+    .eq("id", helpOfferId)
     .maybeSingle();
 
   if (result.error || !result.data) {
-    return { data: null as IndependentOfferAppointmentRow | null, error: result.error };
+    return { data: null as HelpOfferAppointmentRow | null, error: result.error };
   }
 
-  const helperValue = (
-    result.data as {
-      helper:
-        | IndependentOfferAppointmentRow["helper"]
-        | IndependentOfferAppointmentRow["helper"][];
-    }
-  ).helper;
+  const helperValue = (result.data as { helper: HelpOfferAppointmentRow["helper"] | HelpOfferAppointmentRow["helper"][] }).helper;
 
   return {
     data: {
       ...result.data,
       helper: Array.isArray(helperValue) ? helperValue[0] ?? null : helperValue ?? null,
-    } as IndependentOfferAppointmentRow,
+    } as HelpOfferAppointmentRow,
     error: null,
   };
 }
+
+/** @deprecated Use getHelpOfferAppointmentDetails instead */
+export const getIndependentOfferAppointmentDetails = getHelpOfferAppointmentDetails;
 
 export async function getOffersByRequest(request_id: string) {
   return await supabase

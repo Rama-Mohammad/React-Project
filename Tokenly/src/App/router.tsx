@@ -22,7 +22,9 @@ import CookiePolicy from "../pages/CookiePolicy";
 import SessionRequestDetails from "../pages/SessionRequestDetails";
 import MyOffers from "../pages/MyOffers";
 import CreateOffer from "../pages/CreateOffer";
-import IndependentOfferDetails from "../pages/IndependentOfferDetails";
+import HelpOfferDetails from "../pages/HelpOfferDetails"
+import HelpOfferBooking from "../pages/HelpOfferBooking";
+import HelperProfile from "../pages/HelperProfile";
 import OfferAppointment from "../pages/OfferAppointment";
 import TokenOptions from "../pages/TokenOptions";
 import ErrorPage from "../pages/ErrorPage";
@@ -59,10 +61,36 @@ export const router = createBrowserRouter([
         path: "/explore",
         element: <Explore />,
       },
+
       {
         path: "/requests/:requestId",
         element: <RequestDetails />,
       },
+      {
+        path: "/offers/:offerId",
+        element: <HelpOfferBooking />,
+      },
+
+      {
+        path: "/my-offers/help-offer/:offerId",
+        element: <HelpOfferDetails />,
+      },
+
+      {
+        path: "/my-offers/independent/:offerId",
+        element: <HelpOfferDetails />,
+      },
+
+      {
+        path: "/helpers/:helperId",
+        element: <HelperProfile />,
+      },
+
+      {
+        path: "/helpers/:helperId/request",
+        element: <RequestHelper />,
+      },
+
       {
         path: "/sessions/request/:sessionId",
         element: <SessionRequestDetails />,
@@ -72,44 +100,37 @@ export const router = createBrowserRouter([
         element: <SessionLivePage />,
       },
       {
-        path: "/helpers/:helperId/request",
-        element: <RequestHelper />,
+        path: "/sessions",
+        element: <Sessions />,
       },
+
+      {
+        path: "/offers/:offerId/appointment",
+        element: <OfferAppointment />,
+      },
+
       {
         path: "/request/new",
         element: <RequestHelper />,
       },
       {
+        path: "/create-offer",
+        element: <CreateOffer />,
+      },
+
+      {
         path: "/skills/:skillId/helpers",
         element: <SkillHelpers />,
       },
-      {
-        path: "/dashboard",
-        element: <Dashboard />,
-      },
-      {
-        path: "/sessions",
-        element: <Sessions />,
-      },
+
       {
         path: "/my-offers",
         element: <MyOffers />,
       },
+
       {
-        path: "/create-offer",
-        element: <CreateOffer />,
-      },
-      {
-        path: "/my-offers/independent/:offerId",
-        element: <IndependentOfferDetails />,
-      },
-      {
-        path: "/offers/:offerId/appointment",
-        element: <OfferAppointment />,
-      },
-      {
-        path: "/tokens/options",
-        element: <TokenOptions />,
+        path: "/dashboard",
+        element: <Dashboard />,
       },
       {
         path: "/profile",
@@ -119,6 +140,11 @@ export const router = createBrowserRouter([
         path: "/activity",
         element: <Activity />,
       },
+      {
+        path: "/tokens/options",
+        element: <TokenOptions />,
+      },
+
       {
         path: "/help",
         element: <Help />,
@@ -151,11 +177,13 @@ export const router = createBrowserRouter([
         path: "/cookies",
         element: <CookiePolicy />,
       },
+
       { path: "/auth", element: <AuthPage /> },
       {
         path: "/reset-password",
         element: <AuthPage />,
       },
+
       {
         path: "/error-test",
         element: <ErrorTestPage />,

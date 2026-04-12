@@ -13,6 +13,7 @@ export interface Profile {
   institution?: string;
   location?: string;
   website?: string;
+  last_seen?: string;
 }
 
 export type EditProfileInput = {
