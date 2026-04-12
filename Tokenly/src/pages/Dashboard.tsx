@@ -98,9 +98,12 @@ export default function Dashboard() {
     fetchDashboard,
     mapSessions,
     mapOffers,
-    mapDirectRequests,
+    mapIncomingDirectRequests,
+    mapSentDirectRequests,
+    rawSessions,
     rawOffers,
-    rawDirectRequests,
+    rawIncomingDirectRequests,
+    rawSentDirectRequests,
   } = useDashboard();
   const { transactions, summary, fetchTransactionsByUser, fetchCreditSummary } = useTransactions();
 
@@ -116,9 +119,14 @@ export default function Dashboard() {
   );
 
   // Direct requests the current user received as a helper — pending only
-  const directRequests = useMemo(
-    () => (currentUserId ? mapDirectRequests() : []),
-    [rawDirectRequests, currentUserId]
+  const incomingDirectRequests = useMemo(
+    () => (currentUserId ? mapIncomingDirectRequests() : []),
+    [rawIncomingDirectRequests, currentUserId]
+  );
+
+  const sentDirectRequests = useMemo(
+    () => (currentUserId ? mapSentDirectRequests() : []),
+    [rawSentDirectRequests, currentUserId]
   );
 
   const sessionTabCounts = useMemo(
@@ -257,7 +265,7 @@ export default function Dashboard() {
     if (currentUserId) {
       setSessions(mapSessions(currentUserId));
     }
-  }, [currentUserId, rawOffers]);
+  }, [currentUserId, rawSessions]);
 
   const handleMarkComplete = async (id: string) => {
     const { session, user, authError } = await getSessionsAuthDebugContext();
@@ -645,24 +653,24 @@ export default function Dashboard() {
 
         {/* ── Direct Requests (incoming from users who want this helper) ── */}
         {/* Only shown when there are pending direct requests — disappears once all resolved */}
-        {directRequests.length > 0 ? (
+        {incomingDirectRequests.length > 0 ? (
           <section className="mt-4 rounded-3xl border border-indigo-200/70 bg-transparent shadow-none">
             <div className="flex items-center justify-between border-b border-indigo-200/70 p-4">
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-semibold">Direct Requests</h3>
                 <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
-                  {directRequests.length} pending
+                  {incomingDirectRequests.length} pending
                 </span>
               </div>
             </div>
             <div className="space-y-2 p-4">
-              {directRequests.map((item) => (
+              {incomingDirectRequests.map((item) => (
                 <div key={item.id} className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <p className="text-base font-semibold leading-tight text-slate-900">{item.title}</p>
                       <p className="mt-1 text-sm text-slate-500">
-                        From {item.requesterName}
+                        From {item.personName}
                         {item.duration ? ` · ${item.duration} min` : ""}
                         {item.credits ? ` · ${item.credits} credits` : ""}
                         {" · "}{item.age}
@@ -692,6 +700,62 @@ export default function Dashboard() {
                   </div>
                 </div>
               ))}
+            </div>
+          </section>
+        ) : null}
+
+        {sentDirectRequests.length > 0 ? (
+          <section className="mt-4 rounded-3xl border border-slate-300/80 bg-transparent shadow-none">
+            <div className="flex items-center justify-between border-b border-slate-300/80 p-4">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold">Sent Direct Requests</h3>
+                <span className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                  {sentDirectRequests.length} total
+                </span>
+              </div>
+            </div>
+            <div className="space-y-2 p-4">
+              {sentDirectRequests.map((item) => {
+                const statusClasses =
+                  item.status === "accepted"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : item.status === "rejected"
+                      ? "bg-rose-50 text-rose-700 border-rose-200"
+                      : item.status === "cancelled"
+                        ? "bg-slate-100 text-slate-600 border-slate-200"
+                        : "bg-amber-50 text-amber-700 border-amber-200";
+
+                const statusLabel =
+                  item.status === "accepted"
+                    ? "Accepted"
+                    : item.status === "rejected"
+                      ? "Denied"
+                      : item.status === "cancelled"
+                        ? "Cancelled"
+                        : "Pending";
+
+                return (
+                  <div key={item.id} className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <p className="text-base font-semibold leading-tight text-slate-900">{item.title}</p>
+                        <p className="mt-1 text-sm text-slate-500">
+                          Sent to {item.personName}
+                          {item.duration ? ` · ${item.duration} min` : ""}
+                          {item.credits ? ` · ${item.credits} credits` : ""}
+                          {" · "}{item.age}
+                        </p>
+                        {item.message ? (
+                          <p className="mt-2 line-clamp-2 text-sm text-slate-600">{item.message}</p>
+                        ) : null}
+                      </div>
+                      <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusClasses}`}>
+                        {statusLabel}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </section>
         ) : null}

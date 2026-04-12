@@ -1,5 +1,6 @@
 import { BadgeCheck, MessageCircle, ShieldCheck, Star, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
 import RatingStars from "../common/RatingStars";
 import type { HelperCardProps } from "../../types/explore";
 
@@ -31,6 +32,9 @@ function BadgePill({ label }: { label: string }) {
 }
 
 export default function HelperCard({ item }: HelperCardProps) {
+  const { isAuthenticated } = useAuth();
+  const ctaLink = isAuthenticated ? `/helpers/${item.id}/request` : "/auth?mode=signin";
+
   return (
     <article className="explore-glass flex h-full flex-col overflow-hidden rounded-xl border border-white/60 bg-white/85 backdrop-blur transition duration-300 hover:border-white/80 hover:shadow-md">
       <div className="flex-1 p-4">
@@ -114,7 +118,7 @@ export default function HelperCard({ item }: HelperCardProps) {
           </div>
 
           <Link
-            to={`/helpers/${item.id}/request`}
+            to={ctaLink}
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition duration-200 hover:bg-slate-50"
           >
             <MessageCircle size={14} />

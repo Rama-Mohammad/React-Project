@@ -1,5 +1,6 @@
 import { Clock3, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
 import RatingStars from "../common/RatingStars";
 import type { RequestCardProps } from "../../types/explore";
 
@@ -23,6 +24,9 @@ const urgencyColors: Record<string, string> = {
 };
 
 export default function RequestCard({ item }: RequestCardProps) {
+  const { isAuthenticated } = useAuth();
+  const ctaLink = isAuthenticated ? `/requests/${item.id}` : "/auth?mode=signin";
+
   return (
     <article className="explore-glass flex h-full flex-col overflow-hidden rounded-xl border border-white/60 bg-white/85 backdrop-blur transition duration-300 hover:border-white/80 hover:shadow-md">
       <div className="flex-1 p-4">
@@ -101,7 +105,7 @@ export default function RequestCard({ item }: RequestCardProps) {
           </div>
 
           <Link
-            to={`/requests/${item.id}`}
+            to={ctaLink}
             className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition duration-200 hover:bg-slate-50"
           >
             View

@@ -80,11 +80,16 @@ export default function Navbar() {
         .toUpperCase()
     : (user?.email?.[0].toUpperCase() ?? "?");
 
-  const authedLinks = (onClick?: () => void) => (
+  const sharedLinks = (onClick?: () => void) => (
     <>
       <NavLink to="/explore" className={getNavClass} onClick={onClick}>
         <Compass size={16} /> Explore
       </NavLink>
+    </>
+  );
+
+  const authedLinks = (onClick?: () => void) => (
+    <>
       <NavLink to="/dashboard" className={getNavClass} onClick={onClick}>
         <LayoutDashboard size={16} /> Dashboard
       </NavLink>
@@ -118,6 +123,7 @@ export default function Navbar() {
             <NavLink to="/" className={getNavClass}>
               <Home size={16} /> Home
             </NavLink>
+            {sharedLinks()}
             {isAuthenticated && authedLinks()}
           </nav>
         </div>
@@ -213,6 +219,7 @@ export default function Navbar() {
             <NavLink to="/" className={getNavClass} onClick={() => setMobileOpen(false)}>
               <Home size={16} /> Home
             </NavLink>
+            {sharedLinks(() => setMobileOpen(false))}
             {isAuthenticated ? (
               authedLinks(() => setMobileOpen(false))
             ) : (

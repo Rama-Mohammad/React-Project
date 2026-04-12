@@ -43,3 +43,15 @@ export type DashboardOfferItem = {
   age: string;
   credits: number;
 };
+
+export type DashboardDirectRequestItem = {
+  id: string;
+  title: string;
+  personName: string;
+  message: string;
+  credits: number;
+  duration: number | null;
+  age: string;
+  status: "pending" | "accepted" | "rejected" | "cancelled";
+  direction: "incoming" | "outgoing";
+};

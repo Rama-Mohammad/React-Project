@@ -1,5 +1,6 @@
 import { ArrowRight, Sparkles, Users } from "lucide-react";
 import { Link } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
 import RatingStars from "../common/RatingStars";
 import type { ExploreSkillCardProps } from "../../types/explore";
 
@@ -10,6 +11,9 @@ const levelStyles: Record<string, string> = {
 };
 
 export default function SkillCard({ item }: ExploreSkillCardProps) {
+  const { isAuthenticated } = useAuth();
+  const ctaLink = isAuthenticated ? `/skills/${item.id}/helpers` : "/auth?mode=signin";
+
   return (
     <article className="explore-glass flex h-full flex-col overflow-hidden rounded-xl border border-white/60 bg-white/85 backdrop-blur transition duration-300 hover:border-white/80 hover:shadow-md">
       <div className="flex-1 p-4">
@@ -67,7 +71,7 @@ export default function SkillCard({ item }: ExploreSkillCardProps) {
         </div>
 
         <Link
-          to={`/skills/${item.id}/helpers`}
+          to={ctaLink}
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-500 transition duration-300 hover:gap-2 hover:text-indigo-600"
         >
           Find helpers

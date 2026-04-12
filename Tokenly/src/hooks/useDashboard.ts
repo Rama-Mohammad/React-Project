@@ -1,12 +1,17 @@
 import { useState } from "react";
 import {
-  getDashboardProfile,
-  getDashboardStats,
-  getDashboardSessions,
-  getDashboardOffers,
   getDashboardDirectRequests,
+  getDashboardOffers,
+  getDashboardProfile,
+  getDashboardSentDirectRequests,
+  getDashboardSessions,
+  getDashboardStats,
 } from "../services/dashboardService";
-import type { DashboardOfferItem, DashboardSessionItem } from "../types/dashboard";
+import type {
+  DashboardDirectRequestItem,
+  DashboardOfferItem,
+  DashboardSessionItem,
+} from "../types/dashboard";
 
 export type DashboardProfile = {
   full_name: string;
@@ -31,7 +36,8 @@ export default function useDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [rawSessions, setRawSessions] = useState<any[]>([]);
   const [rawOffers, setRawOffers] = useState<any[]>([]);
-  const [rawDirectRequests, setRawDirectRequests] = useState<unknown[]>([]);
+  const [rawIncomingDirectRequests, setRawIncomingDirectRequests] = useState<unknown[]>([]);
+  const [rawSentDirectRequests, setRawSentDirectRequests] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -39,13 +45,20 @@ export default function useDashboard() {
     setLoading(true);
     setError("");
 
-    // All 5 calls properly destructured
-    const [profileRes, statsData, sessionsRes, offersRes, directRequestsRes] = await Promise.all([
+    const [
+      profileRes,
+      statsData,
+      sessionsRes,
+      offersRes,
+      directRequestsRes,
+      sentDirectRequestsRes,
+    ] = await Promise.all([
       getDashboardProfile(user_id),
       getDashboardStats(user_id),
       getDashboardSessions(user_id),
       getDashboardOffers(user_id),
       getDashboardDirectRequests(user_id),
+      getDashboardSentDirectRequests(user_id),
     ]);
 
     if (profileRes.error) setError(profileRes.error.message);
@@ -54,42 +67,59 @@ export default function useDashboard() {
     setStats(statsData);
     setRawSessions(sessionsRes.data ?? []);
     setRawOffers(offersRes.data ?? []);
-    setRawDirectRequests(directRequestsRes.data ?? []);
+    setRawIncomingDirectRequests(directRequestsRes.data ?? []);
+    setRawSentDirectRequests(sentDirectRequestsRes.data ?? []);
     setLoading(false);
   }
 
   function mapSessions(user_id: string): DashboardSessionItem[] {
-    return rawSessions.map((s) => {
-      const isHelper = s.helper_id === user_id;
-      const otherPerson = isHelper ? s.requester?.full_name : s.helper?.full_name;
-      const dbStatus: string = s.status;
-      const uiStatus: DashboardSessionItem["status"] =
-        dbStatus === "upcoming"
-          ? "Upcoming"
-          : dbStatus === "active"
-            ? "Active Now"
-            : "Completed";
+    return rawSessions
+      .map((s) => {
+        const isHelper = s.helper_id === user_id;
+        const otherPerson = isHelper ? s.requester?.full_name : s.helper?.full_name;
+        const dbStatus: string = s.status;
+        const uiStatus: DashboardSessionItem["status"] =
+          dbStatus === "upcoming"
+            ? "Upcoming"
+            : dbStatus === "active"
+              ? "Active Now"
+              : "Completed";
 
-      const scheduledDate = s.scheduled_at ? new Date(s.scheduled_at) : null;
-      const dateStr = scheduledDate
-        ? dbStatus === "completed"
-          ? `Completed ${scheduledDate.toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}`
-          : scheduledDate.toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
-        : "TBD";
+        const helpOfferRequestValue = Array.isArray(s.help_offer_request)
+          ? s.help_offer_request[0] ?? null
+          : s.help_offer_request ?? null;
+        const helpOfferValue = Array.isArray(helpOfferRequestValue?.help_offer)
+          ? helpOfferRequestValue.help_offer[0] ?? null
+          : helpOfferRequestValue?.help_offer ?? null;
+        const directRequestValue = Array.isArray(s.direct_request)
+          ? s.direct_request[0] ?? null
+          : s.direct_request ?? null;
 
-      return {
-        id: s.id,
-        topic: s.request?.title ?? "Session",
-        skill: s.request?.category ?? "General",
-        status: uiStatus,
-        role: isHelper ? "Helping" : "Receiving help",
-        person: otherPerson ?? "Unknown",
-        date: dateStr,
-        duration: s.duration_minutes ? `${s.duration_minutes} min` : "—",
-        credits: 0,
-        action: uiStatus !== "Completed" ? "Mark Complete" : undefined,
-      };
-    });
+        const scheduledDate = s.scheduled_at ? new Date(s.scheduled_at) : null;
+        const dateStr = scheduledDate
+          ? dbStatus === "completed"
+            ? `Completed ${scheduledDate.toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}`
+            : scheduledDate.toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+          : "TBD";
+
+        return {
+          id: s.id,
+          topic: s.request?.title ?? helpOfferValue?.title ?? directRequestValue?.title ?? "Session",
+          skill: s.request?.category ?? helpOfferValue?.category ?? directRequestValue?.category ?? "General",
+          status: uiStatus,
+          role: (isHelper ? "Helping" : "Receiving help") as DashboardSessionItem["role"],
+          person: otherPerson ?? "Unknown",
+          date: dateStr,
+          duration: s.duration_minutes ? `${s.duration_minutes} min` : "--",
+          credits: 0,
+          action: uiStatus !== "Completed" ? "Mark Complete" : undefined,
+        };
+      })
+      .sort((a, b) => {
+        const rank = (status: DashboardSessionItem["status"]) =>
+          status === "Upcoming" ? 0 : status === "Active Now" ? 1 : 2;
+        return rank(a.status) - rank(b.status);
+      });
   }
 
   function mapOffers(): DashboardOfferItem[] {
@@ -103,31 +133,67 @@ export default function useDashboard() {
     }));
   }
 
-  function mapDirectRequests(): Array<{
-    id: string;
-    title: string;
-    requesterName: string;
-    message: string;
-    credits: number;
-    duration: number | null;
-    age: string;
-  }> {
-    return rawDirectRequests.map((r: unknown) => {
+  function mapIncomingDirectRequests(): DashboardDirectRequestItem[] {
+    return rawIncomingDirectRequests
+      .map((r: unknown) => {
+        const req = r as Record<string, unknown>;
+        const requesterRaw = req.requester as
+          | { full_name?: string | null; username?: string | null }
+          | Array<{ full_name?: string | null; username?: string | null }>
+          | null;
+        const requester = Array.isArray(requesterRaw) ? requesterRaw[0] : requesterRaw;
+        const statusValue = String(req.status ?? "pending");
+
+        return {
+          id: String(req.id ?? ""),
+          title: String(req.title ?? ""),
+          personName: requester?.full_name ?? requester?.username ?? "User",
+          message: String(req.message ?? ""),
+          credits: Number(req.credit_cost ?? 0),
+          duration: req.duration_minutes != null ? Number(req.duration_minutes) : null,
+          age: toRelativeAge(req.created_at as string | null),
+          status:
+            statusValue === "accepted"
+              ? "accepted"
+              : statusValue === "rejected"
+                ? "rejected"
+                : statusValue === "cancelled"
+                  ? "cancelled"
+                  : "pending",
+          direction: "incoming",
+        } satisfies DashboardDirectRequestItem;
+      })
+      .filter((item) => item.status === "pending");
+  }
+
+  function mapSentDirectRequests(): DashboardDirectRequestItem[] {
+    return rawSentDirectRequests.map((r: unknown) => {
       const req = r as Record<string, unknown>;
-      const requesterRaw = req.requester as
+      const helperRaw = req.helper as
         | { full_name?: string | null; username?: string | null }
         | Array<{ full_name?: string | null; username?: string | null }>
         | null;
-      const requester = Array.isArray(requesterRaw) ? requesterRaw[0] : requesterRaw;
+      const helper = Array.isArray(helperRaw) ? helperRaw[0] : helperRaw;
+      const statusValue = String(req.status ?? "pending");
+
       return {
         id: String(req.id ?? ""),
         title: String(req.title ?? ""),
-        requesterName: requester?.full_name ?? requester?.username ?? "User",
+        personName: helper?.full_name ?? helper?.username ?? "Helper",
         message: String(req.message ?? ""),
         credits: Number(req.credit_cost ?? 0),
         duration: req.duration_minutes != null ? Number(req.duration_minutes) : null,
         age: toRelativeAge(req.created_at as string | null),
-      };
+        status:
+          statusValue === "accepted"
+            ? "accepted"
+            : statusValue === "rejected"
+              ? "rejected"
+              : statusValue === "cancelled"
+                ? "cancelled"
+                : "pending",
+        direction: "outgoing",
+      } satisfies DashboardDirectRequestItem;
     });
   }
 
@@ -136,13 +202,15 @@ export default function useDashboard() {
     stats,
     rawSessions,
     rawOffers,
-    rawDirectRequests,
+    rawIncomingDirectRequests,
+    rawSentDirectRequests,
     loading,
     error,
     fetchDashboard,
     mapSessions,
     mapOffers,
-    mapDirectRequests,
+    mapIncomingDirectRequests,
+    mapSentDirectRequests,
   };
 }
 

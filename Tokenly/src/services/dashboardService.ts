@@ -89,12 +89,28 @@ export async function getDashboardSessions(user_id: string) {
       duration_minutes,
       helper_id,
       requester_id,
+      request_id,
+      help_offer_request_id,
+      direct_request_id,
       request:requests(id, title, category),
+      help_offer_request:help_offer_requests!sessions_help_offer_request_id_fkey(
+        id,
+        help_offer:help_offers!help_offer_requests_help_offer_id_fkey(
+          id,
+          title,
+          category
+        )
+      ),
+      direct_request:direct_requests!sessions_direct_request_id_fkey(
+        id,
+        title,
+        category
+      ),
       helper:profiles!sessions_helper_id_fkey(id, full_name),
       requester:profiles!sessions_requester_id_fkey(id, full_name)
     `)
     .or(`helper_id.eq.${user_id},requester_id.eq.${user_id}`)
-    .order("scheduled_at", { ascending: false })
+    .order("scheduled_at", { ascending: true, nullsFirst: false })
     .limit(20);
   logSessionsQuery("getDashboardSessions result", { session, user, payload, error: result.error });
   return result;
@@ -120,6 +136,7 @@ export async function getDashboardDirectRequests(helper_id: string) {
     .from("direct_requests")
     .select(`
       id,
+      helper_id,
       requester_id,
       title,
       message,
@@ -134,10 +151,50 @@ export async function getDashboardDirectRequests(helper_id: string) {
         username,
         avg_rating,
         profile_image_url
+      ),
+      helper:profiles!direct_requests_helper_id_fkey(
+        id,
+        full_name,
+        username,
+        avg_rating,
+        profile_image_url
       )
     `)
     .eq("helper_id", helper_id)
-    .eq("status", "pending")
+    .order("created_at", { ascending: false })
+    .limit(10);
+}
+
+export async function getDashboardSentDirectRequests(requester_id: string) {
+  return await supabase
+    .from("direct_requests")
+    .select(`
+      id,
+      helper_id,
+      requester_id,
+      title,
+      message,
+      category,
+      duration_minutes,
+      credit_cost,
+      status,
+      created_at,
+      requester:profiles!direct_requests_requester_id_fkey(
+        id,
+        full_name,
+        username,
+        avg_rating,
+        profile_image_url
+      ),
+      helper:profiles!direct_requests_helper_id_fkey(
+        id,
+        full_name,
+        username,
+        avg_rating,
+        profile_image_url
+      )
+    `)
+    .eq("requester_id", requester_id)
     .order("created_at", { ascending: false })
     .limit(10);
 }

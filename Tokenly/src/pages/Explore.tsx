@@ -20,8 +20,9 @@ import type { ExploreTab, RequestItem, HelperItem, SkillItem, HelpOfferItem, Urg
 import useRequests from "../hooks/useRequest";
 import { getAllSkills } from "../services/skillService";
 import { getExploreHelpers } from "../services/helperExploreService";
-import { mapProfileToHelperItem } from "../utils/helperExploreMapper";``
+import { mapProfileToHelperItem } from "../utils/helperExploreMapper";
 import { getOpenHelpOffers } from "../services/helpOfferService";
+import useAuth from "../hooks/useAuth";
 
 function matchesSearch(text: string, search: string) {
   return text.toLowerCase().includes(search.toLowerCase().trim());
@@ -59,6 +60,7 @@ function buildDynamicOptions(values: (string | null | undefined)[], fallback: st
 }
 
 export default function Explore() {
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
   const tabsBarRef = useRef<HTMLDivElement | null>(null);
   const {
@@ -781,7 +783,7 @@ export default function Explore() {
                     </div>
                     {/* Links to the help offer detail page — user can submit a help_offer_request from there */}
                     <Link
-                      to={`/offers/${item.id}?source=help_offer`}
+                      to={isAuthenticated ? `/offers/${item.id}?source=help_offer` : "/auth?mode=signin"}
                       className="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700"
                     >
                       Book
