@@ -6,15 +6,17 @@ import type { RequestCardProps } from "../../types/explore";
 
 const categoryColors: Record<string, string> = {
   "Data Science": "bg-cyan-50 text-cyan-700",
-  Algorithms: "bg-indigo-50 text-indigo-700",
-  Programming: "bg-violet-50 text-violet-700",
-  "Web Development": "bg-orange-50 text-orange-700",
-  "Machine Learning": "bg-fuchsia-50 text-fuchsia-700",
-  "System Design": "bg-teal-50 text-teal-700",
-  Database: "bg-amber-50 text-amber-700",
-  Statistics: "bg-lime-50 text-lime-700",
-  Mathematics: "bg-purple-50 text-purple-700",
-  Writing: "bg-pink-50 text-pink-700",
+  "Programming": "bg-purple-50 text-purple-700",
+  "Design": "bg-sky-50 text-sky-700",
+  "Math & Science": "bg-emerald-50 text-emerald-700",
+  "Languages": "bg-amber-50 text-amber-700",
+  "Finance": "bg-rose-50 text-rose-700",
+  "Music": "bg-indigo-50 text-indigo-700",
+  "Writing": "bg-teal-50 text-teal-700",
+  "Career & Biz": "bg-pink-50 text-pink-700",
+  "Photography": "bg-orange-50 text-orange-700",
+  "Marketing": "bg-cyan-50 text-cyan-700",
+  "Public Speaking": "bg-violet-50 text-violet-700",
 };
 
 const urgencyColors: Record<string, string> = {
