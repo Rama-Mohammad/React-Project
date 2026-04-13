@@ -107,6 +107,7 @@ const Profile: React.FC = () => {
       totalRatings: liveReviews.length,
       website: liveProfile.website || "",
       coverImage: liveProfile.cover_image_url || "",
+      profileImageUrl: liveProfile.profile_image_url || "",
       stats: {
         totalSessions: 0, // we'll compute below
         creditsEarned: liveProfile.credit_balance ?? 0,
@@ -408,7 +409,7 @@ const Profile: React.FC = () => {
         details={pendingSkill ? `${pendingSkill.level} · ${pendingSkill.category}` : undefined}
         confirmLabel="Delete Skill"
         onCancel={() => setPendingSkillDeleteId(null)}
-        onConfirm={() => pendingSkill && handleDeleteSkill(pendingSkill.id)}
+        onConfirm={() => pendingSkill ? handleDeleteSkill(pendingSkill.id) : Promise.resolve()}
       />
 
       <ConfirmDeleteModal

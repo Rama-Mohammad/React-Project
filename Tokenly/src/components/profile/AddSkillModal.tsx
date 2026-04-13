@@ -98,7 +98,7 @@ const AddSkillModal: React.FC<AddSkillModalProps> = ({
               type="text"
               value={formData.name}
               onChange={(event) => setFormData({ ...formData, name: event.target.value })}
-              className="mt-1 h-[46px] w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 h-11.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
               placeholder="e.g., React, Python, Guitar"
               required
             />
@@ -110,7 +110,7 @@ const AddSkillModal: React.FC<AddSkillModalProps> = ({
               type="text"
               value={formData.category}
               onChange={(event) => setFormData({ ...formData, category: event.target.value })}
-              className="mt-1 h-[46px] w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 h-11.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
               placeholder="e.g., Programming, Design, Music"
               required
             />
@@ -145,7 +145,7 @@ const AddSkillModal: React.FC<AddSkillModalProps> = ({
               type="number"
               value={formData.sessions}
               onChange={(event) => setFormData({ ...formData, sessions: parseInt(event.target.value, 10) || 0 })}
-              className="mt-1 h-[46px] w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+              className="mt-1 h-11.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
               placeholder="0"
               min="0"
             />

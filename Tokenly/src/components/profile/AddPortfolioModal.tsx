@@ -113,7 +113,7 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
                 type="text"
                 required
                 placeholder="e.g. Mar 2026"
-                className="mt-1 h-[46px] w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                className="mt-1 h-11.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
                 value={form.date}
                 onChange={(event) => setForm((prev) => ({ ...prev, date: event.target.value }))}
               />

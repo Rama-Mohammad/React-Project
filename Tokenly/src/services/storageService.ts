@@ -1,7 +1,7 @@
 import { supabase } from "../lib/supabaseClient";
 
 const SESSION_FILES_BUCKET = "session-files";
-const PROFILES_BUCKET = "avatars";
+const PROFILES_BUCKET = "profile-pics";
 
 export async function uploadSessionFile(
   session_id: string,
