@@ -22,8 +22,7 @@ const TestimonialsSection = () => {
             rating={8}
           />
           <TestimonialCard
-            quote="I help people with Figma and UI design on weekends and earn tokens. Then I use those tokens to get help with accounting and tax filing. It's genuinely a fair deal."
-            name="Marcus Reid"
+            quote="I help people with Figma and UI design on weekends and earn tokens. Then I use those tokens to get help with accounting and tax filing. It's genuinely a fair deal, and it feels like a balanced system where everyone benefits."            name="Marcus Reid"
             title="UX Designer, Freelancer"
             rating={34}
           />

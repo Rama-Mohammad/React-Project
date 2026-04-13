@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import RatingStars from "../common/RatingStars";
 import useAuth from "../../hooks/useAuth";
@@ -7,6 +7,18 @@ import useAuth from "../../hooks/useAuth";
 const HeroSection = () => {
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const { isAuthenticated, loading } = useAuth();
+
+  useEffect(() => {
+    if (isHowItWorksOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isHowItWorksOpen]);
 
   return (
     <>
