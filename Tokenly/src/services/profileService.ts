@@ -94,11 +94,11 @@ export async function updateLastSeen(user_id: string) {
 }
 
 
-export async function getPublicHelperProfile(helper_id: string) {
-  const [profileRes, skillsRes, reviewsRes, helpOffersRes] = await Promise.all([
+export async function getPublicHelperProfileCore(helper_id: string) {
+  const [profileRes, skillsRes, reviewsRes] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, full_name, username, bio, profile_image_url, cover_image_url, avg_rating, created_at, title, institution, location, website, last_seen")
+      .select("id, full_name, username, bio, profile_image_url, cover_image_url, avg_rating, credit_balance, created_at, title, institution, location, website, last_seen")
       .eq("id", helper_id)
       .single(),
     supabase
@@ -111,20 +111,22 @@ export async function getPublicHelperProfile(helper_id: string) {
       .select("id, rating, comment, created_at, reviewer:profiles!reviews_reviewer_id_fkey(full_name, username)")
       .eq("reviewee_id", helper_id)
       .order("created_at", { ascending: false })
-      .limit(10),
-    supabase
-      .from("help_offers")
-      .select("id, title, description, category, urgency, duration_minutes, credit_cost, status, created_at")
-      .eq("helper_id", helper_id)
-      .eq("status", "open")
-      .order("created_at", { ascending: false }),
+      .limit(5),
   ]);
 
   return {
     profile: profileRes.data ?? null,
     skills: skillsRes.data ?? [],
     reviews: reviewsRes.data ?? [],
-    helpOffers: helpOffersRes.data ?? [],
-    error: profileRes.error ?? skillsRes.error ?? reviewsRes.error ?? helpOffersRes.error ?? null,
+    error: profileRes.error ?? skillsRes.error ?? reviewsRes.error ?? null,
   };
+}
+
+export async function getHelperOpenOffers(helper_id: string) {
+  return await supabase
+    .from("help_offers")
+    .select("id, title, description, category, urgency, duration_minutes, credit_cost, status, created_at")
+    .eq("helper_id", helper_id)
+    .eq("status", "open")
+    .order("created_at", { ascending: false });
 }

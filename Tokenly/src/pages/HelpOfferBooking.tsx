@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Clock3, Coins, Sparkles, Star, CheckCircle2 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { getHelpOfferById, submitHelpOfferRequest } from "../services/helpOfferService";
-import { getPublicHelperProfile } from "../services/profileService";
+import { getPublicHelperProfileCore } from "../services/profileService";
 import type { HelpOffer } from "../types/helpOffer";
 
 const urgencyStyle: Record<string, string> = {
@@ -76,7 +76,7 @@ export default function HelpOfferBooking() {
       setOfferSkillNames(skillNames);
 
       // Now fetch the helper's public profile
-      const helperResult = await getPublicHelperProfile(offerData.helper_id);
+      const helperResult = await getPublicHelperProfileCore(offerData.helper_id);
       if (!mounted) return;
 
       setHelperProfile(helperResult.profile);

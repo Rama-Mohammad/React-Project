@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, MapPin, Calendar, Star, Clock3, Coins, Sparkles } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
-import { getPublicHelperProfile } from "../services/profileService";
+import { getPublicHelperProfileCore, getHelperOpenOffers } from "../services/profileService";
 
 const levelStyle: Record<string, string> = {
   beginner: "bg-emerald-50 text-emerald-700",
@@ -53,7 +53,7 @@ export default function HelperProfile() {
     let mounted = true;
     setLoading(true);
 
-    void getPublicHelperProfile(helperId).then((result) => {
+    void getPublicHelperProfileCore(helperId).then((result) => {
       if (!mounted) return;
       if (result.error || !result.profile) {
         setError(result.error?.message ?? "Helper not found.");
@@ -63,8 +63,12 @@ export default function HelperProfile() {
       setProfile(result.profile as typeof profile);
       setSkills(result.skills as typeof skills);
       setReviews(result.reviews as unknown as typeof reviews);
-      setHelpOffers(result.helpOffers as typeof helpOffers);
       setLoading(false);
+    });
+
+    void getHelperOpenOffers(helperId).then(({ data }) => {
+      if (!mounted) return;
+      setHelpOffers((data ?? []) as typeof helpOffers);
     });
 
     return () => { mounted = false; };

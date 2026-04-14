@@ -10,10 +10,10 @@ import EditProfileModal from "../components/profile/EditProfileModal";
 import AddSkillModal from "../components/profile/AddSkillModal";
 import AddPortfolioModal from "../components/profile/AddPortfolioModal";
 import useAuth from "../hooks/useAuth";
+import usePublicHelperProfile from "../hooks/usePublicHelperProfile";
+import usePortfolio from "../hooks/usePortfolio";
 import useProfiles from "../hooks/useProfile";
 import useSkills from "../hooks/useSkills";
-import useReviews from "../hooks/useReviews";
-import usePortfolio from "../hooks/usePortfolio";
 import type {
   PortfolioEntry,
   UiReview,
@@ -34,35 +34,29 @@ const Profile: React.FC = () => {
   const { user: authUser } = useAuth();
   const {
     profile: liveProfile,
-    fetchProfileById,
-    editProfile,
-    loading: profileLoading,
-    error: profileError,
-  } = useProfiles();
-  const {
     skills: liveSkills,
-    fetchSkillsByUser,
-    addSkill,
-    editSkill: editSkillHook,
-    removeSkill,
-    loading: skillsLoading,
-    error: skillsError,
-  } = useSkills();
-  const {
     reviews: liveReviews,
-    fetchReviewsByUser,
-    loading: reviewsLoading,
-    error: reviewsError,
-  } = useReviews();
+    loading,
+    error,
+    fetchProfile,
+    fetchOffers,
+  } = usePublicHelperProfile();
+
   const {
     items: livePortfolio,
     fetchByUser: fetchPortfolio,
     add: addPortfolioItem,
     edit: editPortfolioItem,
     remove: removePortfolioItem,
-    loading: portfolioLoading,
-    error: portfolioError,
   } = usePortfolio();
+
+  const { editProfile } = useProfiles();
+
+  const {
+    addSkill,
+    editSkill: editSkillHook,
+    removeSkill,
+  } = useSkills();
 
   // Derived UI state from live data
   const user: ProfileHeaderUser = useMemo(() => {
@@ -85,7 +79,7 @@ const Profile: React.FC = () => {
     const name = liveProfile.full_name || liveProfile.username || "";
     const initials = name
       .split(" ")
-      .map((w) => w[0])
+      .map((w: string) => w[0])
       .join("")
       .toUpperCase()
       .slice(0, 2);
@@ -164,16 +158,14 @@ const Profile: React.FC = () => {
   const [pendingSkillDeleteId, setPendingSkillDeleteId] = useState<string | null>(null);
   const [reviewSortBy, setReviewSortBy] = useState<ReviewSortBy>("newest");
 
-  // Fetch all data on mount
   useEffect(() => {
     if (!authUser?.id) return;
-    void fetchProfileById(authUser.id);
-    void fetchSkillsByUser(authUser.id);
-    void fetchReviewsByUser(authUser.id);
+    void fetchProfile(authUser.id);
     void fetchPortfolio(authUser.id);
+    fetchOffers(authUser.id);
   }, [authUser?.id]);
 
-  const pageError = profileError || skillsError || reviewsError || portfolioError;
+  const pageError = error;
 
   //handlers -> supabaseee
 
@@ -292,7 +284,7 @@ const Profile: React.FC = () => {
       </div>
 
       <main className="relative z-10 mx-auto min-h-[calc(100vh-76px)] w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8 lg:py-6 xl:px-10">
-        {(profileLoading || skillsLoading || reviewsLoading || portfolioLoading) ? (
+        {loading ? (
           <p className="mb-3 text-xs text-slate-500">Syncing profile data...</p>
         ) : null}
         {pageError ? <p className="mb-3 text-xs text-rose-600">{pageError}</p> : null}
