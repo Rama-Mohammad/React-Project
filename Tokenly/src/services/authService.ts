@@ -85,3 +85,10 @@ export function updateEmail(newEmail: string) {
 
 export type SupabaseAuthUser = User;
 export type SupabaseAuthSession = Session;
+
+export async function deleteUserAccount(userId: string) {
+  const { error } = await supabase.rpc("delete_user_account", {
+    target_user_id: userId,
+  });
+  return { error };
+}

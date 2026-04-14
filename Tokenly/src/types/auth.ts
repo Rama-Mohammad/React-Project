@@ -63,4 +63,5 @@ export type UseAuthResult = {
   signOut: () => Promise<boolean>;
   resetPassword: (email: string) => Promise<boolean>;
   changePassword: (newPassword: string) => Promise<boolean>;
+  deleteAccount: (userId: string) => Promise<boolean>;
 };

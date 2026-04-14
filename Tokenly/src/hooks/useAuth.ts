@@ -9,6 +9,7 @@ import {
     sendPasswordResetEmail,
     updatePassword,
     subscribeToAuthChanges,
+    deleteUserAccount,
 } from "../services/authService";
 
 function formatError(message: string) {
@@ -158,6 +159,17 @@ export default function useAuth(): UseAuthResult {
         return true;
     }
 
+    async function deleteAccount(userId: string) {
+        setError(""); setSuccessMessage("");
+        const { error } = await deleteUserAccount(userId);
+        console.log("deleteUserAccount error:", error);
+        if (error) { setError(error.message); return false; }
+        await signOutUser();
+        setUser(null);
+        setSession(null);
+        return true;
+    }
+
     return {
         user,
         session,
@@ -171,5 +183,6 @@ export default function useAuth(): UseAuthResult {
         signOut,
         resetPassword,
         changePassword,
+        deleteAccount,
     };
 }

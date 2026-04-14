@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import ProfileHeader from "../components/profile/ProfileHeader";
@@ -31,7 +32,7 @@ const toUiSkillLevel = (value: string): UiSkill["level"] => {
 };
 
 const Profile: React.FC = () => {
-  const { user: authUser } = useAuth();
+  const { user: authUser, deleteAccount } = useAuth();
   const {
     profile: liveProfile,
     skills: liveSkills,
@@ -57,7 +58,6 @@ const Profile: React.FC = () => {
     editSkill: editSkillHook,
     removeSkill,
   } = useSkills();
-
   // Derived UI state from live data
   const user: ProfileHeaderUser = useMemo(() => {
     if (!liveProfile) {
@@ -157,6 +157,10 @@ const Profile: React.FC = () => {
   const [pendingPortfolioDeleteId, setPendingPortfolioDeleteId] = useState<string | null>(null);
   const [pendingSkillDeleteId, setPendingSkillDeleteId] = useState<string | null>(null);
   const [reviewSortBy, setReviewSortBy] = useState<ReviewSortBy>("newest");
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!authUser?.id) return;
@@ -254,7 +258,17 @@ const Profile: React.FC = () => {
     await removePortfolioItem(pendingPortfolioDeleteId);
     setPendingPortfolioDeleteId(null);
   };
-
+  const handleDeleteAccount = async () => {
+    if (!authUser?.id) return;
+    setDeletingAccount(true);
+    console.log("Attempting delete for user:", authUser.id);
+    const success = await deleteAccount(authUser.id);
+    console.log("Delete result:", success);
+    setDeletingAccount(false);
+    if (success) {
+      navigate("/auth");
+    }
+  };
   const pendingSkill = pendingSkillDeleteId
     ? skills.find((item) => item.id === pendingSkillDeleteId) ?? null
     : null;
@@ -408,7 +422,39 @@ const Profile: React.FC = () => {
         onCancel={() => setPendingPortfolioDeleteId(null)}
         onConfirm={handleConfirmDeletePortfolio}
       />
+      {/* Danger Zone */}
+      <section className="mt-10 rounded-2xl border border-rose-200 bg-rose-50/40 p-5">
+        <h2 className="text-sm font-semibold text-rose-700 uppercase tracking-wide">Danger Zone</h2>
+        <div className="mt-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-slate-800">Delete Account</p>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Permanently deletes your profile, skills, requests, and offers. Sessions you participated in are kept for the other person.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowDeleteAccountModal(true)}
+            className="mt-3 sm:mt-0 shrink-0 rounded-xl border border-rose-300 bg-white px-4 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50 hover:border-rose-400"
+          >
+            Delete Account
+          </button>
+        </div>
+      </section>
+
+      <ConfirmDeleteModal
+        isOpen={showDeleteAccountModal}
+        title="Delete your account?"
+        message="This is permanent and cannot be undone. Your profile, skills, requests, and offers will be removed."
+        details="Sessions you participated in will remain visible to the other person, but your name will no longer be attached."
+        confirmLabel="Yes, delete my account"
+        loading={deletingAccount}
+        onCancel={() => setShowDeleteAccountModal(false)}
+        onConfirm={handleDeleteAccount}
+      />
     </div>
+
+
   );
 };
 
