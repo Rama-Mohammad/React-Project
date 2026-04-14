@@ -4,7 +4,6 @@ import StatsSection from "../components/home/StatsSection";
 import StepsSection from "../components/home/StepsSection";
 import FeaturesSection from "../components/home/FeaturesSection";
 import SkillsSection from "../components/home/SkillsSection";
-import TestimonialsSection from "../components/home/TestimonialsSection";
 import CTASection from "../components/home/CTASection";
 
 const Home = () => {
@@ -17,7 +16,6 @@ const Home = () => {
         <StepsSection />
         <FeaturesSection />
         <SkillsSection />
-        <TestimonialsSection />
         <CTASection />
       </main>
     </div>
