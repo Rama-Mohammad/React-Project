@@ -1,12 +1,9 @@
 import { Compass, Home, Search } from "lucide-react";
 import { Link } from "react-router-dom";
-import Footer from "../components/common/Footer";
-import Navbar from "../components/common/Navbar";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
-      <Navbar />
+    <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
 
       <main className="mx-auto flex w-full max-w-6xl flex-1 items-center px-4 py-10 sm:px-6 lg:px-8">
         <section className="relative isolate w-full overflow-hidden rounded-[2rem] border border-white/60 bg-white/70 px-6 py-12 shadow-[0_30px_90px_-50px_rgba(37,99,235,0.45)] backdrop-blur-xl sm:px-10">
@@ -49,8 +46,7 @@ export default function NotFound() {
           </div>
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 }
+

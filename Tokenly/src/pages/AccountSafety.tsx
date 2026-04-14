@@ -1,6 +1,4 @@
 import { Eye, Lock, Shield, ShieldAlert, UserX } from "lucide-react";
-import Footer from "../components/common/Footer";
-import Navbar from "../components/common/Navbar";
 
 const safetyItems = [
   {
@@ -37,8 +35,7 @@ const safetyItems = [
 
 export default function AccountSafety() {
   return (
-    <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
-      <Navbar />
+    <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
 
       <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <section className="rounded-3xl border border-sky-200/70 bg-sky-50/45 p-6 shadow-[0_20px_60px_-42px_rgba(14,165,233,0.35)] backdrop-blur-xl sm:p-8">
@@ -70,8 +67,7 @@ export default function AccountSafety() {
           ))}
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 }
+

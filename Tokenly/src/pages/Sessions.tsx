@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Calendar,
@@ -11,8 +11,6 @@ import {
   Search,
   Video,
 } from "lucide-react";
-import Navbar from "../components/common/Navbar";
-import Footer from "../components/common/Footer";
 import ThemedSelect from "../components/common/ThemedSelect";
 import type { Session } from "../types/session";
 import { getSessionsByUser } from "../services/sessionService";
@@ -245,8 +243,7 @@ const confirmMarkComplete = async () => {
 };
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(135deg,#eef4ff_0%,#eef1ff_46%,#f5ecff_100%)] text-slate-900">
-      <Navbar />
+    <div className="min-h-full bg-[linear-gradient(135deg,#eef4ff_0%,#eef1ff_46%,#f5ecff_100%)] text-slate-900">
 
       <main className="mx-auto w-full max-w-[1180px] px-3 py-4 sm:px-5 lg:px-6">
         <>
@@ -549,8 +546,6 @@ const confirmMarkComplete = async () => {
         </>
       </main>
 
-      <Footer />
-
       {showConfirmModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-slate-300 bg-white/95 p-5 shadow-2xl">
@@ -584,5 +579,8 @@ const confirmMarkComplete = async () => {
 };
 
 export default SessionsPage;
+
+
+
 
 

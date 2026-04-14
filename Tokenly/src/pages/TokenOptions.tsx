@@ -1,8 +1,6 @@
 import { Building2, CreditCard, PlusCircle, Wallet } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import Footer from "../components/common/Footer";
-import Navbar from "../components/common/Navbar";
 
 type TokenActionTab = "earn" | "buy";
 
@@ -37,8 +35,7 @@ export default function TokenOptions() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
-      <Navbar />
+    <div className="relative min-h-full overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
 
       <main className="relative z-10 mx-auto max-w-5xl px-4 py-6 sm:px-5 lg:px-6 lg:py-8">
         <div className="mb-3">
@@ -194,8 +191,7 @@ export default function TokenOptions() {
           )}
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 }
+

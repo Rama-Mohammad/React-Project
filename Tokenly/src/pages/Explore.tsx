@@ -1,8 +1,6 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { Link, useLocation } from "react-router-dom";
-import Footer from "../components/common/Footer";
-import Navbar from "../components/common/Navbar";
 import CategoryTabs from "../components/explore/CategoryTabs";
 import FilterSideBar from "../components/explore/FilterSideBar";
 import HelperCard from "../components/explore/HelperCard";
@@ -15,7 +13,7 @@ import {
   mapSkillToExploreItem,
   type SkillWithRelations,
 } from "../utils/exploreMappers";
-// HelpOfferItem replaces the old broken OfferItem — offers tab now shows help_offers only
+// HelpOfferItem replaces the old broken OfferItem � offers tab now shows help_offers only
 import type { ExploreTab, RequestItem, HelperItem, SkillItem, HelpOfferItem, Urgency, SkillLevel } from "../types/explore";
 import useRequests from "../hooks/useRequest";
 import { getAllSkills } from "../services/skillService";
@@ -84,8 +82,8 @@ export default function Explore() {
   const [liveHelpers, setLiveHelpers] = useState<HelperItem[]>([]);
   const [helpersLoading, setHelpersLoading] = useState(false);
   const [helpersError, setHelpersError] = useState("");
-  // Offers tab: now HelpOfferItem[] — represents help_offers posted by helpers (Flow 2)
-  // NOT the `offers` table — those are private responses to requests and shouldn't be browsed here
+  // Offers tab: now HelpOfferItem[] � represents help_offers posted by helpers (Flow 2)
+  // NOT the `offers` table � those are private responses to requests and shouldn't be browsed here
   const [liveOffers, setLiveOffers] = useState<HelpOfferItem[]>([]);
   const [offersLoading, setOffersLoading] = useState(false);
   const [offersError, setOffersError] = useState("");
@@ -192,7 +190,7 @@ export default function Explore() {
     };
   }, [activeTab]);
 
-  // Offers tab: fetch open help_offers only (Flow 2 — helper-initiated)
+  // Offers tab: fetch open help_offers only (Flow 2 � helper-initiated)
   // This replaces the old broken fetch that mixed `offers` + `help_offers` together
   useEffect(() => {
     if (activeTab !== "offers") return;
@@ -312,7 +310,7 @@ export default function Explore() {
       );
     }
 
-    // Online filter now uses last_seen — a helper is online if seen within 15 minutes
+    // Online filter now uses last_seen � a helper is online if seen within 15 minutes
     if (onlineOnly) {
       data = data.filter((item) => isOnline(item.lastSeen));
     }
@@ -403,7 +401,7 @@ export default function Explore() {
     } else if (sortBy === "Highest Tokens") {
       data.sort((a, b) => b.credits - a.credits);
     }
-    // Default is Newest — already sorted by created_at desc from the service
+    // Default is Newest � already sorted by created_at desc from the service
 
     return data;
   }, [liveOffers, search, selectedCategory, sortBy]);
@@ -427,7 +425,7 @@ export default function Explore() {
     [liveSkills]
   );
 
-  // Offer categories come from help_offers.category — not from the old mixed mess
+  // Offer categories come from help_offers.category � not from the old mixed mess
   const offerCategoryOptions = useMemo(
     () => buildDynamicOptions(liveOffers.map((item) => item.category), "General"),
     [liveOffers]
@@ -552,7 +550,7 @@ export default function Explore() {
       ? "Find experts ready to help you"
       : activeTab === "skills"
       ? "Explore skills available in the community"
-      : "Browse offers posted by helpers — request one directly";
+      : "Browse offers posted by helpers � request one directly";
 
   const handleTabChange = (tab: ExploreTab) => {
     setActiveTab(tab);
@@ -571,14 +569,12 @@ export default function Explore() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
+    <div className="relative min-h-full overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <div className="pointer-events-none absolute inset-0">
         <div className="explore-pulse absolute -left-28 top-24 h-64 w-64 rounded-full bg-indigo-200/25 blur-3xl" />
         <div className="explore-float absolute -right-28 top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
         <div className="explore-pulse absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-purple-200/20 blur-3xl" />
       </div>
-
-      <Navbar />
 
       <main className="relative z-10 mx-auto w-[90vw] px-2 py-6 sm:px-3 lg:px-4 lg:py-8">
         <StatsHero
@@ -642,7 +638,7 @@ export default function Explore() {
             </div>
           </div>
 
-          {/* ── Requests ── */}
+          {/* -- Requests -- */}
           {activeTab === "requests" && requestsLoading ? (
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
               Loading requests...
@@ -661,7 +657,7 @@ export default function Explore() {
             </div>
           ) : null}
 
-          {/* ── Helpers ── */}
+          {/* -- Helpers -- */}
           {activeTab === "helpers" && helpersLoading ? (
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
               Loading helpers...
@@ -680,7 +676,7 @@ export default function Explore() {
             </div>
           ) : null}
 
-          {/* ── Skills ── */}
+          {/* -- Skills -- */}
           {activeTab === "skills" && skillsLoading ? (
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
               Loading skills...
@@ -699,10 +695,10 @@ export default function Explore() {
             </div>
           ) : null}
 
-          {/* ── Offers tab (Flow 2) ──
+          {/* -- Offers tab (Flow 2) --
                Shows help_offers posted by helpers advertising availability.
                A user browses these and clicks "Book" to submit a help_offer_request.
-               This is NOT the `offers` table — those are private responses to requests. */}
+               This is NOT the `offers` table � those are private responses to requests. */}
           {activeTab === "offers" && offersLoading ? (
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
               Loading offers...
@@ -777,11 +773,11 @@ export default function Explore() {
                       <div>
                         <p className="text-xs font-semibold text-slate-900">{item.helperName}</p>
                         {item.helperRating > 0 ? (
-                          <p className="text-xs text-slate-500">★ {item.helperRating.toFixed(1)}</p>
+                          <p className="text-xs text-slate-500">? {item.helperRating.toFixed(1)}</p>
                         ) : null}
                       </div>
                     </div>
-                    {/* Links to the help offer detail page — user can submit a help_offer_request from there */}
+                    {/* Links to the help offer detail page � user can submit a help_offer_request from there */}
                     <Link
                       to={isAuthenticated ? `/offers/${item.id}?source=help_offer` : "/auth?mode=signin"}
                       className="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700"
@@ -802,8 +798,7 @@ export default function Explore() {
           ) : null}
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 }
+

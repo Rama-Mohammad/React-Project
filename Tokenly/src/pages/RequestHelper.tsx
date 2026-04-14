@@ -4,8 +4,6 @@
 import { CheckCircle2, Coins, Lightbulb, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import Footer from "../components/common/Footer";
-import Navbar from "../components/common/Navbar";
 import { supabase } from "../lib/supabaseClient";
 import { createRequest } from "../services/requestService";
 import { sendDirectRequest } from "../services/directRequestService";
@@ -279,8 +277,7 @@ export default function RequestHelper() {
 
   if (isLoadingHelper) {
     return (
-      <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
-        <Navbar />
+      <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
         <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
           <h1 className="text-3xl font-bold text-slate-900">
             {isGenericRequestFlow ? "Opening request form..." : "Loading helper..."}
@@ -292,8 +289,7 @@ export default function RequestHelper() {
 
   if (!helper) {
     return (
-      <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
-        <Navbar />
+      <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
         <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
           <h1 className="text-3xl font-bold text-slate-900">Helper not found</h1>
           <p className="mt-2 text-slate-600">
@@ -312,13 +308,11 @@ export default function RequestHelper() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
+    <div className="relative min-h-full overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <div className="pointer-events-none absolute inset-0">
         <div className="explore-pulse absolute -left-24 top-20 h-64 w-64 rounded-full bg-indigo-200/24 blur-3xl" />
         <div className="explore-float absolute -right-24 top-44 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
       </div>
-
-      <Navbar />
 
       <main className="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-5 lg:px-6 lg:py-8">
         <div className="mb-3 flex items-center gap-3">
@@ -618,8 +612,6 @@ export default function RequestHelper() {
           </aside>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

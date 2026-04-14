@@ -1,5 +1,3 @@
-import Footer from "../components/common/Footer";
-import Navbar from "../components/common/Navbar";
 
 const sections = [
   {
@@ -31,8 +29,7 @@ const sections = [
 
 export default function TermsOfService() {
   return (
-    <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
-      <Navbar />
+    <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
 
       <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <section className="rounded-3xl border border-violet-200/70 bg-violet-50/45 p-6 shadow-[0_20px_60px_-42px_rgba(139,92,246,0.35)] backdrop-blur-xl sm:p-8">
@@ -61,8 +58,7 @@ export default function TermsOfService() {
           ))}
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 }
+

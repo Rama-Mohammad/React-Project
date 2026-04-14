@@ -1,9 +1,7 @@
-﻿import { Clock3, MessageSquareText, Sparkles } from "lucide-react";
+import { Clock3, MessageSquareText, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
-import Footer from "../components/common/Footer";
-import Navbar from "../components/common/Navbar";
 import { supabase } from "../lib/supabaseClient";
 import { getOffersForHelper, type OfferForHelperRow } from "../services/offerService";
 
@@ -150,8 +148,7 @@ export default function MyOffers() {
     : null;
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
-      <Navbar />
+    <div className="relative min-h-full overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <main className="relative z-10 mx-auto max-w-5xl px-4 py-6 sm:px-5 lg:px-6 lg:py-7">
         <section className="explore-glass rounded-3xl border border-white/50 bg-white/80 p-5 backdrop-blur-xl md:p-6">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">My Offers</h1>
@@ -338,25 +335,33 @@ export default function MyOffers() {
         title="Delete this independent offer?"
         message="This offer will be removed from your public listings."
         itemName={pendingIndependentOffer?.title}
-        details={pendingIndependentOffer ? `${pendingIndependentOffer.duration_minutes ?? 0} min Â· ${pendingIndependentOffer.credit_cost ?? 0} tokens` : undefined}
+        details={pendingIndependentOffer ? `${pendingIndependentOffer.duration_minutes ?? 0} min � ${pendingIndependentOffer.credit_cost ?? 0} tokens` : undefined}
         confirmLabel="Delete Offer"
         loading={Boolean(pendingIndependentOffer && deletingIndependentOfferId === pendingIndependentOffer.id)}
         onCancel={() => setPendingDeleteIndependentOfferId(null)}
-        onConfirm={() => pendingIndependentOffer && handleDeleteIndependentOffer(pendingIndependentOffer.id)}
+        onConfirm={() => {
+          if (!pendingIndependentOffer) return;
+          return handleDeleteIndependentOffer(pendingIndependentOffer.id);
+        }}
       />
       <ConfirmDeleteModal
         isOpen={Boolean(pendingRequestOffer)}
         title="Delete this request-based offer?"
         message="This submitted offer will be removed from the request."
         itemName={pendingRequestOffer?.request?.title ?? "Unknown request"}
-        details={pendingRequestOffer ? `${pendingRequestOffer.request?.duration_minutes ?? 0} min Â· ${pendingRequestOffer.request?.credit_cost ?? 0} tokens` : undefined}
+        details={pendingRequestOffer ? `${pendingRequestOffer.request?.duration_minutes ?? 0} min � ${pendingRequestOffer.request?.credit_cost ?? 0} tokens` : undefined}
         confirmLabel="Delete Offer"
         loading={Boolean(pendingRequestOffer && deletingRequestOfferId === pendingRequestOffer.id)}
         onCancel={() => setPendingDeleteRequestOfferId(null)}
-        onConfirm={() => pendingRequestOffer && handleDeleteRequestOffer(pendingRequestOffer.id)}
+        onConfirm={() => {
+          if (!pendingRequestOffer) return;
+          return handleDeleteRequestOffer(pendingRequestOffer.id);
+        }}
       />
-      <Footer />
     </div>
   );
 }
+
+
+
 

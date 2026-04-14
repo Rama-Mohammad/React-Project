@@ -1,8 +1,6 @@
 import { CalendarDays, CheckCircle2, Clock3, Coins, Sparkles, Video } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import Footer from "../components/common/Footer";
-import Navbar from "../components/common/Navbar";
 import { supabase } from "../lib/supabaseClient";
 import {
   acceptOffer,
@@ -10,7 +8,7 @@ import {
   extractAvailabilityFromOfferDescription,
   getIndependentOfferAppointmentDetails,
   getOfferAppointmentDetails,
-  type IndependentOfferAppointmentRow,
+  type HelpOfferAppointmentRow,
   type OfferAppointmentRow,
 } from "../services/offerService";
 import { getProfileCreditBalance } from "../services/profileService";
@@ -51,7 +49,7 @@ export default function OfferAppointment() {
   const source = (searchParams.get("source") === "independent" ? "independent" : "request") as AppointmentSource;
 
   const [requestOffer, setRequestOffer] = useState<OfferAppointmentRow | null>(null);
-  const [independentOffer, setIndependentOffer] = useState<IndependentOfferAppointmentRow | null>(null);
+  const [independentOffer, setIndependentOffer] = useState<HelpOfferAppointmentRow | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -321,13 +319,11 @@ export default function OfferAppointment() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
+    <div className="relative min-h-full overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <div className="pointer-events-none absolute inset-0">
         <div className="explore-pulse absolute -left-24 top-20 h-64 w-64 rounded-full bg-indigo-200/24 blur-3xl" />
         <div className="explore-float absolute right-[-6rem] top-44 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
       </div>
-
-      <Navbar />
 
       <main className="relative z-10 mx-auto max-w-6xl px-4 py-6 sm:px-5 lg:px-6 lg:py-8">
         <div className="mb-3">
@@ -530,8 +526,9 @@ export default function OfferAppointment() {
           </div>
         )}
       </main>
-
-      <Footer />
     </div>
   );
 }
+
+
+

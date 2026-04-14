@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import Footer from "../components/common/Footer";
-import Navbar from "../components/common/Navbar";
 import { getSessionById } from "../services/sessionService";
 
 export default function SessionRequestDetails() {
@@ -56,22 +54,19 @@ export default function SessionRequestDetails() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
-        <Navbar />
+      <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
         <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
           <h1 className="text-3xl font-bold text-slate-900">Opening request...</h1>
           <p className="mt-2 text-slate-600">
             We&apos;re finding the request linked to this session.
           </p>
         </main>
-        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
-      <Navbar />
+    <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
         <h1 className="text-3xl font-bold text-slate-900">Request not found</h1>
         <p className="mt-2 text-slate-600">
@@ -84,7 +79,7 @@ export default function SessionRequestDetails() {
           Back to Sessions
         </Link>
       </main>
-      <Footer />
     </div>
   );
 }
+

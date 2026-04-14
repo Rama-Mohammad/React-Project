@@ -2,8 +2,6 @@ import { ArrowLeft, Code2, Search, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import ThemedSelect from "../components/common/ThemedSelect";
-import Footer from "../components/common/Footer";
-import Navbar from "../components/common/Navbar";
 import HelperCard from "../components/explore/HelperCard";
 import type { HelperItem, SkillItem } from "../types/explore";
 import { getExploreHelpers } from "../services/helperExploreService";
@@ -143,8 +141,7 @@ export default function SkillHelpers() {
   if (!skill) {
     if (isLoadingSkill) {
       return (
-        <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
-          <Navbar />
+        <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
           <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
             <h1 className="text-3xl font-bold text-slate-900">Loading skill...</h1>
           </main>
@@ -153,8 +150,7 @@ export default function SkillHelpers() {
     }
 
     return (
-      <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
-        <Navbar />
+      <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
         <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
           <h1 className="text-3xl font-bold text-slate-900">Skill not found</h1>
           <p className="mt-2 text-slate-600">
@@ -174,13 +170,11 @@ export default function SkillHelpers() {
   const onlineCount = matchedHelpers.filter((helper) => helper.online).length;
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
+    <div className="relative min-h-full overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <div className="pointer-events-none absolute inset-0">
         <div className="explore-pulse absolute -left-28 top-24 h-64 w-64 rounded-full bg-indigo-200/25 blur-3xl" />
         <div className="explore-float absolute right-[-7rem] top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
       </div>
-
-      <Navbar />
 
       <main className="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-5 lg:px-6 lg:py-8">
         <div className="mb-3 flex items-center gap-2 text-sm text-slate-500">
@@ -330,8 +324,7 @@ export default function SkillHelpers() {
           </section>
         )}
       </main>
-
-      <Footer />
     </div>
   );
 }
+

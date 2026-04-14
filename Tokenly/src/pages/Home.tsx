@@ -1,5 +1,3 @@
-﻿import Navbar from "../components/common/Navbar";
-import Footer from "../components/common/Footer";
 
 import HeroSection from "../components/home/HeroSection";
 import StatsSection from "../components/home/StatsSection";
@@ -11,8 +9,7 @@ import CTASection from "../components/home/CTASection";
 
 const Home = () => {
   return (
-    <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
-      <Navbar />
+    <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
 
       <main>
         <HeroSection />
@@ -23,13 +20,12 @@ const Home = () => {
         <TestimonialsSection />
         <CTASection />
       </main>
-
-      <Footer />
     </div>
   );
 };
 
 export default Home;
+
 
 
 

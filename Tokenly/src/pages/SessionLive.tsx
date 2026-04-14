@@ -214,13 +214,18 @@ const SessionLivePage: React.FC = () => {
         title="Delete this file?"
         message="This shared file will be removed from the session."
         itemName={pendingDeleteFile?.name}
-        details={pendingDeleteFile ? `${pendingDeleteFile.uploadedBy} · ${(pendingDeleteFile.size / 1024).toFixed(1)} KB` : undefined}
+        details={pendingDeleteFile ? `${pendingDeleteFile.uploadedBy} � ${(pendingDeleteFile.size / 1024).toFixed(1)} KB` : undefined}
         confirmLabel="Delete File"
         onCancel={() => setPendingDeleteFileId(null)}
-        onConfirm={() => pendingDeleteFile && handleDeleteFile(pendingDeleteFile.id)}
+        onConfirm={() => {
+          if (!pendingDeleteFile) return;
+          handleDeleteFile(pendingDeleteFile.id);
+        }}
       />
     </div>
   );
 };
 
 export default SessionLivePage;
+
+

@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Calendar,
   Check,
@@ -15,8 +15,6 @@ import {
   User,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import Footer from "../components/common/Footer";
-import Navbar from "../components/common/Navbar";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import RatingStars from "../components/common/RatingStars";
 import { supabase } from "../lib/supabaseClient";
@@ -118,7 +116,7 @@ export default function Dashboard() {
     [rawOffers, currentUserId]
   );
 
-  // Direct requests the current user received as a helper — pending only
+  // Direct requests the current user received as a helper � pending only
   const incomingDirectRequests = useMemo(
     () => (currentUserId ? mapIncomingDirectRequests() : []),
     [rawIncomingDirectRequests, currentUserId]
@@ -153,7 +151,7 @@ export default function Dashboard() {
     [transactions]
   );
 
-  // Accept a direct request — creates a session with direct_request_id (Flow 3)
+  // Accept a direct request � creates a session with direct_request_id (Flow 3)
   const handleAcceptDirectRequest = async (id: string) => {
     setDirectRequestActionId(id);
     await acceptDirectRequest(id);
@@ -162,7 +160,7 @@ export default function Dashboard() {
     setDirectRequestActionId(null);
   };
 
-  // Reject a direct request — notifies the requester
+  // Reject a direct request � notifies the requester
   const handleRejectDirectRequest = async (id: string) => {
     setDirectRequestActionId(id);
     await rejectDirectRequest(id);
@@ -344,11 +342,10 @@ export default function Dashboard() {
   const reviewCount = stats ? stats.completedSessions : 0;
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
-      <Navbar />
+    <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
 
       <main className="mx-auto w-full max-w-355 px-4 py-6 sm:px-6 lg:px-8">
-        {/* ── Header / profile strip ── */}
+        {/* -- Header / profile strip -- */}
         <section className="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-transparent p-5 shadow-none sm:p-6">
           <div className="pointer-events-none absolute -right-20 -top-24 h-52 w-52 rounded-full bg-indigo-300/30 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-24 left-1/3 h-52 w-52 rounded-full bg-violet-300/20 blur-3xl" />
@@ -398,7 +395,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* ── Stats row ── */}
+          {/* -- Stats row -- */}
           <div className="relative mt-5 grid grid-cols-1 items-start gap-3 xl:grid-cols-[1.8fr_1fr_1fr_1fr_1fr]">
             {/* Token balance card */}
             <article className="rounded-2xl border border-indigo-300/80 bg-transparent p-4">
@@ -410,7 +407,7 @@ export default function Dashboard() {
                   <div>
                     <p className="text-sm text-slate-500">Token Balance</p>
                     <p className="text-2xl font-semibold leading-none">
-                      {dashLoading ? "—" : creditBalance}{" "}
+                      {dashLoading ? "�" : creditBalance}{" "}
                       <span className="text-lg font-normal text-slate-500">tokens</span>
                     </p>
                   </div>
@@ -458,14 +455,14 @@ export default function Dashboard() {
                     <article className="rounded-2xl border border-indigo-200/70 bg-indigo-100/45 px-4 py-3">
                       <p className="text-sm font-semibold text-indigo-700">As Helper</p>
                       <p className="mt-1 text-4xl font-semibold leading-none text-indigo-700">
-                        {stats?.totalHelpGiven ?? "—"}
+                        {stats?.totalHelpGiven ?? "�"}
                       </p>
                       <p className="mt-1 text-sm text-indigo-700">sessions completed</p>
                     </article>
                     <article className="rounded-2xl border border-sky-200/70 bg-sky-100/45 px-4 py-3">
                       <p className="text-sm font-semibold text-sky-700">As Requester</p>
                       <p className="mt-1 text-4xl font-semibold leading-none text-sky-700">
-                        {stats?.totalHelpReceived ?? "—"}
+                        {stats?.totalHelpReceived ?? "�"}
                       </p>
                       <p className="mt-1 text-sm text-sky-700">sessions received</p>
                     </article>
@@ -487,11 +484,11 @@ export default function Dashboard() {
                 <Check size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
-                {dashLoading ? "—" : stats?.completedSessions ?? 0}
+                {dashLoading ? "�" : stats?.completedSessions ?? 0}
               </p>
               <p className="text-sm text-slate-700">Sessions Done</p>
               <p className="mt-2 text-sm text-slate-500">
-                {stats ? `${stats.totalHelpGiven} as helper · ${stats.totalHelpReceived} as requester` : "—"}
+                {stats ? `${stats.totalHelpGiven} as helper � ${stats.totalHelpReceived} as requester` : "�"}
               </p>
             </article>
 
@@ -501,7 +498,7 @@ export default function Dashboard() {
                 <MessageCircle size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
-                {dashLoading ? "—" : stats?.activeRequests ?? 0}
+                {dashLoading ? "�" : stats?.activeRequests ?? 0}
               </p>
               <p className="text-sm text-slate-700">Requests Posted</p>
               <p className="mt-2 text-sm text-slate-500">Total help requests</p>
@@ -513,11 +510,11 @@ export default function Dashboard() {
                 <Send size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
-                {dashLoading ? "—" : stats?.offersSubmitted ?? 0}
+                {dashLoading ? "�" : stats?.offersSubmitted ?? 0}
               </p>
               <p className="text-sm text-slate-700">Offers Submitted</p>
               <p className="mt-2 text-sm text-slate-500">
-                {stats ? `${stats.offersAccepted} accepted` : "—"}
+                {stats ? `${stats.offersAccepted} accepted` : "�"}
               </p>
             </article>
 
@@ -527,7 +524,7 @@ export default function Dashboard() {
                 <Star size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
-                {dashLoading ? "—" : avgRating.toFixed(1)}
+                {dashLoading ? "�" : avgRating.toFixed(1)}
               </p>
               <p className="text-sm text-slate-700">Avg. Rating</p>
               <p className="mt-2 text-sm text-slate-500">From {reviewCount} sessions</p>
@@ -535,7 +532,7 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* ── Sessions ── */}
+        {/* -- Sessions -- */}
         <section className="relative mt-4 overflow-hidden rounded-3xl border border-indigo-200/70 bg-[linear-gradient(140deg,rgba(238,242,255,0.95)_0%,rgba(237,233,254,0.92)_45%,rgba(224,231,255,0.95)_100%)] p-4 shadow-[0_14px_34px_-26px_rgba(99,102,241,0.45)] sm:p-5">
           <div className="pointer-events-none absolute -top-16 right-6 h-40 w-40 rounded-full bg-indigo-300/20 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-16 left-10 h-36 w-36 rounded-full bg-violet-300/20 blur-3xl" />
@@ -651,8 +648,8 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* ── Direct Requests (incoming from users who want this helper) ── */}
-        {/* Only shown when there are pending direct requests — disappears once all resolved */}
+        {/* -- Direct Requests (incoming from users who want this helper) -- */}
+        {/* Only shown when there are pending direct requests � disappears once all resolved */}
         {incomingDirectRequests.length > 0 ? (
           <section className="mt-4 rounded-3xl border border-indigo-200/70 bg-transparent shadow-none">
             <div className="flex items-center justify-between border-b border-indigo-200/70 p-4">
@@ -671,9 +668,9 @@ export default function Dashboard() {
                       <p className="text-base font-semibold leading-tight text-slate-900">{item.title}</p>
                       <p className="mt-1 text-sm text-slate-500">
                         From {item.personName}
-                        {item.duration ? ` · ${item.duration} min` : ""}
-                        {item.credits ? ` · ${item.credits} credits` : ""}
-                        {" · "}{item.age}
+                        {item.duration ? ` � ${item.duration} min` : ""}
+                        {item.credits ? ` � ${item.credits} credits` : ""}
+                        {" � "}{item.age}
                       </p>
                       {item.message ? (
                         <p className="mt-2 line-clamp-2 text-sm text-slate-600">{item.message}</p>
@@ -741,9 +738,9 @@ export default function Dashboard() {
                         <p className="text-base font-semibold leading-tight text-slate-900">{item.title}</p>
                         <p className="mt-1 text-sm text-slate-500">
                           Sent to {item.personName}
-                          {item.duration ? ` · ${item.duration} min` : ""}
-                          {item.credits ? ` · ${item.credits} credits` : ""}
-                          {" · "}{item.age}
+                          {item.duration ? ` � ${item.duration} min` : ""}
+                          {item.credits ? ` � ${item.credits} credits` : ""}
+                          {" � "}{item.age}
                         </p>
                         {item.message ? (
                           <p className="mt-2 line-clamp-2 text-sm text-slate-600">{item.message}</p>
@@ -760,7 +757,7 @@ export default function Dashboard() {
           </section>
         ) : null}
 
-        {/* ── Open Requests + Submitted Offers ── */}
+        {/* -- Open Requests + Submitted Offers -- */}
         <section className="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-2">
           <article className="rounded-3xl border border-slate-300/80 bg-transparent shadow-none">
             <div className="flex items-center justify-between border-b border-slate-300/80 p-4">
@@ -873,7 +870,7 @@ export default function Dashboard() {
           </article>
         </section>
 
-        {/* ── Activity Feed ── */}
+        {/* -- Activity Feed -- */}
         <section className="relative mt-4 overflow-hidden rounded-3xl border border-indigo-200/70 bg-[linear-gradient(140deg,rgba(238,242,255,0.95)_0%,rgba(237,233,254,0.92)_45%,rgba(224,231,255,0.95)_100%)] shadow-[0_14px_34px_-26px_rgba(99,102,241,0.45)]">
           <div className="pointer-events-none absolute -top-16 right-6 h-40 w-40 rounded-full bg-indigo-300/20 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-16 left-10 h-36 w-36 rounded-full bg-violet-300/20 blur-3xl" />
@@ -931,9 +928,7 @@ export default function Dashboard() {
         </section>
       </main>
 
-      <Footer />
-
-      {/* ── Token transfer toast ── */}
+      {/* -- Token transfer toast -- */}
       {transferToast ? (
         <div className="pointer-events-none fixed bottom-5 right-5 z-60">
           <div className="flex min-w-65 items-center gap-2.5 rounded-2xl border border-indigo-300 bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-4 py-3 text-white shadow-xl shadow-indigo-900/20">
@@ -950,7 +945,7 @@ export default function Dashboard() {
         </div>
       ) : null}
 
-      {/* ── Mark complete confirm modal ── */}
+      {/* -- Mark complete confirm modal -- */}
       {pendingSession ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <button
@@ -1008,7 +1003,7 @@ export default function Dashboard() {
         title="Delete this request?"
         message="This request will be removed from your dashboard."
         itemName={pendingDeleteRequest?.title}
-        details={pendingDeleteRequest ? `${pendingDeleteRequest.offers} offers · ${pendingDeleteRequest.credits} tokens` : undefined}
+        details={pendingDeleteRequest ? `${pendingDeleteRequest.offers} offers � ${pendingDeleteRequest.credits} tokens` : undefined}
         confirmLabel="Delete Request"
         loading={Boolean(pendingDeleteRequest && deletingRequestId === pendingDeleteRequest.id)}
         onCancel={() => setPendingDeleteRequestId(null)}
@@ -1020,3 +1015,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

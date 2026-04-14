@@ -2,8 +2,6 @@ import { Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import ThemedSelect from "../components/common/ThemedSelect";
-import Footer from "../components/common/Footer";
-import Navbar from "../components/common/Navbar";
 import { supabase } from "../lib/supabaseClient";
 
 type UserSkill = {
@@ -201,8 +199,7 @@ export default function CreateOffer() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
-      <Navbar />
+    <div className="relative min-h-full overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <main className="relative z-10 mx-auto max-w-5xl px-4 py-6 sm:px-5 lg:px-6 lg:py-7">
         <section className="explore-glass rounded-3xl p-5 backdrop-blur-xl md:p-6">
           <div className="mb-4">
@@ -349,7 +346,7 @@ export default function CreateOffer() {
           </div>
         </section>
       </main>
-      <Footer />
     </div>
   );
 }
+

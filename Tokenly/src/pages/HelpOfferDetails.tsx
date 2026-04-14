@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Clock3, Coins, Sparkles, MessageCircle, CheckCircle2, XCircle, Star } from "lucide-react";
-import Navbar from "../components/common/Navbar";
-import Footer from "../components/common/Footer";
 import { supabase } from "../lib/supabaseClient";
 import { getHelpOfferById } from "../services/helpOfferService";
 import { getRequestsForHelpOffer, acceptHelpOfferRequest, rejectHelpOfferRequest } from "../services/helpOfferService";
@@ -126,20 +124,16 @@ export default function HelpOfferDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)]">
-        <Navbar />
+      <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)]">
         <main className="mx-auto max-w-3xl px-4 py-10 text-sm text-slate-500">Loading offer...</main>
-        <Footer />
       </div>
     );
   }
 
   if (error || !offer) {
     return (
-      <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)]">
-        <Navbar />
+      <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)]">
         <main className="mx-auto max-w-3xl px-4 py-10 text-sm text-rose-600">{error || "Offer not found."}</main>
-        <Footer />
       </div>
     );
   }
@@ -148,13 +142,11 @@ export default function HelpOfferDetails() {
   const resolvedRequests = requests.filter((r) => r.status !== "pending");
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
+    <div className="relative min-h-full overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -left-24 top-20 h-64 w-64 rounded-full bg-indigo-200/25 blur-3xl" />
         <div className="absolute -right-20 top-44 h-72 w-72 rounded-full bg-sky-200/20 blur-3xl" />
       </div>
-
-      <Navbar />
 
       <main className="relative z-10 mx-auto max-w-3xl px-4 py-6 sm:px-5 lg:py-8">
         {/* Back */}
@@ -331,8 +323,6 @@ export default function HelpOfferDetails() {
           )}
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 }

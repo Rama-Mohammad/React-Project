@@ -1,58 +1,18 @@
-﻿import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
-import Footer from '../common/Footer';
-
-const Navbar: React.FC = () => {
-  return (
-    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <img src="/images/logo-nobg.png" alt="Tokenly" className="h-20 w-auto object-contain" />
-          </Link>
-
-          {/* Navigation Links */}
-          <div className="flex items-center space-x-4">
-            <Link 
-              to="/" 
-              className="px-3 py-2 text-gray-700 hover:text-blue-600 transition"
-            >
-              Home
-            </Link>
-            <Link 
-              to="/explore" 
-              className="px-3 py-2 text-gray-700 hover:text-blue-600 transition"
-            >
-              Explore
-            </Link>
-            <Link 
-              to="/dashboard" 
-              className="px-3 py-2 text-gray-700 hover:text-blue-600 transition"
-            >
-              Dashboard
-            </Link>
-          </div>
-        </div>
-      </div>
-    </nav>
-  );
-};
+import React from "react";
+import { Outlet } from "react-router-dom";
+import Footer from "../common/Footer";
+import Navbar from "../common/Navbar";
 
 const Layout: React.FC = () => {
   return (
-    <div className="min-h-screen bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex flex-col">
+    <div className="flex min-h-screen flex-col bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)]">
       <Navbar />
-      <main className="flex-grow">
+      <div className="flex-grow">
         <Outlet />
-      </main>
+      </div>
       <Footer />
     </div>
   );
 };
 
 export default Layout;
-
-
-
-

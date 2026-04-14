@@ -19,8 +19,6 @@ import type { SessionListItemProps } from '../../../types/session';
 const SessionListItem: React.FC<SessionListItemProps> = ({
   session,
   onJoin,
-  onReview,
-  onViewRequest,
   onMarkComplete,
 }) => {
   const navigate = useNavigate(); 
@@ -183,7 +181,7 @@ const handleConfirm = async () => {
           </div>
           <div className="flex items-center gap-2">
             <FontAwesomeIcon icon={faClock} />
-            {formatTime(session.datetime)} • {session.duration} min
+            {formatTime(session.datetime)} � {session.duration} min
           </div>
         </div>
 
@@ -345,3 +343,5 @@ const handleConfirm = async () => {
 };
 
 export default SessionListItem;
+
+
