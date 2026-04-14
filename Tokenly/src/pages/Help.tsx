@@ -1,4 +1,5 @@
-import { Coins, FileText, PlayCircle, Rocket, UserCheck } from "lucide-react";
+import { ArrowLeft, Coins, FileText, PlayCircle, Rocket, UserCheck } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const helpSections = [
   {
@@ -43,8 +44,16 @@ export default function Help() {
   return (
     <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
 
-      <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <section className="rounded-3xl border border-indigo-200/70 bg-indigo-50/45 p-6 shadow-[0_20px_60px_-42px_rgba(79,70,229,0.35)] backdrop-blur-xl sm:p-8">
+      <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <Link
+          to="/account-settings"
+          className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-slate-900"
+        >
+          <ArrowLeft size={15} />
+          Back to Account Settings
+        </Link>
+
+        <section className="mt-4 rounded-3xl border border-indigo-200/70 bg-indigo-50/45 p-6 shadow-[0_20px_60px_-42px_rgba(79,70,229,0.35)] backdrop-blur-xl sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-indigo-600">Support</p>
             <span className="rounded-full border border-indigo-200 bg-indigo-100/70 px-3 py-1 text-xs font-medium text-indigo-700">

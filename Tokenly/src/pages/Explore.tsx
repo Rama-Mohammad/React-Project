@@ -8,6 +8,7 @@ import RequestCard from "../components/explore/RequestCard";
 import SearchBar from "../components/explore/SearchBar";
 import SkillCard from "../components/explore/SkillCard";
 import StatsHero from "../components/explore/StatsHero";
+import Avatar from "../components/common/Avatar";
 import {
   mapRequestToExploreItem,
   mapSkillToExploreItem,
@@ -87,6 +88,9 @@ export default function Explore() {
   const [liveOffers, setLiveOffers] = useState<HelpOfferItem[]>([]);
   const [offersLoading, setOffersLoading] = useState(false);
   const [offersError, setOffersError] = useState("");
+  const requestedCategory = useMemo(() => {
+    return new URLSearchParams(location.search).get("category")?.trim() ?? "";
+  }, [location.search]);
 
   // Sync tab from URL param (e.g. /explore?tab=helpers)
   useEffect(() => {
@@ -483,6 +487,21 @@ export default function Explore() {
   }, [currentCategories, selectedCategory]);
 
   useEffect(() => {
+    if (!requestedCategory) {
+      setSelectedCategory("All");
+      return;
+    }
+
+    const matchedCategory = currentCategories.find(
+      (category) => category.toLowerCase() === requestedCategory.toLowerCase()
+    );
+
+    if (matchedCategory) {
+      setSelectedCategory(matchedCategory);
+    }
+  }, [currentCategories, requestedCategory]);
+
+  useEffect(() => {
     if (activeTab === "requests" && !(requestUrgencyOptions as string[]).includes(urgency)) {
       setUrgency("All");
     }
@@ -767,9 +786,13 @@ export default function Explore() {
                   {/* Helper info + Book button */}
                   <div className="mt-3 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
                     <div className="flex items-center gap-2">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
-                        {item.helperInitials}
-                      </div>
+                      <Avatar
+                        name={item.helperName}
+                        imageUrl={item.helperProfileImageUrl}
+                        className="h-7 w-7 rounded-full"
+                        imageClassName="rounded-full"
+                        fallbackClassName="bg-indigo-100 text-xs font-semibold text-indigo-700"
+                      />
                       <div>
                         <p className="text-xs font-semibold text-slate-900">{item.helperName}</p>
                         {item.helperRating > 0 ? (

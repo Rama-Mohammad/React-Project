@@ -11,6 +11,7 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
+import Avatar from "../components/common/Avatar";
 import RatingStars from "../components/common/RatingStars";
 // import { helpers } from "../data/mockExploreData";
 import { supabase } from "../lib/supabaseClient";
@@ -479,11 +480,13 @@ export default function RequestDetails() {
             <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/50 bg-white/80 p-5 backdrop-blur-xl md:p-6">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Posted by</p>
               <div className="mt-4 flex flex-wrap items-center gap-4">
-                <div
-                  className={`flex h-16 w-16 items-center justify-center rounded-full text-lg font-bold text-slate-800 ${request.author.avatarBg}`}
-                >
-                  {request.author.initials}
-                </div>
+                <Avatar
+                  name={request.author.name}
+                  imageUrl={request.author.profileImageUrl}
+                  className="h-16 w-16 rounded-full"
+                  imageClassName="rounded-full"
+                  fallbackClassName={`${request.author.avatarBg} text-lg font-bold text-slate-800`}
+                />
 
                 <div>
                   <h3 className="text-xl font-semibold text-slate-900">{request.author.name}</h3>
@@ -545,12 +548,21 @@ export default function RequestDetails() {
                         className="rounded-2xl border border-slate-200/80 bg-white/90 p-4"
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div>
-                            <p className="text-sm font-semibold text-slate-900">{helperName}</p>
-                            <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-600">
-                              <RatingStars value={helperRating} />
-                              {helperRating.toFixed(1)}
-                            </p>
+                          <div className="flex items-center gap-3">
+                            <Avatar
+                              name={helperName}
+                              imageUrl={offer.helper?.profile_image_url}
+                              className="h-10 w-10 rounded-full"
+                              imageClassName="rounded-full"
+                              fallbackClassName="bg-indigo-100 text-xs font-semibold text-indigo-700"
+                            />
+                            <div>
+                              <p className="text-sm font-semibold text-slate-900">{helperName}</p>
+                              <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-600">
+                                <RatingStars value={helperRating} />
+                                {helperRating.toFixed(1)}
+                              </p>
+                            </div>
                           </div>
                           <span
                             className={`rounded-full px-2.5 py-1 text-xs font-semibold ${

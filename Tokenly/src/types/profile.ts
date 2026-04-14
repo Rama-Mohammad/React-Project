@@ -138,6 +138,7 @@ export interface PortfolioItemProps {
 export type ReviewItem = {
   id: string;
   reviewerName: string;
+  reviewerImageUrl?: string;
   date: string;
   rating: number;
   comment: string;

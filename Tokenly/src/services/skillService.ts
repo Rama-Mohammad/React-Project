@@ -16,7 +16,8 @@ export async function getAllSkills() {
         id,
         full_name,
         username,
-        avg_rating
+        avg_rating,
+        profile_image_url
       )
     `)
     .order("sessions_count", { ascending: false });

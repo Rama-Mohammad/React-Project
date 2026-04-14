@@ -29,6 +29,7 @@ export type ExploreSessionRow = {
 export type ExploreHelpOfferRow = {
   id: string;
   helper_id: string;
+  category: string | null;
   credit_cost: number | null;
   duration_minutes: number | null;
   status: string;
@@ -92,7 +93,7 @@ export async function getExploreHelpers() {
       .in("helper_id", helperIds),
     supabase
       .from("help_offers")
-      .select("id, helper_id, credit_cost, duration_minutes, status")
+      .select("id, helper_id, category, credit_cost, duration_minutes, status")
       .in("helper_id", helperIds),
   ]);
 

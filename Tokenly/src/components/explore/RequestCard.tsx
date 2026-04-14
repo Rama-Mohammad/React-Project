@@ -2,6 +2,7 @@ import { Clock3, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import RatingStars from "../common/RatingStars";
+import Avatar from "../common/Avatar";
 import type { RequestCardProps } from "../../types/explore";
 
 const categoryColors: Record<string, string> = {
@@ -86,11 +87,13 @@ export default function RequestCard({ item }: RequestCardProps) {
         </div>
 
         <div className="flex items-center gap-3">
-          <div
-            className={`flex h-10 w-10 items-center justify-center rounded-full ${item.author.avatarBg} text-xs font-bold text-slate-800`}
-          >
-            {item.author.initials}
-          </div>
+          <Avatar
+            name={item.author.name}
+            imageUrl={item.author.profileImageUrl}
+            className="h-10 w-10 rounded-full"
+            imageClassName="rounded-full"
+            fallbackClassName={`${item.author.avatarBg} text-xs font-bold text-slate-800`}
+          />
 
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-semibold text-slate-800">

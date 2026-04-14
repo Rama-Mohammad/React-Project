@@ -71,7 +71,9 @@ const RatingsSummary: React.FC<RatingsSummaryProps> = ({
               const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
               return (
                 <div key={stars} className="flex items-center gap-2 text-xs">
-                  <div className="flex w-14 items-center justify-end font-medium text-slate-600">{stars} stars</div>
+                  <div className="flex w-14 items-center justify-end font-medium text-slate-600">
+                    {stars} {stars === 1 ? "star" : "stars"}
+                  </div>
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200/90">
                     <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-yellow-500" style={{ width: `${percentage}%` }} />
                   </div>

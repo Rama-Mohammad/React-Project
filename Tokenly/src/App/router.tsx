@@ -28,6 +28,7 @@ import HelpOfferBooking from "../pages/HelpOfferBooking";
 import HelperProfile from "../pages/HelperProfile";
 import OfferAppointment from "../pages/OfferAppointment";
 import TokenOptions from "../pages/TokenOptions";
+import AccountSettings from "../pages/AccountSettings";
 import ErrorPage from "../pages/ErrorPage";
 import NotFound from "../pages/NotFound";
 
@@ -132,6 +133,10 @@ export const router = createBrowserRouter([
           {
             path: "/tokens/options",
             element: <TokenOptions />,
+          },
+          {
+            path: "/account-settings",
+            element: <AccountSettings />,
           },
           {
             path: "/help",

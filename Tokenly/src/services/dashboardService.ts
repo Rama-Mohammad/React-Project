@@ -106,8 +106,8 @@ export async function getDashboardSessions(user_id: string) {
         title,
         category
       ),
-      helper:profiles!sessions_helper_id_fkey(id, full_name),
-      requester:profiles!sessions_requester_id_fkey(id, full_name)
+      helper:profiles!sessions_helper_id_fkey(id, full_name, profile_image_url),
+      requester:profiles!sessions_requester_id_fkey(id, full_name, profile_image_url)
     `)
     .or(`helper_id.eq.${user_id},requester_id.eq.${user_id}`)
     .order("scheduled_at", { ascending: true, nullsFirst: false })

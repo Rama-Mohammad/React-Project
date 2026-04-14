@@ -108,7 +108,7 @@ export async function getPublicHelperProfileCore(helper_id: string) {
       .order("sessions_count", { ascending: false }),
     supabase
       .from("reviews")
-      .select("id, rating, comment, created_at, reviewer:profiles!reviews_reviewer_id_fkey(full_name, username)")
+      .select("id, rating, comment, created_at, reviewer:profiles!reviews_reviewer_id_fkey(full_name, username, profile_image_url)")
       .eq("reviewee_id", helper_id)
       .order("created_at", { ascending: false })
       .limit(5),

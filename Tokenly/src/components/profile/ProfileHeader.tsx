@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   CalendarDays,
   Check,
+  Globe,
   GraduationCap,
   MapPin,
   MessageSquareMore,
@@ -14,6 +15,11 @@ import {
 } from "lucide-react";
 import RatingStars from "../common/RatingStars";
 import type { ProfileHeaderProps } from "../../types/profile";
+
+function normalizeWebsiteUrl(value?: string) {
+  if (!value) return "";
+  return /^https?:\/\//i.test(value) ? value : `https://${value}`;
+}
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
   const [copied, setCopied] = useState(false);
@@ -43,11 +49,11 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
 
   const profileUrl = window.location.href;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(profileUrl)}`;
+  const websiteUrl = normalizeWebsiteUrl(user.website);
 
   return (
     <section className="mb-6 border-b border-slate-200/60 pb-6">
-      <div className="relative h-40 overflow-hidden rounded-2xl bg-[radial-gradient(circle_at_58%_0%,rgba(255,255,255,0.9)_0%,rgba(209,223,255,0.65)_34%,rgba(191,224,255,0.5)_58%,rgba(170,206,255,0.35)_100%)]">
-        <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(99,102,241,0.22)_0%,rgba(14,165,233,0.14)_55%,rgba(255,255,255,0)_100%)]" />
+      <div className="relative h-40 overflow-hidden rounded-2xl">
         {user.coverImage ? <img src={user.coverImage} alt="Cover" className="h-full w-full object-cover" /> : null}
       </div>
 
@@ -119,6 +125,17 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
             <CalendarDays size={14} className="text-slate-400" />
             Joined {user.memberSince}
           </span>
+          {user.website ? (
+            <a
+              href={websiteUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-sky-700 transition hover:text-sky-800"
+            >
+              <Globe size={14} className="text-slate-400" />
+              {user.website}
+            </a>
+          ) : null}
         </div>
 
         <p className="max-w-4xl text-sm leading-7 text-slate-700 md:text-base">{user.bio}</p>

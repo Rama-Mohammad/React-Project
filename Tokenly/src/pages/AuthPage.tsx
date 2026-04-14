@@ -78,6 +78,7 @@ export default function AuthPage() {
     const isRecoveryRoute =
         isPasswordRecovery ||
         mode === "newpassword" ||
+        mode === "reset" ||
         window.location.pathname === "/reset-password" ||
         window.location.hash.includes("type=recovery");
     const isSignupConfirmation =
@@ -158,6 +159,14 @@ export default function AuthPage() {
                 onboardingActiveRef.current = true;
                 setShowOnboarding(true);
             }
+        }
+        return success;
+    };
+
+    const handleSignIn = async (identifier: string, password: string) => {
+        const success = await signIn(identifier, password);
+        if (success) {
+            navigate("/explore", { replace: true });
         }
         return success;
     };
@@ -327,7 +336,7 @@ export default function AuthPage() {
                                             />
                                         ) : (
                                             <SignInForm
-                                                onSubmit={signIn}
+                                                onSubmit={handleSignIn}
                                                 onSwitchToSignUp={() => switchMode("signup")}
                                                 onSwitchToReset={() => switchMode("reset")}
                                                 loading={loading}

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, MapPin, Calendar, Star, Clock3, Coins, Sparkles } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar, Star, Clock3, Coins, Sparkles, Globe } from "lucide-react";
+import Avatar from "../components/common/Avatar";
 import { supabase } from "../lib/supabaseClient";
 import { getPublicHelperProfileCore, getHelperOpenOffers } from "../services/profileService";
 
@@ -16,6 +17,11 @@ const urgencyStyle: Record<string, string> = {
   medium: "bg-amber-50 text-amber-700",
   high: "bg-rose-50 text-rose-600",
 };
+
+function normalizeWebsiteUrl(value?: string | null) {
+  if (!value) return "";
+  return /^https?:\/\//i.test(value) ? value : `https://${value}`;
+}
 
 export default function HelperProfile() {
   const { helperId } = useParams<{ helperId: string }>();
@@ -34,7 +40,7 @@ export default function HelperProfile() {
     created_at: string;
   } | null>(null);
   const [skills, setSkills] = useState<Array<{ id: string; name: string; category: string; level: string; sessions_count: number; description?: string | null }>>([]);
-  const [reviews, setReviews] = useState<Array<{ id: string; rating: number; comment: string | null; created_at: string; reviewer: { full_name: string | null; username: string | null } | null }>>([]);
+  const [reviews, setReviews] = useState<Array<{ id: string; rating: number; comment: string | null; created_at: string; reviewer: { full_name: string | null; username: string | null; profile_image_url?: string | null } | null }>>([]);
   const [helpOffers, setHelpOffers] = useState<Array<{ id: string; title: string; description: string; category: string | null; urgency: string | null; duration_minutes: number | null; credit_cost: number; status: string; created_at: string }>>([]);
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -75,10 +81,10 @@ export default function HelperProfile() {
   }, [helperId]);
 
   const helperName = profile?.full_name ?? profile?.username ?? "Helper";
-  const helperInitials = helperName.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
   const memberSince = profile?.created_at
     ? new Date(profile.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
     : "";
+  const websiteUrl = normalizeWebsiteUrl(profile?.website);
 
   const avgRating = useMemo(() => {
     if (profile?.avg_rating) return Number(profile.avg_rating).toFixed(1);
@@ -126,15 +132,13 @@ export default function HelperProfile() {
         <section className="mt-4 rounded-3xl border border-white/55 bg-white/80 p-5 shadow-sm backdrop-blur-xl md:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-4">
-              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-indigo-100">
-                {profile.profile_image_url ? (
-                  <img src={profile.profile_image_url} alt={helperName} className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-xl font-bold text-indigo-700">
-                    {helperInitials}
-                  </div>
-                )}
-              </div>
+              <Avatar
+                name={helperName}
+                imageUrl={profile.profile_image_url}
+                className="h-16 w-16 shrink-0 rounded-2xl"
+                imageClassName="rounded-2xl"
+                fallbackClassName="bg-indigo-100 text-xl font-bold text-indigo-700"
+              />
 
               <div>
                 <h1 className="text-xl font-bold text-slate-900">{helperName}</h1>
@@ -190,6 +194,18 @@ export default function HelperProfile() {
           {profile.bio ? (
             <p className="mt-4 text-sm leading-7 text-slate-600">{profile.bio}</p>
           ) : null}
+
+          {profile.website ? (
+            <a
+              href={websiteUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 inline-flex w-fit items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm font-medium text-sky-700 transition hover:bg-sky-100 hover:text-sky-800"
+            >
+              <Globe size={14} />
+              {profile.website}
+            </a>
+          ) : null}
         </section>
 
         <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_340px]">
@@ -238,7 +254,16 @@ export default function HelperProfile() {
                     return (
                       <div key={review.id} className="border-b border-slate-100 pb-4 last:border-b-0 last:pb-0">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-sm font-semibold text-slate-900">{reviewerName}</p>
+                          <div className="flex items-center gap-3">
+                            <Avatar
+                              name={reviewerName}
+                              imageUrl={reviewer?.profile_image_url}
+                              className="h-10 w-10 rounded-full"
+                              imageClassName="rounded-full"
+                              fallbackClassName="bg-indigo-100 text-xs font-semibold text-indigo-700"
+                            />
+                            <p className="text-sm font-semibold text-slate-900">{reviewerName}</p>
+                          </div>
                           <div className="flex items-center gap-0.5">
                             {Array.from({ length: 5 }).map((_, i) => (
                               <Star

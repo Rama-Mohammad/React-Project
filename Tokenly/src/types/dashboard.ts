@@ -19,6 +19,7 @@ export type DashboardSessionItem = {
   status: "Upcoming" | "Active Now" | "Completed";
   role: "Helping" | "Receiving help";
   person: string;
+  personImageUrl?: string;
   date: string;
   duration: string;
   credits: number;
@@ -48,6 +49,7 @@ export type DashboardDirectRequestItem = {
   id: string;
   title: string;
   personName: string;
+  personImageUrl?: string;
   message: string;
   credits: number;
   duration: number | null;

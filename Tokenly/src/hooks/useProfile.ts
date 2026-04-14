@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { EditProfileInput, Profile, UseProfilesResult } from "../types/profile";
 import {
     getProfileById,
@@ -13,7 +13,7 @@ export default function useProfiles(): UseProfilesResult {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    async function fetchProfileById(id: string) {
+    const fetchProfileById = useCallback(async (id: string) => {
         setLoading(true);
         setError("");
 
@@ -27,9 +27,9 @@ export default function useProfiles(): UseProfilesResult {
 
         setProfile(data);
         setLoading(false);
-    }
+    }, []);
 
-    async function fetchProfileByUsername(username: string) {
+    const fetchProfileByUsername = useCallback(async (username: string) => {
         setLoading(true);
         setError("");
 
@@ -43,12 +43,12 @@ export default function useProfiles(): UseProfilesResult {
 
         setProfile(data);
         setLoading(false);
-    }
+    }, []);
 
-    async function editProfile(
+    const editProfile = useCallback(async (
         id: string,
         updates: EditProfileInput
-    ) {
+    ) => {
         setLoading(true);
         setError("");
 
@@ -63,9 +63,9 @@ export default function useProfiles(): UseProfilesResult {
         setProfile(data);
         setLoading(false);
         return true;
-    }
+    }, []);
 
-    async function search(query: string) {
+    const search = useCallback(async (query: string) => {
         setLoading(true);
         setError("");
 
@@ -79,7 +79,7 @@ export default function useProfiles(): UseProfilesResult {
 
         setResults(data ?? []);
         setLoading(false);
-    }
+    }, []);
 
     return {
         profile,

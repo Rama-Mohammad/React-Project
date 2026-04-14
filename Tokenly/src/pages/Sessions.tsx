@@ -12,6 +12,7 @@ import {
   Video,
 } from "lucide-react";
 import ThemedSelect from "../components/common/ThemedSelect";
+import Avatar from "../components/common/Avatar";
 import type { Session } from "../types/session";
 import { getSessionsByUser } from "../services/sessionService";
 import { getCurrentUser } from "../services/authService";
@@ -395,13 +396,6 @@ const confirmMarkComplete = async () => {
               const isActive = session.status === "active";
               const isCompleted = session.status === "completed";
               const rating = ratingBySession[session.id] ?? 0;
-              const initials = session.otherParticipant.name
-                .split(" ")
-                .map((part) => part[0])
-                .join("")
-                .slice(0, 2)
-                .toUpperCase();
-
               return (
                 <article
                   key={session.id}
@@ -449,9 +443,13 @@ const confirmMarkComplete = async () => {
 
                   <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
                     <div className="inline-flex items-center gap-3">
-                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">
-                        {initials}
-                      </span>
+                      <Avatar
+                        name={session.otherParticipant.name}
+                        imageUrl={session.otherParticipant.avatar}
+                        className="h-8 w-8 rounded-full"
+                        imageClassName="rounded-full"
+                        fallbackClassName="bg-slate-100 text-xs font-bold text-slate-700"
+                      />
                       <span>
                         {session.role === "helping" ? "Helping" : "Getting help from"}
                         <strong className="ml-1 text-slate-700">{session.otherParticipant.name}</strong>

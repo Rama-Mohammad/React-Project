@@ -7,16 +7,17 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Settings,
   User,
   X,
 } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import useProfiles from "../../hooks/useProfile";
-import tokenlyLogo from "../../assets/tokenly-logo-cropped.png";
+import tokenlyLogo from "/public/images/logo.png";
 
 const navLinkBase =
-  "inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition duration-200";
+  "inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold transition duration-200";
 const navLinkInactive =
   "text-slate-500 hover:bg-white/85 hover:text-slate-900";
 const navLinkActive =
@@ -104,7 +105,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/55 bg-white/72 backdrop-blur-2xl">
-      <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
+      <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-5 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center justify-start pl-12 sm:pl-16 lg:pl-20">
           <NavLink
             to="/"
@@ -119,7 +120,7 @@ export default function Navbar() {
         </div>
 
         <div className="hidden items-center justify-center md:flex">
-          <nav className="flex items-center gap-1 rounded-full border border-white/70 bg-white/45 p-1.5 shadow-[0_14px_30px_-28px_rgba(79,70,229,0.5)]">
+          <nav className="flex items-center gap-1 rounded-full border border-white/70 bg-white/45 px-2 py-2 shadow-[0_14px_30px_-28px_rgba(79,70,229,0.5)]">
             <NavLink to="/" className={getNavClass}>
               <Home size={16} /> Home
             </NavLink>
@@ -173,6 +174,13 @@ export default function Navbar() {
                       className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                     >
                       <BriefcaseBusiness size={15} /> My offers
+                    </Link>
+                    <Link
+                      to="/account-settings"
+                      onClick={() => setAvatarOpen(false)}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                    >
+                      <Settings size={15} /> Account Settings
                     </Link>
                     <button
                       type="button"

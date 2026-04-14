@@ -15,6 +15,7 @@ export type SkillName =
 export type HomeSkillCardProps = {
   name: SkillName;
   count: number | string;
+  to: string;
 };
 
 export type StepKey = "01" | "02" | "03" | "04";

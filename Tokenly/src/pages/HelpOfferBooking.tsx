@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Clock3, Coins, Sparkles, Star, CheckCircle2 } from "lucide-react";
+import Avatar from "../components/common/Avatar";
 import { supabase } from "../lib/supabaseClient";
 import { getHelpOfferById, submitHelpOfferRequest } from "../services/helpOfferService";
 import { getPublicHelperProfileCore } from "../services/profileService";
@@ -34,7 +35,7 @@ export default function HelpOfferBooking() {
     created_at: string;
   } | null>(null);
   const [helperSkills, setHelperSkills] = useState<Array<{ id: string; name: string; category: string; level: string; sessions_count: number }>>([]);
-  const [helperReviews, setHelperReviews] = useState<Array<{ id: string; rating: number; comment: string | null; created_at: string; reviewer: { full_name: string | null; username: string | null } | null }>>([]);
+  const [helperReviews, setHelperReviews] = useState<Array<{ id: string; rating: number; comment: string | null; created_at: string; reviewer: { full_name: string | null; username: string | null; profile_image_url?: string | null } | null }>>([]);
   const [offerSkillNames, setOfferSkillNames] = useState<string[]>([]);
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -122,7 +123,6 @@ export default function HelpOfferBooking() {
   };
 
   const helperName = helperProfile?.full_name ?? helperProfile?.username ?? "Helper";
-  const helperInitials = helperName.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
   const memberSince = helperProfile?.created_at
     ? new Date(helperProfile.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
     : "";
@@ -220,11 +220,13 @@ export default function HelpOfferBooking() {
                 <h2 className="mb-4 text-base font-semibold text-slate-900">About the Helper</h2>
 
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-base font-semibold text-indigo-700">
-                    {helperProfile.profile_image_url ? (
-                      <img src={helperProfile.profile_image_url} alt={helperName} className="h-12 w-12 rounded-full object-cover" />
-                    ) : helperInitials}
-                  </div>
+                  <Avatar
+                    name={helperName}
+                    imageUrl={helperProfile.profile_image_url}
+                    className="h-12 w-12 shrink-0 rounded-full"
+                    imageClassName="rounded-full"
+                    fallbackClassName="bg-indigo-100 text-base font-semibold text-indigo-700"
+                  />
                   <div>
                     <p className="font-semibold text-slate-900">{helperName}</p>
                     {helperProfile.title ? (
@@ -283,7 +285,16 @@ export default function HelpOfferBooking() {
                     return (
                       <div key={review.id} className="border-b border-slate-100 pb-4 last:border-b-0 last:pb-0">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-sm font-semibold text-slate-900">{reviewerName}</p>
+                          <div className="flex items-center gap-3">
+                            <Avatar
+                              name={reviewerName}
+                              imageUrl={reviewer?.profile_image_url}
+                              className="h-10 w-10 rounded-full"
+                              imageClassName="rounded-full"
+                              fallbackClassName="bg-indigo-100 text-xs font-semibold text-indigo-700"
+                            />
+                            <p className="text-sm font-semibold text-slate-900">{reviewerName}</p>
+                          </div>
                           <div className="flex items-center gap-1">
                             {Array.from({ length: 5 }).map((_, i) => (
                               <Star

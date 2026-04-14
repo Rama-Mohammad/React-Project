@@ -7,6 +7,7 @@ export interface PersonSummary {
   name: string;
   initials: string;
   avatarBg: string;
+  profileImageUrl?: string;
   rating?: number;
 }
 
@@ -57,6 +58,7 @@ export interface SkillItem {
     rating?: number;
     initials: string;
     avatarBg: string;
+    profileImageUrl?: string;
   }[];
 }
 

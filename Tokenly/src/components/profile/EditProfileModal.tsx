@@ -16,6 +16,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -99,9 +100,11 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     if (coverInputRef.current) coverInputRef.current.value = '';
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    setSaving(true);
+    await onSave(formData);
+    setSaving(false);
     onClose();
   };
 
@@ -125,7 +128,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     <>
       <div
         className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
-        onClick={handleClose}
+        onClick={uploading || saving ? undefined : handleClose}
       />
 
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
@@ -135,6 +138,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             <h2 className="text-2xl font-bold text-gray-900">Edit Profile</h2>
             <button
               onClick={handleClose}
+              disabled={uploading || saving}
               className="text-gray-400 hover:text-gray-600 transition-colors"
             >
               <FontAwesomeIcon icon={faTimes} className="text-xl" />
@@ -330,16 +334,17 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               <button
                 type="button"
                 onClick={handleClose}
+                disabled={uploading || saving}
                 className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                disabled={uploading}
+                disabled={uploading || saving}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
               >
-                Save Changes
+                {saving ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </form>

@@ -2,6 +2,7 @@ import { BadgeCheck, MessageCircle, ShieldCheck, Star, Zap } from "lucide-react"
 import { Link } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import RatingStars from "../common/RatingStars";
+import Avatar from "../common/Avatar";
 import type { HelperCardProps } from "../../types/explore";
 
 function BadgePill({ label }: { label: string }) {
@@ -40,11 +41,13 @@ export default function HelperCard({ item }: HelperCardProps) {
       <div className="flex-1 p-4">
         <div className="flex items-start gap-3">
           <div className="relative shrink-0">
-            <div
-              className={`flex h-14 w-14 items-center justify-center rounded-full ${item.avatarBg} text-sm font-bold text-slate-800`}
-            >
-              {item.initials}
-            </div>
+            <Avatar
+              name={item.name}
+              imageUrl={item.profileImageUrl}
+              className="h-14 w-14 rounded-full"
+              imageClassName="rounded-full"
+              fallbackClassName={`${item.avatarBg} text-sm font-bold text-slate-800`}
+            />
             {item.online && (
               <span className="absolute bottom-1 right-1 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500" />
             )}

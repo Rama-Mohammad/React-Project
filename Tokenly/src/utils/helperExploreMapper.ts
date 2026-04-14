@@ -76,6 +76,7 @@ export function mapProfileToHelperItem(
     name,
     initials: getInitials(name),
     avatarBg: getAvatarBg(name),
+    profileImageUrl: profile.profile_image_url ?? undefined,
     rating,
     online: false,
     responseTime: "N/A",

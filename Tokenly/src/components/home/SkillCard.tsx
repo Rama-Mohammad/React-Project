@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { Link } from "react-router-dom";
 import {
   faCode,
   faPaintBrush,
@@ -17,7 +18,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import type { HomeSkillCardProps } from "../../types/home";
 
-const SkillCard = ({ name, count }: HomeSkillCardProps) => {
+const SkillCard = ({ name, count, to }: HomeSkillCardProps) => {
   const skillColors: Record<
     string,
     {
@@ -47,7 +48,8 @@ const SkillCard = ({ name, count }: HomeSkillCardProps) => {
   };
 
   return (
-    <div
+    <Link
+      to={to}
       className={`${colorStyle.bg} cursor-pointer rounded-xl border border-white/50 p-5 text-center shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:shadow-md`}
     >
       <div
@@ -59,7 +61,7 @@ const SkillCard = ({ name, count }: HomeSkillCardProps) => {
       <h3 className={`${colorStyle.text} mb-2 text-lg font-semibold`}>{name}</h3>
 
       <p className="text-sm text-slate-500">{count}</p>
-    </div>
+    </Link>
   );
 };
 

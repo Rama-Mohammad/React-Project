@@ -2,6 +2,7 @@ import { ArrowRight, Sparkles, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import RatingStars from "../common/RatingStars";
+import Avatar from "../common/Avatar";
 import type { ExploreSkillCardProps } from "../../types/explore";
 
 const levelStyles: Record<string, string> = {
@@ -59,12 +60,14 @@ export default function SkillCard({ item }: ExploreSkillCardProps) {
         <div className="mb-4 flex items-center justify-between">
           <div className="flex -space-x-2">
             {item.topHelpers.slice(0, 3).map((helper) => (
-              <div
-                key={`${item.id}-${helper.initials}`}
-                className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-slate-800 ${helper.avatarBg}`}
-              >
-                {helper.initials}
-              </div>
+              <Avatar
+                key={`${item.id}-${helper.name ?? helper.initials}`}
+                name={helper.name}
+                imageUrl={helper.profileImageUrl}
+                className="h-8 w-8 rounded-full border-2 border-white"
+                imageClassName="rounded-full"
+                fallbackClassName={`${helper.avatarBg} text-[10px] font-bold text-slate-800`}
+              />
             ))}
           </div>
           <span className="text-xs text-slate-500">Top helpers</span>

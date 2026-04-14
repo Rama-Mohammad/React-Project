@@ -12,6 +12,21 @@ function validateConfirmPassword(password: string, confirm: string): string | nu
     return null;
 }
 
+function getPasswordStrength(password: string) {
+    if (!password) return { label: "", color: "", width: "0%" };
+
+    let score = 0;
+    if (password.length >= 6) score++;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+
+    if (score <= 2) return { label: "Weak", color: "bg-rose-500", width: "33%" };
+    if (score <= 3) return { label: "Medium", color: "bg-amber-500", width: "66%" };
+    return { label: "Strong", color: "bg-emerald-500", width: "100%" };
+}
+
 interface NewPasswordFormProps {
     onSubmit: (newPassword: string) => Promise<void>;
     loading: boolean;
@@ -30,6 +45,8 @@ export default function NewPasswordForm({
     const [showPassword, setShowPassword] = useState(false);
     const [fieldErrors, setFieldErrors] = useState<{ password?: string; confirm?: string }>({});
     const [touched, setTouched] = useState<{ password?: boolean; confirm?: boolean }>({});
+
+    const strength = getPasswordStrength(password);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -117,6 +134,20 @@ export default function NewPasswordForm({
                     </div>
                     {touched.password && fieldErrors.password && (
                         <p className="mt-1.5 text-sm text-rose-500">{fieldErrors.password}</p>
+                    )}
+
+                    {password && (
+                        <div className="mt-2">
+                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                                <div
+                                    className={`h-full rounded-full transition-all duration-300 ${strength.color}`}
+                                    style={{ width: strength.width }}
+                                />
+                            </div>
+                            <p className="mt-1 text-xs text-slate-500">
+                                Password strength: <span className="font-medium">{strength.label}</span>
+                            </p>
+                        </div>
                     )}
                 </div>
 

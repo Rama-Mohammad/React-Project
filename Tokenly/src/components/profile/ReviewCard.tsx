@@ -1,5 +1,6 @@
 import React from "react";
 import RatingStars from "../common/RatingStars";
+import Avatar from "../common/Avatar";
 import type { ReviewCardProps } from "../../types/profile";
 
 const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
@@ -12,20 +13,17 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
         year: "numeric",
       });
 
-  const initials = review.reviewerName
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
   return (
     <article className="border-b border-slate-200/70 pb-4 last:border-b-0">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-sky-500 text-xs font-bold text-white">
-            {initials}
-          </div>
+          <Avatar
+            name={review.reviewerName}
+            imageUrl={review.reviewerImageUrl}
+            className="mt-0.5 h-9 w-9 rounded-lg"
+            imageClassName="rounded-lg"
+            fallbackClassName="bg-gradient-to-br from-indigo-500 to-sky-500 text-xs font-bold text-white"
+          />
 
           <div>
             <h3 className="text-sm font-semibold text-slate-900">{review.reviewerName}</h3>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Clock3, Coins, Sparkles, MessageCircle, CheckCircle2, XCircle, Star } from "lucide-react";
+import Avatar from "../components/common/Avatar";
 import { supabase } from "../lib/supabaseClient";
 import { getHelpOfferById } from "../services/helpOfferService";
 import { getRequestsForHelpOffer, acceptHelpOfferRequest, rejectHelpOfferRequest } from "../services/helpOfferService";
@@ -230,16 +231,19 @@ export default function HelpOfferDetails() {
               {pendingRequests.map((req) => {
                 const requester = Array.isArray(req.requester) ? req.requester[0] : req.requester;
                 const name = requester?.full_name ?? requester?.username ?? "User";
-                const initials = name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
                 const isActing = actionLoadingId === req.id;
 
                 return (
                   <article key={req.id} className="rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
-                          {initials}
-                        </div>
+                        <Avatar
+                          name={name}
+                          imageUrl={requester?.profile_image_url}
+                          className="h-9 w-9 rounded-full"
+                          imageClassName="rounded-full"
+                          fallbackClassName="bg-indigo-100 text-sm font-semibold text-indigo-700"
+                        />
                         <div>
                           <p className="text-sm font-semibold text-slate-900">{name}</p>
                           {requester?.avg_rating ? (
@@ -292,15 +296,18 @@ export default function HelpOfferDetails() {
               {resolvedRequests.map((req) => {
                 const requester = Array.isArray(req.requester) ? req.requester[0] : req.requester;
                 const name = requester?.full_name ?? requester?.username ?? "User";
-                const initials = name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
 
                 return (
                   <article key={req.id} className="rounded-2xl border border-slate-200/70 bg-white/60 p-4 opacity-75">
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
-                          {initials}
-                        </div>
+                        <Avatar
+                          name={name}
+                          imageUrl={requester?.profile_image_url}
+                          className="h-8 w-8 rounded-full"
+                          imageClassName="rounded-full"
+                          fallbackClassName="bg-slate-100 text-xs font-semibold text-slate-600"
+                        />
                         <p className="text-sm font-medium text-slate-700">{name}</p>
                       </div>
                       <span

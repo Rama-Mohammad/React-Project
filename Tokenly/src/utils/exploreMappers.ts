@@ -86,6 +86,7 @@ export function mapRequestToExploreItem(request: RequestWithRelations): RequestI
       name: authorName,
       initials: getInitials(authorName),
       avatarBg: getAvatarBg(authorName),
+      profileImageUrl: request.requester?.profile_image_url ?? undefined,
       rating: request.requester?.avg_rating ?? 0,
     },
   };
@@ -103,12 +104,14 @@ export type SkillWithRelations = {
     | {
         full_name?: string | null;
         username?: string | null;
-        avg_rating?: number | null;
-      }
+      avg_rating?: number | null;
+      profile_image_url?: string | null;
+    }
     | Array<{
         full_name?: string | null;
         username?: string | null;
         avg_rating?: number | null;
+        profile_image_url?: string | null;
       }>
     | null;
 };
@@ -141,6 +144,7 @@ export function mapSkillToExploreItem(skill: SkillWithRelations): SkillItem {
         rating: profile?.avg_rating ?? 0,
         initials: getInitials(ownerName),
         avatarBg: getAvatarBg(ownerName),
+        profileImageUrl: profile?.profile_image_url ?? undefined,
       },
     ],
   };

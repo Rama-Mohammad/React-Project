@@ -17,6 +17,7 @@ import {
 import { Link } from "react-router-dom";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import RatingStars from "../components/common/RatingStars";
+import Avatar from "../components/common/Avatar";
 import { supabase } from "../lib/supabaseClient";
 import { deleteRequest, getRequestsByUser } from "../services/requestService";
 import { getSessionsAuthDebugContext, logSessionsQuery } from "../services/sessionDebug";
@@ -607,6 +608,13 @@ export default function Dashboard() {
 
                     <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-slate-500">
                       <span className="inline-flex items-center gap-1.5">
+                        <Avatar
+                          name={item.person}
+                          imageUrl={item.personImageUrl}
+                          className="h-6 w-6 rounded-full"
+                          imageClassName="rounded-full"
+                          fallbackClassName="bg-slate-100 text-[10px] font-bold text-slate-700"
+                        />
                         <User size={13} />
                         {item.role === "Helping" ? "For" : "With"} {item.person}
                       </span>
@@ -664,7 +672,15 @@ export default function Dashboard() {
               {incomingDirectRequests.map((item) => (
                 <div key={item.id} className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
+                    <div className="flex flex-1 items-start gap-3">
+                      <Avatar
+                        name={item.personName}
+                        imageUrl={item.personImageUrl}
+                        className="h-10 w-10 rounded-full shrink-0"
+                        imageClassName="rounded-full"
+                        fallbackClassName="bg-indigo-100 text-xs font-semibold text-indigo-700"
+                      />
+                      <div className="flex-1">
                       <p className="text-base font-semibold leading-tight text-slate-900">{item.title}</p>
                       <p className="mt-1 text-sm text-slate-500">
                         From {item.personName}
@@ -675,6 +691,7 @@ export default function Dashboard() {
                       {item.message ? (
                         <p className="mt-2 line-clamp-2 text-sm text-slate-600">{item.message}</p>
                       ) : null}
+                      </div>
                     </div>
                   </div>
                   <div className="mt-3 flex gap-2">
@@ -734,7 +751,15 @@ export default function Dashboard() {
                 return (
                   <div key={item.id} className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
+                      <div className="flex flex-1 items-start gap-3">
+                        <Avatar
+                          name={item.personName}
+                          imageUrl={item.personImageUrl}
+                          className="h-10 w-10 rounded-full shrink-0"
+                          imageClassName="rounded-full"
+                          fallbackClassName="bg-indigo-100 text-xs font-semibold text-indigo-700"
+                        />
+                        <div className="flex-1">
                         <p className="text-base font-semibold leading-tight text-slate-900">{item.title}</p>
                         <p className="mt-1 text-sm text-slate-500">
                           Sent to {item.personName}
@@ -745,6 +770,7 @@ export default function Dashboard() {
                         {item.message ? (
                           <p className="mt-2 line-clamp-2 text-sm text-slate-600">{item.message}</p>
                         ) : null}
+                        </div>
                       </div>
                       <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusClasses}`}>
                         {statusLabel}
