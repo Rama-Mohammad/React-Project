@@ -225,7 +225,7 @@ export default function AuthPage() {
     const handleNewPassword = async (newPassword: string) => {
         const success = await changePassword(newPassword);
         if (success) {
-            setTimeout(() => switchMode("signin"), 2000);
+            setTimeout(() => navigate("/auth?mode=signin", { replace: true }), 2000);
         }
     };
 
