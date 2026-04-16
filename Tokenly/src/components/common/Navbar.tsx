@@ -14,7 +14,7 @@ import {
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import useProfiles from "../../hooks/useProfile";
-import tokenlyLogo from "/public/images/logo.png";
+import tokenlyLogo from "/public/images/nav-logo.svg";
 
 const navLinkBase =
   "inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold transition duration-200";
@@ -106,10 +106,10 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/55 bg-white/72 backdrop-blur-2xl">
       <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-5 sm:px-6 lg:px-8">
-        <div className="flex min-w-0 items-center justify-start pl-12 sm:pl-16 lg:pl-20">
+        <div className="flex min-w-0 items-center justify-start pl-[2px] sm:pl-14 lg:pl-[2px]">
           <NavLink
             to="/"
-            className="flex shrink-0 items-center transition hover:opacity-95"
+            className="flex shrink-0 items-center transition hover:opacity-95 -ml-2"
           >
             <img
               src={tokenlyLogo}
@@ -152,7 +152,7 @@ export default function Navbar() {
               </button>
 
               {avatarOpen ? (
-                <div className="absolute right-0 mt-3 w-60 overflow-hidden rounded-2xl border border-white/80 bg-white/95 shadow-[0_24px_60px_-32px_rgba(79,70,229,0.45)] backdrop-blur-xl">
+                <div className="absolute right-0 mt-3 w-60 overflow-hidden rounded-2xl border border-white/80 bg-white shadow-[0_24px_60px_-32px_rgba(79,70,229,0.45)] backdrop-blur-xl">
                   <div className="border-b border-slate-100 bg-[linear-gradient(135deg,rgba(238,242,255,0.9)_0%,rgba(245,243,255,0.95)_100%)] px-4 py-4">
                     <p className="truncate text-sm font-semibold text-slate-900">
                       {profile?.full_name ?? profile?.username ?? "User"}
