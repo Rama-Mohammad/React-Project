@@ -22,7 +22,10 @@ import {
   rejectOffer,
   type OfferForRequestRow,
 } from "../services/offerService";
-import { getProfileCreditBalance } from "../services/profileService";
+import {
+  getProfileCompletedSessionsCount,
+  getProfileCreditBalance,
+} from "../services/profileService";
 import { deleteRequest, getRequestById } from "../services/requestService";
 import { mapRequestToExploreItem } from "../utils/exploreMappers";
 import type { RequestItem } from "../types/explore";
@@ -53,6 +56,7 @@ export default function RequestDetails() {
   const [offersLoading, setOffersLoading] = useState(false);
   const [offersError, setOffersError] = useState("");
   const [offerActionId, setOfferActionId] = useState<string | null>(null);
+  const [sessionsCompleted, setSessionsCompleted] = useState(0);
 
   useEffect(() => {
     if (!requestId) {
@@ -96,6 +100,24 @@ export default function RequestDetails() {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!requestOwnerId) {
+      setSessionsCompleted(0);
+      return;
+    }
+
+    let mounted = true;
+
+    void getProfileCompletedSessionsCount(requestOwnerId).then(({ count }) => {
+      if (!mounted) return;
+      setSessionsCompleted(count);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [requestOwnerId]);
 
   useEffect(() => {
     if (!request?.id) return;
@@ -156,7 +178,6 @@ export default function RequestDetails() {
 
   // zedet hol bs l sheel el errors ente zbtya, shufe shu osset el comments w import mn mock data thing
   const authorSkills = request.tags.slice(0, 3);
-  const sessionsCompleted = 12;
   // const authorHelper = helpers.find((helper) => helper.name === request.author.name);
   // const authorSkills = authorHelper?.skills.slice(0, 3) ?? request.tags.slice(0, 3);
   // const sessionsCompleted = authorHelper?.sessions ?? 12;
@@ -494,7 +515,7 @@ export default function RequestDetails() {
                     <RatingStars value={request.author.rating ?? 0} />
                     {request.author.rating?.toFixed(1)}
                     <span className="text-slate-500">
-                      {sessionsCompleted} sessions completed
+                      {sessionsCompleted} {sessionsCompleted === 1 ? "session" : "sessions"} completed
                     </span>
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">

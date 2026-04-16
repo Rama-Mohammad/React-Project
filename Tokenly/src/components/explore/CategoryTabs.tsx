@@ -5,6 +5,7 @@ export default function CategoryTabs({
   activeTab,
   onChange,
   counts,
+  countsLoading,
 }: CategoryTabsProps) {
   const tabClass = (active: boolean) =>
     `inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition duration-200 ${
@@ -27,7 +28,9 @@ export default function CategoryTabs({
       >
         <FileText size={16} />
         Requests
-        <span className={badgeClass(activeTab === "requests")}>{counts.requests}</span>
+        {!countsLoading.requests ? (
+          <span className={badgeClass(activeTab === "requests")}>{counts.requests}</span>
+        ) : null}
       </button>
 
       <button
@@ -37,7 +40,9 @@ export default function CategoryTabs({
       >
         <Users size={16} />
         Helpers
-        <span className={badgeClass(activeTab === "helpers")}>{counts.helpers}</span>
+        {!countsLoading.helpers ? (
+          <span className={badgeClass(activeTab === "helpers")}>{counts.helpers}</span>
+        ) : null}
       </button>
 
       <button
@@ -47,7 +52,9 @@ export default function CategoryTabs({
       >
         <BookOpen size={16} />
         Skills
-        <span className={badgeClass(activeTab === "skills")}>{counts.skills}</span>
+        {!countsLoading.skills ? (
+          <span className={badgeClass(activeTab === "skills")}>{counts.skills}</span>
+        ) : null}
       </button>
 
       <button
@@ -57,7 +64,9 @@ export default function CategoryTabs({
       >
         <Send size={16} />
         Offers
-        <span className={badgeClass(activeTab === "offers")}>{counts.offers}</span>
+        {!countsLoading.offers ? (
+          <span className={badgeClass(activeTab === "offers")}>{counts.offers}</span>
+        ) : null}
       </button>
     </div>
   );

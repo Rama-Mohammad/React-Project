@@ -1,25 +1,27 @@
+import type { ReactNode } from "react";
 import {
   BadgeCheck,
-  MessageCircle,
+  CheckCircle2,
   ShieldCheck,
   Star,
+  Ticket,
   Zap,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
-import RatingStars from "../common/RatingStars";
 import Avatar from "../common/Avatar";
+import TagOverflowList from "../common/TagOverflowList";
 import type { HelperCardProps } from "../../types/explore";
 
 function BadgePill({ label }: { label: string }) {
   const styles: Record<string, string> = {
-    "Top Rated": "bg-amber-50 text-amber-700",
-    "Fast Responder": "bg-indigo-50 text-indigo-600",
-    Expert: "bg-violet-50 text-violet-700",
-    "Verified Student": "bg-purple-50 text-purple-600",
+    "Top Rated": "border border-amber-100 bg-amber-50 text-amber-700",
+    "Fast Responder": "border border-emerald-100 bg-emerald-50 text-emerald-700",
+    Expert: "border border-violet-100 bg-violet-50 text-violet-700",
+    "Verified Student": "border border-sky-100 bg-sky-50 text-sky-700",
   };
 
-  const icons: Record<string, React.ReactNode> = {
+  const icons: Record<string, ReactNode> = {
     "Top Rated": <Star size={13} className="fill-current" />,
     "Fast Responder": <Zap size={13} />,
     Expert: <BadgeCheck size={13} />,
@@ -28,8 +30,9 @@ function BadgePill({ label }: { label: string }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${styles[label] || "bg-slate-100 text-slate-700"
-        }`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+        styles[label] || "border border-slate-200 bg-slate-100 text-slate-700"
+      }`}
     >
       {icons[label]}
       {label}
@@ -37,137 +40,118 @@ function BadgePill({ label }: { label: string }) {
   );
 }
 
+function tagClassName(isPurple = false) {
+  return isPurple
+    ? "inline-flex h-8 items-center whitespace-nowrap rounded-full bg-violet-50 px-3.5 text-xs font-semibold text-violet-600"
+    : "inline-flex h-7 items-center whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600";
+}
+
 interface HelperCardPropsWithCallback extends HelperCardProps {
   onShowMore?: (item: HelperCardProps["item"]) => void;
 }
 
-export default function HelperCard({
-  item,
-  onShowMore,
-}: HelperCardPropsWithCallback) {
+export default function HelperCard({ item }: HelperCardPropsWithCallback) {
   const { isAuthenticated } = useAuth();
   const ctaLink = isAuthenticated
     ? `/helpers/${item.id}/request`
     : "/auth?mode=signin";
 
+  const visibleBadges = item.badges.slice(0, 3);
+  const visibleCategories = item.categories.slice(0, 2);
+
   return (
-    <article className="explore-glass flex h-full flex-col overflow-hidden rounded-xl border border-white/60 bg-white/85 backdrop-blur transition duration-300 hover:border-white/80 hover:shadow-md">
+    <article className="relative flex h-full min-h-[372px] flex-col overflow-visible rounded-2xl border border-slate-200 bg-white shadow-[0_10px_24px_-22px_rgba(15,23,42,0.35)] transition duration-300 hover:z-20 hover:border-slate-300 hover:shadow-[0_16px_32px_-24px_rgba(15,23,42,0.42)]">
+      <div className="flex min-h-0 flex-1 flex-col p-5 pb-2">
+        <div className="flex items-start gap-3">
+          <div className="relative shrink-0">
+            <Avatar
+              name={item.name}
+              imageUrl={item.profileImageUrl}
+              className="h-14 w-14 rounded-full"
+              imageClassName="rounded-full"
+              fallbackClassName={`${item.avatarBg} text-sm font-bold text-slate-800`}
+            />
+            {item.online ? (
+              <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500" />
+            ) : null}
+          </div>
 
-      {/* MAIN CONTENT AREA */}
-      <div className="flex flex-col flex-1 overflow-hidden">
-
-        {/* Top content */}
-        <div className="flex-1 p-4">
-          <div className="flex items-start gap-3">
-
-            {/* Avatar */}
-            <div className="relative shrink-0">
-              <Avatar
-                name={item.name}
-                imageUrl={item.profileImageUrl}
-                className="h-14 w-14 rounded-full"
-                imageClassName="rounded-full"
-                fallbackClassName={`${item.avatarBg} text-sm font-bold text-slate-800`}
-              />
-              {item.online && (
-                <span className="absolute bottom-1 right-1 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500" />
-              )}
-            </div>
-
-            {/* Info */}
-            <div className="min-w-0 flex-1">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="text-base font-semibold tracking-tight text-slate-900">
-                    {item.name}
-                  </h3>
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                    {item.online && (
-                      <span className="text-indigo-500">Online now</span>
-                    )}
-                    <span>Responds {item.responseTime}</span>
-                  </div>
-                </div>
-
-                <div className="inline-flex items-center gap-1 text-base font-bold text-slate-800">
-                  <RatingStars value={item.rating} />
-                  {item.rating.toFixed(1)}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="truncate text-[17px] font-semibold tracking-[-0.02em] text-slate-900">
+                  {item.name}
+                </h3>
+                <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
+                  {item.online ? (
+                    <span className="font-medium text-emerald-600">Online now</span>
+                  ) : null}
+                  <span className="text-slate-300">/</span>
+                  <span className="text-slate-400">Responds {item.responseTime}</span>
                 </div>
               </div>
 
-              <p className="mt-2.5 line-clamp-3 text-sm leading-6 text-slate-600">
-                {item.bio}
-              </p>
-
-              {/* Badges */}
-              <div className="mt-4 flex flex-wrap gap-2">
-                {item.badges.slice(0, 2).map((badge) => (
-                  <BadgePill key={badge} label={badge} />
-                ))}
-              </div>
-
-              {/* Categories */}
-              <div className="mt-3 flex flex-wrap gap-2">
-                {item.categories.slice(0, 2).map((category) => (
-                  <span
-                    key={category}
-                    className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700"
-                  >
-                    {category}
-                  </span>
-                ))}
-              </div>
-
-              {/* Skills */}
-              <div className="mt-3 flex flex-wrap gap-2">
-                {item.skills.slice(0, 3).map((skill) => (
-                  <span
-                    key={skill}
-                    className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600"
-                  >
-                    {skill}
-                  </span>
-                ))}
+              <div className="inline-flex items-center gap-1.5 pt-0.5 text-[15px] font-semibold text-slate-800">
+                <Star size={14} className="fill-amber-400 text-amber-400" />
+                {item.rating.toFixed(1)}
               </div>
             </div>
+
+            <p className="mt-5 min-h-[52px] line-clamp-2 text-[15px] leading-7 text-slate-600">
+              {item.bio}
+            </p>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {visibleBadges.map((badge) => (
+                <BadgePill key={badge} label={badge} />
+              ))}
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {visibleCategories.map((category) => (
+                <span
+                  key={category}
+                  className={tagClassName(true)}
+                >
+                  {category}
+                </span>
+              ))}
+            </div>
+
+            <TagOverflowList
+              tags={item.skills}
+              className="mt-3"
+              tagClassName={tagClassName()}
+              overflowTagClassName={tagClassName(true)}
+              hiddenTagClassName="inline-flex whitespace-nowrap rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600"
+            />
           </div>
         </div>
-
-        {/* SHOW MORE (PINNED TO BOTTOM) */}
-        <button
-          onClick={() => onShowMore?.(item)}
-          className="mt-auto text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:underline"
-        >
-          Show more
-        </button>
       </div>
 
-      {/* FOOTER */}
-      <div className="border-t border-slate-100/90 p-4">
-        <div className="flex flex-wrap items-center gap-4">
-
-          <div className="text-xs text-slate-500">
-            <span className="font-semibold text-slate-800">
-              {item.sessions}
-            </span>{" "}
-            sessions
-          </div>
-
-          <div className="text-xs text-slate-500">
-            <span className="font-semibold text-slate-800">
-              {item.successRate}%
+      <div className="border-t border-slate-200 bg-white px-5 py-4">
+        <div className="flex items-center gap-4">
+          <div className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+            <Ticket size={13} className="text-slate-400" />
+            <span>
+              <span className="font-semibold text-slate-800">{item.sessions}</span> sessions
             </span>
           </div>
 
-          <div className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-sm font-semibold text-indigo-600">
+          <div className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+            <CheckCircle2 size={13} className="text-emerald-500" />
+            <span className="font-semibold text-slate-800">{item.successRate}%</span>
+          </div>
+
+          <div className="ml-auto inline-flex h-9 items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-4 text-sm font-medium text-emerald-700">
+            <Ticket size={14} className="text-emerald-600" />
             {item.creditsPerHour} /hr
           </div>
 
           <Link
             to={ctaLink}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition duration-200 hover:bg-slate-50"
+            className="inline-flex h-9 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition duration-200 hover:bg-slate-50"
           >
-            <MessageCircle size={14} />
             Request
           </Link>
         </div>

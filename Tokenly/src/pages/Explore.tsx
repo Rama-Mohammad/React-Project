@@ -72,6 +72,7 @@ export default function Explore() {
   } = useRequests();
   const [activeTab, setActiveTab] = useState<ExploreTab>("requests");
   const [search, setSearch] = useState("");
+  const [showMoreSkillFilters, setShowMoreSkillFilters] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("Newest");
   const [urgency, setUrgency] = useState("All");
@@ -90,6 +91,12 @@ export default function Explore() {
   const [liveOffers, setLiveOffers] = useState<HelpOfferItem[]>([]);
   const [offersLoading, setOffersLoading] = useState(false);
   const [offersError, setOffersError] = useState("");
+  const [countsLoading, setCountsLoading] = useState({
+    requests: true,
+    helpers: true,
+    skills: true,
+    offers: true,
+  });
   const requestedCategory = useMemo(() => {
     return new URLSearchParams(location.search).get("category")?.trim() ?? "";
   }, [location.search]);
@@ -103,6 +110,12 @@ export default function Explore() {
       setActiveTab(requestedTab);
     }
   }, [location.search]);
+
+  useEffect(() => {
+    if (activeTab !== "skills") {
+      setShowMoreSkillFilters(false);
+    }
+  }, [activeTab]);
 
   const shouldOpenHowItWorks = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -125,16 +138,26 @@ export default function Explore() {
   useEffect(() => {
     if (activeTab !== "requests") return;
 
+    let mounted = true;
     const mappedUrgency =
       urgency === "Low" ? "low" : urgency === "Medium" ? "medium" : urgency === "High" ? "high" : undefined;
     const mappedDuration =
       duration === "<=30 min" ? 30 : duration === "<=45 min" ? 45 : duration === "<=60 min" ? 60 : undefined;
 
+    setCountsLoading((current) => ({ ...current, requests: true }));
+
     void fetchOpenRequests({
       category: selectedCategory === "All" ? undefined : selectedCategory,
       urgency: mappedUrgency,
       max_duration: mappedDuration,
+    }).finally(() => {
+      if (!mounted) return;
+      setCountsLoading((current) => ({ ...current, requests: false }));
     });
+
+    return () => {
+      mounted = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, duration, selectedCategory, urgency]);
 
@@ -145,6 +168,7 @@ export default function Explore() {
     let mounted = true;
     setSkillsLoading(true);
     setSkillsError("");
+    setCountsLoading((current) => ({ ...current, skills: true }));
 
     void getAllSkills().then(({ data, error }) => {
       if (!mounted) return;
@@ -153,11 +177,13 @@ export default function Explore() {
         setSkillsError(error.message);
         setLiveSkills([]);
         setSkillsLoading(false);
+        setCountsLoading((current) => ({ ...current, skills: false }));
         return;
       }
 
       setLiveSkills(((data ?? []) as SkillWithRelations[]));
       setSkillsLoading(false);
+      setCountsLoading((current) => ({ ...current, skills: false }));
     });
 
     return () => {
@@ -173,6 +199,7 @@ export default function Explore() {
     let mounted = true;
     setHelpersLoading(true);
     setHelpersError("");
+    setCountsLoading((current) => ({ ...current, helpers: true }));
 
     void getExploreHelpers().then(({ data, error }) => {
       if (!mounted) return;
@@ -181,6 +208,7 @@ export default function Explore() {
         setHelpersError(error?.message ?? "Failed to load helpers");
         setLiveHelpers([]);
         setHelpersLoading(false);
+        setCountsLoading((current) => ({ ...current, helpers: false }));
         return;
       }
 
@@ -189,6 +217,7 @@ export default function Explore() {
       );
       setLiveHelpers(mapped);
       setHelpersLoading(false);
+      setCountsLoading((current) => ({ ...current, helpers: false }));
     });
 
     return () => {
@@ -204,6 +233,7 @@ export default function Explore() {
     let mounted = true;
     setOffersLoading(true);
     setOffersError("");
+    setCountsLoading((current) => ({ ...current, offers: true }));
 
     void getOpenHelpOffers().then(({ data, error }) => {
       if (!mounted) return;
@@ -212,6 +242,7 @@ export default function Explore() {
         setOffersError(error.message ?? "Failed to load offers");
         setLiveOffers([]);
         setOffersLoading(false);
+        setCountsLoading((current) => ({ ...current, offers: false }));
         return;
       }
 
@@ -258,6 +289,7 @@ export default function Explore() {
 
       setLiveOffers(mapped);
       setOffersLoading(false);
+      setCountsLoading((current) => ({ ...current, offers: false }));
     });
 
     return () => {
@@ -614,6 +646,7 @@ export default function Explore() {
               activeTab={activeTab}
               onChange={handleTabChange}
               counts={tabCounts}
+              countsLoading={countsLoading}
             />
 
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 lg:text-right">
@@ -637,6 +670,8 @@ export default function Explore() {
             <div className="mt-4">
               <FilterSideBar
                 activeTab={activeTab}
+                showMoreSkillFilters={showMoreSkillFilters}
+                onToggleSkillFilters={() => setShowMoreSkillFilters((current) => !current)}
                 categories={currentCategories}
                 urgencyOptions={requestUrgencyOptions}
                 durationOptions={requestDurationOptions}

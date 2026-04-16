@@ -16,6 +16,19 @@ export async function getProfileCreditBalance(id: string) {
     .single();
 }
 
+export async function getProfileCompletedSessionsCount(id: string) {
+  const { count, error } = await supabase
+    .from("sessions")
+    .select("id", { count: "exact", head: true })
+    .eq("helper_id", id)
+    .eq("status", "completed");
+
+  return {
+    count: count ?? 0,
+    error,
+  };
+}
+
 export async function getProfileByUsername(username: string) {
   return await supabase
     .from("profiles")

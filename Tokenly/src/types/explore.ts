@@ -96,6 +96,8 @@ export interface ExploreStats {
 
 export interface FilterSideBarProps {
   activeTab: ExploreTab;
+  showMoreSkillFilters?: boolean;
+  onToggleSkillFilters?: () => void;
   categories: string[];
   urgencyOptions: string[];
   durationOptions: string[];
@@ -124,6 +126,12 @@ export interface CategoryTabsProps {
     helpers: number;
     skills: number;
     offers: number;
+  };
+  countsLoading: {
+    requests: boolean;
+    helpers: boolean;
+    skills: boolean;
+    offers: boolean;
   };
 }
 

@@ -1,4 +1,7 @@
+import { useEffect, useState, type ReactNode } from "react";
 import type { FilterSideBarProps } from "../../types/explore";
+
+const INITIAL_VISIBLE_HELPER_FILTERS = 10;
 
 function ChipButton({
   active,
@@ -6,7 +9,7 @@ function ChipButton({
   onClick,
 }: {
   active: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
   onClick: () => void;
 }) {
   return (
@@ -26,6 +29,8 @@ function ChipButton({
 
 export default function FilterSideBar({
   activeTab,
+  showMoreSkillFilters = false,
+  onToggleSkillFilters,
   categories,
   urgencyOptions,
   durationOptions,
@@ -45,11 +50,26 @@ export default function FilterSideBar({
   onLevelChange,
   totalCount,
 }: FilterSideBarProps) {
+  const [showAllHelperFilters, setShowAllHelperFilters] = useState(false);
+
+  useEffect(() => {
+    if (activeTab !== "helpers") {
+      setShowAllHelperFilters(false);
+    }
+  }, [activeTab]);
+
+  const visibleCategories =
+    activeTab === "helpers" && !showAllHelperFilters
+      ? categories.slice(0, INITIAL_VISIBLE_HELPER_FILTERS)
+      : categories;
+  const hasHiddenHelperCategories =
+    activeTab === "helpers" && categories.length > INITIAL_VISIBLE_HELPER_FILTERS;
+
   return (
     <div className="explore-glass explore-fade-in-up rounded-[1.25rem] border border-white/50 bg-white/75 p-4 backdrop-blur-xl">
       <div className="flex flex-col gap-3.5">
         <div className="flex flex-wrap gap-1.5">
-          {categories.map((item) => (
+          {visibleCategories.map((item) => (
             <ChipButton
               key={item}
               active={selectedCategory === item}
@@ -58,6 +78,16 @@ export default function FilterSideBar({
               {item}
             </ChipButton>
           ))}
+
+          {hasHiddenHelperCategories ? (
+            <button
+              type="button"
+              onClick={() => setShowAllHelperFilters((current) => !current)}
+              className="rounded-full border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-xs font-semibold text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100"
+            >
+              {showAllHelperFilters ? "View Less" : "View More"}
+            </button>
+          ) : null}
         </div>
 
         {activeTab === "requests" && (
@@ -122,16 +152,30 @@ export default function FilterSideBar({
 
         {activeTab === "skills" && (
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex flex-wrap gap-1.5">
-              {levelOptions.map((item) => (
-                <ChipButton
-                  key={item}
-                  active={level === item}
-                  onClick={() => onLevelChange(item)}
+            <div className="flex flex-col gap-3">
+              {showMoreSkillFilters ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {levelOptions.map((item) => (
+                    <ChipButton
+                      key={item}
+                      active={level === item}
+                      onClick={() => onLevelChange(item)}
+                    >
+                      {item}
+                    </ChipButton>
+                  ))}
+                </div>
+              ) : null}
+
+              <div>
+                <button
+                  type="button"
+                  onClick={() => onToggleSkillFilters?.()}
+                  className="rounded-full border border-white/40 bg-white/65 px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-white"
                 >
-                  {item}
-                </ChipButton>
-              ))}
+                  {showMoreSkillFilters ? "Hide Filters" : "View Filters"}
+                </button>
+              </div>
             </div>
 
             <p className="text-xs text-slate-500">
@@ -154,4 +198,3 @@ export default function FilterSideBar({
     </div>
   );
 }
-
