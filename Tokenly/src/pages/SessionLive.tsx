@@ -5,6 +5,8 @@ import VideoPlaceholder from "../components/session/live/VideoPlaceHolder";
 import ChatWindow from "../components/session/live/ChatWindow";
 import FileManager from "../components/session/live/FileManager";
 import Checklist from "../components/session/live/Checklist";
+import { useChat } from "../hooks/useChat";
+import { sendMessage } from "../services/chatService";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import type { ChecklistItem, FileAttachment, Message } from "../types/session";
 
@@ -15,7 +17,8 @@ const SessionLivePage: React.FC = () => {
   const { sessionId } = useParams();
 
   const [activeTab, setActiveTab] = useState<TabType>("agenda");
-  const [messages, setMessages] = useState<Message[]>([]);
+  const messages = useChat(sessionId ?? "");  
+  
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([
     { id: "1", text: "Confirm goals and expected outcomes", completed: false },
     { id: "2", text: "Work through key blockers together", completed: false },
@@ -28,47 +31,13 @@ const SessionLivePage: React.FC = () => {
   const currentUserId = "current-user-123";
   const isActive = true;
 
-  useEffect(() => {
-    setMessages([
-      {
-        id: "1",
-        text: "Hi! Ready to start the session?",
-        senderId: "other-user",
-        senderName: "Alex Chen",
-        timestamp: new Date(Date.now() - 6 * 60000),
-      },
-      {
-        id: "2",
-        text: "Yes, let's start. I want to focus on generics today.",
-        senderId: currentUserId,
-        senderName: "You",
-        timestamp: new Date(Date.now() - 3 * 60000),
-      },
-    ]);
 
-    setFiles([
-      {
-        id: "1",
-        name: "session_notes.pdf",
-        size: 1024000,
-        type: "application/pdf",
-        url: "#",
-        uploadedBy: "Alex Chen",
-        uploadedAt: new Date(Date.now() - 20 * 60000),
-      },
-    ]);
-  }, []);
 
-  const handleSendMessage = (text: string) => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      text,
-      senderId: currentUserId,
-      senderName: "You",
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, newMessage]);
-  };
+const handleSendMessage = async (text: string) => {
+  if (!sessionId) return;
+
+  await sendMessage(sessionId, currentUserId, text);
+};
 
   const handleToggleItem = (itemId: string) => {
     setChecklistItems((prev) =>
@@ -134,8 +103,8 @@ const SessionLivePage: React.FC = () => {
             isVideoEnabled={isVideoEnabled}
             participantCount={2}
             onToggleVideo={() => setIsVideoEnabled((prev) => !prev)}
-            onToggleAudio={() => {}}
-            onShareScreen={() => {}}
+            onToggleAudio={() => { }}
+            onShareScreen={() => { }}
           />
         </section>
 
@@ -154,22 +123,20 @@ const SessionLivePage: React.FC = () => {
             <div className="flex border-b border-indigo-200/70 bg-indigo-50/60 p-1">
               <button
                 onClick={() => setActiveTab("agenda")}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                  activeTab === "agenda"
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${activeTab === "agenda"
                     ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white shadow-[0_10px_20px_-14px_rgba(99,102,241,0.8)]"
                     : "text-slate-600 hover:bg-indigo-50 hover:text-slate-800"
-                }`}
+                  }`}
               >
                 <ClipboardList size={15} />
                 Agenda
               </button>
               <button
                 onClick={() => setActiveTab("files")}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                  activeTab === "files"
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${activeTab === "files"
                     ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white shadow-[0_10px_20px_-14px_rgba(99,102,241,0.8)]"
                     : "text-slate-600 hover:bg-indigo-50 hover:text-slate-800"
-                }`}
+                  }`}
               >
                 <Paperclip size={15} />
                 Files ({files.length})

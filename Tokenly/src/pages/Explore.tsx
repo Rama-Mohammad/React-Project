@@ -8,6 +8,7 @@ import RequestCard from "../components/explore/RequestCard";
 import SearchBar from "../components/explore/SearchBar";
 import SkillCard from "../components/explore/SkillCard";
 import StatsHero from "../components/explore/StatsHero";
+import HelperDetailsModal from "../components/explore/HelperDetailsModal";
 import Avatar from "../components/common/Avatar";
 import {
   mapRequestToExploreItem,
@@ -62,6 +63,7 @@ export default function Explore() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
   const tabsBarRef = useRef<HTMLDivElement | null>(null);
+  const [selectedHelperForModal, setSelectedHelperForModal] = useState<HelperItem | null>(null);
   const {
     requests: liveOpenRequests,
     fetchOpenRequests,
@@ -689,7 +691,7 @@ export default function Explore() {
             <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {filteredHelpers.map((item, index) => (
                 <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
-                  <HelperCard item={item} />
+                  <HelperCard item={item} onShowMore={setSelectedHelperForModal} />
                 </div>
               ))}
             </div>
@@ -821,6 +823,14 @@ export default function Explore() {
           ) : null}
         </section>
       </main>
+
+      {selectedHelperForModal && (
+        <HelperDetailsModal
+          item={selectedHelperForModal}
+          isOpen={!!selectedHelperForModal}
+          onClose={() => setSelectedHelperForModal(null)}
+        />
+      )}
     </div>
   );
 }

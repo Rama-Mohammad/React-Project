@@ -7,12 +7,9 @@ export type SessionStartInput = {
   requester_id: string;
   scheduled_at?: string;
   duration_minutes?: number;
-  // Flow 1 — requester posted request, helper offered, requester accepted
   request_id?: string;
   offer_id?: string;
-  // Flow 2 — helper posted help_offer, user sent help_offer_request, helper accepted
   help_offer_request_id?: string;
-  // Flow 3 — user sent direct_request to a specific helper, helper accepted
   direct_request_id?: string;
 };
 
@@ -41,12 +38,19 @@ export interface Message {
   id: string;
   text: string;
   senderId: string;
-  senderName: string;
-  timestamp: Date;
-  attachments?: FileAttachment[]; 
-  isRead?: boolean; 
-  senderAvatar?: string;
+  senderName?: string;
+  timestamp: string;
 }
+
+export interface SessionMessageDB {
+  id: string;
+  session_id: string;
+  sender_id: string;
+  message: string;
+  created_at: string;
+}
+
+
 
 export interface ChecklistItem {
   id: string;
