@@ -36,6 +36,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
   onShareScreen,
 }) => {
   const localVideoRef = useRef<HTMLVideoElement>(null);
+  const stageLocalVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
   const attachStream = (video: HTMLVideoElement | null, stream: MediaStream | null, muted = false) => {
@@ -63,6 +64,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
 
   useEffect(() => {
     attachStream(localVideoRef.current, localStream ?? null, true);
+    attachStream(stageLocalVideoRef.current, localStream ?? null, true);
   }, [localStream]);
 
   useEffect(() => {
@@ -70,7 +72,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
   }, [remoteStream]);
 
   return (
-    <div className="relative flex h-full min-h-[340px] overflow-hidden rounded-2xl border border-indigo-200/70 bg-slate-950 shadow-[0_22px_42px_-30px_rgba(15,23,42,0.9)] sm:min-h-[420px]">
+    <div className="relative flex h-full min-h-[360px] overflow-hidden rounded-2xl border border-indigo-200/70 bg-slate-950 shadow-[0_22px_42px_-30px_rgba(15,23,42,0.9)] sm:min-h-[460px]">
       <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
         <span className={`rounded-full px-3 py-1 text-xs font-semibold text-white ${statusTone[connectionStatus]}`}>
           {statusLabel[connectionStatus]}
@@ -84,17 +86,19 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
         {isScreenSharing ? "Sharing screen" : "Camera view"}
       </div>
 
-      <div className="grid h-full w-full flex-1 grid-rows-[minmax(0,1fr)_120px] gap-0 md:grid-cols-[minmax(0,1fr)_220px] md:grid-rows-none">
-        <div className="relative min-h-[220px] overflow-hidden bg-slate-900 sm:min-h-[320px]">
+      <div className="relative h-full w-full flex-1 overflow-hidden bg-slate-900">
+        <div className="absolute inset-0">
           {remoteStream ? (
             <video ref={remoteVideoRef} autoPlay playsInline className="h-full w-full object-cover" />
+          ) : localStream && isVideoEnabled ? (
+            <video ref={stageLocalVideoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full flex-col items-center justify-center bg-[radial-gradient(circle_at_top,#334155_0%,#0f172a_55%,#020617_100%)] p-6 text-center">
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-800 text-2xl font-semibold text-slate-100">
-                {(remoteParticipantName ?? "Guest").slice(0, 2).toUpperCase()}
+                {(remoteParticipantName ?? selfLabel ?? "Guest").slice(0, 2).toUpperCase()}
               </div>
               <p className="mt-4 text-base font-semibold text-slate-100">
-                {remoteParticipantName ?? "Waiting for the other participant"}
+                {remoteParticipantName ?? selfLabel ?? "Waiting for the other participant"}
               </p>
               <p className="mt-2 max-w-sm text-sm text-slate-300">
                 {connectionStatus === "waiting"
@@ -105,7 +109,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
           )}
 
           <div className="absolute bottom-4 left-4 rounded-full bg-slate-900/75 px-3 py-1.5 text-xs font-medium text-slate-100">
-            {remoteParticipantName ?? "Remote participant"}
+            {remoteStream ? remoteParticipantName ?? "Remote participant" : selfLabel ?? "You"}
           </div>
 
           {connectionStatus === "error" ? (
@@ -115,22 +119,22 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
           ) : null}
         </div>
 
-        <div className="relative border-t border-slate-800 bg-slate-950/70 md:border-l md:border-t-0">
+        <div className="absolute right-3 top-14 z-20 h-28 w-20 overflow-hidden rounded-2xl border border-white/15 bg-slate-950/90 shadow-[0_18px_35px_-20px_rgba(15,23,42,0.95)] backdrop-blur sm:right-4 sm:top-16 sm:h-36 sm:w-24 md:h-44 md:w-32">
           {localStream && isVideoEnabled ? (
             <video ref={localVideoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
           ) : (
-            <div className="flex h-full flex-col items-center justify-center bg-[radial-gradient(circle_at_top,#312e81_0%,#111827_55%,#020617_100%)] p-5 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-500/20 text-xl font-semibold text-indigo-100">
+            <div className="flex h-full flex-col items-center justify-center bg-[radial-gradient(circle_at_top,#312e81_0%,#111827_55%,#020617_100%)] p-3 text-center">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500/20 text-sm font-semibold text-indigo-100 sm:h-12 sm:w-12 sm:text-base">
                 {(selfLabel ?? "You").slice(0, 2).toUpperCase()}
               </div>
-              <p className="mt-3 text-sm font-semibold text-slate-100">{selfLabel ?? "You"}</p>
-              <p className="mt-1 text-xs text-slate-300">
-                {isVideoEnabled ? "Starting your camera..." : "Your camera is off"}
+              <p className="mt-2 text-[11px] font-semibold text-slate-100 sm:text-xs">{selfLabel ?? "You"}</p>
+              <p className="mt-1 text-[10px] text-slate-300 sm:text-[11px]">
+                {isVideoEnabled ? "Live" : "Camera off"}
               </p>
             </div>
           )}
 
-          <div className="absolute bottom-4 left-4 rounded-full bg-slate-900/75 px-3 py-1.5 text-xs font-medium text-slate-100">
+          <div className="absolute bottom-2 left-2 rounded-full bg-slate-900/75 px-2 py-1 text-[10px] font-medium text-slate-100 sm:bottom-3 sm:left-3 sm:text-[11px]">
             {selfLabel ?? "You"}
           </div>
         </div>
