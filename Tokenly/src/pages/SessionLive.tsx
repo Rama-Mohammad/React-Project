@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CircleDot, ClipboardList, Paperclip } from "lucide-react";
 import VideoPlaceholder from "../components/session/live/VideoPlaceHolder";
@@ -6,9 +6,13 @@ import ChatWindow from "../components/session/live/ChatWindow";
 import FileManager from "../components/session/live/FileManager";
 import Checklist from "../components/session/live/Checklist";
 import { useChat } from "../hooks/useChat";
+import { useLiveSessionCall } from "../hooks/useLiveSessionCall";
+import { getCurrentUser } from "../services/authService";
 import { sendMessage } from "../services/chatService";
+import { getSessionById } from "../services/sessionService";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
-import type { ChecklistItem, FileAttachment} from "../types/session";
+import type { ChecklistItem, FileAttachment } from "../types/session";
+
 type TabType = "agenda" | "files";
 
 const SessionLivePage: React.FC = () => {
@@ -16,27 +20,100 @@ const SessionLivePage: React.FC = () => {
   const { sessionId } = useParams();
 
   const [activeTab, setActiveTab] = useState<TabType>("agenda");
-  const messages = useChat(sessionId ?? "");  
-  
+  const messages = useChat(sessionId ?? "");
+  const [currentUserId, setCurrentUserId] = useState("");
+  const [currentUserName, setCurrentUserName] = useState("You");
+  const [otherParticipantName, setOtherParticipantName] = useState("Remote participant");
+  const [isInitiator, setIsInitiator] = useState(false);
+  const [sessionStatus, setSessionStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [sessionError, setSessionError] = useState("");
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([
     { id: "1", text: "Confirm goals and expected outcomes", completed: false },
     { id: "2", text: "Work through key blockers together", completed: false },
     { id: "3", text: "Summarize takeaways and next steps", completed: false },
   ]);
   const [files, setFiles] = useState<FileAttachment[]>([]);
-  const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [pendingDeleteFileId, setPendingDeleteFileId] = useState<string | null>(null);
 
-  const currentUserId = "current-user-123";
-  const isActive = true;
+  const {
+    localStream,
+    remoteStream,
+    connectionStatus,
+    isAudioEnabled,
+    isVideoEnabled,
+    isScreenSharing,
+    errorMessage: callError,
+    toggleAudio,
+    toggleVideo,
+    toggleScreenShare,
+  } = useLiveSessionCall({
+    sessionId: sessionId ?? "",
+    userId: currentUserId,
+    enabled: sessionStatus === "ready",
+    isInitiator,
+  });
 
+  useEffect(() => {
+    let isMounted = true;
 
+    const loadSessionContext = async () => {
+      if (!sessionId) {
+        if (isMounted) {
+          setSessionStatus("error");
+          setSessionError("This live session link is missing a session ID.");
+        }
+        return;
+      }
 
-const handleSendMessage = async (text: string) => {
-  if (!sessionId) return;
+      setSessionStatus("loading");
+      setSessionError("");
 
-  await sendMessage(sessionId, currentUserId, text);
-};
+      const [{ data: userData, error: userError }, { data: sessionData, error: fetchSessionError }] =
+        await Promise.all([getCurrentUser(), getSessionById(sessionId)]);
+
+      if (!isMounted) return;
+
+      if (userError || !userData?.user) {
+        setSessionStatus("error");
+        setSessionError("Please sign in to join this live session.");
+        return;
+      }
+
+      if (fetchSessionError || !sessionData) {
+        setSessionStatus("error");
+        setSessionError(fetchSessionError?.message ?? "We could not load this session.");
+        return;
+      }
+
+      const isHelper = sessionData.helper_id === userData.user.id;
+
+      setCurrentUserId(userData.user.id);
+      setCurrentUserName(
+        isHelper
+          ? sessionData.helper?.full_name || sessionData.helper?.username || "You"
+          : sessionData.requester?.full_name || sessionData.requester?.username || "You"
+      );
+      setOtherParticipantName(
+        isHelper
+          ? sessionData.requester?.full_name || sessionData.requester?.username || "Guest"
+          : sessionData.helper?.full_name || sessionData.helper?.username || "Guest"
+      );
+      setIsInitiator(isHelper);
+      setSessionStatus("ready");
+    };
+
+    void loadSessionContext();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [sessionId]);
+
+  const handleSendMessage = async (text: string) => {
+    if (!sessionId || !currentUserId || sessionStatus !== "ready") return;
+
+    await sendMessage(sessionId, currentUserId, text);
+  };
 
   const handleToggleItem = (itemId: string) => {
     setChecklistItems((prev) =>
@@ -68,7 +145,7 @@ const handleSendMessage = async (text: string) => {
   };
 
   const handleDownload = (fileId: string) => {
-    const file = files.find((f) => f.id === fileId);
+    const file = files.find((item) => item.id === fileId);
     if (file) window.open(file.url, "_blank");
   };
 
@@ -81,6 +158,35 @@ const handleSendMessage = async (text: string) => {
     ? files.find((file) => file.id === pendingDeleteFileId) ?? null
     : null;
 
+  if (sessionStatus === "loading") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_52%,#f3e8ff_100%)] px-6 text-slate-900">
+        <div className="rounded-2xl border border-indigo-200/70 bg-white/80 px-6 py-5 text-center shadow-[0_18px_42px_-28px_rgba(99,102,241,0.55)] backdrop-blur">
+          <p className="text-sm font-semibold text-slate-900">Joining live session...</p>
+          <p className="mt-1 text-sm text-slate-500">We&apos;re loading your session workspace.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (sessionStatus === "error") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_52%,#f3e8ff_100%)] px-6 text-slate-900">
+        <div className="w-full max-w-md rounded-2xl border border-rose-200 bg-white/85 p-6 text-center shadow-[0_18px_42px_-28px_rgba(244,63,94,0.3)] backdrop-blur">
+          <p className="text-base font-semibold text-slate-900">Unable to open live session</p>
+          <p className="mt-2 text-sm text-slate-600">{sessionError}</p>
+          <button
+            type="button"
+            onClick={() => navigate("/sessions")}
+            className="mt-4 rounded-lg bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-95"
+          >
+            Back to Sessions
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen flex-col bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_52%,#f3e8ff_100%)] text-slate-900">
       <header className="border-b border-indigo-200/70 bg-white/55 px-5 py-3 backdrop-blur-xl">
@@ -91,7 +197,15 @@ const handleSendMessage = async (text: string) => {
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/70 px-3 py-1.5 text-xs font-medium text-indigo-700">
             <CircleDot size={13} className="text-indigo-600" />
-            Connected
+            {connectionStatus === "connected"
+              ? "Connected"
+              : connectionStatus === "connecting" || connectionStatus === "joining"
+                ? "Connecting"
+                : connectionStatus === "waiting"
+                  ? "Waiting"
+                  : connectionStatus === "error"
+                    ? "Issue detected"
+                    : "Ready"}
           </div>
         </div>
       </header>
@@ -99,11 +213,19 @@ const handleSendMessage = async (text: string) => {
       <main className="mx-auto flex w-full max-w-[1600px] flex-1 gap-4 overflow-hidden p-4">
         <section className="flex min-w-0 flex-1 flex-col">
           <VideoPlaceholder
+            localStream={localStream}
+            remoteStream={remoteStream}
+            remoteParticipantName={otherParticipantName}
+            selfLabel={currentUserName}
+            connectionStatus={connectionStatus}
+            errorMessage={callError}
             isVideoEnabled={isVideoEnabled}
-            participantCount={2}
-            onToggleVideo={() => setIsVideoEnabled((prev) => !prev)}
-            onToggleAudio={() => { }}
-            onShareScreen={() => { }}
+            isAudioEnabled={isAudioEnabled}
+            isScreenSharing={isScreenSharing}
+            participantCount={remoteStream ? 2 : 1}
+            onToggleVideo={toggleVideo}
+            onToggleAudio={toggleAudio}
+            onShareScreen={toggleScreenShare}
           />
         </section>
 
@@ -113,7 +235,7 @@ const handleSendMessage = async (text: string) => {
               sessionId={sessionId ?? ""}
               messages={messages}
               onSendMessage={handleSendMessage}
-              isActive={isActive}
+              isActive={sessionStatus === "ready"}
               currentUserId={currentUserId}
             />
           </div>
@@ -122,20 +244,22 @@ const handleSendMessage = async (text: string) => {
             <div className="flex border-b border-indigo-200/70 bg-indigo-50/60 p-1">
               <button
                 onClick={() => setActiveTab("agenda")}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${activeTab === "agenda"
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  activeTab === "agenda"
                     ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white shadow-[0_10px_20px_-14px_rgba(99,102,241,0.8)]"
                     : "text-slate-600 hover:bg-indigo-50 hover:text-slate-800"
-                  }`}
+                }`}
               >
                 <ClipboardList size={15} />
                 Agenda
               </button>
               <button
                 onClick={() => setActiveTab("files")}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${activeTab === "files"
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  activeTab === "files"
                     ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white shadow-[0_10px_20px_-14px_rgba(99,102,241,0.8)]"
                     : "text-slate-600 hover:bg-indigo-50 hover:text-slate-800"
-                  }`}
+                }`}
               >
                 <Paperclip size={15} />
                 Files ({files.length})
@@ -180,7 +304,11 @@ const handleSendMessage = async (text: string) => {
         title="Delete this file?"
         message="This shared file will be removed from the session."
         itemName={pendingDeleteFile?.name}
-        details={pendingDeleteFile ? `${pendingDeleteFile.uploadedBy} � ${(pendingDeleteFile.size / 1024).toFixed(1)} KB` : undefined}
+        details={
+          pendingDeleteFile
+            ? `${pendingDeleteFile.uploadedBy} • ${(pendingDeleteFile.size / 1024).toFixed(1)} KB`
+            : undefined
+        }
         confirmLabel="Delete File"
         onCancel={() => setPendingDeleteFileId(null)}
         onConfirm={() => {
@@ -193,5 +321,3 @@ const handleSendMessage = async (text: string) => {
 };
 
 export default SessionLivePage;
-
-

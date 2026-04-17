@@ -73,7 +73,15 @@ export interface FileAttachment {
 }
 
 export interface VideoPlaceholderProps {
+  localStream?: MediaStream | null;
+  remoteStream?: MediaStream | null;
+  remoteParticipantName?: string;
+  selfLabel?: string;
+  connectionStatus: "idle" | "joining" | "waiting" | "connecting" | "connected" | "error";
+  errorMessage?: string;
   isVideoEnabled: boolean;
+  isAudioEnabled: boolean;
+  isScreenSharing: boolean;
   participantCount: number;
   onToggleVideo: () => void;
   onToggleAudio: () => void;
