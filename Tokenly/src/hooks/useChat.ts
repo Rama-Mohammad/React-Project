@@ -9,21 +9,38 @@ export const useChat = (sessionId: string) => {
   useEffect(() => {
     if (!sessionId) return;
 
-    const loadMessages = async () => {
-      const data = await getMessages(sessionId);
+    let isMounted = true;
 
-      setMessages(
-        data.map((msg: any) => ({
-          id: msg.id,
-          text: msg.message,
-          senderId: msg.sender_id,
-          senderName: "User",
-          timestamp: msg.created_at,
-        }))
-      );
+    const mapMessage = (msg: any): Message => ({
+      id: msg.id,
+      text: msg.message,
+      senderId: msg.sender_id,
+      senderName: "User",
+      timestamp: msg.created_at,
+    });
+
+    const mergeMessages = (nextMessages: Message[]) => {
+      setMessages((prev) => {
+        const merged = new Map<string, Message>();
+
+        [...prev, ...nextMessages].forEach((message) => {
+          merged.set(message.id, message);
+        });
+
+        return Array.from(merged.values()).sort(
+          (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
+      });
     };
 
-    loadMessages();
+    const loadMessages = async () => {
+      const data = await getMessages(sessionId);
+      if (!isMounted) return;
+
+      mergeMessages(data.map(mapMessage));
+    };
+
+    void loadMessages();
 
     const channel = supabase
       .channel(`chat-${sessionId}`)
@@ -37,22 +54,18 @@ export const useChat = (sessionId: string) => {
         },
         (payload) => {
           const msg: any = payload.new;
-
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: msg.id,
-              text: msg.message,
-              senderId: msg.sender_id,
-              senderName: "User",
-              timestamp: msg.created_at,
-            },
-          ]);
+          mergeMessages([mapMessage(msg)]);
         }
       )
       .subscribe();
 
+    const pollTimer = setInterval(() => {
+      void loadMessages();
+    }, 3000);
+
     return () => {
+      isMounted = false;
+      clearInterval(pollTimer);
       supabase.removeChannel(channel);
     };
   }, [sessionId]);
