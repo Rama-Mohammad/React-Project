@@ -72,7 +72,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
   }, [remoteStream]);
 
   return (
-    <div className="relative flex h-full min-h-[360px] overflow-hidden rounded-2xl border border-indigo-200/70 bg-slate-950 shadow-[0_22px_42px_-30px_rgba(15,23,42,0.9)] sm:min-h-[460px]">
+    <div className="relative flex aspect-video w-full min-h-[240px] max-h-[68vh] overflow-hidden rounded-2xl border border-indigo-200/70 bg-slate-950 shadow-[0_22px_42px_-30px_rgba(15,23,42,0.9)] sm:min-h-[320px]">
       <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
         <span className={`rounded-full px-3 py-1 text-xs font-semibold text-white ${statusTone[connectionStatus]}`}>
           {statusLabel[connectionStatus]}
