@@ -36,7 +36,7 @@ const SessionLivePage: React.FC = () => {
   const [sessionError, setSessionError] = useState("");
   const [files, setFiles] = useState<FileAttachment[]>([]);
   const [pendingDeleteFileId, setPendingDeleteFileId] = useState<string | null>(null);
-  const messages = useChat({
+  const { messages, appendLocalMessage } = useChat({
     sessionId: sessionId ?? "",
     currentUserId,
     currentUserName,
@@ -133,6 +133,7 @@ const SessionLivePage: React.FC = () => {
   const handleSendMessage = async (text: string) => {
     if (!sessionId || !currentUserId || sessionStatus !== "ready") return;
 
+    appendLocalMessage(text);
     await sendMessage(sessionId, currentUserId, text);
   };
 

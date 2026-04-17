@@ -18,6 +18,23 @@ export const useChat = ({
 }: UseChatOptions) => {
   const [messages, setMessages] = useState<Message[]>([]);
 
+  const appendLocalMessage = (text: string) => {
+    const timestamp = new Date().toISOString();
+    const optimisticMessage: Message = {
+      id: `temp-${timestamp}-${Math.random().toString(36).slice(2, 8)}`,
+      text,
+      senderId: currentUserId,
+      senderName: currentUserName,
+      timestamp,
+    };
+
+    setMessages((prev) =>
+      [...prev, optimisticMessage].sort(
+        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      )
+    );
+  };
+
   useEffect(() => {
     if (!sessionId) return;
 
@@ -33,9 +50,27 @@ export const useChat = ({
 
     const mergeMessages = (nextMessages: Message[]) => {
       setMessages((prev) => {
+        const withoutMatchedTemps = [...prev];
+
+        nextMessages.forEach((incoming) => {
+          const optimisticIndex = withoutMatchedTemps.findIndex(
+            (existing) =>
+              existing.id.startsWith("temp-") &&
+              existing.senderId === incoming.senderId &&
+              existing.text === incoming.text &&
+              Math.abs(
+                new Date(existing.timestamp).getTime() - new Date(incoming.timestamp).getTime()
+              ) < 15000
+          );
+
+          if (optimisticIndex >= 0) {
+            withoutMatchedTemps.splice(optimisticIndex, 1);
+          }
+        });
+
         const merged = new Map<string, Message>();
 
-        [...prev, ...nextMessages].forEach((message) => {
+        [...withoutMatchedTemps, ...nextMessages].forEach((message) => {
           merged.set(message.id, message);
         });
 
@@ -82,5 +117,8 @@ export const useChat = ({
     };
   }, [sessionId, currentUserId, currentUserName, otherParticipantName]);
 
-  return messages;
+  return {
+    messages,
+    appendLocalMessage,
+  };
 };
