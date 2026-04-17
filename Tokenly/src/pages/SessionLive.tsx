@@ -164,7 +164,7 @@ const SessionLivePage: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_52%,#f3e8ff_100%)] text-slate-900">
+    <div className="flex h-screen flex-col overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_52%,#f3e8ff_100%)] text-slate-900">
       <header className="border-b border-indigo-200/70 bg-white/55 px-4 py-3 backdrop-blur-xl sm:px-5">
         <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3">
           <div className="min-w-0">
@@ -179,8 +179,8 @@ const SessionLivePage: React.FC = () => {
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 overflow-y-auto p-3 sm:p-4">
-        <section className="flex min-w-0 flex-col lg:min-h-[calc(100vh-250px)]">
+      <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 overflow-hidden p-3 sm:p-4">
+        <section className="flex min-w-0 shrink-0 flex-col lg:min-h-0 lg:flex-1">
           <VideoPlaceholder
             roomName={roomName}
             displayName={currentUserName}
@@ -188,8 +188,8 @@ const SessionLivePage: React.FC = () => {
           />
         </section>
 
-        <aside className="grid w-full min-w-0 gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] lg:items-start">
-          <div className="min-h-0 lg:min-h-[360px]">
+        <aside className="grid w-full min-w-0 gap-4 overflow-hidden lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] lg:items-start">
+          <div className="min-h-0 overflow-hidden lg:min-h-[320px]">
             <ChatWindow
               sessionId={sessionId ?? ""}
               messages={messages}
@@ -199,7 +199,7 @@ const SessionLivePage: React.FC = () => {
             />
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-indigo-200/70 bg-white/75 shadow-[0_12px_28px_-22px_rgba(99,102,241,0.5)] backdrop-blur lg:min-h-[360px]">
+          <div className="overflow-hidden rounded-xl border border-indigo-200/70 bg-white/75 shadow-[0_12px_28px_-22px_rgba(99,102,241,0.5)] backdrop-blur lg:min-h-[320px]">
             <div className="flex border-b border-indigo-200/70 bg-indigo-50/60 p-1">
               <button
                 onClick={() => setActiveTab("agenda")}

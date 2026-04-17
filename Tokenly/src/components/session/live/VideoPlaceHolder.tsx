@@ -35,16 +35,22 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
   } | null>(null);
   const [isShareAvailable, setIsShareAvailable] = useState(false);
   const [isSharingScreen, setIsSharingScreen] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     const parentNode = containerRef.current;
     const JitsiAPI = window.JitsiMeetExternalAPI;
 
-    if (!parentNode || !JitsiAPI) return;
+    if (!parentNode) return;
+    if (!JitsiAPI) {
+      setLoadError("The video room could not load. Refresh the page and try again.");
+      return;
+    }
 
     parentNode.innerHTML = "";
+    setLoadError("");
 
-    const api = new JitsiAPI("meet.jit.si", {
+    const api = new JitsiAPI("meet.ffmuc.net", {
       roomName,
       parentNode,
       width: "100%",
@@ -57,6 +63,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
         startWithAudioMuted: false,
         startWithVideoMuted: false,
         disableModeratorIndicator: true,
+        enableWelcomePage: false,
         toolbarButtons: [
           "microphone",
           "camera",
@@ -113,6 +120,11 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
         >
           {isSharingScreen ? "Stop sharing" : "Share screen"}
         </button>
+      ) : null}
+      {loadError ? (
+        <div className="absolute inset-x-4 bottom-4 z-20 rounded-2xl border border-rose-300/30 bg-rose-500/90 px-4 py-3 text-sm font-medium text-white shadow-lg backdrop-blur">
+          {loadError}
+        </div>
       ) : null}
       <div className="absolute inset-0">
         <div ref={containerRef} className="h-full w-full" />
