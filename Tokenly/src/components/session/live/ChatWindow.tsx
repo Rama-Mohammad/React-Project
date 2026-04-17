@@ -9,17 +9,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   currentUserId,
 }) => {
   const [inputText, setInputText] = useState("");
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
-
-    container.scrollTo({
-      top: container.scrollHeight,
-      behavior: "smooth",
-    });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSend = () => {
@@ -38,7 +32,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-indigo-200/70 bg-white/75 backdrop-blur">
+    <div className="flex h-full flex-col rounded-xl border border-indigo-200/70 bg-white/75 backdrop-blur">
 
       {/* Header */}
       <div className="border-b border-indigo-200/70 bg-indigo-50/60 p-3">
@@ -49,7 +43,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       </div>
 
       {/* Messages */}
-      <div ref={messagesContainerRef} className="flex-1 space-y-3 overflow-y-auto p-3">
+      <div className="flex-1 space-y-3 overflow-y-auto p-3">
         {messages.length === 0 ? (
           <div className="mt-8 text-center text-sm text-slate-400">
             No messages yet. Start the conversation.
@@ -62,7 +56,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               isOwn={message.senderId === currentUserId} />
           ))
         )}
-
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
