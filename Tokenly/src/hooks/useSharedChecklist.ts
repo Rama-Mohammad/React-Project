@@ -40,11 +40,7 @@ export function useSharedChecklist({
       const channel = channelRef.current;
       if (!channel) return;
 
-      await channel.send({
-        type: "broadcast",
-        event: "agenda",
-        payload,
-      });
+      await channel.httpSend("agenda", payload);
     };
 
     const channel = supabase.channel(`session-agenda:${sessionId}`, {
@@ -113,16 +109,12 @@ export function useSharedChecklist({
     const channel = channelRef.current;
     if (!channel) return;
 
-    await channel.send({
-      type: "broadcast",
-      event: "agenda",
-      payload: {
-        type: "state",
-        from: userId,
-        updatedAt,
-        items: nextItems,
-      } satisfies ChecklistPayload,
-    });
+    await channel.httpSend("agenda", {
+      type: "state",
+      from: userId,
+      updatedAt,
+      items: nextItems,
+    } satisfies ChecklistPayload);
   };
 
   return {

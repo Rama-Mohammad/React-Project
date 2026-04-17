@@ -58,6 +58,7 @@ export function useLiveSessionCall({
   const remoteStreamRef = useRef<MediaStream | null>(null);
   const screenTrackRef = useRef<MediaStreamTrack | null>(null);
   const remoteJoinedRef = useRef(false);
+  const remoteSignalSeenRef = useRef(false);
   const makingOfferRef = useRef(false);
   const isApplyingRemoteDescriptionRef = useRef(false);
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
@@ -113,11 +114,7 @@ export function useLiveSessionCall({
       const channel = channelRef.current;
       if (!channel) return;
 
-      await channel.send({
-        type: "broadcast",
-        event: "signal",
-        payload,
-      });
+      await channel.httpSend("signal", payload);
     };
 
     const flushPendingCandidates = async (peer: RTCPeerConnection) => {
@@ -169,6 +166,7 @@ export function useLiveSessionCall({
       };
 
       peer.ontrack = (event) => {
+        remoteSignalSeenRef.current = true;
         const stream =
           event.streams[0] ??
           remoteStreamRef.current ??
@@ -289,11 +287,13 @@ export function useLiveSessionCall({
 
       const state = channel.presenceState() as Record<string, unknown[]>;
       const participantIds = Object.keys(state);
-      const hasRemoteParticipant = participantIds.some((id) => id !== userId);
+      const hasRemotePresence = participantIds.some((id) => id !== userId);
+      const hasRemoteParticipant =
+        hasRemotePresence || remoteSignalSeenRef.current || Boolean(remoteStreamRef.current);
 
       remoteJoinedRef.current = hasRemoteParticipant;
       if (isMounted) {
-        setParticipantCount(Math.max(participantIds.length, 1));
+        setParticipantCount(hasRemoteParticipant ? Math.max(participantIds.length, 2) : 1);
         if (!hasRemoteParticipant && peerRef.current?.connectionState !== "connected") {
           setConnectionStatus("waiting");
           setRemoteStream(null);
@@ -311,6 +311,7 @@ export function useLiveSessionCall({
       const peer = buildPeer();
 
       if (payload.type === "join" || payload.type === "ready") {
+        remoteSignalSeenRef.current = true;
         remoteJoinedRef.current = true;
         if (isMounted && peerRef.current?.connectionState !== "connected") {
           setParticipantCount(2);
@@ -324,6 +325,7 @@ export function useLiveSessionCall({
       }
 
       if (payload.type === "offer") {
+        remoteSignalSeenRef.current = true;
         remoteJoinedRef.current = true;
         setParticipantCount(2);
         setConnectionStatus("connecting");
@@ -349,6 +351,7 @@ export function useLiveSessionCall({
       }
 
       if (payload.type === "answer") {
+        remoteSignalSeenRef.current = true;
         isApplyingRemoteDescriptionRef.current = true;
         try {
           await peer.setRemoteDescription(new RTCSessionDescription(payload.description));
@@ -361,6 +364,7 @@ export function useLiveSessionCall({
       }
 
       if (payload.type === "candidate") {
+        remoteSignalSeenRef.current = true;
         if (peer.remoteDescription) {
           await peer.addIceCandidate(new RTCIceCandidate(payload.candidate));
         } else {
@@ -371,6 +375,7 @@ export function useLiveSessionCall({
 
       if (payload.type === "leave") {
         remoteJoinedRef.current = false;
+        remoteSignalSeenRef.current = false;
         remoteStreamRef.current = null;
         if (isMounted) {
           setParticipantCount(1);
@@ -489,6 +494,8 @@ export function useLiveSessionCall({
       peerRef.current?.close();
       peerRef.current = null;
       pendingCandidatesRef.current = [];
+      remoteJoinedRef.current = false;
+      remoteSignalSeenRef.current = false;
       remoteStreamRef.current = null;
       localStreamRef.current?.getTracks().forEach((track) => track.stop());
       localStreamRef.current = null;
