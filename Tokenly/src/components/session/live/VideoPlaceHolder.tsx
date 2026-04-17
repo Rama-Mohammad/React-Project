@@ -7,7 +7,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
   sessionLabel,
 }) => {
   const meetingSrc = useMemo(() => {
-    const baseUrl = `https://meet.jit.si/${encodeURIComponent(roomName)}`;
+    const baseUrl = `https://meet.ffmuc.net/${encodeURIComponent(roomName)}`;
     const configParams = new URLSearchParams({
       "config.prejoinPageEnabled": "false",
       "config.disableDeepLinking": "true",
