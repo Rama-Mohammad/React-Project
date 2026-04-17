@@ -100,6 +100,7 @@ const SessionLivePage: React.FC = () => {
       }
 
       const isHelper = sessionData.helper_id === userData.user.id;
+      const initiatorId = [sessionData.helper_id, sessionData.requester_id].sort()[0];
 
       setCurrentUserId(userData.user.id);
       setCurrentUserName(
@@ -112,7 +113,7 @@ const SessionLivePage: React.FC = () => {
           ? sessionData.requester?.full_name || sessionData.requester?.username || "Guest"
           : sessionData.helper?.full_name || sessionData.helper?.username || "Guest"
       );
-      setIsInitiator(isHelper);
+      setIsInitiator(initiatorId === userData.user.id);
       setSessionStatus("ready");
     };
 

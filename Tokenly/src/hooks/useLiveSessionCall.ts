@@ -60,6 +60,7 @@ export function useLiveSessionCall({
   const makingOfferRef = useRef(false);
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
   const offerRetryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const presencePollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const getUserMediaCompat = async (constraints: MediaStreamConstraints) => {
     if (typeof navigator === "undefined") {
@@ -374,11 +375,16 @@ export function useLiveSessionCall({
             joinedAt: new Date().toISOString(),
           });
           await sendSignal({ type: "join", from: userId });
+          await sendSignal({ type: "ready", from: userId });
+          updatePresenceState();
           offerRetryTimerRef.current = setInterval(() => {
             if (remoteJoinedRef.current) {
               void maybeCreateOffer();
             }
           }, 2500);
+          presencePollTimerRef.current = setInterval(() => {
+            updatePresenceState();
+          }, 1500);
         });
       } catch (error) {
         if (isMounted) {
@@ -399,6 +405,10 @@ export function useLiveSessionCall({
       if (offerRetryTimerRef.current) {
         clearInterval(offerRetryTimerRef.current);
         offerRetryTimerRef.current = null;
+      }
+      if (presencePollTimerRef.current) {
+        clearInterval(presencePollTimerRef.current);
+        presencePollTimerRef.current = null;
       }
       void sendSignal({ type: "leave", from: userId });
       channelRef.current?.unsubscribe();

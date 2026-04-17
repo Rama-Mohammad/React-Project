@@ -38,16 +38,35 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
-  useEffect(() => {
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = localStream ?? null;
+  const attachStream = (video: HTMLVideoElement | null, stream: MediaStream | null, muted = false) => {
+    if (!video) return;
+
+    video.srcObject = stream ?? null;
+    video.muted = muted;
+
+    if (stream) {
+      const tryPlay = () => {
+        void video.play().catch(() => {
+          // Mobile browsers can delay autoplay until the media element is ready.
+        });
+      };
+
+      if (video.readyState >= 1) {
+        tryPlay();
+      } else {
+        video.onloadedmetadata = () => {
+          tryPlay();
+        };
+      }
     }
+  };
+
+  useEffect(() => {
+    attachStream(localVideoRef.current, localStream ?? null, true);
   }, [localStream]);
 
   useEffect(() => {
-    if (remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = remoteStream ?? null;
-    }
+    attachStream(remoteVideoRef.current, remoteStream ?? null);
   }, [remoteStream]);
 
   return (
