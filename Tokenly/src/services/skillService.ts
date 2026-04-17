@@ -1,7 +1,12 @@
 import { supabase } from "../lib/supabaseClient";
 import type { SkillLevel, SkillCategory } from "../types/skill";
 
-export async function getAllSkills() {
+export async function getAllSkills(opts?: { page?: number; pageSize?: number }) {
+  const page = opts?.page ?? 0;
+  const pageSize = opts?.pageSize ?? 12;
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+
   return await supabase
     .from("skills")
     .select(`
@@ -20,7 +25,8 @@ export async function getAllSkills() {
         profile_image_url
       )
     `)
-    .order("sessions_count", { ascending: false });
+    .order("sessions_count", { ascending: false })
+    .range(from, to);
 }
 
 export async function getSkillsByUser(user_id: string) {

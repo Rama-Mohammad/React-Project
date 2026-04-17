@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { Link, useLocation } from "react-router-dom";
 import CategoryTabs from "../components/explore/CategoryTabs";
@@ -15,7 +15,7 @@ import {
   mapSkillToExploreItem,
   type SkillWithRelations,
 } from "../utils/exploreMappers";
-// HelpOfferItem replaces the old broken OfferItem � offers tab now shows help_offers only
+// HelpOfferItem replaces the old broken OfferItem — offers tab now shows help_offers only
 import type { ExploreTab, RequestItem, HelperItem, SkillItem, HelpOfferItem, Urgency, SkillLevel } from "../types/explore";
 import useRequests from "../hooks/useRequest";
 import { getAllSkills } from "../services/skillService";
@@ -86,8 +86,8 @@ export default function Explore() {
   const [liveHelpers, setLiveHelpers] = useState<HelperItem[]>([]);
   const [helpersLoading, setHelpersLoading] = useState(false);
   const [helpersError, setHelpersError] = useState("");
-  // Offers tab: now HelpOfferItem[] � represents help_offers posted by helpers (Flow 2)
-  // NOT the `offers` table � those are private responses to requests and shouldn't be browsed here
+  // Offers tab: now HelpOfferItem[] — represents help_offers posted by helpers (Flow 2)
+  // NOT the `offers` table — those are private responses to requests and shouldn't be browsed here
   const [liveOffers, setLiveOffers] = useState<HelpOfferItem[]>([]);
   const [offersLoading, setOffersLoading] = useState(false);
   const [offersError, setOffersError] = useState("");
@@ -97,6 +97,17 @@ export default function Explore() {
     skills: true,
     offers: true,
   });
+
+  const PAGE_SIZE = 12;
+
+  const [requestsPage, setRequestsPage] = useState(0);
+  const [skillsPage, setSkillsPage] = useState(0);
+  const [offersPage, setOffersPage] = useState(0);
+
+  const [requestsHasMore, setRequestsHasMore] = useState(true);
+  const [skillsHasMore, setSkillsHasMore] = useState(true);
+  const [offersHasMore, setOffersHasMore] = useState(true);
+
   const requestedCategory = useMemo(() => {
     return new URLSearchParams(location.search).get("category")?.trim() ?? "";
   }, [location.search]);
@@ -134,23 +145,38 @@ export default function Explore() {
     return () => window.clearTimeout(id);
   }, [location.hash]);
 
-  // Requests tab: refetch when filters change
+  // Reset requests pagination when filters or tab change
+  useEffect(() => {
+    setRequestsPage(0);
+    setRequestsHasMore(true);
+  }, [activeTab, duration, selectedCategory, urgency]);
+
+  // Requests tab: refetch when filters or page changes
   useEffect(() => {
     if (activeTab !== "requests") return;
 
     let mounted = true;
+    const isFirstPage = requestsPage === 0;
+
     const mappedUrgency =
       urgency === "Low" ? "low" : urgency === "Medium" ? "medium" : urgency === "High" ? "high" : undefined;
     const mappedDuration =
       duration === "<=30 min" ? 30 : duration === "<=45 min" ? 45 : duration === "<=60 min" ? 60 : undefined;
 
-    setCountsLoading((current) => ({ ...current, requests: true }));
+    if (isFirstPage) {
+      setCountsLoading((current) => ({ ...current, requests: true }));
+    }
 
-    void fetchOpenRequests({
-      category: selectedCategory === "All" ? undefined : selectedCategory,
-      urgency: mappedUrgency,
-      max_duration: mappedDuration,
-    }).finally(() => {
+    void fetchOpenRequests(
+      {
+        category: selectedCategory === "All" ? undefined : selectedCategory,
+        urgency: mappedUrgency,
+        max_duration: mappedDuration,
+        page: requestsPage,
+        pageSize: PAGE_SIZE,
+      },
+      !isFirstPage
+    ).then(() => {
       if (!mounted) return;
       setCountsLoading((current) => ({ ...current, requests: false }));
     });
@@ -159,29 +185,53 @@ export default function Explore() {
       mounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, duration, selectedCategory, urgency]);
+  }, [activeTab, duration, selectedCategory, urgency, requestsPage]);
 
-  // Skills tab: fetch all skills on mount when tab is active
+  // Track whether more requests exist after each fetch
+  useEffect(() => {
+    if (!requestsLoading) {
+      setRequestsHasMore(liveOpenRequests.length > 0 && liveOpenRequests.length % PAGE_SIZE === 0);
+    }
+  }, [liveOpenRequests, requestsLoading]);
+
+  // Reset skills pagination when tab changes
+  useEffect(() => {
+    setSkillsPage(0);
+    setSkillsHasMore(true);
+  }, [activeTab]);
+
+  // Skills tab: fetch when tab is active or page changes
   useEffect(() => {
     if (activeTab !== "skills") return;
 
     let mounted = true;
-    setSkillsLoading(true);
-    setSkillsError("");
-    setCountsLoading((current) => ({ ...current, skills: true }));
+    const isFirstPage = skillsPage === 0;
 
-    void getAllSkills().then(({ data, error }) => {
+    if (isFirstPage) {
+      setSkillsLoading(true);
+      setSkillsError("");
+      setCountsLoading((current) => ({ ...current, skills: true }));
+    }
+
+    void getAllSkills({ page: skillsPage, pageSize: PAGE_SIZE }).then(({ data, error }) => {
       if (!mounted) return;
 
       if (error) {
         setSkillsError(error.message);
-        setLiveSkills([]);
+        if (isFirstPage) setLiveSkills([]);
         setSkillsLoading(false);
         setCountsLoading((current) => ({ ...current, skills: false }));
         return;
       }
 
-      setLiveSkills(((data ?? []) as SkillWithRelations[]));
+      const incoming = (data ?? []) as SkillWithRelations[];
+      if (isFirstPage) {
+        setLiveSkills(incoming);
+      } else {
+        setLiveSkills((prev) => [...prev, ...incoming]);
+      }
+
+      setSkillsHasMore(incoming.length === PAGE_SIZE);
       setSkillsLoading(false);
       setCountsLoading((current) => ({ ...current, skills: false }));
     });
@@ -189,7 +239,7 @@ export default function Explore() {
     return () => {
       mounted = false;
     };
-  }, [activeTab]);
+  }, [activeTab, skillsPage]);
 
   // Helpers tab: fetch only profiles that have skills or open help_offers
   // online status is derived from last_seen (< 15 min = online)
@@ -225,22 +275,32 @@ export default function Explore() {
     };
   }, [activeTab]);
 
-  // Offers tab: fetch open help_offers only (Flow 2 � helper-initiated)
+  // Reset offers pagination when tab changes
+  useEffect(() => {
+    setOffersPage(0);
+    setOffersHasMore(true);
+  }, [activeTab]);
+
+  // Offers tab: fetch open help_offers only (Flow 2 — helper-initiated)
   // This replaces the old broken fetch that mixed `offers` + `help_offers` together
   useEffect(() => {
     if (activeTab !== "offers") return;
 
     let mounted = true;
-    setOffersLoading(true);
-    setOffersError("");
-    setCountsLoading((current) => ({ ...current, offers: true }));
+    const isFirstPage = offersPage === 0;
 
-    void getOpenHelpOffers().then(({ data, error }) => {
+    if (isFirstPage) {
+      setOffersLoading(true);
+      setOffersError("");
+      setCountsLoading((current) => ({ ...current, offers: true }));
+    }
+
+    void getOpenHelpOffers({ page: offersPage, pageSize: PAGE_SIZE }).then(({ data, error }) => {
       if (!mounted) return;
 
       if (error) {
         setOffersError(error.message ?? "Failed to load offers");
-        setLiveOffers([]);
+        if (isFirstPage) setLiveOffers([]);
         setOffersLoading(false);
         setCountsLoading((current) => ({ ...current, offers: false }));
         return;
@@ -287,7 +347,13 @@ export default function Explore() {
         };
       });
 
-      setLiveOffers(mapped);
+      if (isFirstPage) {
+        setLiveOffers(mapped);
+      } else {
+        setLiveOffers((prev) => [...prev, ...mapped]);
+      }
+
+      setOffersHasMore(mapped.length === PAGE_SIZE);
       setOffersLoading(false);
       setCountsLoading((current) => ({ ...current, offers: false }));
     });
@@ -295,7 +361,7 @@ export default function Explore() {
     return () => {
       mounted = false;
     };
-  }, [activeTab]);
+  }, [activeTab, offersPage]);
 
   const filteredRequests: RequestItem[] = useMemo(() => {
     let data = liveOpenRequests.map((item) => mapRequestToExploreItem(item as never));
@@ -348,7 +414,7 @@ export default function Explore() {
       );
     }
 
-    // Online filter now uses last_seen � a helper is online if seen within 15 minutes
+    // Online filter now uses last_seen — a helper is online if seen within 15 minutes
     if (onlineOnly) {
       data = data.filter((item) => isOnline(item.lastSeen));
     }
@@ -439,7 +505,7 @@ export default function Explore() {
     } else if (sortBy === "Highest Tokens") {
       data.sort((a, b) => b.credits - a.credits);
     }
-    // Default is Newest � already sorted by created_at desc from the service
+    // Default is Newest — already sorted by created_at desc from the service
 
     return data;
   }, [liveOffers, search, selectedCategory, sortBy]);
@@ -463,7 +529,7 @@ export default function Explore() {
     [liveSkills]
   );
 
-  // Offer categories come from help_offers.category � not from the old mixed mess
+  // Offer categories come from help_offers.category — not from the old mixed mess
   const offerCategoryOptions = useMemo(
     () => buildDynamicOptions(liveOffers.map((item) => item.category), "General"),
     [liveOffers]
@@ -603,7 +669,7 @@ export default function Explore() {
       ? "Find experts ready to help you"
       : activeTab === "skills"
       ? "Explore skills available in the community"
-      : "Browse offers posted by helpers � request one directly";
+      : "Browse offers posted by helpers — request one directly";
 
   const handleTabChange = (tab: ExploreTab) => {
     setActiveTab(tab);
@@ -695,7 +761,7 @@ export default function Explore() {
           </div>
 
           {/* -- Requests -- */}
-          {activeTab === "requests" && requestsLoading ? (
+          {activeTab === "requests" && requestsLoading && requestsPage === 0 ? (
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
               Loading requests...
             </div>
@@ -704,13 +770,25 @@ export default function Explore() {
               {requestsError}
             </div>
           ) : activeTab === "requests" ? (
-            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredRequests.map((item, index) => (
-                <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
-                  <RequestCard item={item} />
+            <>
+              <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {filteredRequests.map((item, index) => (
+                  <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
+                    <RequestCard item={item} />
+                  </div>
+                ))}
+              </div>
+              {requestsHasMore && !requestsLoading && (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={() => setRequestsPage((p) => p + 1)}
+                    className="rounded-lg border border-slate-200 bg-white px-6 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Load more
+                  </button>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           ) : null}
 
           {/* -- Helpers -- */}
@@ -733,7 +811,7 @@ export default function Explore() {
           ) : null}
 
           {/* -- Skills -- */}
-          {activeTab === "skills" && skillsLoading ? (
+          {activeTab === "skills" && skillsLoading && skillsPage === 0 ? (
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
               Loading skills...
             </div>
@@ -742,20 +820,32 @@ export default function Explore() {
               {skillsError}
             </div>
           ) : activeTab === "skills" ? (
-            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredSkills.map((item, index) => (
-                <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
-                  <SkillCard item={item} />
+            <>
+              <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {filteredSkills.map((item, index) => (
+                  <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
+                    <SkillCard item={item} />
+                  </div>
+                ))}
+              </div>
+              {skillsHasMore && !skillsLoading && (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={() => setSkillsPage((p) => p + 1)}
+                    className="rounded-lg border border-slate-200 bg-white px-6 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Load more
+                  </button>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           ) : null}
 
           {/* -- Offers tab (Flow 2) --
                Shows help_offers posted by helpers advertising availability.
                A user browses these and clicks "Book" to submit a help_offer_request.
-               This is NOT the `offers` table � those are private responses to requests. */}
-          {activeTab === "offers" && offersLoading ? (
+               This is NOT the `offers` table — those are private responses to requests. */}
+          {activeTab === "offers" && offersLoading && offersPage === 0 ? (
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
               Loading offers...
             </div>
@@ -764,97 +854,109 @@ export default function Explore() {
               {offersError}
             </div>
           ) : activeTab === "offers" ? (
-            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredOffers.map((item, index) => (
-                <article
-                  key={item.id}
-                  className="explore-fade-in-up flex h-full flex-col rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur"
-                  style={getEnterStyle(index)}
-                >
-                  {/* Header: category + urgency badge */}
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">
-                      {item.category}
-                    </span>
-                    {item.urgency ? (
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                          item.urgency === "high"
-                            ? "bg-rose-50 text-rose-600"
-                            : item.urgency === "medium"
-                            ? "bg-amber-50 text-amber-600"
-                            : "bg-emerald-50 text-emerald-600"
-                        }`}
-                      >
-                        {item.urgency.charAt(0).toUpperCase() + item.urgency.slice(1)} urgency
+            <>
+              <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {filteredOffers.map((item, index) => (
+                  <article
+                    key={item.id}
+                    className="explore-fade-in-up flex h-full flex-col rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur"
+                    style={getEnterStyle(index)}
+                  >
+                    {/* Header: category + urgency badge */}
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">
+                        {item.category}
                       </span>
-                    ) : null}
-                  </div>
-
-                  {/* Title + description */}
-                  <h3 className="mt-3 text-base font-semibold text-slate-900">{item.title}</h3>
-                  <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-600">{item.description}</p>
-
-                  {/* Skill tags */}
-                  {item.skillNames.length > 0 ? (
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {item.skillNames.slice(0, 4).map((skill) => (
+                      {item.urgency ? (
                         <span
-                          key={skill}
-                          className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-600"
+                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                            item.urgency === "high"
+                              ? "bg-rose-50 text-rose-600"
+                              : item.urgency === "medium"
+                              ? "bg-amber-50 text-amber-600"
+                              : "bg-emerald-50 text-emerald-600"
+                          }`}
                         >
-                          {skill}
+                          {item.urgency.charAt(0).toUpperCase() + item.urgency.slice(1)} urgency
                         </span>
-                      ))}
-                    </div>
-                  ) : null}
-
-                  {/* Footer: duration + credits + posted age */}
-                  <div className="mt-auto pt-4 flex items-center justify-between gap-2 text-xs text-slate-500">
-                    <div className="flex items-center gap-3">
-                      {item.durationMinutes ? (
-                        <span>{item.durationMinutes} min</span>
                       ) : null}
-                      <span className="font-semibold text-indigo-600">{item.credits} credits</span>
                     </div>
-                    <span>{item.postedAgo}</span>
-                  </div>
 
-                  {/* Helper info + Book button */}
-                  <div className="mt-3 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
-                    <div className="flex items-center gap-2">
-                      <Avatar
-                        name={item.helperName}
-                        imageUrl={item.helperProfileImageUrl}
-                        className="h-7 w-7 rounded-full"
-                        imageClassName="rounded-full"
-                        fallbackClassName="bg-indigo-100 text-xs font-semibold text-indigo-700"
-                      />
-                      <div>
-                        <p className="text-xs font-semibold text-slate-900">{item.helperName}</p>
-                        {item.helperRating > 0 ? (
-                          <p className="text-xs text-slate-500">? {item.helperRating.toFixed(1)}</p>
-                        ) : null}
+                    {/* Title + description */}
+                    <h3 className="mt-3 text-base font-semibold text-slate-900">{item.title}</h3>
+                    <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-600">{item.description}</p>
+
+                    {/* Skill tags */}
+                    {item.skillNames.length > 0 ? (
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {item.skillNames.slice(0, 4).map((skill) => (
+                          <span
+                            key={skill}
+                            className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-600"
+                          >
+                            {skill}
+                          </span>
+                        ))}
                       </div>
-                    </div>
-                    {/* Links to the help offer detail page � user can submit a help_offer_request from there */}
-                    <Link
-                      to={isAuthenticated ? `/offers/${item.id}?source=help_offer` : "/auth?mode=signin"}
-                      className="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700"
-                    >
-                      Book
-                    </Link>
-                  </div>
-                </article>
-              ))}
+                    ) : null}
 
-              {filteredOffers.length === 0 ? (
-                <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">
-                  <p className="text-sm text-slate-500">No open offers match your filters.</p>
-                  <p className="mt-1 text-xs text-slate-400">Try adjusting the category or search.</p>
+                    {/* Footer: duration + credits + posted age */}
+                    <div className="mt-auto pt-4 flex items-center justify-between gap-2 text-xs text-slate-500">
+                      <div className="flex items-center gap-3">
+                        {item.durationMinutes ? (
+                          <span>{item.durationMinutes} min</span>
+                        ) : null}
+                        <span className="font-semibold text-indigo-600">{item.credits} credits</span>
+                      </div>
+                      <span>{item.postedAgo}</span>
+                    </div>
+
+                    {/* Helper info + Book button */}
+                    <div className="mt-3 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
+                      <div className="flex items-center gap-2">
+                        <Avatar
+                          name={item.helperName}
+                          imageUrl={item.helperProfileImageUrl}
+                          className="h-7 w-7 rounded-full"
+                          imageClassName="rounded-full"
+                          fallbackClassName="bg-indigo-100 text-xs font-semibold text-indigo-700"
+                        />
+                        <div>
+                          <p className="text-xs font-semibold text-slate-900">{item.helperName}</p>
+                          {item.helperRating > 0 ? (
+                            <p className="text-xs text-slate-500">⭐ {item.helperRating.toFixed(1)}</p>
+                          ) : null}
+                        </div>
+                      </div>
+                      {/* Links to the help offer detail page — user can submit a help_offer_request from there */}
+                      <Link
+                        to={isAuthenticated ? `/offers/${item.id}?source=help_offer` : "/auth?mode=signin"}
+                        className="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700"
+                      >
+                        Book
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+
+                {filteredOffers.length === 0 ? (
+                  <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">
+                    <p className="text-sm text-slate-500">No open offers match your filters.</p>
+                    <p className="mt-1 text-xs text-slate-400">Try adjusting the category or search.</p>
+                  </div>
+                ) : null}
+              </div>
+              {offersHasMore && !offersLoading && (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={() => setOffersPage((p) => p + 1)}
+                    className="rounded-lg border border-slate-200 bg-white px-6 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Load more
+                  </button>
                 </div>
-              ) : null}
-            </div>
+              )}
+            </>
           ) : null}
         </section>
       </main>
@@ -869,4 +971,3 @@ export default function Explore() {
     </div>
   );
 }
-

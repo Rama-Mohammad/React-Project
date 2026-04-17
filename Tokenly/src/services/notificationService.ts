@@ -4,18 +4,20 @@ import type { NotificationType } from "../types/notification";
 export async function getNotificationsByUser(user_id: string) {
   return await supabase
     .from("notifications")
-    .select("*")
+    .select("id, user_id, type, title, message, is_read, related_id, related_type, created_at")
     .eq("user_id", user_id)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(30);
 }
 
 export async function getUnreadNotifications(user_id: string) {
   return await supabase
     .from("notifications")
-    .select("*")
+    .select("id, user_id, type, title, message, is_read, related_id, related_type, created_at")
     .eq("user_id", user_id)
     .eq("is_read", false)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(30);
 }
 
 export async function markNotificationAsRead(id: string) {

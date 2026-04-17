@@ -66,7 +66,7 @@ export async function getRequestById(id: string) {
 export async function getRequestsByUser(requester_id: string) {
   return await supabase
     .from("requests")
-    .select("*")
+    .select("id, requester_id, title, description, category, urgency, duration_minutes, credit_cost, status, created_at")
     .eq("requester_id", requester_id)
     .order("created_at", { ascending: false });
 }
@@ -75,6 +75,8 @@ export async function getAllOpenRequests(filters?: {
   category?: string;
   urgency?: Urgency;
   max_duration?: number;
+  page?: number;
+  pageSize?: number;
 }) {
   let query = supabase
     .from("requests")
@@ -113,7 +115,12 @@ export async function getAllOpenRequests(filters?: {
   if (filters?.max_duration) {
     query = query.lte("duration_minutes", filters.max_duration);
   }
+  const page = filters?.page ?? 0;
+  const pageSize = filters?.pageSize ?? 12;
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
 
+  query = query.range(from, to);
   return await query;
 }
 
