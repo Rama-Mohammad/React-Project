@@ -70,29 +70,26 @@ export function useLiveSessionCall({
     const buildPeer = () => {
       if (peerRef.current) return peerRef.current;
 
-      const iceServers: RTCIceServer[] = [
-        { urls: "stun:stun.relay.metered.ca:80" },
-        {
-          urls: "turn:global.relay.metered.ca:80",
-          username: "b444aa5228652c4e98ce05be",
-          credential: "gNXOQ+F2vZfl38gT",
-        },
-        {
-          urls: "turn:global.relay.metered.ca:80?transport=tcp",
-          username: "b444aa5228652c4e98ce05be",
-          credential: "gNXOQ+F2vZfl38gT",
-        },
-        {
-          urls: "turn:global.relay.metered.ca:443",
-          username: "b444aa5228652c4e98ce05be",
-          credential: "gNXOQ+F2vZfl38gT",
-        },
-        {
-          urls: "turns:global.relay.metered.ca:443?transport=tcp",
-          username: "b444aa5228652c4e98ce05be",
-          credential: "gNXOQ+F2vZfl38gT",
-        },
-      ];
+      const turnUsername = import.meta.env.VITE_TURN_USERNAME;
+      const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL;
+      const turnUrls = [
+        import.meta.env.VITE_TURN_URL,
+        import.meta.env.VITE_TURN_URL_TCP,
+        import.meta.env.VITE_TURN_URL_443,
+        import.meta.env.VITE_TURNS_URL,
+      ].filter((value): value is string => Boolean(value));
+
+      const iceServers: RTCIceServer[] = [{ urls: "stun:stun.l.google.com:19302" }];
+
+      if (turnUsername && turnCredential) {
+        turnUrls.forEach((url) => {
+          iceServers.push({
+            urls: url,
+            username: turnUsername,
+            credential: turnCredential,
+          });
+        });
+      }
 
       const peer = new RTCPeerConnection({
         iceServers,

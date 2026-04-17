@@ -41,7 +41,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
   const attachStream = (element: HTMLVideoElement | null, stream: MediaStream | null, muted: boolean) => {
     if (!element) return;
 
-    element.srcObject = stream ?? null;
+    element.srcObject = stream;
     element.muted = muted;
 
     if (!stream) return;
@@ -71,59 +71,54 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
     attachStream(remoteVideoRef.current, remoteStream ?? null, false);
   }, [remoteStream]);
 
+  const hasRemoteVideo = Boolean(remoteStream);
+  const mainLabel = hasRemoteVideo ? remoteParticipantName ?? "Remote participant" : selfLabel ?? "You";
+
   return (
-    <div className="relative flex min-h-[300px] overflow-hidden rounded-2xl border border-indigo-200/70 bg-slate-950 shadow-[0_22px_42px_-30px_rgba(15,23,42,0.9)] sm:min-h-[360px] lg:h-full lg:min-h-[420px]">
-      <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
+    <div className="relative isolate min-h-[320px] overflow-hidden rounded-[28px] border border-slate-800 bg-slate-950 shadow-[0_28px_60px_-34px_rgba(15,23,42,0.95)] sm:min-h-[420px] lg:h-full lg:min-h-[560px]">
+      {hasRemoteVideo ? (
+        <video
+          ref={remoteVideoRef}
+          autoPlay
+          playsInline
+          disablePictureInPicture
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,#334155_0%,#0f172a_45%,#020617_100%)]" />
+      )}
+
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.15)_0%,rgba(2,6,23,0)_25%,rgba(2,6,23,0.1)_60%,rgba(2,6,23,0.72)_100%)]" />
+
+      {!hasRemoteVideo ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full border border-white/10 bg-white/10 text-2xl font-semibold text-white backdrop-blur">
+            {mainLabel.slice(0, 2).toUpperCase()}
+          </div>
+          <p className="mt-5 text-lg font-semibold text-white">{mainLabel}</p>
+          <p className="mt-2 max-w-md text-sm text-slate-200">
+            {connectionStatus === "waiting"
+              ? "Your room is ready. The other participant will appear here when they join."
+              : "The live video will appear here once the call is established."}
+          </p>
+        </div>
+      ) : null}
+
+      <div className="absolute left-4 top-4 z-20 flex flex-wrap items-center gap-2">
         <span className={`rounded-full px-3 py-1 text-xs font-semibold text-white ${statusTone[connectionStatus]}`}>
           {statusLabel[connectionStatus]}
         </span>
-        <span className="rounded-full bg-slate-900/70 px-3 py-1 text-xs font-medium text-slate-200">
+        <span className="rounded-full border border-white/10 bg-black/35 px-3 py-1 text-xs font-medium text-slate-100 backdrop-blur">
           {participantCount} participant{participantCount === 1 ? "" : "s"}
         </span>
       </div>
 
-      <div className="absolute right-3 top-3 z-20 rounded-full bg-slate-900/70 px-3 py-1 text-xs font-medium text-slate-200">
-        {isScreenSharing ? "Sharing screen" : "Camera view"}
+      <div className="absolute bottom-24 left-4 z-20 rounded-full border border-white/10 bg-black/35 px-3 py-1.5 text-xs font-medium text-white backdrop-blur">
+        {mainLabel}
       </div>
 
-      <div className="grid h-full w-full flex-1 gap-0 grid-rows-[minmax(220px,1fr)_140px] md:grid-rows-1 md:grid-cols-[minmax(0,1fr)_220px]">
-        <div className="relative min-h-[320px] overflow-hidden bg-slate-900">
-          {remoteStream ? (
-            <video
-              ref={remoteVideoRef}
-              autoPlay
-              playsInline
-              disablePictureInPicture
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full flex-col items-center justify-center bg-[radial-gradient(circle_at_top,#334155_0%,#0f172a_55%,#020617_100%)] p-6 text-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-800 text-2xl font-semibold text-slate-100">
-                {(remoteParticipantName ?? "Guest").slice(0, 2).toUpperCase()}
-              </div>
-              <p className="mt-4 text-base font-semibold text-slate-100">
-                {remoteParticipantName ?? "Waiting for the other participant"}
-              </p>
-              <p className="mt-2 max-w-sm text-sm text-slate-300">
-                {connectionStatus === "waiting"
-                  ? "The room is ready. As soon as the other person joins, the call will connect."
-                  : "The remote stream will appear here once the call is established."}
-              </p>
-            </div>
-          )}
-
-          <div className="absolute bottom-4 left-4 rounded-full bg-slate-900/75 px-3 py-1.5 text-xs font-medium text-slate-100">
-            {remoteParticipantName ?? "Remote participant"}
-          </div>
-
-          {connectionStatus === "error" ? (
-            <div className="absolute inset-x-4 top-16 z-10 rounded-2xl border border-rose-400/40 bg-rose-500/15 p-3 text-sm text-rose-100 backdrop-blur">
-              {errorMessage || "The live call hit a connection error."}
-            </div>
-          ) : null}
-        </div>
-
-        <div className="relative border-t border-slate-800 bg-slate-950/70 md:border-l md:border-t-0">
+      <div className="absolute right-4 top-4 z-20 w-[34vw] max-w-[210px] min-w-[108px] overflow-hidden rounded-2xl border border-white/12 bg-slate-900/90 shadow-[0_18px_40px_-22px_rgba(15,23,42,0.95)] backdrop-blur">
+        <div className="relative aspect-[3/4] overflow-hidden bg-slate-900 sm:aspect-[4/3]">
           {localStream && isVideoEnabled ? (
             <video
               ref={localVideoRef}
@@ -134,24 +129,39 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex h-full flex-col items-center justify-center bg-[radial-gradient(circle_at_top,#312e81_0%,#111827_55%,#020617_100%)] p-5 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-500/20 text-xl font-semibold text-indigo-100">
+            <div className="flex h-full flex-col items-center justify-center bg-[radial-gradient(circle_at_top,#312e81_0%,#111827_55%,#020617_100%)] p-4 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white">
                 {(selfLabel ?? "You").slice(0, 2).toUpperCase()}
               </div>
-              <p className="mt-3 text-sm font-semibold text-slate-100">{selfLabel ?? "You"}</p>
-              <p className="mt-1 text-xs text-slate-300">
-                {isVideoEnabled ? "Starting your camera..." : "Your camera is off"}
+              <p className="mt-2 text-xs font-medium text-white">{selfLabel ?? "You"}</p>
+              <p className="mt-1 text-[11px] text-slate-300">
+                {isVideoEnabled ? "Starting camera..." : "Camera off"}
               </p>
             </div>
           )}
 
-          <div className="absolute bottom-4 left-4 rounded-full bg-slate-900/75 px-3 py-1.5 text-xs font-medium text-slate-100">
-            {selfLabel ?? "You"}
+          <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(2,6,23,0)_0%,rgba(2,6,23,0.72)_100%)] px-3 pb-2 pt-8">
+            <span className="rounded-full bg-black/35 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
+              {selfLabel ?? "You"}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="absolute bottom-3 left-1/2 z-20 flex w-[calc(100%-1.5rem)] max-w-max -translate-x-1/2 flex-wrap justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/85 p-2 shadow-lg backdrop-blur sm:bottom-4 sm:w-auto">
+      {connectionStatus === "error" ? (
+        <div className="absolute inset-x-4 top-16 z-20 rounded-2xl border border-rose-400/35 bg-rose-500/15 p-3 text-sm text-rose-100 backdrop-blur">
+          {errorMessage || "The live call hit a connection error."}
+        </div>
+      ) : null}
+
+      <div className="absolute right-4 top-24 z-20 rounded-full border border-white/10 bg-black/35 px-3 py-1.5 text-xs text-slate-100 backdrop-blur sm:top-auto sm:bottom-24">
+        <div className="flex items-center gap-2">
+          {connectionStatus === "connected" ? <Wifi size={14} /> : <WifiOff size={14} />}
+          <span>{isScreenSharing ? "Sharing screen" : "Camera view"}</span>
+        </div>
+      </div>
+
+      <div className="absolute bottom-4 left-1/2 z-20 flex w-[calc(100%-1.5rem)] max-w-max -translate-x-1/2 flex-wrap justify-center gap-2 rounded-2xl border border-white/10 bg-black/45 p-2 shadow-lg backdrop-blur sm:w-auto">
         <button
           type="button"
           onClick={onToggleVideo}
@@ -182,13 +192,6 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
           <MonitorUp size={16} />
           {isScreenSharing ? "Stop share" : "Share screen"}
         </button>
-      </div>
-
-      <div className="absolute right-3 top-14 z-20 rounded-2xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-xs text-slate-200 backdrop-blur sm:right-4 sm:top-auto sm:bottom-24">
-        <div className="flex items-center gap-2">
-          {connectionStatus === "connected" ? <Wifi size={14} /> : <WifiOff size={14} />}
-          <span>{statusLabel[connectionStatus]}</span>
-        </div>
       </div>
     </div>
   );
