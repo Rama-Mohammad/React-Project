@@ -46,150 +46,155 @@ function ScrollToTopLayout() {
   return <Outlet />;
 }
 
-export const router = createBrowserRouter([
-  {
-    element: <ScrollToTopLayout />,
-    errorElement: <ErrorPage />,
-    children: [
-      {
-        element: <Layout />,
-        children: [
-          {
-            path: "/",
-            element: <Home />,
-          },
-          {
-            path: "/home",
-            element: <Home />,
-          },
-          {
-            path: "/explore",
-            element: <Explore />,
-          },
-          {
-            path: "/requests/:requestId",
-            element: <RequestDetails />,
-          },
-          {
-            path: "/offers/:offerId",
-            element: <HelpOfferBooking />,
-          },
-          {
-            path: "/my-offers/help-offer/:offerId",
-            element: <HelpOfferDetails />,
-          },
-          {
-            path: "/my-offers/independent/:offerId",
-            element: <HelpOfferDetails />,
-          },
-          {
-            path: "/helpers/:helperId",
-            element: <HelperProfile />,
-          },
-          {
-            path: "/helpers/:helperId/request",
-            element: <RequestHelper />,
-          },
-          {
-            path: "/sessions/request/:sessionId",
-            element: <SessionRequestDetails />,
-          },
-          {
-            path: "/sessions",
-            element: <Sessions />,
-          },
-          {
-            path: "/offers/:offerId/appointment",
-            element: <OfferAppointment />,
-          },
-          {
-            path: "/request/new",
-            element: <RequestHelper />,
-          },
-          {
-            path: "/create-offer",
-            element: <CreateOffer />,
-          },
-          {
-            path: "/skills/:skillId/helpers",
-            element: <SkillHelpers />,
-          },
-          {
-            path: "/my-offers",
-            element: <MyOffers />,
-          },
-          {
-            path: "/dashboard",
-            element: <Dashboard />,
-          },
-          {
-            path: "/profile",
-            element: <Profile />,
-          },
-          {
-            path: "/activity",
-            element: <Activity />,
-          },
-          {
-            path: "/tokens/options",
-            element: <TokenOptions />,
-          },
-          {
-            path: "/account-settings",
-            element: <AccountSettings />,
-          },
-          {
-            path: "/help",
-            element: <Help />,
-          },
-          {
-            path: "/guidelines",
-            element: <Guidelines />,
-          },
-          {
-            path: "/report",
-            element: <ReportIssue />,
-          },
-          {
-            path: "/faqs",
-            element: <FAQ />,
-          },
-          {
-            path: "/account-safety",
-            element: <AccountSafety />,
-          },
-          {
-            path: "/privacy",
-            element: <PrivacyPolicy />,
-          },
-          {
-            path: "/terms",
-            element: <TermsOfService />,
-          },
-          {
-            path: "/cookies",
-            element: <CookiePolicy />,
-          },
-          {
-            path: "*",
-            element: <NotFound />,
-          },
-        ],
-      },
-      {
-        path: "/session/:sessionId",
-        element: <SessionLivePage />,
-      },
-      { path: "/auth", element: <AuthPage /> },
-      {
-        path: "/reset-password",
-        element: <AuthPage />,
-      },
+export const router = createBrowserRouter(
+  [
+    {
+      element: <ScrollToTopLayout />,
+      errorElement: <ErrorPage />,
+      children: [
+        {
+          element: <Layout />,
+          children: [
+            {
+              path: "/",
+              element: <Home />,
+            },
+            {
+              path: "/home",
+              element: <Home />,
+            },
+            {
+              path: "/explore",
+              element: <Explore />,
+            },
+            {
+              path: "/requests/:requestId",
+              element: <RequestDetails />,
+            },
+            {
+              path: "/offers/:offerId",
+              element: <HelpOfferBooking />,
+            },
+            {
+              path: "/my-offers/help-offer/:offerId",
+              element: <HelpOfferDetails />,
+            },
+            {
+              path: "/my-offers/independent/:offerId",
+              element: <HelpOfferDetails />,
+            },
+            {
+              path: "/helpers/:helperId",
+              element: <HelperProfile />,
+            },
+            {
+              path: "/helpers/:helperId/request",
+              element: <RequestHelper />,
+            },
+            {
+              path: "/sessions/request/:sessionId",
+              element: <SessionRequestDetails />,
+            },
+            {
+              path: "/sessions",
+              element: <Sessions />,
+            },
+            {
+              path: "/offers/:offerId/appointment",
+              element: <OfferAppointment />,
+            },
+            {
+              path: "/request/new",
+              element: <RequestHelper />,
+            },
+            {
+              path: "/create-offer",
+              element: <CreateOffer />,
+            },
+            {
+              path: "/skills/:skillId/helpers",
+              element: <SkillHelpers />,
+            },
+            {
+              path: "/my-offers",
+              element: <MyOffers />,
+            },
+            {
+              path: "/dashboard",
+              element: <Dashboard />,
+            },
+            {
+              path: "/profile",
+              element: <Profile />,
+            },
+            {
+              path: "/activity",
+              element: <Activity />,
+            },
+            {
+              path: "/tokens/options",
+              element: <TokenOptions />,
+            },
+            {
+              path: "/account-settings",
+              element: <AccountSettings />,
+            },
+            {
+              path: "/help",
+              element: <Help />,
+            },
+            {
+              path: "/guidelines",
+              element: <Guidelines />,
+            },
+            {
+              path: "/report",
+              element: <ReportIssue />,
+            },
+            {
+              path: "/faqs",
+              element: <FAQ />,
+            },
+            {
+              path: "/account-safety",
+              element: <AccountSafety />,
+            },
+            {
+              path: "/privacy",
+              element: <PrivacyPolicy />,
+            },
+            {
+              path: "/terms",
+              element: <TermsOfService />,
+            },
+            {
+              path: "/cookies",
+              element: <CookiePolicy />,
+            },
+            {
+              path: "*",
+              element: <NotFound />,
+            },
+          ],
+        },
+        {
+          path: "/session/:sessionId",
+          element: <SessionLivePage />,
+        },
+        { path: "/auth", element: <AuthPage /> },
+        {
+          path: "/reset-password",
+          element: <AuthPage />,
+        },
 
-      {
-        path: "/error-test",
-        element: <ErrorTestPage />,
-      },
-    ],
-  },
-]);
+        {
+          path: "/error-test",
+          element: <ErrorTestPage />,
+        },
+      ],
+    },
+  ],
+  {
+    basename: import.meta.env.BASE_URL,
+  }
+);
