@@ -56,6 +56,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               isOwn={message.senderId === currentUserId} />
           ))
         )}
+
         <div ref={messagesEndRef} />
       </div>
 

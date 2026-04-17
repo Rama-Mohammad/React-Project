@@ -78,18 +78,8 @@ export function useSharedChecklist({
       await sendPayload({ type: "sync-request", from: userId });
     });
 
-    const rebroadcastId = window.setInterval(() => {
-      void sendPayload({
-        type: "state",
-        from: userId,
-        updatedAt: lastUpdatedRef.current,
-        items: itemsRef.current,
-      });
-    }, 5000);
-
     return () => {
       isMounted = false;
-      window.clearInterval(rebroadcastId);
       channelRef.current?.unsubscribe();
       channelRef.current = null;
     };

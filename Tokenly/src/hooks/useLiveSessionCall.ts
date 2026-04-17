@@ -18,6 +18,24 @@ type UseLiveSessionCallOptions = {
   isInitiator: boolean;
 };
 
+type LegacyNavigator = Navigator & {
+  getUserMedia?: (
+    constraints: MediaStreamConstraints,
+    successCallback: (stream: MediaStream) => void,
+    errorCallback: (error: DOMException) => void
+  ) => void;
+  webkitGetUserMedia?: (
+    constraints: MediaStreamConstraints,
+    successCallback: (stream: MediaStream) => void,
+    errorCallback: (error: DOMException) => void
+  ) => void;
+  mozGetUserMedia?: (
+    constraints: MediaStreamConstraints,
+    successCallback: (stream: MediaStream) => void,
+    errorCallback: (error: DOMException) => void
+  ) => void;
+};
+
 export function useLiveSessionCall({
   sessionId,
   userId,
@@ -42,6 +60,46 @@ export function useLiveSessionCall({
   const makingOfferRef = useRef(false);
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
   const offerRetryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const getUserMediaCompat = async (constraints: MediaStreamConstraints) => {
+    if (typeof navigator === "undefined") {
+      throw new Error("Camera and microphone are only available in a browser.");
+    }
+
+    if (navigator.mediaDevices?.getUserMedia) {
+      return navigator.mediaDevices.getUserMedia(constraints);
+    }
+
+    const legacyNavigator = navigator as LegacyNavigator;
+    const legacyGetUserMedia =
+      legacyNavigator.getUserMedia ??
+      legacyNavigator.webkitGetUserMedia ??
+      legacyNavigator.mozGetUserMedia;
+
+    if (!legacyGetUserMedia) {
+      throw new Error(
+        window.isSecureContext
+          ? "This browser does not support camera and microphone access."
+          : "Camera and microphone need HTTPS on deployed links. Open the secure site or use localhost."
+      );
+    }
+
+    return new Promise<MediaStream>((resolve, reject) => {
+      legacyGetUserMedia.call(legacyNavigator, constraints, resolve, reject);
+    });
+  };
+
+  const getDisplayMediaCompat = async (constraints: DisplayMediaStreamOptions) => {
+    if (typeof navigator === "undefined") {
+      throw new Error("Screen sharing is only available in a browser.");
+    }
+
+    if (navigator.mediaDevices?.getDisplayMedia) {
+      return navigator.mediaDevices.getDisplayMedia(constraints);
+    }
+
+    throw new Error("Screen sharing is not supported on this device or browser.");
+  };
 
   useEffect(() => {
     if (!enabled || !sessionId || !userId) return;
@@ -259,12 +317,7 @@ export function useLiveSessionCall({
     const start = async () => {
       try {
         setConnectionStatus("joining");
-        const mediaDevices = typeof navigator !== "undefined" ? navigator.mediaDevices : undefined;
-        if (!mediaDevices?.getUserMedia) {
-          throw new Error("This browser does not support camera and microphone access.");
-        }
-
-        const mediaStream = await mediaDevices.getUserMedia({
+        const mediaStream = await getUserMediaCompat({
           video: {
             facingMode: "user",
             width: { ideal: 1280 },
@@ -415,12 +468,7 @@ export function useLiveSessionCall({
     }
 
     try {
-      const mediaDevices = typeof navigator !== "undefined" ? navigator.mediaDevices : undefined;
-      if (!mediaDevices?.getDisplayMedia) {
-        throw new Error("Screen sharing is not supported on this device or browser.");
-      }
-
-      const displayStream = await mediaDevices.getDisplayMedia({ video: true });
+      const displayStream = await getDisplayMediaCompat({ video: true });
       const screenTrack = displayStream.getVideoTracks()[0];
       if (!screenTrack) return;
 

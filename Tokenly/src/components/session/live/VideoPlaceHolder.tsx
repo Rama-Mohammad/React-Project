@@ -65,7 +65,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
         {isScreenSharing ? "Sharing screen" : "Camera view"}
       </div>
 
-      <div className="grid h-full w-full flex-1 gap-0 grid-rows-[minmax(0,1fr)_120px] md:grid-cols-[minmax(0,1fr)_220px] md:grid-rows-none">
+      <div className="grid h-full w-full flex-1 grid-rows-[minmax(0,1fr)_120px] gap-0 md:grid-cols-[minmax(0,1fr)_220px] md:grid-rows-none">
         <div className="relative min-h-[220px] overflow-hidden bg-slate-900 sm:min-h-[320px]">
           {remoteStream ? (
             <video ref={remoteVideoRef} autoPlay playsInline className="h-full w-full object-cover" />
