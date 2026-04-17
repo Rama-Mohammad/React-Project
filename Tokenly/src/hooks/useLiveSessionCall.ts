@@ -105,6 +105,47 @@ export function useLiveSessionCall({
     throw new Error("Screen sharing is not supported on this device or browser.");
   };
 
+  const acquireCameraStream = async () => {
+    const attempts: MediaStreamConstraints[] = [
+      {
+        video: {
+          facingMode: { ideal: "user" },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+        audio: true,
+      },
+      {
+        video: {
+          facingMode: { ideal: "user" },
+        },
+        audio: true,
+      },
+      {
+        video: true,
+        audio: true,
+      },
+      {
+        video: true,
+        audio: false,
+      },
+    ];
+
+    let lastError: unknown = null;
+
+    for (const constraints of attempts) {
+      try {
+        return await getUserMediaCompat(constraints);
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError instanceof Error
+      ? lastError
+      : new Error("Camera or microphone access could not be started on this device.");
+  };
+
   useEffect(() => {
     if (!enabled || !sessionId || !userId) return;
 
@@ -388,14 +429,8 @@ export function useLiveSessionCall({
     const start = async () => {
       try {
         setConnectionStatus("joining");
-        const mediaStream = await getUserMediaCompat({
-          video: {
-            facingMode: "user",
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
-          audio: true,
-        });
+        setErrorMessage("");
+        const mediaStream = await acquireCameraStream();
 
         if (!isMounted) {
           mediaStream.getTracks().forEach((track) => track.stop());
@@ -407,6 +442,7 @@ export function useLiveSessionCall({
         setLocalStream(mediaStream);
         setIsAudioEnabled(mediaStream.getAudioTracks().some((track) => track.enabled));
         setIsVideoEnabled(mediaStream.getVideoTracks().some((track) => track.enabled));
+        setErrorMessage("");
         setConnectionStatus("waiting");
         setParticipantCount(1);
 
