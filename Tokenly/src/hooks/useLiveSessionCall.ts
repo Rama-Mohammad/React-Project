@@ -55,9 +55,11 @@ export function useLiveSessionCall({
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
+  const remoteStreamRef = useRef<MediaStream | null>(null);
   const screenTrackRef = useRef<MediaStreamTrack | null>(null);
   const remoteJoinedRef = useRef(false);
   const makingOfferRef = useRef(false);
+  const isApplyingRemoteDescriptionRef = useRef(false);
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
   const offerRetryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const presencePollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -167,10 +169,31 @@ export function useLiveSessionCall({
       };
 
       peer.ontrack = (event) => {
-        const [stream] = event.streams;
-        if (stream && isMounted) {
-          setRemoteStream(stream);
+        const stream =
+          event.streams[0] ??
+          remoteStreamRef.current ??
+          new MediaStream();
+
+        if (!remoteStreamRef.current) {
+          remoteStreamRef.current = stream;
         }
+
+        if (!event.streams[0]) {
+          stream.addTrack(event.track);
+        }
+
+        if (isMounted) {
+          setRemoteStream(stream);
+          setParticipantCount(2);
+          if (peer.connectionState !== "connected") {
+            setConnectionStatus("connecting");
+          }
+        }
+      };
+
+      peer.onnegotiationneeded = async () => {
+        if (!isInitiator || !remoteJoinedRef.current) return;
+        await maybeCreateOffer();
       };
 
       peer.onconnectionstatechange = () => {
@@ -196,6 +219,26 @@ export function useLiveSessionCall({
         }
       };
 
+      peer.oniceconnectionstatechange = () => {
+        if (!isMounted) return;
+
+        const state = peer.iceConnectionState;
+        if (state === "connected" || state === "completed") {
+          setConnectionStatus("connected");
+          setErrorMessage("");
+          return;
+        }
+
+        if (state === "checking") {
+          setConnectionStatus("connecting");
+          return;
+        }
+
+        if (state === "failed" || state === "disconnected") {
+          setConnectionStatus("error");
+        }
+      };
+
       const currentStream = localStreamRef.current;
       if (currentStream) {
         currentStream.getTracks().forEach((track) => {
@@ -211,7 +254,13 @@ export function useLiveSessionCall({
       if (!isInitiator || !remoteJoinedRef.current) return;
 
       const peer = buildPeer();
-      if (makingOfferRef.current || peer.signalingState !== "stable") return;
+      if (
+        makingOfferRef.current ||
+        isApplyingRemoteDescriptionRef.current ||
+        peer.signalingState !== "stable"
+      ) {
+        return;
+      }
       if (peer.remoteDescription) return;
 
       makingOfferRef.current = true;
@@ -276,8 +325,18 @@ export function useLiveSessionCall({
 
       if (payload.type === "offer") {
         remoteJoinedRef.current = true;
+        setParticipantCount(2);
         setConnectionStatus("connecting");
-        await peer.setRemoteDescription(new RTCSessionDescription(payload.description));
+        isApplyingRemoteDescriptionRef.current = true;
+        try {
+          if (peer.signalingState !== "stable" && peer.localDescription) {
+            await peer.setLocalDescription({ type: "rollback" });
+          }
+
+          await peer.setRemoteDescription(new RTCSessionDescription(payload.description));
+        } finally {
+          isApplyingRemoteDescriptionRef.current = false;
+        }
         await flushPendingCandidates(peer);
         const answer = await peer.createAnswer();
         await peer.setLocalDescription(answer);
@@ -290,7 +349,12 @@ export function useLiveSessionCall({
       }
 
       if (payload.type === "answer") {
-        await peer.setRemoteDescription(new RTCSessionDescription(payload.description));
+        isApplyingRemoteDescriptionRef.current = true;
+        try {
+          await peer.setRemoteDescription(new RTCSessionDescription(payload.description));
+        } finally {
+          isApplyingRemoteDescriptionRef.current = false;
+        }
         await flushPendingCandidates(peer);
         setConnectionStatus("connecting");
         return;
@@ -307,6 +371,7 @@ export function useLiveSessionCall({
 
       if (payload.type === "leave") {
         remoteJoinedRef.current = false;
+        remoteStreamRef.current = null;
         if (isMounted) {
           setParticipantCount(1);
           setRemoteStream(null);
@@ -416,6 +481,7 @@ export function useLiveSessionCall({
       peerRef.current?.close();
       peerRef.current = null;
       pendingCandidatesRef.current = [];
+      remoteStreamRef.current = null;
       localStreamRef.current?.getTracks().forEach((track) => track.stop());
       localStreamRef.current = null;
       cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
