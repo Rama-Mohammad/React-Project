@@ -573,7 +573,12 @@ export const getIndependentOfferAppointmentDetails = getHelpOfferAppointmentDeta
 export async function getOffersByRequest(request_id: string) {
   return await supabase
     .from("offers")
-    .select("*, helper:profiles(*)")
+    .select(`
+    id, request_id, helper_id, message, availability, status, created_at,
+    helper:profiles!offers_helper_id_fkey(
+    id, full_name, username, avg_rating, profile_image_url
+  )
+`)
     .eq("request_id", request_id)
     .order("created_at", { ascending: false });
 }
@@ -581,7 +586,12 @@ export async function getOffersByRequest(request_id: string) {
 export async function getOffersByHelper(helper_id: string) {
   return await supabase
     .from("offers")
-    .select("*, request:requests(*)")
+    .select(`
+    id, request_id, helper_id, message, availability, status, created_at,
+    request:requests!offers_request_id_fkey(
+    id, title, category, status, urgency, credit_cost, duration_minutes
+  )
+`)
     .eq("helper_id", helper_id)
     .order("created_at", { ascending: false });
 }

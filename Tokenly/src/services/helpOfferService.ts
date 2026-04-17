@@ -11,7 +11,11 @@ import { createNotification } from "./notificationService";
 
 // Used by the Offers tab in Explore — fetches all open help_offers with helper
 // profile and linked skill names
-export async function getOpenHelpOffers() {
+export async function getOpenHelpOffers(opts?: { page?: number; pageSize?: number }) {
+  const page = opts?.page ?? 0;
+  const pageSize = opts?.pageSize ?? 12;
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
   const result = await supabase
     .from("help_offers")
     .select(`
@@ -37,7 +41,8 @@ export async function getOpenHelpOffers() {
       )
     `)
     .eq("status", "open")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(from, to);
 
   return result;
 }

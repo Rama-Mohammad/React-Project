@@ -47,7 +47,7 @@ export default function useRequests(): UseRequestsResult {
         setLoading(false);
     }
 
-    async function fetchOpenRequests(filters?: RequestFilters) {
+    async function fetchOpenRequests(filters?: RequestFilters, append = false) {
         setLoading(true);
         setError("");
 
@@ -59,7 +59,12 @@ export default function useRequests(): UseRequestsResult {
             return;
         }
 
-        setRequests(data ?? []);
+        if (append) {
+            setRequests((prev) => [...prev, ...(data ?? [])]);
+        } else {
+            setRequests(data ?? []);
+        }
+
         setLoading(false);
     }
 

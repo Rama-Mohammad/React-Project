@@ -4,15 +4,16 @@ import type { TransactionType } from "../types/transaction";
 export async function getTransactionsByUser(user_id: string) {
   return await supabase
     .from("credit_transactions")
-    .select("*")
+    .select("id, user_id, session_id, amount, type, description, created_at")
     .eq("user_id", user_id)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(50);
 }
 
 export async function getTransactionsBySession(session_id: string) {
   return await supabase
     .from("credit_transactions")
-    .select("*")
+    .select("id, user_id, session_id, amount, type, description, created_at")
     .eq("session_id", session_id);
 }
 

@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabaseClient";
 export async function getProfileById(id: string) {
   return await supabase
     .from("profiles")
-    .select("*")
+    .select("id, full_name, username, bio, title, institution, location, website, avg_rating, credit_balance, profile_image_url, cover_image_url, last_seen, created_at")
     .eq("id", id)
     .single();
 }
@@ -32,7 +32,7 @@ export async function getProfileCompletedSessionsCount(id: string) {
 export async function getProfileByUsername(username: string) {
   return await supabase
     .from("profiles")
-    .select("*")
+    .select("id, full_name, username, bio, title, institution, location, website, avg_rating, credit_balance, profile_image_url, cover_image_url, last_seen, created_at")
     .eq("username", username)
     .single();
 }
@@ -62,7 +62,7 @@ export async function updateProfile(
 export async function searchProfiles(query: string) {
   return await supabase
     .from("profiles")
-    .select("*")
+    .select("id, full_name, username, avg_rating, profile_image_url, title")
     .or(`username.ilike.%${query}%,full_name.ilike.%${query}%`)
     .order("avg_rating", { ascending: false });
 }

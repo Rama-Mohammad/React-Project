@@ -74,7 +74,8 @@ export async function getExploreHelpers() {
   const { data: profiles, error: profilesError } = await supabase
     .from("profiles")
     .select("id, full_name, username, avg_rating, title, bio, profile_image_url, last_seen")
-    .in("id", helperIds);
+    .in("id", helperIds)
+    .limit(50);
 
   if (profilesError) return { data: null, error: profilesError };
 
@@ -86,15 +87,18 @@ export async function getExploreHelpers() {
     supabase
       .from("skills")
       .select("id, user_id, name, category, level, sessions_count")
-      .in("user_id", helperIds),
+      .in("user_id", helperIds)
+      .limit(200),
     supabase
       .from("sessions")
       .select("id, helper_id, status")
-      .in("helper_id", helperIds),
+      .in("helper_id", helperIds)
+      .limit(500),
     supabase
       .from("help_offers")
       .select("id, helper_id, category, credit_cost, duration_minutes, status")
-      .in("helper_id", helperIds),
+      .in("helper_id", helperIds)
+      .limit(200),
   ]);
 
   const error = skillsError ?? sessionsError ?? helpOffersError;
