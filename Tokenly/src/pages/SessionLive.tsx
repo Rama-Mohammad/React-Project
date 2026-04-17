@@ -32,6 +32,7 @@ const SessionLivePage: React.FC = () => {
   const [currentUserName, setCurrentUserName] = useState("You");
   const [otherParticipantName, setOtherParticipantName] = useState("Remote participant");
   const [isInitiator, setIsInitiator] = useState(false);
+  const [hasJoinedCall, setHasJoinedCall] = useState(false);
   const [sessionStatus, setSessionStatus] = useState<"loading" | "ready" | "error">("loading");
   const [sessionError, setSessionError] = useState("");
   const [files, setFiles] = useState<FileAttachment[]>([]);
@@ -52,7 +53,7 @@ const SessionLivePage: React.FC = () => {
   } = useLiveSessionCall({
     sessionId: sessionId ?? "",
     userId: currentUserId,
-    enabled: sessionStatus === "ready",
+    enabled: sessionStatus === "ready" && hasJoinedCall,
     isInitiator,
   });
 
@@ -219,12 +220,15 @@ const SessionLivePage: React.FC = () => {
             remoteStream={remoteStream}
             remoteParticipantName={otherParticipantName}
             selfLabel={currentUserName}
+            isInCall={hasJoinedCall}
             connectionStatus={connectionStatus}
             errorMessage={callError}
             isVideoEnabled={isVideoEnabled}
             isAudioEnabled={isAudioEnabled}
             isScreenSharing={isScreenSharing}
             participantCount={participantCount}
+            onJoinCall={() => setHasJoinedCall(true)}
+            onLeaveCall={() => setHasJoinedCall(false)}
             onToggleVideo={toggleVideo}
             onToggleAudio={toggleAudio}
             onShareScreen={toggleScreenShare}

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Mic, MicOff, MonitorUp, Video, VideoOff, Wifi, WifiOff } from "lucide-react";
+import { LogIn, LogOut, Mic, MicOff, MonitorUp, Video, VideoOff, Wifi, WifiOff } from "lucide-react";
 import type { VideoPlaceholderProps } from "../../../types/session";
 
 const statusLabel: Record<VideoPlaceholderProps["connectionStatus"], string> = {
@@ -25,12 +25,15 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
   remoteStream,
   remoteParticipantName,
   selfLabel,
+  isInCall,
   connectionStatus,
   errorMessage,
   isVideoEnabled,
   isAudioEnabled,
   isScreenSharing,
   participantCount,
+  onJoinCall,
+  onLeaveCall,
   onToggleVideo,
   onToggleAudio,
   onShareScreen,
@@ -85,13 +88,52 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
         </span>
       </div>
 
-      <div className="absolute right-3 top-3 z-20 rounded-full bg-slate-900/70 px-3 py-1 text-xs font-medium text-slate-200">
-        {isScreenSharing ? "Sharing screen" : "Camera view"}
+      <div className="absolute right-3 top-3 z-20 flex items-center gap-2">
+        <div className="rounded-full bg-slate-900/70 px-3 py-1 text-xs font-medium text-slate-200">
+          {isScreenSharing ? "Sharing screen" : "Camera view"}
+        </div>
+        {isInCall ? (
+          <button
+            type="button"
+            onClick={onLeaveCall}
+            className="inline-flex items-center gap-1 rounded-full bg-rose-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-rose-700"
+          >
+            <LogOut size={13} />
+            Leave call
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onJoinCall}
+            className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-emerald-700"
+          >
+            <LogIn size={13} />
+            Join call
+          </button>
+        )}
       </div>
 
       <div className="relative h-full w-full flex-1 overflow-hidden bg-slate-900">
         <div className="absolute inset-0">
-          {remoteStream ? (
+          {!isInCall ? (
+            <div className="flex h-full flex-col items-center justify-center bg-[radial-gradient(circle_at_top,#334155_0%,#0f172a_55%,#020617_100%)] p-6 text-center">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-800 text-2xl font-semibold text-slate-100">
+                {(selfLabel ?? "You").slice(0, 2).toUpperCase()}
+              </div>
+              <p className="mt-4 text-lg font-semibold text-slate-100">Ready to join the call?</p>
+              <p className="mt-2 max-w-md text-sm text-slate-300">
+                Your camera and microphone will stay off until you press join.
+              </p>
+              <button
+                type="button"
+                onClick={onJoinCall}
+                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
+              >
+                <LogIn size={16} />
+                Join call
+              </button>
+            </div>
+          ) : remoteStream ? (
             <video ref={remoteVideoRef} autoPlay playsInline className="h-full w-full object-cover" />
           ) : localStream && isVideoEnabled ? (
             <video ref={stageLocalVideoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
@@ -150,40 +192,42 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
         </div>
       </div>
 
-      <div className="absolute bottom-3 left-1/2 z-20 flex w-[calc(100%-1.5rem)] max-w-max -translate-x-1/2 flex-wrap justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/85 p-2 shadow-lg backdrop-blur sm:bottom-4 sm:w-auto">
-        <button
-          type="button"
-          onClick={onToggleVideo}
-          className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-white transition sm:text-sm ${
-            isVideoEnabled ? "bg-slate-700 hover:bg-slate-600" : "bg-rose-600 hover:bg-rose-700"
-          }`}
-        >
-          {isVideoEnabled ? <Video size={16} /> : <VideoOff size={16} />}
-          {isVideoEnabled ? "Camera on" : "Camera off"}
-        </button>
-        <button
-          type="button"
-          onClick={onToggleAudio}
-          className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-white transition sm:text-sm ${
-            isAudioEnabled ? "bg-slate-700 hover:bg-slate-600" : "bg-rose-600 hover:bg-rose-700"
-          }`}
-        >
-          {isAudioEnabled ? <Mic size={16} /> : <MicOff size={16} />}
-          {isAudioEnabled ? "Mic on" : "Mic off"}
-        </button>
-        <button
-          type="button"
-          onClick={onShareScreen}
-          className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-white transition sm:text-sm ${
-            isScreenSharing ? "bg-emerald-600 hover:bg-emerald-700" : "bg-indigo-600 hover:bg-indigo-700"
-          }`}
-        >
-          <MonitorUp size={16} />
-          {isScreenSharing ? "Stop share" : "Share screen"}
-        </button>
-      </div>
+      {isInCall ? (
+        <div className="absolute bottom-3 left-1/2 z-20 flex w-[calc(100%-1.5rem)] max-w-max -translate-x-1/2 flex-wrap justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/85 p-2 shadow-lg backdrop-blur sm:bottom-4 sm:w-auto">
+          <button
+            type="button"
+            onClick={onToggleVideo}
+            className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-white transition sm:text-sm ${
+              isVideoEnabled ? "bg-slate-700 hover:bg-slate-600" : "bg-rose-600 hover:bg-rose-700"
+            }`}
+          >
+            {isVideoEnabled ? <Video size={16} /> : <VideoOff size={16} />}
+            {isVideoEnabled ? "Camera on" : "Camera off"}
+          </button>
+          <button
+            type="button"
+            onClick={onToggleAudio}
+            className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-white transition sm:text-sm ${
+              isAudioEnabled ? "bg-slate-700 hover:bg-slate-600" : "bg-rose-600 hover:bg-rose-700"
+            }`}
+          >
+            {isAudioEnabled ? <Mic size={16} /> : <MicOff size={16} />}
+            {isAudioEnabled ? "Mic on" : "Mic off"}
+          </button>
+          <button
+            type="button"
+            onClick={onShareScreen}
+            className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-white transition sm:text-sm ${
+              isScreenSharing ? "bg-emerald-600 hover:bg-emerald-700" : "bg-indigo-600 hover:bg-indigo-700"
+            }`}
+          >
+            <MonitorUp size={16} />
+            {isScreenSharing ? "Stop share" : "Share screen"}
+          </button>
+        </div>
+      ) : null}
 
-      <div className="absolute bottom-[7.5rem] right-3 z-20 rounded-2xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-[11px] text-slate-200 backdrop-blur sm:bottom-24 sm:right-4 sm:text-xs">
+      <div className={`absolute right-3 z-20 rounded-2xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-[11px] text-slate-200 backdrop-blur sm:right-4 sm:text-xs ${isInCall ? "bottom-[7.5rem] sm:bottom-24" : "bottom-4"}`}>
         <div className="flex items-center gap-2">
           {connectionStatus === "connected" ? <Wifi size={14} /> : <WifiOff size={14} />}
           <span>{statusLabel[connectionStatus]}</span>

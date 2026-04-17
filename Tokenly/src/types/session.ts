@@ -77,12 +77,15 @@ export interface VideoPlaceholderProps {
   remoteStream?: MediaStream | null;
   remoteParticipantName?: string;
   selfLabel?: string;
+  isInCall: boolean;
   connectionStatus: "idle" | "joining" | "waiting" | "connecting" | "connected" | "error";
   errorMessage?: string;
   isVideoEnabled: boolean;
   isAudioEnabled: boolean;
   isScreenSharing: boolean;
   participantCount: number;
+  onJoinCall: () => void;
+  onLeaveCall: () => void;
   onToggleVideo: () => void;
   onToggleAudio: () => void;
   onShareScreen: () => void;
