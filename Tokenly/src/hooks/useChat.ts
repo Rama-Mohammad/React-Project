@@ -7,6 +7,7 @@ type UseChatOptions = {
   sessionId: string;
   currentUserId: string;
   currentUserName: string;
+  otherParticipantId: string;
   otherParticipantName: string;
 };
 
@@ -14,6 +15,7 @@ export const useChat = ({
   sessionId,
   currentUserId,
   currentUserName,
+  otherParticipantId,
   otherParticipantName,
 }: UseChatOptions) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -36,15 +38,21 @@ export const useChat = ({
   };
 
   useEffect(() => {
-    if (!sessionId) return;
+    if (!sessionId || !currentUserId) return;
 
     let isMounted = true;
+
+    const getSenderName = (senderId: string) => {
+      if (senderId === currentUserId) return currentUserName;
+      if (senderId === otherParticipantId) return otherParticipantName;
+      return "Participant";
+    };
 
     const mapMessage = (msg: any): Message => ({
       id: msg.id,
       text: msg.message,
       senderId: msg.sender_id,
-      senderName: msg.sender_id === currentUserId ? currentUserName : otherParticipantName,
+      senderName: getSenderName(msg.sender_id),
       timestamp: msg.created_at,
     });
 
@@ -115,7 +123,7 @@ export const useChat = ({
       clearInterval(pollTimer);
       supabase.removeChannel(channel);
     };
-  }, [sessionId, currentUserId, currentUserName, otherParticipantName]);
+  }, [sessionId, currentUserId, currentUserName, otherParticipantId, otherParticipantName]);
 
   return {
     messages,

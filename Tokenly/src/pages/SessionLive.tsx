@@ -29,6 +29,7 @@ const SessionLivePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("agenda");
   const [currentUserId, setCurrentUserId] = useState("");
   const [currentUserName, setCurrentUserName] = useState("You");
+  const [otherParticipantId, setOtherParticipantId] = useState("");
   const [otherParticipantName, setOtherParticipantName] = useState("Remote participant");
   const [isInitiator, setIsInitiator] = useState(false);
   const [hasJoinedCall, setHasJoinedCall] = useState(false);
@@ -40,6 +41,7 @@ const SessionLivePage: React.FC = () => {
     sessionId: sessionId ?? "",
     currentUserId,
     currentUserName,
+    otherParticipantId,
     otherParticipantName,
   });
 
@@ -119,6 +121,7 @@ const SessionLivePage: React.FC = () => {
           ? sessionData.requester?.full_name || sessionData.requester?.username || "Guest"
           : sessionData.helper?.full_name || sessionData.helper?.username || "Guest"
       );
+      setOtherParticipantId(isHelper ? sessionData.requester_id : sessionData.helper_id);
       setIsInitiator(initiatorId === userData.user.id);
       setSessionStatus("ready");
     };
