@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { VideoPlaceholderProps } from "../../../types/session";
 
 declare global {
@@ -17,6 +17,7 @@ declare global {
     ) => {
       dispose: () => void;
       executeCommand?: (command: string, ...args: unknown[]) => void;
+      addEventListeners?: (listeners: Record<string, (...args: unknown[]) => void>) => void;
     };
   }
 }
@@ -27,7 +28,13 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
   sessionLabel,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const apiRef = useRef<{ dispose: () => void } | null>(null);
+  const apiRef = useRef<{
+    dispose: () => void;
+    executeCommand?: (command: string, ...args: unknown[]) => void;
+    addEventListeners?: (listeners: Record<string, (...args: unknown[]) => void>) => void;
+  } | null>(null);
+  const [isShareAvailable, setIsShareAvailable] = useState(false);
+  const [isSharingScreen, setIsSharingScreen] = useState(false);
 
   useEffect(() => {
     const parentNode = containerRef.current;
@@ -50,6 +57,17 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
         startWithAudioMuted: false,
         startWithVideoMuted: false,
         disableModeratorIndicator: true,
+        toolbarButtons: [
+          "microphone",
+          "camera",
+          "desktop",
+          "fullscreen",
+          "participants-pane",
+          "chat",
+          "tileview",
+          "hangup",
+          "settings",
+        ],
       },
       interfaceConfigOverwrite: {
         MOBILE_APP_PROMO: false,
@@ -59,18 +77,43 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
     });
 
     apiRef.current = api;
+    setIsShareAvailable(Boolean(navigator.mediaDevices?.getDisplayMedia));
+    api.addEventListeners?.({
+      screenSharingStatusChanged: (event: unknown) => {
+        const payload = event as { on?: boolean } | undefined;
+        setIsSharingScreen(Boolean(payload?.on));
+      },
+    });
 
     return () => {
       apiRef.current?.dispose();
       apiRef.current = null;
+      setIsSharingScreen(false);
     };
   }, [displayName, roomName]);
+
+  const handleToggleShareScreen = () => {
+    apiRef.current?.executeCommand?.("toggleShareScreen");
+  };
 
   return (
     <div className="relative isolate min-h-[420px] overflow-hidden rounded-[28px] border border-slate-800 bg-slate-950 shadow-[0_28px_60px_-34px_rgba(15,23,42,0.95)] lg:min-h-[560px]">
       <div className="absolute left-4 top-4 z-20 rounded-full border border-white/10 bg-black/35 px-3 py-1.5 text-xs font-medium text-white backdrop-blur">
         {sessionLabel ?? "Live session"}
       </div>
+      {isShareAvailable ? (
+        <button
+          type="button"
+          onClick={handleToggleShareScreen}
+          className={`absolute right-4 top-4 z-20 rounded-full px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition ${
+            isSharingScreen
+              ? "border border-emerald-300/40 bg-emerald-500/80"
+              : "border border-white/10 bg-black/35 hover:bg-black/50"
+          }`}
+        >
+          {isSharingScreen ? "Stop sharing" : "Share screen"}
+        </button>
+      ) : null}
       <div className="absolute inset-0">
         <div ref={containerRef} className="h-full w-full" />
       </div>
