@@ -27,6 +27,7 @@ export function useLiveSessionCall({
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("idle");
+  const [participantCount, setParticipantCount] = useState(1);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
@@ -39,36 +40,62 @@ export function useLiveSessionCall({
   const screenTrackRef = useRef<MediaStreamTrack | null>(null);
   const remoteJoinedRef = useRef(false);
   const makingOfferRef = useRef(false);
-
-  const getIceServers = () => {
-    const stunUrl = import.meta.env.VITE_STUN_URL || "stun:stun.l.google.com:19302";
-    const turnUrl = import.meta.env.VITE_TURN_URL;
-    const turnUsername = import.meta.env.VITE_TURN_USERNAME;
-    const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL;
-
-    const servers: RTCIceServer[] = [{ urls: stunUrl }];
-
-    if (turnUrl && turnUsername && turnCredential) {
-      servers.push({
-        urls: turnUrl.split(",").map((item: string) => item.trim()).filter(Boolean),
-        username: turnUsername,
-        credential: turnCredential,
-      });
-    }
-
-    return servers;
-  };
+  const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
+  const offerRetryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (!enabled || !sessionId || !userId) return;
 
     let isMounted = true;
 
+    const sendSignal = async (payload: SignalPayload) => {
+      const channel = channelRef.current;
+      if (!channel) return;
+
+      await channel.send({
+        type: "broadcast",
+        event: "signal",
+        payload,
+      });
+    };
+
+    const flushPendingCandidates = async (peer: RTCPeerConnection) => {
+      while (pendingCandidatesRef.current.length > 0) {
+        const candidate = pendingCandidatesRef.current.shift();
+        if (!candidate) continue;
+        await peer.addIceCandidate(new RTCIceCandidate(candidate));
+      }
+    };
+
     const buildPeer = () => {
       if (peerRef.current) return peerRef.current;
 
+      const iceServers: RTCIceServer[] = [
+        { urls: "stun:stun.relay.metered.ca:80" },
+        {
+          urls: "turn:global.relay.metered.ca:80",
+          username: "b444aa5228652c4e98ce05be",
+          credential: "gNXOQ+F2vZfl38gT",
+        },
+        {
+          urls: "turn:global.relay.metered.ca:80?transport=tcp",
+          username: "b444aa5228652c4e98ce05be",
+          credential: "gNXOQ+F2vZfl38gT",
+        },
+        {
+          urls: "turn:global.relay.metered.ca:443",
+          username: "b444aa5228652c4e98ce05be",
+          credential: "gNXOQ+F2vZfl38gT",
+        },
+        {
+          urls: "turns:global.relay.metered.ca:443?transport=tcp",
+          username: "b444aa5228652c4e98ce05be",
+          credential: "gNXOQ+F2vZfl38gT",
+        },
+      ];
+
       const peer = new RTCPeerConnection({
-        iceServers: getIceServers(),
+        iceServers,
       });
 
       peer.onicecandidate = async (event) => {
@@ -104,7 +131,9 @@ export function useLiveSessionCall({
 
         if (state === "failed" || state === "disconnected") {
           setConnectionStatus("error");
-          setErrorMessage("The call connection dropped. Try leaving and rejoining the session.");
+          setErrorMessage(
+            "The call connection dropped. If this keeps happening across devices, add TURN credentials in .env."
+          );
         }
       };
 
@@ -119,22 +148,12 @@ export function useLiveSessionCall({
       return peer;
     };
 
-    const sendSignal = async (payload: SignalPayload) => {
-      const channel = channelRef.current;
-      if (!channel) return;
-
-      await channel.send({
-        type: "broadcast",
-        event: "signal",
-        payload,
-      });
-    };
-
-    const createOffer = async () => {
+    const maybeCreateOffer = async () => {
       if (!isInitiator || !remoteJoinedRef.current) return;
 
       const peer = buildPeer();
-      if (makingOfferRef.current) return;
+      if (makingOfferRef.current || peer.signalingState !== "stable") return;
+      if (peer.remoteDescription) return;
 
       makingOfferRef.current = true;
       try {
@@ -156,28 +175,43 @@ export function useLiveSessionCall({
       }
     };
 
+    const updatePresenceState = () => {
+      const channel = channelRef.current;
+      if (!channel) return;
+
+      const state = channel.presenceState() as Record<string, unknown[]>;
+      const participantIds = Object.keys(state);
+      const hasRemoteParticipant = participantIds.some((id) => id !== userId);
+
+      remoteJoinedRef.current = hasRemoteParticipant;
+      if (isMounted) {
+        setParticipantCount(Math.max(participantIds.length, 1));
+        if (!hasRemoteParticipant && peerRef.current?.connectionState !== "connected") {
+          setConnectionStatus("waiting");
+          setRemoteStream(null);
+        }
+      }
+
+      if (hasRemoteParticipant) {
+        void maybeCreateOffer();
+      }
+    };
+
     const handleSignal = async (payload: SignalPayload) => {
       if (payload.from === userId) return;
 
       const peer = buildPeer();
 
-      if (payload.type === "join") {
+      if (payload.type === "join" || payload.type === "ready") {
         remoteJoinedRef.current = true;
-        if (isMounted) {
-          setConnectionStatus("waiting");
+        if (isMounted && peerRef.current?.connectionState !== "connected") {
+          setParticipantCount(2);
+          setConnectionStatus("connecting");
         }
-        await sendSignal({ type: "ready", from: userId });
-        if (isInitiator) {
-          await createOffer();
+        if (payload.type === "join") {
+          await sendSignal({ type: "ready", from: userId });
         }
-        return;
-      }
-
-      if (payload.type === "ready") {
-        remoteJoinedRef.current = true;
-        if (isInitiator) {
-          await createOffer();
-        }
+        await maybeCreateOffer();
         return;
       }
 
@@ -185,6 +219,7 @@ export function useLiveSessionCall({
         remoteJoinedRef.current = true;
         setConnectionStatus("connecting");
         await peer.setRemoteDescription(new RTCSessionDescription(payload.description));
+        await flushPendingCandidates(peer);
         const answer = await peer.createAnswer();
         await peer.setLocalDescription(answer);
         await sendSignal({
@@ -197,17 +232,24 @@ export function useLiveSessionCall({
 
       if (payload.type === "answer") {
         await peer.setRemoteDescription(new RTCSessionDescription(payload.description));
+        await flushPendingCandidates(peer);
+        setConnectionStatus("connecting");
         return;
       }
 
       if (payload.type === "candidate") {
-        await peer.addIceCandidate(new RTCIceCandidate(payload.candidate));
+        if (peer.remoteDescription) {
+          await peer.addIceCandidate(new RTCIceCandidate(payload.candidate));
+        } else {
+          pendingCandidatesRef.current.push(payload.candidate);
+        }
         return;
       }
 
       if (payload.type === "leave") {
         remoteJoinedRef.current = false;
         if (isMounted) {
+          setParticipantCount(1);
           setRemoteStream(null);
           setConnectionStatus("waiting");
         }
@@ -233,28 +275,48 @@ export function useLiveSessionCall({
         setIsAudioEnabled(mediaStream.getAudioTracks().some((track) => track.enabled));
         setIsVideoEnabled(mediaStream.getVideoTracks().some((track) => track.enabled));
         setConnectionStatus("waiting");
+        setParticipantCount(1);
 
         buildPeer();
 
         const channel = supabase.channel(`live-session:${sessionId}`, {
-          config: { broadcast: { self: false } },
+          config: {
+            broadcast: { self: false },
+            presence: { key: userId },
+          },
         });
 
         channelRef.current = channel;
+
         channel.on("broadcast", { event: "signal" }, async ({ payload }) => {
           try {
             await handleSignal(payload as SignalPayload);
           } catch (error) {
             if (isMounted) {
               setConnectionStatus("error");
-              setErrorMessage(error instanceof Error ? error.message : "The live session hit a signaling error.");
+              setErrorMessage(
+                error instanceof Error ? error.message : "The live session hit a signaling error."
+              );
             }
           }
         });
 
+        channel.on("presence", { event: "sync" }, () => {
+          updatePresenceState();
+        });
+
         channel.subscribe(async (status) => {
           if (status !== "SUBSCRIBED") return;
+          await channel.track({
+            userId,
+            joinedAt: new Date().toISOString(),
+          });
           await sendSignal({ type: "join", from: userId });
+          offerRetryTimerRef.current = setInterval(() => {
+            if (remoteJoinedRef.current) {
+              void maybeCreateOffer();
+            }
+          }, 2500);
         });
       } catch (error) {
         if (isMounted) {
@@ -272,11 +334,16 @@ export function useLiveSessionCall({
 
     return () => {
       isMounted = false;
+      if (offerRetryTimerRef.current) {
+        clearInterval(offerRetryTimerRef.current);
+        offerRetryTimerRef.current = null;
+      }
       void sendSignal({ type: "leave", from: userId });
       channelRef.current?.unsubscribe();
       channelRef.current = null;
       peerRef.current?.close();
       peerRef.current = null;
+      pendingCandidatesRef.current = [];
       localStreamRef.current?.getTracks().forEach((track) => track.stop());
       localStreamRef.current = null;
       cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
@@ -308,16 +375,6 @@ export function useLiveSessionCall({
     setIsVideoEnabled(nextEnabled);
   };
 
-  const stopScreenShare = async () => {
-    const cameraTrack = cameraStreamRef.current?.getVideoTracks()[0];
-    if (!cameraTrack) return;
-
-    screenTrackRef.current?.stop();
-    screenTrackRef.current = null;
-    await replaceActiveVideoTrack(cameraTrack);
-    setIsScreenSharing(false);
-  };
-
   const replaceActiveVideoTrack = async (track: MediaStreamTrack) => {
     const peer = peerRef.current;
     const sender = peer?.getSenders().find((item) => item.track?.kind === "video");
@@ -330,6 +387,16 @@ export function useLiveSessionCall({
     localStreamRef.current = previewStream;
     setLocalStream(previewStream);
     setIsVideoEnabled(track.enabled);
+  };
+
+  const stopScreenShare = async () => {
+    const cameraTrack = cameraStreamRef.current?.getVideoTracks()[0];
+    if (!cameraTrack) return;
+
+    screenTrackRef.current?.stop();
+    screenTrackRef.current = null;
+    await replaceActiveVideoTrack(cameraTrack);
+    setIsScreenSharing(false);
   };
 
   const toggleScreenShare = async () => {
@@ -359,6 +426,7 @@ export function useLiveSessionCall({
     localStream,
     remoteStream,
     connectionStatus,
+    participantCount,
     isAudioEnabled,
     isVideoEnabled,
     isScreenSharing,

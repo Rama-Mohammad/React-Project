@@ -41,6 +41,7 @@ const SessionLivePage: React.FC = () => {
     localStream,
     remoteStream,
     connectionStatus,
+    participantCount,
     isAudioEnabled,
     isVideoEnabled,
     isScreenSharing,
@@ -220,7 +221,7 @@ const SessionLivePage: React.FC = () => {
             isVideoEnabled={isVideoEnabled}
             isAudioEnabled={isAudioEnabled}
             isScreenSharing={isScreenSharing}
-            participantCount={remoteStream ? 2 : 1}
+            participantCount={participantCount}
             onToggleVideo={toggleVideo}
             onToggleAudio={toggleAudio}
             onShareScreen={toggleScreenShare}
