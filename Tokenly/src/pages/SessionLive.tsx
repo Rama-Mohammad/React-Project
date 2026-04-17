@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ClipboardList, Paperclip } from "lucide-react";
+import { CircleDot, ClipboardList, Paperclip } from "lucide-react";
 import VideoPlaceholder from "../components/session/live/VideoPlaceHolder";
 import ChatWindow from "../components/session/live/ChatWindow";
 import FileManager from "../components/session/live/FileManager";
 import Checklist from "../components/session/live/Checklist";
 import { useChat } from "../hooks/useChat";
 import { useSharedChecklist } from "../hooks/useSharedChecklist";
+import { useLiveSessionCall } from "../hooks/useLiveSessionCall";
 import { getCurrentUser } from "../services/authService";
 import { sendMessage } from "../services/chatService";
 import { getSessionById } from "../services/sessionService";
@@ -29,15 +30,31 @@ const SessionLivePage: React.FC = () => {
   const messages = useChat(sessionId ?? "");
   const [currentUserId, setCurrentUserId] = useState("");
   const [currentUserName, setCurrentUserName] = useState("You");
+  const [otherParticipantName, setOtherParticipantName] = useState("Remote participant");
+  const [isInitiator, setIsInitiator] = useState(false);
   const [sessionStatus, setSessionStatus] = useState<"loading" | "ready" | "error">("loading");
   const [sessionError, setSessionError] = useState("");
   const [files, setFiles] = useState<FileAttachment[]>([]);
   const [pendingDeleteFileId, setPendingDeleteFileId] = useState<string | null>(null);
 
-  const roomName = useMemo(
-    () => (sessionId ? `tokenly-session-${sessionId}` : "tokenly-demo-room"),
-    [sessionId]
-  );
+  const {
+    localStream,
+    remoteStream,
+    connectionStatus,
+    participantCount,
+    isAudioEnabled,
+    isVideoEnabled,
+    isScreenSharing,
+    errorMessage: callError,
+    toggleAudio,
+    toggleVideo,
+    toggleScreenShare,
+  } = useLiveSessionCall({
+    sessionId: sessionId ?? "",
+    userId: currentUserId,
+    enabled: sessionStatus === "ready",
+    isInitiator,
+  });
 
   const {
     items: checklistItems,
@@ -90,6 +107,12 @@ const SessionLivePage: React.FC = () => {
           ? sessionData.helper?.full_name || sessionData.helper?.username || "You"
           : sessionData.requester?.full_name || sessionData.requester?.username || "You"
       );
+      setOtherParticipantName(
+        isHelper
+          ? sessionData.requester?.full_name || sessionData.requester?.username || "Guest"
+          : sessionData.helper?.full_name || sessionData.helper?.username || "Guest"
+      );
+      setIsInitiator(isHelper);
       setSessionStatus("ready");
     };
 
@@ -164,32 +187,49 @@ const SessionLivePage: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_52%,#f3e8ff_100%)] text-slate-900">
-      <header className="border-b border-indigo-200/70 bg-white/55 px-4 py-3 backdrop-blur-xl sm:px-5">
+    <div className="flex h-screen flex-col bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_52%,#f3e8ff_100%)] text-slate-900">
+      <header className="border-b border-indigo-200/70 bg-white/55 px-5 py-3 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3">
-          <div className="min-w-0">
+          <div>
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-indigo-500">Live Session</p>
-            <h1 className="break-all text-base font-semibold text-slate-900 sm:text-lg">
-              Session #{sessionId ?? "unknown"}
-            </h1>
+            <h1 className="text-lg font-semibold text-slate-900">Session #{sessionId ?? "unknown"}</h1>
           </div>
-          <div className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50/80 px-3 py-1.5 text-xs font-medium text-emerald-700">
-            Meeting ready
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/70 px-3 py-1.5 text-xs font-medium text-indigo-700">
+            <CircleDot size={13} className="text-indigo-600" />
+            {connectionStatus === "connected"
+              ? "Connected"
+              : connectionStatus === "connecting" || connectionStatus === "joining"
+                ? "Connecting"
+                : connectionStatus === "waiting"
+                  ? "Waiting"
+                  : connectionStatus === "error"
+                    ? "Issue detected"
+                    : "Ready"}
           </div>
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 overflow-y-auto p-3 sm:p-4">
-        <section className="flex min-w-0 flex-col lg:min-h-[calc(100vh-250px)]">
+      <main className="mx-auto flex w-full max-w-[1600px] flex-1 gap-4 overflow-hidden p-4">
+        <section className="flex min-w-0 flex-1 flex-col">
           <VideoPlaceholder
-            roomName={roomName}
-            displayName={currentUserName}
-            sessionLabel={`Room: ${roomName}`}
+            localStream={localStream}
+            remoteStream={remoteStream}
+            remoteParticipantName={otherParticipantName}
+            selfLabel={currentUserName}
+            connectionStatus={connectionStatus}
+            errorMessage={callError}
+            isVideoEnabled={isVideoEnabled}
+            isAudioEnabled={isAudioEnabled}
+            isScreenSharing={isScreenSharing}
+            participantCount={participantCount}
+            onToggleVideo={toggleVideo}
+            onToggleAudio={toggleAudio}
+            onShareScreen={toggleScreenShare}
           />
         </section>
 
-        <aside className="grid w-full min-w-0 gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] lg:items-start">
-          <div className="min-h-0 lg:min-h-[360px]">
+        <aside className="flex w-[390px] min-w-[350px] flex-col gap-4">
+          <div className="min-h-0 flex-1">
             <ChatWindow
               sessionId={sessionId ?? ""}
               messages={messages}
@@ -199,7 +239,7 @@ const SessionLivePage: React.FC = () => {
             />
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-indigo-200/70 bg-white/75 shadow-[0_12px_28px_-22px_rgba(99,102,241,0.5)] backdrop-blur lg:min-h-[360px]">
+          <div className="overflow-hidden rounded-xl border border-indigo-200/70 bg-white/75 shadow-[0_12px_28px_-22px_rgba(99,102,241,0.5)] backdrop-blur">
             <div className="flex border-b border-indigo-200/70 bg-indigo-50/60 p-1">
               <button
                 onClick={() => setActiveTab("agenda")}
@@ -225,7 +265,7 @@ const SessionLivePage: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-4 lg:max-h-[298px] lg:overflow-y-auto">
+            <div className="max-h-80 overflow-y-auto p-4">
               {activeTab === "agenda" ? (
                 <Checklist
                   items={checklistItems}
@@ -247,7 +287,7 @@ const SessionLivePage: React.FC = () => {
         </aside>
       </main>
 
-      <footer className="border-t border-indigo-200/70 bg-white/55 px-4 py-3 backdrop-blur-xl sm:px-6">
+      <footer className="border-t border-indigo-200/70 bg-white/55 px-6 py-3 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-[1600px] justify-center">
           <button
             onClick={() => navigate("/sessions")}
