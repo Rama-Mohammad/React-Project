@@ -187,14 +187,16 @@ const SessionLivePage: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_52%,#f3e8ff_100%)] text-slate-900">
-      <header className="border-b border-indigo-200/70 bg-white/55 px-5 py-3 backdrop-blur-xl">
+    <div className="flex min-h-screen flex-col bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_52%,#f3e8ff_100%)] text-slate-900">
+      <header className="border-b border-indigo-200/70 bg-white/55 px-4 py-3 backdrop-blur-xl sm:px-5">
         <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-indigo-500">Live Session</p>
-            <h1 className="text-lg font-semibold text-slate-900">Session #{sessionId ?? "unknown"}</h1>
+            <h1 className="break-all text-base font-semibold text-slate-900 sm:text-lg">
+              Session #{sessionId ?? "unknown"}
+            </h1>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/70 px-3 py-1.5 text-xs font-medium text-indigo-700">
+          <div className="shrink-0 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/70 px-3 py-1.5 text-xs font-medium text-indigo-700">
             <CircleDot size={13} className="text-indigo-600" />
             {connectionStatus === "connected"
               ? "Connected"
@@ -209,8 +211,8 @@ const SessionLivePage: React.FC = () => {
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-[1600px] flex-1 gap-4 overflow-hidden p-4">
-        <section className="flex min-w-0 flex-1 flex-col">
+      <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 overflow-y-auto p-3 sm:p-4 lg:flex-row lg:overflow-hidden">
+        <section className="flex min-w-0 flex-col lg:flex-1">
           <VideoPlaceholder
             localStream={localStream}
             remoteStream={remoteStream}
@@ -228,8 +230,8 @@ const SessionLivePage: React.FC = () => {
           />
         </section>
 
-        <aside className="flex w-[390px] min-w-[350px] flex-col gap-4">
-          <div className="min-h-0 flex-1">
+        <aside className="flex w-full min-w-0 flex-col gap-4 lg:w-[390px] lg:min-w-[350px]">
+          <div className="min-h-0 lg:flex-1">
             <ChatWindow
               sessionId={sessionId ?? ""}
               messages={messages}
@@ -265,7 +267,7 @@ const SessionLivePage: React.FC = () => {
               </button>
             </div>
 
-            <div className="max-h-80 overflow-y-auto p-4">
+            <div className="p-4 lg:max-h-80 lg:overflow-y-auto">
               {activeTab === "agenda" ? (
                 <Checklist
                   items={checklistItems}
@@ -287,7 +289,7 @@ const SessionLivePage: React.FC = () => {
         </aside>
       </main>
 
-      <footer className="border-t border-indigo-200/70 bg-white/55 px-6 py-3 backdrop-blur-xl">
+      <footer className="border-t border-indigo-200/70 bg-white/55 px-4 py-3 backdrop-blur-xl sm:px-6">
         <div className="mx-auto flex w-full max-w-[1600px] justify-center">
           <button
             onClick={() => navigate("/sessions")}

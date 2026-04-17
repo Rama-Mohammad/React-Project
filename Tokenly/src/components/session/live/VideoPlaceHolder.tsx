@@ -72,7 +72,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
   }, [remoteStream]);
 
   return (
-    <div className="relative flex h-full min-h-[420px] overflow-hidden rounded-2xl border border-indigo-200/70 bg-slate-950 shadow-[0_22px_42px_-30px_rgba(15,23,42,0.9)]">
+    <div className="relative flex min-h-[300px] overflow-hidden rounded-2xl border border-indigo-200/70 bg-slate-950 shadow-[0_22px_42px_-30px_rgba(15,23,42,0.9)] sm:min-h-[360px] lg:h-full lg:min-h-[420px]">
       <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
         <span className={`rounded-full px-3 py-1 text-xs font-semibold text-white ${statusTone[connectionStatus]}`}>
           {statusLabel[connectionStatus]}
@@ -86,7 +86,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
         {isScreenSharing ? "Sharing screen" : "Camera view"}
       </div>
 
-      <div className="grid h-full w-full flex-1 gap-0 md:grid-cols-[minmax(0,1fr)_220px]">
+      <div className="grid h-full w-full flex-1 gap-0 grid-rows-[minmax(220px,1fr)_140px] md:grid-rows-1 md:grid-cols-[minmax(0,1fr)_220px]">
         <div className="relative min-h-[320px] overflow-hidden bg-slate-900">
           {remoteStream ? (
             <video
@@ -123,7 +123,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
           ) : null}
         </div>
 
-        <div className="relative border-l border-slate-800 bg-slate-950/70">
+        <div className="relative border-t border-slate-800 bg-slate-950/70 md:border-l md:border-t-0">
           {localStream && isVideoEnabled ? (
             <video
               ref={localVideoRef}
@@ -151,7 +151,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
         </div>
       </div>
 
-      <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-2 rounded-2xl border border-slate-700 bg-slate-900/85 p-2 shadow-lg backdrop-blur">
+      <div className="absolute bottom-3 left-1/2 z-20 flex w-[calc(100%-1.5rem)] max-w-max -translate-x-1/2 flex-wrap justify-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/85 p-2 shadow-lg backdrop-blur sm:bottom-4 sm:w-auto">
         <button
           type="button"
           onClick={onToggleVideo}
@@ -184,7 +184,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
         </button>
       </div>
 
-      <div className="absolute bottom-24 right-4 z-20 rounded-2xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-xs text-slate-200 backdrop-blur">
+      <div className="absolute right-3 top-14 z-20 rounded-2xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-xs text-slate-200 backdrop-blur sm:right-4 sm:top-auto sm:bottom-24">
         <div className="flex items-center gap-2">
           {connectionStatus === "connected" ? <Wifi size={14} /> : <WifiOff size={14} />}
           <span>{statusLabel[connectionStatus]}</span>
