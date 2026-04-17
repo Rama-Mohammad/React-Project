@@ -3,7 +3,19 @@ import { supabase } from "../lib/supabaseClient";
 import { getMessages } from "../services/chatService";
 import type { Message } from "../types/session";
 
-export const useChat = (sessionId: string) => {
+type UseChatOptions = {
+  sessionId: string;
+  currentUserId: string;
+  currentUserName: string;
+  otherParticipantName: string;
+};
+
+export const useChat = ({
+  sessionId,
+  currentUserId,
+  currentUserName,
+  otherParticipantName,
+}: UseChatOptions) => {
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
@@ -15,7 +27,7 @@ export const useChat = (sessionId: string) => {
       id: msg.id,
       text: msg.message,
       senderId: msg.sender_id,
-      senderName: "User",
+      senderName: msg.sender_id === currentUserId ? currentUserName : otherParticipantName,
       timestamp: msg.created_at,
     });
 
@@ -68,7 +80,7 @@ export const useChat = (sessionId: string) => {
       clearInterval(pollTimer);
       supabase.removeChannel(channel);
     };
-  }, [sessionId]);
+  }, [sessionId, currentUserId, currentUserName, otherParticipantName]);
 
   return messages;
 };

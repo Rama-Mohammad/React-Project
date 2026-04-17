@@ -27,7 +27,6 @@ const SessionLivePage: React.FC = () => {
   const { sessionId } = useParams();
 
   const [activeTab, setActiveTab] = useState<TabType>("agenda");
-  const messages = useChat(sessionId ?? "");
   const [currentUserId, setCurrentUserId] = useState("");
   const [currentUserName, setCurrentUserName] = useState("You");
   const [otherParticipantName, setOtherParticipantName] = useState("Remote participant");
@@ -37,6 +36,12 @@ const SessionLivePage: React.FC = () => {
   const [sessionError, setSessionError] = useState("");
   const [files, setFiles] = useState<FileAttachment[]>([]);
   const [pendingDeleteFileId, setPendingDeleteFileId] = useState<string | null>(null);
+  const messages = useChat({
+    sessionId: sessionId ?? "",
+    currentUserId,
+    currentUserName,
+    otherParticipantName,
+  });
 
   const {
     localStream,
