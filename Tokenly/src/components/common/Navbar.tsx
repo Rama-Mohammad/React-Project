@@ -14,7 +14,7 @@ import {
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import useProfiles from "../../hooks/useProfile";
-import tokenlyLogo from "/public/images/nav-logo.svg";
+import tokenlyLogo from "/images/nav-logo.svg";
 
 const navLinkBase =
   "inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold transition duration-200";
@@ -56,7 +56,7 @@ export default function Navbar() {
     if (!mobileOpen) return;
 
     function onResize() {
-      if (window.innerWidth >= 768) {
+      if (window.innerWidth >= 1024) {
         setMobileOpen(false);
       }
     }
@@ -106,7 +106,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/55 bg-white/72 backdrop-blur-2xl">
       <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-5 sm:px-6 lg:px-8">
-        <div className="flex min-w-0 items-center justify-start pl-[2px] sm:pl-14 lg:pl-[2px]">
+        <div className="flex min-w-0 items-center justify-start pl-[2px] lg:pl-[2px]">
           <NavLink
             to="/"
             className="flex shrink-0 items-center transition hover:opacity-95 -ml-2"
@@ -119,7 +119,7 @@ export default function Navbar() {
           </NavLink>
         </div>
 
-        <div className="hidden items-center justify-center md:flex">
+        <div className="hidden items-center justify-center lg:flex">
           <nav className="flex items-center gap-1 rounded-full border border-white/70 bg-white/45 px-2 py-2 shadow-[0_14px_30px_-28px_rgba(79,70,229,0.5)]">
             <NavLink to="/" className={getNavClass}>
               <Home size={16} /> Home
@@ -129,7 +129,7 @@ export default function Navbar() {
           </nav>
         </div>
 
-        <div className="flex items-center justify-end gap-2 sm:gap-3">
+        <div className="flex items-center justify-end gap-2 pl-4 lg:pl-0 sm:gap-3">
           {loading ? (
             <div className="h-10 w-10 animate-pulse rounded-full bg-slate-100" />
           ) : isAuthenticated ? (
@@ -194,7 +194,7 @@ export default function Navbar() {
               ) : null}
             </div>
           ) : (
-            <div className="hidden items-center gap-2 md:flex">
+            <div className="hidden items-center gap-2 lg:flex">
               <Link
                 to="/auth"
                 className="rounded-full border border-slate-200/90 bg-white/85 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-white hover:text-slate-900"
@@ -213,7 +213,7 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => setMobileOpen((previous) => !previous)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/90 bg-white/90 text-slate-700 shadow-[0_14px_30px_-28px_rgba(79,70,229,0.6)] transition hover:bg-white md:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/90 bg-white/90 text-slate-700 shadow-[0_14px_30px_-28px_rgba(79,70,229,0.6)] transition hover:bg-white lg:hidden"
             aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
           >
             {mobileOpen ? <X size={18} /> : <Menu size={18} />}
@@ -222,7 +222,7 @@ export default function Navbar() {
       </div>
 
       {mobileOpen ? (
-        <div className="border-t border-white/70 bg-white/92 px-4 pb-4 pt-3 shadow-[0_18px_36px_-32px_rgba(79,70,229,0.45)] backdrop-blur-xl md:hidden">
+        <div className="border-t border-white/70 bg-white/92 px-4 pb-4 pt-3 shadow-[0_18px_36px_-32px_rgba(79,70,229,0.45)] backdrop-blur-xl lg:hidden">
           <nav className="flex flex-col gap-2">
             <NavLink to="/" className={getNavClass} onClick={() => setMobileOpen(false)}>
               <Home size={16} /> Home

@@ -9,7 +9,6 @@ import { useChat } from "../hooks/useChat";
 import { sendMessage } from "../services/chatService";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import type { ChecklistItem, FileAttachment} from "../types/session";
-
 type TabType = "agenda" | "files";
 
 const SessionLivePage: React.FC = () => {
