@@ -39,7 +39,6 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
   onShareScreen,
 }) => {
   const localVideoRef = useRef<HTMLVideoElement>(null);
-  const stageLocalVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
   const attachStream = (video: HTMLVideoElement | null, stream: MediaStream | null, muted = false) => {
@@ -70,7 +69,6 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
 
   useEffect(() => {
     attachStream(localVideoRef.current, localStream ?? null, true);
-    attachStream(stageLocalVideoRef.current, localStream ?? null, true);
   }, [localStream, isVideoEnabled]);
 
   useEffect(() => {
@@ -122,7 +120,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
               </div>
               <p className="mt-4 text-lg font-semibold text-slate-100">Ready to join the call?</p>
               <p className="mt-2 max-w-md text-sm text-slate-300">
-                Your camera and microphone will stay off until you press join.
+                Your camera and microphone will only start after you press join.
               </p>
               <button
                 type="button"
@@ -135,26 +133,26 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
             </div>
           ) : remoteStream ? (
             <video ref={remoteVideoRef} autoPlay playsInline className="h-full w-full object-cover" />
-          ) : localStream && isVideoEnabled ? (
-            <video ref={stageLocalVideoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full flex-col items-center justify-center bg-[radial-gradient(circle_at_top,#334155_0%,#0f172a_55%,#020617_100%)] p-6 text-center">
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-800 text-2xl font-semibold text-slate-100">
-                {(remoteParticipantName ?? selfLabel ?? "Guest").slice(0, 2).toUpperCase()}
+                {(remoteParticipantName ?? "Guest").slice(0, 2).toUpperCase()}
               </div>
               <p className="mt-4 text-base font-semibold text-slate-100">
-                {remoteParticipantName ?? selfLabel ?? "Waiting for the other participant"}
+                {remoteParticipantName ?? "Waiting for the other participant"}
               </p>
               <p className="mt-2 max-w-sm text-sm text-slate-300">
                 {connectionStatus === "waiting"
-                  ? "The room is ready. As soon as the other person joins, the call will connect."
-                  : "The remote stream will appear here once the call is established."}
+                  ? "The room is ready. As soon as the other person joins, their video will appear here."
+                  : connectionStatus === "connecting" || connectionStatus === "joining"
+                    ? "Connecting to the other participant now."
+                    : "The remote participant will appear here once the call is established."}
               </p>
             </div>
           )}
 
           <div className="absolute bottom-4 left-4 rounded-full bg-slate-900/75 px-3 py-1.5 text-xs font-medium text-slate-100">
-            {remoteStream ? remoteParticipantName ?? "Remote participant" : selfLabel ?? "You"}
+            {remoteParticipantName ?? "Remote participant"}
           </div>
 
           {connectionStatus === "error" ? (
@@ -164,7 +162,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
           ) : null}
         </div>
 
-        <div className="absolute right-3 top-14 z-20 h-28 w-20 overflow-hidden rounded-2xl border border-white/15 bg-slate-950/90 shadow-[0_18px_35px_-20px_rgba(15,23,42,0.95)] backdrop-blur sm:right-4 sm:top-16 sm:h-36 sm:w-24 md:h-44 md:w-32">
+        <div className={`absolute right-3 top-14 z-20 h-28 w-20 overflow-hidden rounded-2xl border border-white/15 bg-slate-950/90 shadow-[0_18px_35px_-20px_rgba(15,23,42,0.95)] backdrop-blur sm:right-4 sm:top-16 sm:h-36 sm:w-24 md:h-44 md:w-32 ${isInCall ? "" : "hidden"}`}>
           {localStream && isVideoEnabled ? (
             <video
               ref={localVideoRef}
