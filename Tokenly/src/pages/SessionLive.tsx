@@ -6,6 +6,7 @@ import ChatWindow from "../components/session/live/ChatWindow";
 import FileManager from "../components/session/live/FileManager";
 import Checklist from "../components/session/live/Checklist";
 import { useChat } from "../hooks/useChat";
+import { useSharedChecklist } from "../hooks/useSharedChecklist";
 import { useLiveSessionCall } from "../hooks/useLiveSessionCall";
 import { getCurrentUser } from "../services/authService";
 import { sendMessage } from "../services/chatService";
@@ -14,6 +15,12 @@ import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import type { ChecklistItem, FileAttachment } from "../types/session";
 
 type TabType = "agenda" | "files";
+
+const defaultChecklistItems: ChecklistItem[] = [
+  { id: "1", text: "Confirm goals and expected outcomes", completed: false },
+  { id: "2", text: "Work through key blockers together", completed: false },
+  { id: "3", text: "Summarize takeaways and next steps", completed: false },
+];
 
 const SessionLivePage: React.FC = () => {
   const navigate = useNavigate();
@@ -27,11 +34,6 @@ const SessionLivePage: React.FC = () => {
   const [isInitiator, setIsInitiator] = useState(false);
   const [sessionStatus, setSessionStatus] = useState<"loading" | "ready" | "error">("loading");
   const [sessionError, setSessionError] = useState("");
-  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([
-    { id: "1", text: "Confirm goals and expected outcomes", completed: false },
-    { id: "2", text: "Work through key blockers together", completed: false },
-    { id: "3", text: "Summarize takeaways and next steps", completed: false },
-  ]);
   const [files, setFiles] = useState<FileAttachment[]>([]);
   const [pendingDeleteFileId, setPendingDeleteFileId] = useState<string | null>(null);
 
@@ -51,6 +53,17 @@ const SessionLivePage: React.FC = () => {
     userId: currentUserId,
     enabled: sessionStatus === "ready",
     isInitiator,
+  });
+
+  const {
+    items: checklistItems,
+    toggleItem: handleToggleItem,
+    addItem: handleAddItem,
+  } = useSharedChecklist({
+    sessionId: sessionId ?? "",
+    userId: currentUserId,
+    enabled: sessionStatus === "ready",
+    initialItems: defaultChecklistItems,
   });
 
   useEffect(() => {
@@ -113,21 +126,6 @@ const SessionLivePage: React.FC = () => {
     if (!sessionId || !currentUserId || sessionStatus !== "ready") return;
 
     await sendMessage(sessionId, currentUserId, text);
-  };
-
-  const handleToggleItem = (itemId: string) => {
-    setChecklistItems((prev) =>
-      prev.map((item) => (item.id === itemId ? { ...item, completed: !item.completed } : item))
-    );
-  };
-
-  const handleAddItem = (text: string) => {
-    const newItem: ChecklistItem = {
-      id: Date.now().toString(),
-      text,
-      completed: false,
-    };
-    setChecklistItems((prev) => [...prev, newItem]);
   };
 
   const handleFileUpload = async (file: File) => {

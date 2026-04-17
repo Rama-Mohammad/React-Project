@@ -40,6 +40,25 @@ export function useLiveSessionCall({
   const remoteJoinedRef = useRef(false);
   const makingOfferRef = useRef(false);
 
+  const getIceServers = () => {
+    const stunUrl = import.meta.env.VITE_STUN_URL || "stun:stun.l.google.com:19302";
+    const turnUrl = import.meta.env.VITE_TURN_URL;
+    const turnUsername = import.meta.env.VITE_TURN_USERNAME;
+    const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL;
+
+    const servers: RTCIceServer[] = [{ urls: stunUrl }];
+
+    if (turnUrl && turnUsername && turnCredential) {
+      servers.push({
+        urls: turnUrl.split(",").map((item: string) => item.trim()).filter(Boolean),
+        username: turnUsername,
+        credential: turnCredential,
+      });
+    }
+
+    return servers;
+  };
+
   useEffect(() => {
     if (!enabled || !sessionId || !userId) return;
 
@@ -49,7 +68,7 @@ export function useLiveSessionCall({
       if (peerRef.current) return peerRef.current;
 
       const peer = new RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+        iceServers: getIceServers(),
       });
 
       peer.onicecandidate = async (event) => {
