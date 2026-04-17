@@ -38,16 +38,37 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
-  useEffect(() => {
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = localStream ?? null;
+  const attachStream = (element: HTMLVideoElement | null, stream: MediaStream | null, muted: boolean) => {
+    if (!element) return;
+
+    element.srcObject = stream ?? null;
+    element.muted = muted;
+
+    if (!stream) return;
+
+    const tryPlay = () => {
+      const playAttempt = element.play();
+      if (playAttempt && typeof playAttempt.catch === "function") {
+        void playAttempt.catch(() => {});
+      }
+    };
+
+    if (element.readyState >= 1) {
+      tryPlay();
+      return;
     }
+
+    element.onloadedmetadata = () => {
+      tryPlay();
+    };
+  };
+
+  useEffect(() => {
+    attachStream(localVideoRef.current, localStream ?? null, true);
   }, [localStream]);
 
   useEffect(() => {
-    if (remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = remoteStream ?? null;
-    }
+    attachStream(remoteVideoRef.current, remoteStream ?? null, false);
   }, [remoteStream]);
 
   return (
@@ -68,7 +89,13 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
       <div className="grid h-full w-full flex-1 gap-0 md:grid-cols-[minmax(0,1fr)_220px]">
         <div className="relative min-h-[320px] overflow-hidden bg-slate-900">
           {remoteStream ? (
-            <video ref={remoteVideoRef} autoPlay playsInline className="h-full w-full object-cover" />
+            <video
+              ref={remoteVideoRef}
+              autoPlay
+              playsInline
+              disablePictureInPicture
+              className="h-full w-full object-cover"
+            />
           ) : (
             <div className="flex h-full flex-col items-center justify-center bg-[radial-gradient(circle_at_top,#334155_0%,#0f172a_55%,#020617_100%)] p-6 text-center">
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-800 text-2xl font-semibold text-slate-100">
@@ -98,7 +125,14 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
 
         <div className="relative border-l border-slate-800 bg-slate-950/70">
           {localStream && isVideoEnabled ? (
-            <video ref={localVideoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
+            <video
+              ref={localVideoRef}
+              autoPlay
+              playsInline
+              muted
+              disablePictureInPicture
+              className="h-full w-full object-cover"
+            />
           ) : (
             <div className="flex h-full flex-col items-center justify-center bg-[radial-gradient(circle_at_top,#312e81_0%,#111827_55%,#020617_100%)] p-5 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-500/20 text-xl font-semibold text-indigo-100">

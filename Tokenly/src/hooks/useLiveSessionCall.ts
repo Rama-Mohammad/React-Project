@@ -260,7 +260,11 @@ export function useLiveSessionCall({
       try {
         setConnectionStatus("joining");
         const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: true,
+          video: {
+            facingMode: "user",
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
           audio: true,
         });
 
