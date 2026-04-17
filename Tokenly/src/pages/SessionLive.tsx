@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CircleDot, ClipboardList, Paperclip } from "lucide-react";
 import VideoPlaceholder from "../components/session/live/VideoPlaceHolder";
@@ -8,7 +8,7 @@ import Checklist from "../components/session/live/Checklist";
 import { useChat } from "../hooks/useChat";
 import { sendMessage } from "../services/chatService";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
-import type { ChecklistItem, FileAttachment, Message } from "../types/session";
+import type { ChecklistItem, FileAttachment } from "../types/session";
 
 type TabType = "agenda" | "files";
 
