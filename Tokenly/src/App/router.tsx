@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { createBrowserRouter, Outlet, useLocation } from "react-router-dom";
+import { createHashRouter, Outlet, useLocation } from "react-router-dom";
 import Layout from "../components/layout/Layout";
 import Explore from "../pages/Explore";
 import Dashboard from "../pages/Dashboard";
@@ -46,7 +46,7 @@ function ScrollToTopLayout() {
   return <Outlet />;
 }
 
-export const router = createBrowserRouter([
+export const router = createHashRouter([
   {
     element: <ScrollToTopLayout />,
     errorElement: <ErrorPage />,
