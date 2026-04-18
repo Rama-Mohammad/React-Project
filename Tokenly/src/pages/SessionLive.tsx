@@ -10,7 +10,7 @@ import { useSharedChecklist } from "../hooks/useSharedChecklist";
 import { useLiveSessionCall } from "../hooks/useLiveSessionCall";
 import { getCurrentUser } from "../services/authService";
 import { sendMessage } from "../services/chatService";
-import { getSessionById } from "../services/sessionService";
+import { getSessionById, updateSessionStatus } from "../services/sessionService";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import type { ChecklistItem, FileAttachment } from "../types/session";
 
@@ -123,6 +123,9 @@ const SessionLivePage: React.FC = () => {
       );
       setOtherParticipantId(isHelper ? sessionData.requester_id : sessionData.helper_id);
       setIsInitiator(initiatorId === userData.user.id);
+      if (sessionData.status === "upcoming") {
+        await updateSessionStatus(sessionId, "active");
+      }
       setSessionStatus("ready");
     };
 
@@ -259,22 +262,20 @@ const SessionLivePage: React.FC = () => {
             <div className="flex border-b border-indigo-200/70 bg-indigo-50/60 p-1">
               <button
                 onClick={() => setActiveTab("agenda")}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                  activeTab === "agenda"
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${activeTab === "agenda"
                     ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white shadow-[0_10px_20px_-14px_rgba(99,102,241,0.8)]"
                     : "text-slate-600 hover:bg-indigo-50 hover:text-slate-800"
-                }`}
+                  }`}
               >
                 <ClipboardList size={15} />
                 Agenda
               </button>
               <button
                 onClick={() => setActiveTab("files")}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                  activeTab === "files"
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${activeTab === "files"
                     ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white shadow-[0_10px_20px_-14px_rgba(99,102,241,0.8)]"
                     : "text-slate-600 hover:bg-indigo-50 hover:text-slate-800"
-                }`}
+                  }`}
               >
                 <Paperclip size={15} />
                 Files ({files.length})
