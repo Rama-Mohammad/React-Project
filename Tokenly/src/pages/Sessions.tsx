@@ -538,16 +538,16 @@ const SessionsPage: React.FC = () => {
                             View Request
                           </button>
 
-                          {/* {isActive ? (
+                          {session.status === "upcoming" ? (
                             <button
                               type="button"
-                              onClick={() => handleMarkComplete(session.id)}
+                              onClick={() => handleJoin(session.id)}
                               className="inline-flex items-center gap-1.5 rounded-lg bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-indigo-900/20 transition hover:brightness-105"
                             >
-                              <Check size={16} />
-                              Mark Complete
+                              <Video size={16} />
+                              Start Session
                             </button>
-                          ) : null} */}
+                          ) : null}
 
                           {isActive ? (
                             <>
