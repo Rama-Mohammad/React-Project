@@ -73,32 +73,61 @@ const SessionsPage: React.FC = () => {
 
       const mappedSessions = (data || []).map((s: any) => {
         const isHelper = s.helper_id === userId;
-
         const otherUser = isHelper ? s.requester : s.helper;
+
+        const helpOfferRequestValue = Array.isArray(s.help_offer_request)
+          ? s.help_offer_request[0] ?? null
+          : s.help_offer_request ?? null;
+        const helpOfferValue = Array.isArray(helpOfferRequestValue?.help_offer)
+          ? helpOfferRequestValue.help_offer[0] ?? null
+          : helpOfferRequestValue?.help_offer ?? null;
+        const directRequestValue = Array.isArray(s.direct_request)
+          ? s.direct_request[0] ?? null
+          : s.direct_request ?? null;
+
+        const title =
+          s.request?.title ??
+          helpOfferValue?.title ??
+          directRequestValue?.title ??
+          "Untitled Session";
+
+        const category =
+          s.request?.category ??
+          helpOfferValue?.category ??
+          directRequestValue?.category ??
+          "General";
+
+        const creditCost =
+          s.request?.credit_cost ??
+          helpOfferValue?.credit_cost ??
+          directRequestValue?.credit_cost ??
+          0;
+
+        const requestId =
+          s.request?.id ||
+          s.request_id ||
+          helpOfferValue?.id ||
+          directRequestValue?.id ||
+          undefined;
 
         return {
           id: s.id,
-          requestId: s.request?.id || s.request_id || undefined,
-          title: s.request?.title || "Untitled Session",
-          category: s.request?.category || "General",
+          requestId,
+          title,
+          category,
           status: s.status,
-
           role: (isHelper ? "helping" : "receiving") as "helping" | "receiving",
-
           otherParticipant: {
             name: otherUser?.full_name || otherUser?.username || "Unknown",
             avatar: otherUser?.profile_image_url,
             id: otherUser?.id,
           },
-
           datetime: s.scheduled_at ? new Date(s.scheduled_at) : new Date(),
-
           duration: s.duration_minutes || 30,
-
-          credits: s.request?.credit_cost
+          credits: creditCost
             ? isHelper
-              ? s.request.credit_cost
-              : -s.request.credit_cost
+              ? creditCost
+              : -creditCost
             : 0,
         };
       });
@@ -509,7 +538,7 @@ const SessionsPage: React.FC = () => {
                             View Request
                           </button>
 
-                          {session.status === "upcoming" ? (
+                          {/* {isActive ? (
                             <button
                               type="button"
                               onClick={() => handleMarkComplete(session.id)}
@@ -518,17 +547,27 @@ const SessionsPage: React.FC = () => {
                               <Check size={16} />
                               Mark Complete
                             </button>
-                          ) : null}
+                          ) : null} */}
 
                           {isActive ? (
-                            <button
-                              type="button"
-                              onClick={() => handleJoin(session.id)}
-                              className="inline-flex items-center gap-1.5 rounded-lg bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-3 py-1.5 text-xs font-semibold text-white transition hover:brightness-105"
-                            >
-                              <Video size={16} />
-                              Join Live
-                            </button>
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleJoin(session.id)}
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-3 py-1.5 text-xs font-semibold text-white transition hover:brightness-105"
+                              >
+                                <Video size={16} />
+                                Join Live
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleMarkComplete(session.id)}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-100"
+                              >
+                                <Check size={16} />
+                                Mark Complete
+                              </button>
+                            </>
                           ) : null}
 
                           {isCompleted ? (

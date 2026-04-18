@@ -209,11 +209,11 @@ export function useHelpOfferRequests(): UseHelpOfferRequestsResult {
     }
 
     // Helper accepts a request → session is created internally in the service
-    async function acceptRequest(id: string): Promise<boolean> {
+    async function acceptRequest(id: string, scheduledAt?: string): Promise<boolean> {
         setLoading(true);
         setError("");
 
-        const { error } = await acceptHelpOfferRequest(id);
+        const { error } = await acceptHelpOfferRequest(id, scheduledAt);
 
         if (error) {
             setError(error.message);
@@ -280,7 +280,7 @@ export function useHelpOfferRequests(): UseHelpOfferRequestsResult {
         fetchRequestsForOffer,
         fetchRequestsByUser,
         submitRequest,
-        acceptRequest,
+        acceptRequest:(id: string, scheduledAt?: string) => acceptRequest(id, scheduledAt), 
         rejectRequest,
         withdrawRequest,
     };
