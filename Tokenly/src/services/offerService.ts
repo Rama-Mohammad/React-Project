@@ -4,7 +4,7 @@ import type { OfferStatus } from "../types/offer";
 import type { Offer } from "../types/offer";
 import type { Request } from "../types/request";
 import { getSessionsAuthDebugContext, logSessionsQuery } from "./sessionDebug";
-
+import { createNotification } from "./notificationService";
 export function extractAvailabilityFromOfferDescription(description?: string | null) {
   if (!description) {
     return { summary: "No description provided.", availability: "Availability not provided." };
@@ -394,9 +394,15 @@ export async function acceptOffer(
       payload: sessionInsertPayload,
     });
 
-    const { error: createSessionError } = await supabase
+    const { data: createdSession, error: createSessionError } = await supabase
       .from("sessions")
-      .insert(sessionInsertPayload);
+      .insert(sessionInsertPayload)
+      .select()
+      .single();
+
+    if (createSessionError || !createdSession) {
+      return { data: null, error: createSessionError };
+    }
 
     logSessionsQuery("acceptOffer create session insert result", {
       session: sessionsDebug.session,
@@ -409,7 +415,7 @@ export async function acceptOffer(
       return { data: null, error: createSessionError };
     }
 
-    sessionData = { id: offer.id };
+    sessionData = { id: createdSession.id };
   } else if (scheduledAt) {
     const updatePayload = { sessionId: sessionData.id, scheduled_at: scheduledAt };
 
@@ -446,6 +452,15 @@ export async function acceptOffer(
   if (requestUpdateError) {
     return { data: null, error: requestUpdateError };
   }
+
+  await createNotification({
+    user_id: offer.helper_id,
+    type: "offer_accepted",
+    title: "Your offer was accepted",
+    message: `The requester accepted your offer`,
+    related_id: sessionData?.id ?? offerId,
+    related_type: "session",
+  });
 
   return { data: sessionData, error: null };
 }

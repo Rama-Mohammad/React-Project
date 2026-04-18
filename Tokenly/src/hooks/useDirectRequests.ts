@@ -76,11 +76,11 @@ export default function useDirectRequests(): UseDirectRequestsResult {
     }
 
     // Helper accepts → session is created internally in the service (Flow 3)
-    async function acceptDirectRequestFn(id: string): Promise<boolean> {
+    async function acceptDirectRequestFn(id: string, scheduledAt?: string): Promise<boolean> {
         setLoading(true);
         setError("");
 
-        const { error } = await acceptDirectRequest(id);
+        const { error } = await acceptDirectRequest(id, scheduledAt);
 
         if (error) {
             setError(error.message);
@@ -142,7 +142,7 @@ export default function useDirectRequests(): UseDirectRequestsResult {
         fetchSentRequests,
         fetchReceivedRequests,
         sendDirectRequest: sendDirectRequestFn,
-        acceptDirectRequest: acceptDirectRequestFn,
+        acceptDirectRequest: (id: string, scheduledAt?: string) => acceptDirectRequestFn(id, scheduledAt),
         rejectDirectRequest: rejectDirectRequestFn,
         cancelDirectRequest: cancelDirectRequestFn,
     };

@@ -92,20 +92,22 @@ export async function getDashboardSessions(user_id: string) {
       request_id,
       help_offer_request_id,
       direct_request_id,
-      request:requests(id, title, category),
+      request:requests(id, title, category, credit_cost),
       help_offer_request:help_offer_requests!sessions_help_offer_request_id_fkey(
         id,
-        help_offer:help_offers!help_offer_requests_help_offer_id_fkey(
-          id,
-          title,
-          category
-        )
-      ),
-      direct_request:direct_requests!sessions_direct_request_id_fkey(
-        id,
-        title,
-        category
-      ),
+      help_offer:help_offers!help_offer_requests_help_offer_id_fkey(
+      id,
+      title,
+      category,
+      credit_cost
+    )
+  ),
+  direct_request:direct_requests!sessions_direct_request_id_fkey(
+    id,
+    title,
+    category,
+    credit_cost
+    ),
       helper:profiles!sessions_helper_id_fkey(id, full_name, profile_image_url),
       requester:profiles!sessions_requester_id_fkey(id, full_name, profile_image_url)
     `)
@@ -195,6 +197,34 @@ export async function getDashboardSentDirectRequests(requester_id: string) {
       )
     `)
     .eq("requester_id", requester_id)
+    .order("created_at", { ascending: false })
+    .limit(10);
+}
+
+export async function getDashboardHelpOfferRequests(helper_id: string) {
+  return await supabase
+    .from("help_offer_requests")
+    .select(`
+      id,
+      message,
+      status,
+      created_at,
+      requester:profiles!help_offer_requests_requester_id_fkey(
+        id,
+        full_name,
+        username,
+        profile_image_url
+      ),
+      help_offer:help_offers!help_offer_requests_help_offer_id_fkey!inner(
+        id,
+        title,
+        credit_cost,
+        duration_minutes,
+        helper_id
+      )
+    `)
+    .eq("status", "pending")
+    .eq("help_offers.helper_id", helper_id)
     .order("created_at", { ascending: false })
     .limit(10);
 }

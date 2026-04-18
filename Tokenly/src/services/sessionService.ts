@@ -63,6 +63,21 @@ export async function getSessionsByUser(user_id: string) {
     .select(`
       *,
       request:requests(id, title, category, credit_cost),
+      help_offer_request:help_offer_requests!sessions_help_offer_request_id_fkey(
+        id,
+        help_offer:help_offers!help_offer_requests_help_offer_id_fkey(
+          id,
+          title,
+          category,
+          credit_cost
+        )
+      ),
+      direct_request:direct_requests!sessions_direct_request_id_fkey(
+        id,
+        title,
+        category,
+        credit_cost
+      ),
       helper:profiles!helper_id(id, full_name, username, profile_image_url),
       requester:profiles!requester_id(id, full_name, username, profile_image_url)
     `)

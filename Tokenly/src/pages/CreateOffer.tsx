@@ -31,7 +31,7 @@ export default function CreateOffer() {
   const [durationMinutes, setDurationMinutes] = useState(45);
   const [creditCost, setCreditCost] = useState(5);
   const [description, setDescription] = useState("");
-  const [availability, setAvailability] = useState("");
+  const [proposedAt, setProposedAt] = useState("");
   const [note, setNote] = useState("");
   const [urgency, setUrgency] = useState<UrgencyOption>("medium");
 
@@ -151,7 +151,6 @@ export default function CreateOffer() {
     try {
       const mergedDescription = [
         description.trim(),
-        availability.trim() ? `Availability: ${availability.trim()}` : "",
         note.trim() ? `Note: ${note.trim()}` : "",
       ]
         .filter(Boolean)
@@ -165,6 +164,7 @@ export default function CreateOffer() {
         urgency,
         credit_cost: creditCost,
         duration_minutes: durationMinutes,
+        proposed_at: proposedAt ? new Date(proposedAt).toISOString() : null,
         status: "open",
       };
 
@@ -185,7 +185,7 @@ export default function CreateOffer() {
       setSubmitSuccess("Offer published successfully. People can now find you in Explore.");
       setTitle("");
       setDescription("");
-      setAvailability("");
+      setProposedAt("");
       setNote("");
     } catch (error) {
       const message =
@@ -307,13 +307,15 @@ export default function CreateOffer() {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-slate-800">Availability (optional)</label>
+              <label className="mb-1.5 block text-sm font-semibold text-slate-800">Proposed session time (optional)</label>
               <input
-                value={availability}
-                onChange={(event) => setAvailability(event.target.value)}
-                placeholder="e.g. Weekdays 5-8 PM UTC"
+                type="datetime-local"
+                value={proposedAt}
+                min={new Date().toISOString().slice(0, 16)}
+                onChange={(event) => setProposedAt(event.target.value)}
                 className="h-11 w-full rounded-2xl border border-slate-200/80 bg-white/92 px-4 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
               />
+              <p className="mt-1 text-xs text-slate-500">Leave blank if your availability is flexible</p>
             </div>
 
             <div>
@@ -332,11 +334,10 @@ export default function CreateOffer() {
               type="button"
               onClick={handlePublishOffer}
               disabled={isSubmitting}
-              className={`h-11 w-full rounded-xl text-sm font-semibold text-white transition ${
-                isSubmitting
-                  ? "cursor-not-allowed bg-slate-300"
-                  : "bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 hover:brightness-105"
-              }`}
+              className={`h-11 w-full rounded-xl text-sm font-semibold text-white transition ${isSubmitting
+                ? "cursor-not-allowed bg-slate-300"
+                : "bg-linear-to-r from-indigo-500 via-sky-500 to-indigo-500 hover:brightness-105"
+                }`}
             >
               {isSubmitting ? "Publishing..." : "Publish Offer"}
             </button>

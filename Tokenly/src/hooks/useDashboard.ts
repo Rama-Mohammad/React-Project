@@ -6,6 +6,7 @@ import {
   getDashboardSentDirectRequests,
   getDashboardSessions,
   getDashboardStats,
+  getDashboardHelpOfferRequests,
 } from "../services/dashboardService";
 import type {
   DashboardDirectRequestItem,
@@ -38,6 +39,7 @@ export default function useDashboard() {
   const [rawOffers, setRawOffers] = useState<any[]>([]);
   const [rawIncomingDirectRequests, setRawIncomingDirectRequests] = useState<unknown[]>([]);
   const [rawSentDirectRequests, setRawSentDirectRequests] = useState<unknown[]>([]);
+  const [rawHelpOfferRequests, setRawHelpOfferRequests] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -52,6 +54,7 @@ export default function useDashboard() {
       offersRes,
       directRequestsRes,
       sentDirectRequestsRes,
+      helpOfferRequestsRes,
     ] = await Promise.all([
       getDashboardProfile(user_id),
       getDashboardStats(user_id),
@@ -59,6 +62,7 @@ export default function useDashboard() {
       getDashboardOffers(user_id),
       getDashboardDirectRequests(user_id),
       getDashboardSentDirectRequests(user_id),
+      getDashboardHelpOfferRequests(user_id),
     ]);
 
     if (profileRes.error) setError(profileRes.error.message);
@@ -69,6 +73,7 @@ export default function useDashboard() {
     setRawOffers(offersRes.data ?? []);
     setRawIncomingDirectRequests(directRequestsRes.data ?? []);
     setRawSentDirectRequests(sentDirectRequestsRes.data ?? []);
+    setRawHelpOfferRequests(helpOfferRequestsRes.data ?? []);
     setLoading(false);
   }
 
@@ -112,7 +117,9 @@ export default function useDashboard() {
           personImageUrl: isHelper ? s.requester?.profile_image_url ?? undefined : s.helper?.profile_image_url ?? undefined,
           date: dateStr,
           duration: s.duration_minutes ? `${s.duration_minutes} min` : "--",
-          credits: 0,
+          credits: isHelper
+            ? (s.request?.credit_cost ?? helpOfferValue?.credit_cost ?? directRequestValue?.credit_cost ?? 0)
+            : -(s.request?.credit_cost ?? helpOfferValue?.credit_cost ?? directRequestValue?.credit_cost ?? 0),
           action: uiStatus !== "Completed" ? "Mark Complete" : undefined,
         };
       })
@@ -200,6 +207,43 @@ export default function useDashboard() {
     });
   }
 
+  function mapHelpOfferRequests(): Array<{
+    id: string;
+    title: string;
+    personName: string;
+    personImageUrl?: string;
+    message: string;
+    credits: number;
+    duration: number | null;
+    age: string;
+  }> {
+    return rawHelpOfferRequests.map((r: unknown) => {
+      const req = r as Record<string, unknown>;
+      const requesterRaw = req.requester as
+        | { full_name?: string | null; username?: string | null; profile_image_url?: string | null }
+        | Array<{ full_name?: string | null; username?: string | null; profile_image_url?: string | null }>
+        | null;
+      const requester = Array.isArray(requesterRaw) ? requesterRaw[0] : requesterRaw;
+
+      const helpOfferRaw = req.help_offer as
+        | { title?: string | null; credit_cost?: number | null; duration_minutes?: number | null }
+        | Array<{ title?: string | null; credit_cost?: number | null; duration_minutes?: number | null }>
+        | null;
+      const helpOffer = Array.isArray(helpOfferRaw) ? helpOfferRaw[0] : helpOfferRaw;
+
+      return {
+        id: String(req.id ?? ""),
+        title: helpOffer?.title ?? "Help Offer Request",
+        personName: requester?.full_name ?? requester?.username ?? "User",
+        personImageUrl: requester?.profile_image_url ?? undefined,
+        message: String(req.message ?? ""),
+        credits: Number(helpOffer?.credit_cost ?? 0),
+        duration: helpOffer?.duration_minutes != null ? Number(helpOffer.duration_minutes) : null,
+        age: toRelativeAge(req.created_at as string | null),
+      };
+    });
+  }
+
   return {
     profile,
     stats,
@@ -214,6 +258,8 @@ export default function useDashboard() {
     mapOffers,
     mapIncomingDirectRequests,
     mapSentDirectRequests,
+    rawHelpOfferRequests,
+    mapHelpOfferRequests,
   };
 }
 

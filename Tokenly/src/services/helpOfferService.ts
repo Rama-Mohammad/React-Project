@@ -219,16 +219,17 @@ export async function acceptHelpOfferRequest(
   const { data: hor, error: fetchError } = await supabase
     .from("help_offer_requests")
     .select(`
-      id,
-      requester_id,
-      help_offer_id,
-      help_offer:help_offers!help_offer_requests_help_offer_id_fkey(
-        helper_id,
-        credit_cost,
-        duration_minutes,
-        title
-      )
-    `)
+    id,
+    requester_id,
+    help_offer_id,
+    help_offer:help_offers!help_offer_requests_help_offer_id_fkey(
+      helper_id,
+      credit_cost,
+      duration_minutes,
+      title,
+      proposed_at
+    )
+  `)
     .eq("id", helpOfferRequestId)
     .single();
 
@@ -267,7 +268,7 @@ export async function acceptHelpOfferRequest(
       requester_id: hor.requester_id,
       help_offer_request_id: helpOfferRequestId,
       duration_minutes: helpOffer.duration_minutes,
-      scheduled_at: scheduledAt,
+      scheduled_at: scheduledAt ?? (helpOffer as any).proposed_at ?? null,
       status: "upcoming",
     })
     .select()
