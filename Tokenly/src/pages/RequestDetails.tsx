@@ -13,7 +13,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import Avatar from "../components/common/Avatar";
 import RatingStars from "../components/common/RatingStars";
-// import { helpers } from "../data/mockExploreData";
 import { supabase } from "../lib/supabaseClient";
 import {
   acceptOffer,
@@ -176,11 +175,7 @@ export default function RequestDetails() {
     );
   }
 
-  // zedet hol bs l sheel el errors ente zbtya, shufe shu osset el comments w import mn mock data thing
   const authorSkills = request.tags.slice(0, 3);
-  // const authorHelper = helpers.find((helper) => helper.name === request.author.name);
-  // const authorSkills = authorHelper?.skills.slice(0, 3) ?? request.tags.slice(0, 3);
-  // const sessionsCompleted = authorHelper?.sessions ?? 12;
   const canSubmitOffer = offerMessage.trim().length > 0 && availability.trim().length > 0 && !isSubmittingOffer;
   const canDeleteRequest = Boolean(currentUserId && requestOwnerId && currentUserId === requestOwnerId);
   const canManageOffers = canDeleteRequest;
