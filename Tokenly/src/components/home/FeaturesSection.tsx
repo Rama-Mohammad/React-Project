@@ -21,7 +21,7 @@ const FeaturesSection = () => {
           <FeatureCard
             category="Core System"
             icon={faCoins}
-            bgImage="/images/core_system.png"
+            bgImage="https://cggkruccjfhgxhqkjamk.supabase.co/storage/v1/object/public/assets/core_system.png"
             title="Token-Based Economy"
             description="Every help session runs on tokens - no cash, no awkward payment. Earn by helping, spend to get help."
           />
@@ -29,7 +29,7 @@ const FeaturesSection = () => {
           <FeatureCard
             category="Built-in Tools"
             icon={faPlay}
-            bgImage="/images/full_session.png"
+            bgImage="https://cggkruccjfhgxhqkjamk.supabase.co/storage/v1/object/public/assets/full_session.png"
             title="Full Live Session Room"
             description="Video, chat, file sharing, collaborative notes, quizzes, and code worksheets - all in one place."
           />
@@ -37,7 +37,7 @@ const FeaturesSection = () => {
           <FeatureCard
             category="Safety"
             icon={faUsers}
-            bgImage="/images/trust.png"
+            bgImage="https://cggkruccjfhgxhqkjamk.supabase.co/storage/v1/object/public/assets/trust.png"
             title="Trust & Accountability"
             description="Ratings, reviews, and mutual-confirm completions ensure both sides stay accountable and honest."
           />
@@ -45,7 +45,7 @@ const FeaturesSection = () => {
           <FeatureCard
             category="Community"
             icon={faUsers}
-            bgImage="/images/group_sessions.png"
+            bgImage="https://cggkruccjfhgxhqkjamk.supabase.co/storage/v1/object/public/assets/group_sessions.png"
             title="Group Sessions"
             description="Host or join group learning sessions. Gallery view, mentions, per-person or collaborative tools."
           />
@@ -53,7 +53,7 @@ const FeaturesSection = () => {
           <FeatureCard
             category="Knowledge"
             icon={faLightbulb}
-            bgImage="/images/skills.png"
+            bgImage="https://cggkruccjfhgxhqkjamk.supabase.co/storage/v1/object/public/assets/skills.png"
             title="340+ Skills Available"
             description="From programming to music theory, cooking to tax filing - the community covers it all."
           />
@@ -61,7 +61,7 @@ const FeaturesSection = () => {
           <FeatureCard
             category="Analytics"
             icon={faStar}
-            bgImage="/images/progress.png"
+            bgImage="https://cggkruccjfhgxhqkjamk.supabase.co/storage/v1/object/public/assets/progress.png"
             title="Progress Dashboard"
             description="Track your sessions, tokens earned and spent, skills taught and learned - all with rich analytics."
           />

@@ -25,7 +25,7 @@ const HeroSection = () => {
       <section className="relative min-h-screen overflow-x-clip">
         <div className="absolute left-1/2 top-0 h-full w-screen -translate-x-1/2 border-b border-white/40 bg-white/35 backdrop-blur-xl">
           <img
-            src="/images/hero_image.png"
+            src="https://cggkruccjfhgxhqkjamk.supabase.co/storage/v1/object/public/assets/hero_image.png"
             alt="People connecting and learning together"
             className="h-full w-full object-cover opacity-15"
           />

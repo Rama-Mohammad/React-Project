@@ -5,7 +5,7 @@ export default function VisualPanel({ mode }: VisualPanelProps) {
   return (
     <div className="hidden lg:flex flex-col items-center justify-center bg-[linear-gradient(140deg,#eef4ff_0%,#e8f8ff_45%,#f3efff_100%)] p-8 xl:p-10">
       <div className="mb-5">
-        <img src="/images/tokenly-logo.svg" alt="Tokenly" className="h-44 w-auto object-contain" />
+        <img src="https://cggkruccjfhgxhqkjamk.supabase.co/storage/v1/object/public/assets/tokenly-logo.svg" alt="Tokenly" className="h-44 w-auto object-contain" />
       </div>
 
       <h2 className="mb-3 text-center text-2xl font-bold text-slate-900">
