@@ -103,12 +103,7 @@ const SessionsPage: React.FC = () => {
           directRequestValue?.credit_cost ??
           0;
 
-        const requestId =
-          s.request?.id ||
-          s.request_id ||
-          helpOfferValue?.id ||
-          directRequestValue?.id ||
-          undefined;
+        const requestId = s.request?.id || s.request_id || undefined;
 
         return {
           id: s.id,
@@ -137,6 +132,12 @@ const SessionsPage: React.FC = () => {
     };
 
     fetchSessions();
+
+    const interval = setInterval(() => {
+      void fetchSessions();
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const counts = useMemo(
