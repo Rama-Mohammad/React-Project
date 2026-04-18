@@ -512,8 +512,9 @@ export default function Dashboard() {
                 {dashLoading ? "" : stats?.activeRequests ?? 0}
               </p>
               <p className="text-sm text-slate-700">Requests Posted</p>
-              <p className="mt-2 text-sm text-slate-500">Total help requests</p>
-            </article>
+              <p className="mt-2 text-sm text-slate-500">
+                {!dashLoading && stats ? "Total help requests" : ""}</p>            
+          </article>
 
             {/* Offers submitted */}
             <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4">

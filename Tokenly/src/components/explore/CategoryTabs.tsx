@@ -20,8 +20,7 @@ export default function CategoryTabs({
       : "rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold text-slate-500";
 
   return (
-    <div className="explore-fade-in-up inline-flex flex-wrap items-center gap-2 rounded-xl border border-white/50 bg-white/55 p-1.5 backdrop-blur">
-      <button
+<div className="explore-fade-in-up flex flex-wrap justify-center sm:justify-start gap-2 rounded-xl border border-white/50 bg-white/55 p-1.5 backdrop-blur">      <button
         type="button"
         onClick={() => onChange("requests")}
         className={tabClass(activeTab === "requests")}

@@ -105,8 +105,8 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/55 bg-white/72 backdrop-blur-2xl">
-      <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-5 sm:px-6 lg:px-8">
-        <div className="flex min-w-0 items-center justify-start pl-[2px] lg:pl-[2px]">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-4 lg:px-8">
+          <div className="flex min-w-0 items-center justify-start pl-[2px] lg:pl-[2px]">
           <NavLink
             to="/"
             className="flex shrink-0 items-center transition hover:opacity-95 -ml-2"

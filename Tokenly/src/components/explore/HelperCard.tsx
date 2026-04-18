@@ -86,8 +86,8 @@ export default function HelperCard({ item }: HelperCardPropsWithCallback) {
                   {item.online ? (
                     <span className="font-medium text-emerald-600">Online now</span>
                   ) : null}
-                  <span className="text-slate-300">/</span>
-                  <span className="text-slate-400">Responds {item.responseTime}</span>
+                  {/* <span className="text-slate-300">/</span> */}
+                  {/* <span className="text-slate-400">Responds {item.responseTime}</span> */}
                 </div>
               </div>
 

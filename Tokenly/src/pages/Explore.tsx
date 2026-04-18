@@ -87,8 +87,6 @@ export default function Explore() {
   const [liveHelpers, setLiveHelpers] = useState<HelperItem[]>([]);
   const [helpersLoading, setHelpersLoading] = useState(false);
   const [helpersError, setHelpersError] = useState("");
-  // Offers tab: now HelpOfferItem[] — represents help_offers posted by helpers (Flow 2)
-  // NOT the `offers` table — those are private responses to requests and shouldn't be browsed here
   const [liveOffers, setLiveOffers] = useState<HelpOfferItem[]>([]);
   const [offersLoading, setOffersLoading] = useState(false);
   const [offersError, setOffersError] = useState("");
@@ -716,13 +714,13 @@ export default function Explore() {
               countsLoading={countsLoading}
             />
 
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 lg:text-right">
-              {titleText}
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 text-center lg:text-right">      
+                 {titleText}
             </p>
           </div>
 
           {activeTab === "requests" && !requestsLoading && !requestsError ? (
-            <p className="mb-4 text-xs text-slate-500">Live open requests: {liveOpenRequests.length}</p>
+            <p className="mb-4 text-xs text-slate-500 text-center sm:text-left">Live open requests: {liveOpenRequests.length}</p>
           ) : null}
 
           <div className="explore-glass explore-fade-in-up rounded-[1.25rem] border border-white/50 bg-white/70 p-4 backdrop-blur-xl md:p-5">
@@ -880,10 +878,10 @@ export default function Explore() {
                       {item.urgency ? (
                         <span
                           className={`rounded-full px-2.5 py-1 text-xs font-semibold ${item.urgency === "high"
-                              ? "bg-rose-50 text-rose-600"
-                              : item.urgency === "medium"
-                                ? "bg-amber-50 text-amber-600"
-                                : "bg-emerald-50 text-emerald-600"
+                            ? "bg-rose-50 text-rose-600"
+                            : item.urgency === "medium"
+                              ? "bg-amber-50 text-amber-600"
+                              : "bg-emerald-50 text-emerald-600"
                             }`}
                         >
                           {item.urgency.charAt(0).toUpperCase() + item.urgency.slice(1)} urgency
