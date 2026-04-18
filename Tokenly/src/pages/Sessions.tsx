@@ -341,7 +341,6 @@ const SessionsPage: React.FC = () => {
                         className={`rounded-full px-2 py-0.5 text-xs ${activeFilter === tab.key ? "bg-white/25 text-white" : "bg-slate-200/80 text-slate-600"
                           }`}
                       >
-                        {tab.count}<p className="mt-2 text-xs text-slate-500">{filteredSessions.length} sessions found</p>
                       </span>
                     )}
                   </button>
@@ -391,6 +390,8 @@ const SessionsPage: React.FC = () => {
                 size="sm"
               />
             </div>
+
+            <p className="mt-2 text-xs text-slate-500">{loading ? "" : `${filteredSessions.length} sessions found`}</p>
           </div>
 
           <div className="mt-3 rounded-2xl border border-slate-300 bg-transparent p-3 backdrop-blur-sm sm:p-4">
