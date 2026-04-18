@@ -761,9 +761,6 @@ export default function Explore() {
 
           {/* -- Requests -- */}
           {activeTab === "requests" && requestsLoading && requestsPage === 0 ? (
-            // <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
-            //   Loading requests...
-            // </div>
             <div className="mt-5 flex flex-col items-center justify-center gap-3 py-16">
               <img
                 src={tokenlyLogo}
@@ -771,7 +768,6 @@ export default function Explore() {
                 className="h-10 w-10 animate-spin"
                 style={{ animationDuration: "1.2s" }}
               />
-              {/* <p className="text-sm text-slate-400">Loading requests...</p> */}
             </div>
           ) : activeTab === "requests" && requestsError ? (
             <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">

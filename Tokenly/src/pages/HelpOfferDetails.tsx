@@ -6,6 +6,7 @@ import { supabase } from "../lib/supabaseClient";
 import { getHelpOfferById } from "../services/helpOfferService";
 import { getRequestsForHelpOffer, acceptHelpOfferRequest, rejectHelpOfferRequest } from "../services/helpOfferService";
 import type { HelpOffer, HelpOfferRequest } from "../types/helpOffer";
+import tokenlyLogo from "../assets/favicon_tokenly.svg";
 
 type IncomingRequest = HelpOfferRequest & {
   requester: {
@@ -220,12 +221,21 @@ export default function HelpOfferDetails() {
           ) : null}
 
           {requestsLoading ? (
-            <div className="rounded-2xl border border-slate-200 bg-white/80 p-4 text-sm text-slate-500">Loading requests...</div>
-          ) : requests.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-center text-sm text-slate-500">
-              No one has requested this offer yet. Share it to get bookings.
-            </div>
-          ) : (
+            <div className="flex flex-col items-center justify-center gap-3 py-14">
+              <img
+                src={tokenlyLogo}
+                alt="Loading"
+                className="h-9 w-9 animate-spin"
+                style={{
+                  animationDuration: "1.2s",
+                  animationTimingFunction: "linear",
+                }}
+              />
+            </div>) : requests.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-center text-sm text-slate-500">
+                No one has requested this offer yet. Share it to get bookings.
+              </div>
+            ) : (
             <div className="space-y-3">
               {/* Pending first */}
               {pendingRequests.map((req) => {
@@ -311,11 +321,10 @@ export default function HelpOfferDetails() {
                         <p className="text-sm font-medium text-slate-700">{name}</p>
                       </div>
                       <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                          req.status === "accepted"
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${req.status === "accepted"
                             ? "bg-emerald-50 text-emerald-700"
                             : "bg-rose-50 text-rose-600"
-                        }`}
+                          }`}
                       >
                         {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
                       </span>

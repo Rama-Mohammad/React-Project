@@ -28,6 +28,7 @@ import {
 import { deleteRequest, getRequestById } from "../services/requestService";
 import { mapRequestToExploreItem } from "../utils/exploreMappers";
 import type { RequestItem } from "../types/explore";
+import tokenlyLogo from "../assets/favicon_tokenly.svg";
 
 const urgencyStyles: Record<string, string> = {
   High: "bg-rose-50 text-rose-600",
@@ -146,11 +147,17 @@ export default function RequestDetails() {
 
   if (isLoadingRequest) {
     return (
-      <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
-        <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
-          <h1 className="text-3xl font-bold text-slate-900">Loading request...</h1>
-        </main>
-      </div>
+<div className="flex flex-col items-center justify-center gap-3 py-14">
+  <img
+    src={tokenlyLogo}
+    alt="Loading"
+    className="h-9 w-9 animate-spin"
+    style={{
+      animationDuration: "1.2s",
+      animationTimingFunction: "linear",
+    }}
+  />
+</div>
     );
   }
 
