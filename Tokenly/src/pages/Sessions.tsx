@@ -391,8 +391,6 @@ const SessionsPage: React.FC = () => {
                 size="sm"
               />
             </div>
-
-            <p className="mt-2 text-xs text-slate-500">{loading ? "" : `${filteredSessions.length} sessions found`}</p>
           </div>
 
           <div className="mt-3 rounded-2xl border border-slate-300 bg-transparent p-3 backdrop-blur-sm sm:p-4">
