@@ -143,17 +143,17 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div className="flex items-center gap-2 rounded-lg bg-white/55 px-3 py-2 text-sm text-slate-600">
             <NotebookTabs size={15} className="text-indigo-500" />
-            <span className="text-lg font-bold text-slate-900">{user.stats.totalSessions}</span>
+            <span className="text-lg font-bold text-slate-900">{user.stats.totalSessions === 0 && !user.name ? "" : user.stats.totalSessions}</span>
             Sessions
           </div>
           <div className="flex items-center gap-2 rounded-lg bg-white/55 px-3 py-2 text-sm text-slate-600">
             <Sparkles size={15} className="text-indigo-500" />
-            <span className="text-lg font-bold text-slate-900">{user.stats.creditsEarned}</span>
+            <span className="text-lg font-bold text-slate-900">{user.stats.creditsEarned === 0 && !user.name ? "" : user.stats.creditsEarned}</span>
             Tokens
           </div>
           <div className="flex items-center gap-2 rounded-lg bg-white/55 px-3 py-2 text-sm text-slate-600">
             <MessageSquareMore size={15} className="text-indigo-500" />
-            <span className="text-lg font-bold text-slate-900">{user.stats.skillsTaught}</span>
+            <span className="text-lg font-bold text-slate-900">{user.stats.skillsTaught === 0 && !user.name ? "" : user.stats.skillsTaught}</span>
             Reviews
           </div>
         </div>

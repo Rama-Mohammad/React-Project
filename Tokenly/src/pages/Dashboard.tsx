@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import {
   Calendar,
   Check,
@@ -30,7 +30,7 @@ import type {
   SessionTabLabel,
 } from "../types/dashboard";
 import { acceptDirectRequest, rejectDirectRequest } from "../services/directRequestService";
-
+import tokenlyLogo from "../assets/favicon_tokenly.svg";
 const sessionTabs: SessionTabLabel[] = ["All", "Upcoming", "Active", "Completed"];
 
 function skillTone(skill: string) {
@@ -336,7 +336,7 @@ export default function Dashboard() {
     ? openRequests.find((item) => item.id === pendingDeleteRequestId) ?? null
     : null;
 
-  const fullName = profile?.full_name ?? "Loading...";
+  const fullName = profile?.full_name;
   const initials = getInitials(profile?.full_name);
   const creditBalance = profile?.credit_balance ?? 0;
   const avgRating = profile?.avg_rating ?? 0;
@@ -362,18 +362,22 @@ export default function Dashboard() {
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white text-sm font-semibold text-slate-700">
-                    {dashLoading ? "..." : initials}
+                    {dashLoading ? "" : initials}
                   </div>
                 )}
               </div>
               <div>
                 <p className="text-sm text-slate-500">Welcome back</p>
                 <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-                  {dashLoading ? "Loading..." : fullName}
+                  {dashLoading ? "" : fullName}
                 </h1>
                 <div className="mt-3 flex flex-wrap items-center gap-2.5">
-                  <RatingStars value={Math.round(avgRating)} />
-                  <span className="text-sm text-slate-500">{avgRating.toFixed(1)} rating</span>
+                  {!dashLoading && (
+                    <>
+                      <RatingStars value={Math.round(avgRating)} />
+                      <span className="text-sm text-slate-500">{avgRating.toFixed(1)} rating</span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -408,8 +412,14 @@ export default function Dashboard() {
                   <div>
                     <p className="text-sm text-slate-500">Token Balance</p>
                     <p className="text-2xl font-semibold leading-none">
-                      {dashLoading ? "�" : creditBalance}{" "}
-                      <span className="text-lg font-normal text-slate-500">tokens</span>
+                      {dashLoading ? (
+                        <span className="inline-block h-8 w-16 animate-pulse rounded-lg bg-slate-200" />
+                      ) : (
+                        <>
+                          {creditBalance}{" "}
+                          <span className="text-lg font-normal text-slate-500">tokens</span>
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -441,11 +451,11 @@ export default function Dashboard() {
               <div className="mt-3 flex flex-wrap items-center gap-6 text-sm">
                 <span className="inline-flex items-center gap-2 text-slate-600">
                   <span className="h-2.5 w-2.5 rounded-full bg-blue-300" />
-                  Available <strong className="text-slate-900">{available}</strong>
+                  Available <strong className="text-slate-900">{dashLoading ? "—" : available}</strong>
                 </span>
                 <span className="inline-flex items-center gap-2 text-slate-600">
                   <span className="h-2.5 w-2.5 rounded-full bg-violet-300" />
-                  Spent <strong className="text-slate-900">{spent}</strong>
+                  Spent <strong className="text-slate-900">{dashLoading ? "—" : spent}</strong>
                 </span>
               </div>
 
@@ -456,14 +466,14 @@ export default function Dashboard() {
                     <article className="rounded-2xl border border-indigo-200/70 bg-indigo-100/45 px-4 py-3">
                       <p className="text-sm font-semibold text-indigo-700">As Helper</p>
                       <p className="mt-1 text-4xl font-semibold leading-none text-indigo-700">
-                        {stats?.totalHelpGiven ?? "�"}
+                        {stats?.totalHelpGiven ?? ""}
                       </p>
                       <p className="mt-1 text-sm text-indigo-700">sessions completed</p>
                     </article>
                     <article className="rounded-2xl border border-sky-200/70 bg-sky-100/45 px-4 py-3">
                       <p className="text-sm font-semibold text-sky-700">As Requester</p>
                       <p className="mt-1 text-4xl font-semibold leading-none text-sky-700">
-                        {stats?.totalHelpReceived ?? "�"}
+                        {stats?.totalHelpReceived ?? ""}
                       </p>
                       <p className="mt-1 text-sm text-sky-700">sessions received</p>
                     </article>
@@ -485,11 +495,11 @@ export default function Dashboard() {
                 <Check size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
-                {dashLoading ? "�" : stats?.completedSessions ?? 0}
+                {dashLoading ? "" : stats?.completedSessions ?? 0}
               </p>
-              <p className="text-sm text-slate-700">Sessions Done</p>
+              Sessions Completed
               <p className="mt-2 text-sm text-slate-500">
-                {stats ? `${stats.totalHelpGiven} as helper � ${stats.totalHelpReceived} as requester` : "�"}
+                {!dashLoading && stats ? `${stats.totalHelpGiven} as helper · ${stats.totalHelpReceived} as requester` : ""}
               </p>
             </article>
 
@@ -499,7 +509,7 @@ export default function Dashboard() {
                 <MessageCircle size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
-                {dashLoading ? "�" : stats?.activeRequests ?? 0}
+                {dashLoading ? "" : stats?.activeRequests ?? 0}
               </p>
               <p className="text-sm text-slate-700">Requests Posted</p>
               <p className="mt-2 text-sm text-slate-500">Total help requests</p>
@@ -511,11 +521,11 @@ export default function Dashboard() {
                 <Send size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
-                {dashLoading ? "�" : stats?.offersSubmitted ?? 0}
+                {dashLoading ? "" : stats?.offersSubmitted ?? 0}
               </p>
               <p className="text-sm text-slate-700">Offers Submitted</p>
               <p className="mt-2 text-sm text-slate-500">
-                {stats ? `${stats.offersAccepted} accepted` : "�"}
+                {dashLoading ? "" : stats?.offersSubmitted ?? 0}
               </p>
             </article>
 
@@ -525,10 +535,10 @@ export default function Dashboard() {
                 <Star size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
-                {dashLoading ? "�" : avgRating.toFixed(1)}
+                {dashLoading ? "" : avgRating.toFixed(1)}
               </p>
               <p className="text-sm text-slate-700">Avg. Rating</p>
-              <p className="mt-2 text-sm text-slate-500">From {reviewCount} sessions</p>
+              <p className="mt-2 text-sm text-slate-500">{dashLoading ? "" : `From ${reviewCount} sessions`}</p>
             </article>
           </div>
         </section>
@@ -556,24 +566,25 @@ export default function Dashboard() {
                 key={tab}
                 type="button"
                 onClick={() => setActiveSessionTab(tab)}
-                className={`mx-0.5 inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs transition ${
-                  activeSessionTab === tab
-                    ? "bg-white text-slate-900 shadow-sm"
-                    : "text-slate-500 hover:text-slate-700"
-                }`}
+                className={`mx-0.5 inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs transition ${activeSessionTab === tab
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
+                  }`}
               >
                 {tab}
-                <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-500">
-                  {sessionTabCounts[tab]}
-                </span>
+                {!dashLoading && (
+                  <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-500">
+                    {sessionTabCounts[tab]}
+                  </span>
+                )}
               </button>
             ))}
           </div>
 
           <div className="relative mt-3 space-y-2.5">
             {dashLoading ? (
-              <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
-                Loading sessions...
+              <div className="flex flex-col items-center justify-center gap-3 py-10">
+                <img src={tokenlyLogo} alt="Loading" className="h-9 w-9 animate-spin" style={{ animationDuration: "1.2s", animationTimingFunction: "linear" }} />
               </div>
             ) : previewSessions.length === 0 ? (
               <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
@@ -594,11 +605,10 @@ export default function Dashboard() {
                         {item.status}
                       </span>
                       <span
-                        className={`rounded-full px-2.5 py-0.5 font-medium ${
-                          item.role === "Helping"
-                            ? "bg-violet-100 text-violet-700"
-                            : "bg-indigo-100 text-indigo-700"
-                        }`}
+                        className={`rounded-full px-2.5 py-0.5 font-medium ${item.role === "Helping"
+                          ? "bg-violet-100 text-violet-700"
+                          : "bg-indigo-100 text-indigo-700"
+                          }`}
                       >
                         {item.role}
                       </span>
@@ -681,16 +691,16 @@ export default function Dashboard() {
                         fallbackClassName="bg-indigo-100 text-xs font-semibold text-indigo-700"
                       />
                       <div className="flex-1">
-                      <p className="text-base font-semibold leading-tight text-slate-900">{item.title}</p>
-                      <p className="mt-1 text-sm text-slate-500">
-                        From {item.personName}
-                        {item.duration ? ` � ${item.duration} min` : ""}
-                        {item.credits ? ` � ${item.credits} credits` : ""}
-                        {" � "}{item.age}
-                      </p>
-                      {item.message ? (
-                        <p className="mt-2 line-clamp-2 text-sm text-slate-600">{item.message}</p>
-                      ) : null}
+                        <p className="text-base font-semibold leading-tight text-slate-900">{item.title}</p>
+                        <p className="mt-1 text-sm text-slate-500">
+                          From {item.personName}
+                          {item.duration ? ` � ${item.duration} min` : ""}
+                          {item.credits ? ` � ${item.credits} credits` : ""}
+                          {" � "}{item.age}
+                        </p>
+                        {item.message ? (
+                          <p className="mt-2 line-clamp-2 text-sm text-slate-600">{item.message}</p>
+                        ) : null}
                       </div>
                     </div>
                   </div>
@@ -760,16 +770,16 @@ export default function Dashboard() {
                           fallbackClassName="bg-indigo-100 text-xs font-semibold text-indigo-700"
                         />
                         <div className="flex-1">
-                        <p className="text-base font-semibold leading-tight text-slate-900">{item.title}</p>
-                        <p className="mt-1 text-sm text-slate-500">
-                          Sent to {item.personName}
-                          {item.duration ? ` � ${item.duration} min` : ""}
-                          {item.credits ? ` � ${item.credits} credits` : ""}
-                          {" � "}{item.age}
-                        </p>
-                        {item.message ? (
-                          <p className="mt-2 line-clamp-2 text-sm text-slate-600">{item.message}</p>
-                        ) : null}
+                          <p className="text-base font-semibold leading-tight text-slate-900">{item.title}</p>
+                          <p className="mt-1 text-sm text-slate-500">
+                            Sent to {item.personName}
+                            {item.duration ? ` � ${item.duration} min` : ""}
+                            {item.credits ? ` � ${item.credits} credits` : ""}
+                            {" � "}{item.age}
+                          </p>
+                          {item.message ? (
+                            <p className="mt-2 line-clamp-2 text-sm text-slate-600">{item.message}</p>
+                          ) : null}
                         </div>
                       </div>
                       <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${statusClasses}`}>
@@ -794,8 +804,8 @@ export default function Dashboard() {
             </div>
             <div className="space-y-2 p-4">
               {requestsLoading ? (
-                <div className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-sm text-slate-600">
-                  Loading your requests...
+                <div className="flex flex-col items-center justify-center gap-3 py-8">
+                  <img src={tokenlyLogo} alt="Loading" className="h-9 w-9 animate-spin" style={{ animationDuration: "1.2s", animationTimingFunction: "linear" }} />
                 </div>
               ) : requestsError ? (
                 <div className="rounded-2xl border border-rose-300/80 bg-rose-50/80 p-4 text-sm text-rose-700">
@@ -831,11 +841,10 @@ export default function Dashboard() {
                           type="button"
                           onClick={() => setPendingDeleteRequestId(item.id)}
                           disabled={deletingRequestId === item.id}
-                          className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
-                            deletingRequestId === item.id
-                              ? "cursor-not-allowed border-rose-200 bg-rose-100 text-rose-400"
-                              : "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
-                          }`}
+                          className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${deletingRequestId === item.id
+                            ? "cursor-not-allowed border-rose-200 bg-rose-100 text-rose-400"
+                            : "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
+                            }`}
                         >
                           <Trash2 size={12} />
                           {deletingRequestId === item.id ? "Deleting..." : "Delete"}
@@ -857,8 +866,8 @@ export default function Dashboard() {
             </div>
             <div className="space-y-2 p-4">
               {dashLoading ? (
-                <div className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-sm text-slate-600">
-                  Loading offers...
+                <div className="flex flex-col items-center justify-center gap-3 py-8">
+                  <img src={tokenlyLogo} alt="Loading" className="h-9 w-9 animate-spin" style={{ animationDuration: "1.2s", animationTimingFunction: "linear" }} />
                 </div>
               ) : submittedOffers.length === 0 ? (
                 <div className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-sm text-slate-600">
@@ -872,11 +881,10 @@ export default function Dashboard() {
                         <p className="text-base leading-tight">{item.title}</p>
                         <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-500">
                           <span
-                            className={`rounded-full px-3 py-0.5 ${
-                              item.status === "Accepted"
-                                ? "bg-violet-100 text-violet-700"
-                                : "bg-amber-100 text-amber-700"
-                            }`}
+                            className={`rounded-full px-3 py-0.5 ${item.status === "Accepted"
+                              ? "bg-violet-100 text-violet-700"
+                              : "bg-amber-100 text-amber-700"
+                              }`}
                           >
                             {item.status}
                           </span>
@@ -914,7 +922,11 @@ export default function Dashboard() {
           </div>
 
           <div className="relative">
-            {activityPreview.length === 0 ? (
+            {dashLoading ? (
+              <div className="flex flex-col items-center justify-center gap-3 py-8">
+                <img src={tokenlyLogo} alt="Loading" className="h-9 w-9 animate-spin" style={{ animationDuration: "1.2s", animationTimingFunction: "linear" }} />
+              </div>
+            ) : activityPreview.length === 0 ? (
               <div className="px-4 py-5 text-sm text-slate-500">No activity yet.</div>
             ) : (
               activityPreview.map((item) => (
@@ -938,11 +950,10 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <span
-                    className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold ${
-                      item.type === "earn" || item.type === "bonus"
-                        ? "bg-violet-100 text-violet-700"
-                        : "bg-rose-100 text-rose-700"
-                    }`}
+                    className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold ${item.type === "earn" || item.type === "bonus"
+                      ? "bg-violet-100 text-violet-700"
+                      : "bg-rose-100 text-rose-700"
+                      }`}
                   >
                     <Coins size={14} />
                     {item.type === "earn" || item.type === "bonus" ? `+${item.amount}` : `-${item.amount}`}

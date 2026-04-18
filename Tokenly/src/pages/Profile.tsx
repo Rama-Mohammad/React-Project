@@ -20,6 +20,7 @@ import type {
   UiSkill,
 } from "../types/page";
 import type { EditProfileUserInput, ProfileHeaderUser, ReviewSortBy } from "../types/profile";
+import tokenlyLogo from "../assets/favicon_tokenly.svg";
 
 const toTitleCase = (value: string) =>
   value ? `${value.charAt(0).toUpperCase()}${value.slice(1).toLowerCase()}` : value;
@@ -288,80 +289,101 @@ const Profile: React.FC = () => {
 
       <main className="relative z-10 mx-auto min-h-[calc(100vh-76px)] w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8 lg:py-6 xl:px-10">
         {loading ? (
-          <p className="mb-3 text-xs text-slate-500">Syncing profile data...</p>
+          <div className="mb-4 flex items-center gap-2.5">
+            <img
+              src={tokenlyLogo}
+              alt="Loading"
+              className="h-5 w-5 animate-spin"
+              style={{ animationDuration: "1.2s", animationTimingFunction: "linear" }}
+            />
+          </div>
         ) : null}
         {pageError ? <p className="mb-3 text-xs text-rose-600">{pageError}</p> : null}
 
         <ProfileHeader user={user} onEdit={() => setIsEditModalOpen(true)} />
 
-        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1.7fr_1.3fr]">
-          <section className="explore-fade-in-up rounded-2xl border border-white/70 bg-white/80 px-5 py-4 backdrop-blur-sm">
-            <div className="flex items-center justify-between border-b border-slate-200/70 pb-3">
-              <div>
-                <h2 className="text-xl font-semibold text-slate-900">Offered Skills</h2>
-                <p className="text-xs text-slate-500">{skills.length} skills listed</p>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center gap-3 py-20">
+            <img
+              src={tokenlyLogo}
+              alt="Loading"
+              className="h-10 w-10 animate-spin"
+              style={{ animationDuration: "1.2s", animationTimingFunction: "linear" }}
+            />
+            <p className="text-sm text-slate-400">Loading your profile...</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1.7fr_1.3fr]">
+              <section className="explore-fade-in-up rounded-2xl border border-white/70 bg-white/80 px-5 py-4 backdrop-blur-sm">
+                <div className="flex items-center justify-between border-b border-slate-200/70 pb-3">
+                  <div>
+                    <h2 className="text-xl font-semibold text-slate-900">Offered Skills</h2>
+                    <p className="text-xs text-slate-500">{skills.length} skills listed</p>
+                  </div>
+                  <button
+                    onClick={() => { setIsEditMode(false); setSelectedSkill(null); setIsAddSkillModalOpen(true); }}
+                    className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100"
+                  >
+                    <Plus size={14} />
+                    Add Skill
+                  </button>
+                </div>
+                <div className="mt-3 grid gap-1 md:grid-cols-2">
+                  {skills.length > 0 ? (
+                    skills.map((skill) => (
+                      <SkillCard key={skill.id} skill={skill} onDelete={setPendingSkillDeleteId} onEdit={handleEditSkill} />
+                    ))
+                  ) : (
+                    <p className="py-4 text-center text-slate-500">No skills added yet. Click "Add Skill" to get started.</p>
+                  )}
+                </div>
+              </section>
+
+              <section className="explore-fade-in-up rounded-2xl border border-white/70 bg-white/80 px-5 py-4 backdrop-blur-sm">
+                <RatingsSummary reviews={reviews} embedded sortBy={reviewSortBy} onSortChange={setReviewSortBy} />
+                <div className="mt-4 space-y-3.5 border-t border-slate-200/70 pt-4">
+                  {visibleReviews.length > 0 ? (
+                    visibleReviews.map((review) => <ReviewCard key={review.id} review={review} />)
+                  ) : (
+                    <p className="py-4 text-center text-slate-500">No reviews yet. Complete sessions to receive feedback.</p>
+                  )}
+                </div>
+                {reviews.length > 3 ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllReviews((v) => !v)}
+                    className="mt-3.5 text-sm font-semibold text-indigo-600 transition hover:text-indigo-700"
+                  >
+                    {showAllReviews ? "Show fewer reviews" : `Show all ${reviews.length} reviews`}
+                  </button>
+                ) : null}
+              </section>
+            </div>
+
+            <section className="explore-fade-in-up mt-8 border-b border-slate-200/60 pb-8">
+              <div className="flex items-center justify-between py-2">
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Portfolio</h2>
+                  <p className="text-xs text-slate-500">{portfolio.length} items</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setSelectedPortfolioItem(null); setIsPortfolioEditMode(false); setIsAddPortfolioModalOpen(true); }}
+                  className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100"
+                >
+                  <Plus size={14} />
+                  Add Item
+                </button>
               </div>
-              <button
-                onClick={() => { setIsEditMode(false); setSelectedSkill(null); setIsAddSkillModalOpen(true); }}
-                className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100"
-              >
-                <Plus size={14} />
-                Add Skill
-              </button>
-            </div>
-            <div className="mt-3 grid gap-1 md:grid-cols-2">
-              {skills.length > 0 ? (
-                skills.map((skill) => (
-                  <SkillCard key={skill.id} skill={skill} onDelete={setPendingSkillDeleteId} onEdit={handleEditSkill} />
-                ))
-              ) : (
-                <p className="py-4 text-center text-slate-500">No skills added yet. Click "Add Skill" to get started.</p>
-              )}
-            </div>
-          </section>
-
-          <section className="explore-fade-in-up rounded-2xl border border-white/70 bg-white/80 px-5 py-4 backdrop-blur-sm">
-            <RatingsSummary reviews={reviews} embedded sortBy={reviewSortBy} onSortChange={setReviewSortBy} />
-            <div className="mt-4 space-y-3.5 border-t border-slate-200/70 pt-4">
-              {visibleReviews.length > 0 ? (
-                visibleReviews.map((review) => <ReviewCard key={review.id} review={review} />)
-              ) : (
-                <p className="py-4 text-center text-slate-500">No reviews yet. Complete sessions to receive feedback.</p>
-              )}
-            </div>
-            {reviews.length > 3 ? (
-              <button
-                type="button"
-                onClick={() => setShowAllReviews((v) => !v)}
-                className="mt-3.5 text-sm font-semibold text-indigo-600 transition hover:text-indigo-700"
-              >
-                {showAllReviews ? "Show fewer reviews" : `Show all ${reviews.length} reviews`}
-              </button>
-            ) : null}
-          </section>
-        </div>
-
-        <section className="explore-fade-in-up mt-8 border-b border-slate-200/60 pb-8">
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900">Portfolio</h2>
-              <p className="text-xs text-slate-500">{portfolio.length} items</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => { setSelectedPortfolioItem(null); setIsPortfolioEditMode(false); setIsAddPortfolioModalOpen(true); }}
-              className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100"
-            >
-              <Plus size={14} />
-              Add Item
-            </button>
-          </div>
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-            {portfolio.map((item) => (
-              <PortfolioItem key={item.id} item={item} onView={handleViewPortfolio} onEdit={handleEditPortfolio} onDelete={handleDeletePortfolioRequest} />
-            ))}
-          </div>
-        </section>
+              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                {portfolio.map((item) => (
+                  <PortfolioItem key={item.id} item={item} onView={handleViewPortfolio} onEdit={handleEditPortfolio} onDelete={handleDeletePortfolioRequest} />
+                ))}
+              </div>
+            </section>
+          </>
+        )}
       </main>
 
       <EditProfileModal

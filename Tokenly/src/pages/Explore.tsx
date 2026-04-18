@@ -23,6 +23,7 @@ import { getExploreHelpers } from "../services/helperExploreService";
 import { mapProfileToHelperItem } from "../utils/helperExploreMapper";
 import { getOpenHelpOffers } from "../services/helpOfferService";
 import useAuth from "../hooks/useAuth";
+import tokenlyLogo from "../assets/favicon_tokenly.svg";
 
 function matchesSearch(text: string, search: string) {
   return text.toLowerCase().includes(search.toLowerCase().trim());
@@ -574,10 +575,10 @@ export default function Explore() {
     activeTab === "requests"
       ? requestCategoryOptions
       : activeTab === "helpers"
-      ? helperCategoryOptions
-      : activeTab === "skills"
-      ? skillCategoryOptions
-      : offerCategoryOptions;
+        ? helperCategoryOptions
+        : activeTab === "skills"
+          ? skillCategoryOptions
+          : offerCategoryOptions;
 
   // Reset category filter when tab changes and current selection no longer applies
   useEffect(() => {
@@ -629,10 +630,10 @@ export default function Explore() {
     activeTab === "requests"
       ? filteredRequests.length
       : activeTab === "helpers"
-      ? filteredHelpers.length
-      : activeTab === "skills"
-      ? filteredSkills.length
-      : filteredOffers.length;
+        ? filteredHelpers.length
+        : activeTab === "skills"
+          ? filteredSkills.length
+          : filteredOffers.length;
 
   const tabCounts = useMemo(
     () => ({
@@ -666,10 +667,10 @@ export default function Explore() {
     activeTab === "requests"
       ? "Browse open help requests from peers"
       : activeTab === "helpers"
-      ? "Find experts ready to help you"
-      : activeTab === "skills"
-      ? "Explore skills available in the community"
-      : "Browse offers posted by helpers — request one directly";
+        ? "Find experts ready to help you"
+        : activeTab === "skills"
+          ? "Explore skills available in the community"
+          : "Browse offers posted by helpers — request one directly";
 
   const handleTabChange = (tab: ExploreTab) => {
     setActiveTab(tab);
@@ -762,8 +763,17 @@ export default function Explore() {
 
           {/* -- Requests -- */}
           {activeTab === "requests" && requestsLoading && requestsPage === 0 ? (
-            <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
-              Loading requests...
+            // <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
+            //   Loading requests...
+            // </div>
+            <div className="mt-5 flex flex-col items-center justify-center gap-3 py-16">
+              <img
+                src={tokenlyLogo}
+                alt="Loading"
+                className="h-10 w-10 animate-spin"
+                style={{ animationDuration: "1.2s" }}
+              />
+              {/* <p className="text-sm text-slate-400">Loading requests...</p> */}
             </div>
           ) : activeTab === "requests" && requestsError ? (
             <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
@@ -869,13 +879,12 @@ export default function Explore() {
                       </span>
                       {item.urgency ? (
                         <span
-                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                            item.urgency === "high"
+                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${item.urgency === "high"
                               ? "bg-rose-50 text-rose-600"
                               : item.urgency === "medium"
-                              ? "bg-amber-50 text-amber-600"
-                              : "bg-emerald-50 text-emerald-600"
-                          }`}
+                                ? "bg-amber-50 text-amber-600"
+                                : "bg-emerald-50 text-emerald-600"
+                            }`}
                         >
                           {item.urgency.charAt(0).toUpperCase() + item.urgency.slice(1)} urgency
                         </span>
