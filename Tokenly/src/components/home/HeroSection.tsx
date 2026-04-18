@@ -53,7 +53,7 @@ const HeroSection = () => {
               Tokenly is a token-based peer learning network. Help someone today, earn tokens - use them to get help when you need it. No money, just reciprocity.
             </p>
 
-            <div className="flex flex-col items-center justify-start gap-4 sm:flex-row">
+            <div className="flex flex-col items-start justify-start gap-4 sm:flex-row sm:items-center">
               {!loading && !isAuthenticated ? (
                 <Link
                   to="/auth?mode=signup"
@@ -71,11 +71,31 @@ const HeroSection = () => {
               </button>
             </div>
 
-            <div className="mt-8 flex items-center gap-2 text-slate-500">
-              <RatingStars value={4.9} sizeClassName="text-xl" />
-              <span className="font-medium text-slate-700">4.9</span>
-              <span className="text-slate-600">Loved by 8,500+ learners & helpers</span>
-            </div>
+<div className="mt-8 flex items-center gap-2 text-slate-500 sm:flex sm:items-center">
+  
+  {/* MOBILE STACKED VERSION */}
+<div className="mt-8 flex flex-col items-start gap-1 text-slate-500 sm:flex-row sm:items-center">
+  <div className="flex items-center gap-2">
+    <span className="font-medium text-slate-700">4.9</span>
+    <RatingStars value={4.9} sizeClassName="text-xl" />
+  </div>
+
+  <span className="text-slate-600">
+    Loved by 8,500+ learners & helpers
+  </span>
+
+</div>
+
+  {/* DESKTOP VERSION (unchanged) */}
+  <div className="hidden sm:flex items-center gap-2">
+    <RatingStars value={4.9} sizeClassName="text-xl" />
+    <span className="font-medium text-slate-700">4.9</span>
+    <span className="text-slate-600">
+      Loved by 8,500+ learners & helpers
+    </span>
+  </div>
+
+</div>
           </div>
         </div>
       </section>

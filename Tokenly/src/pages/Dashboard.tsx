@@ -523,8 +523,8 @@ export default function Dashboard() {
             </article>
 
             {/* Sessions done */}
-            <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
-              <div className="w-fit rounded-2xl bg-sky-100 p-3 text-sky-700">
+            <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-center sm:text-left">
+              <div className="mx-auto sm:mx-0 w-fit rounded-2xl bg-sky-100 p-3 text-sky-700">
                 <Check size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
@@ -537,8 +537,8 @@ export default function Dashboard() {
             </article>
 
             {/* Requests posted */}
-            <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
-              <div className="w-fit rounded-2xl bg-violet-100 p-3 text-violet-700">
+            <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-center sm:text-left">
+            <div className="mx-auto sm:mx-0 w-fit rounded-2xl bg-violet-100 p-3 text-violet-700">
                 <MessageCircle size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
@@ -550,8 +550,8 @@ export default function Dashboard() {
           </article>
 
             {/* Offers submitted */}
-            <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
-              <div className="w-fit rounded-2xl bg-indigo-100 p-3 text-indigo-700">
+            <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-center sm:text-left">
+                <div className="mx-auto sm:mx-0 w-fit rounded-2xl bg-indigo-100 p-3 text-indigo-700">
                 <Send size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
@@ -564,8 +564,8 @@ export default function Dashboard() {
             </article>
 
             {/* Avg rating */}
-            <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4">
-              <div className="w-fit rounded-2xl bg-amber-100 p-3 text-amber-700">
+            <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-center sm:text-left">
+            <div className="mx-auto sm:mx-0 w-fit rounded-2xl bg-amber-100 p-3 text-amber-700">
                 <Star size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
@@ -594,7 +594,8 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          <div className="relative mt-3 inline-flex rounded-2xl bg-white/75 p-1">
+          <div className="relative mt-3 w-full overflow-x-auto">
+  <div className="inline-flex min-w-max rounded-2xl bg-white/75 p-1">
             {sessionTabs.map((tab) => (
               <button
                 key={tab}
@@ -613,6 +614,7 @@ export default function Dashboard() {
                 )}
               </button>
             ))}
+          </div>
           </div>
 
           <div className="relative mt-3 space-y-2.5">

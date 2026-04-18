@@ -16,11 +16,10 @@ function ChipButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
-        active
+      className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${active
           ? "border-slate-200 bg-white text-slate-900 shadow-sm"
           : "border-white/40 bg-white/65 text-slate-600 hover:bg-white"
-      }`}
+        }`}
     >
       {children}
     </button>
@@ -68,7 +67,7 @@ export default function FilterSideBar({
   return (
     <div className="explore-glass explore-fade-in-up rounded-[1.25rem] border border-white/50 bg-white/75 p-4 backdrop-blur-xl">
       <div className="flex flex-col gap-3.5">
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap justify-center sm:justify-start gap-1.5">
           {visibleCategories.map((item) => (
             <ChipButton
               key={item}
@@ -92,7 +91,7 @@ export default function FilterSideBar({
 
         {activeTab === "requests" && (
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap justify-center sm:justify-start gap-1.5">
               {urgencyOptions.map((item) => (
                 <ChipButton
                   key={item}
@@ -122,7 +121,7 @@ export default function FilterSideBar({
 
         {activeTab === "helpers" && (
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap justify-center sm:justify-start gap-1.5">
               {ratingOptions.map((item) => (
                 <ChipButton
                   key={item}
@@ -144,7 +143,7 @@ export default function FilterSideBar({
               </ChipButton>
             </div>
 
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 text-center sm:text-left">
               <span className="font-semibold text-indigo-500">{totalCount}</span> helpers
             </p>
           </div>
@@ -154,7 +153,7 @@ export default function FilterSideBar({
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex flex-col gap-3">
               {showMoreSkillFilters ? (
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap justify-center sm:justify-start gap-1.5">
                   {levelOptions.map((item) => (
                     <ChipButton
                       key={item}

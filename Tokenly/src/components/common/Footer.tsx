@@ -19,14 +19,14 @@ export default function Footer() {
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.05)_0%,rgba(224,236,255,0.35)_100%)]" />
 
       <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-5 lg:px-6">
-        <div className="grid gap-8 md:grid-cols-[1.5fr_0.75fr_0.75fr_0.75fr]">
+        <div className="grid gap-8 text-center md:text-left md:grid-cols-[1.5fr_0.75fr_0.75fr_0.75fr]">
           <div>
             <p className="mt-4 max-w-md text-sm leading-6 text-slate-600">
               Connect, learn, and earn through real-time peer sessions.
               Exchange skills, gain experience, and grow together.
             </p>
 
-            <div className="mt-5 flex items-center gap-3 text-slate-600">
+            <div className="mt-5 flex items-center justify-center md:justify-start gap-3 text-slate-600">
               <a href="https://x.com" target="_blank" rel="noreferrer" aria-label="X" className={iconHoverClass}>
                 <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current">
                   <path d="M18.901 2.25h3.68l-8.041 9.19L24 21.75h-7.406l-5.8-7.584L4.151 21.75H.469l8.6-9.834L0 2.25h7.594l5.243 6.934L18.901 2.25Zm-1.291 17.296h2.04L6.486 4.347H4.297L17.61 19.546Z" />
@@ -47,7 +47,7 @@ export default function Footer() {
 
           <div>
             <Link to="/explore" className={titleHoverClass}>Explore</Link>
-            <div className="mt-3 space-y-2 text-sm text-slate-700">
+            <div className="mt-3 space-y-2 text-sm text-slate-700 flex flex-col items-center md:items-start">
               <Link to="/home" className={linkHoverClass}>Home</Link>
               <Link to="/explore" className={linkHoverClass}>Explore</Link>
               <Link to={gatedLink("/dashboard")} className={linkHoverClass}>Dashboard</Link>
@@ -58,7 +58,7 @@ export default function Footer() {
 
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Company</p>
-            <div className="mt-3 space-y-2 text-sm text-slate-700">
+            <div className="mt-3 space-y-2 text-sm text-slate-700 flex flex-col items-center md:items-start">
               <Link to={gatedLink("/explore")} className={linkHoverClass}>Browse Requests</Link>
               <Link to={gatedLink("/explore?tab=helpers#explore-tabs-bar")} className={linkHoverClass}>Find Helpers</Link>
               <Link to={gatedLink("/explore?tab=skills#explore-tabs-bar")} className={linkHoverClass}>Explore Skills</Link>
@@ -69,7 +69,7 @@ export default function Footer() {
 
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Support</p>
-            <div className="mt-3 space-y-2 text-sm text-slate-700">
+            <div className="mt-3 space-y-2 text-sm text-slate-700 flex flex-col items-center md:items-start">
               <Link to="/help" className={linkHoverClass}>Help Center</Link>
               <Link to="/guidelines" className={linkHoverClass}>Community Guidelines</Link>
               <Link to="/report" className={linkHoverClass}>Report an Issue</Link>
@@ -81,7 +81,7 @@ export default function Footer() {
 
         <div className="mt-8 border-t border-slate-300/70" />
 
-        <div className="mt-4 flex flex-col gap-2 text-xs text-slate-500 md:flex-row md:items-center md:justify-between">
+        <div className="mt-4 flex flex-col items-center text-center gap-2 text-xs text-slate-500 md:flex-row md:items-center md:justify-between md:text-left">
           <p>(c) {year} Tokenly. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <Link to="/privacy" className={policyHoverClass}>Privacy Policy</Link>
