@@ -15,7 +15,6 @@ import {
   mapSkillToExploreItem,
   type SkillWithRelations,
 } from "../utils/exploreMappers";
-// HelpOfferItem replaces the old broken OfferItem — offers tab now shows help_offers only
 import type { ExploreTab, RequestItem, HelperItem, SkillItem, HelpOfferItem, Urgency, SkillLevel } from "../types/explore";
 import useRequests from "../hooks/useRequest";
 import { getAllSkills } from "../services/skillService";
