@@ -65,6 +65,9 @@ export function useLiveSessionCall({
   const offerRetryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const presencePollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const readyHeartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+  const isSubscribedRef = useRef(false);
 
   const getUserMediaCompat = async (constraints: MediaStreamConstraints) => {
     if (typeof navigator === "undefined") {
@@ -151,10 +154,11 @@ export function useLiveSessionCall({
     if (!enabled || !sessionId || !userId) return;
 
     let isMounted = true;
+    let hasStartedRealtime = false;
 
     const sendSignal = async (payload: SignalPayload) => {
       const channel = channelRef.current;
-      if (!channel) return;
+      if (!channel || !isSubscribedRef.current) return;
 
       await channel.send({
         type: "broadcast",
@@ -436,6 +440,9 @@ export function useLiveSessionCall({
     };
 
     const start = async () => {
+      if (hasStartedRealtime) return;
+      hasStartedRealtime = true;
+
       try {
         setConnectionStatus("joining");
         setErrorMessage("");
@@ -493,28 +500,71 @@ export function useLiveSessionCall({
 
         channel.subscribe(async (status) => {
           if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
-            if (isMounted) {
-              setConnectionStatus("error");
-              setErrorMessage("The live session realtime channel could not stay connected.");
+            isSubscribedRef.current = false;
+
+            if (readyHeartbeatTimerRef.current) {
+              clearInterval(readyHeartbeatTimerRef.current);
+              readyHeartbeatTimerRef.current = null;
             }
+            if (offerRetryTimerRef.current) {
+              clearInterval(offerRetryTimerRef.current);
+              offerRetryTimerRef.current = null;
+            }
+            if (presencePollTimerRef.current) {
+              clearInterval(presencePollTimerRef.current);
+              presencePollTimerRef.current = null;
+            }
+
+            if (!isMounted) return;
+
+            if (reconnectAttemptsRef.current < 3) {
+              reconnectAttemptsRef.current += 1;
+              setConnectionStatus("connecting");
+              setErrorMessage(`Reconnecting to the live session... (${reconnectAttemptsRef.current}/3)`);
+
+              if (channelRef.current) {
+                void supabase.removeChannel(channelRef.current);
+                channelRef.current = null;
+              }
+
+              if (reconnectTimerRef.current) {
+                clearTimeout(reconnectTimerRef.current);
+              }
+
+              reconnectTimerRef.current = setTimeout(() => {
+                hasStartedRealtime = false;
+                void start();
+              }, 1200);
+              return;
+            }
+
+            setConnectionStatus("error");
+            setErrorMessage("The live session realtime channel could not stay connected.");
             return;
           }
 
           if (status !== "SUBSCRIBED") return;
-          await channel.track({
-            userId,
-            joinedAt: new Date().toISOString(),
-          });
-          await sendSignal({ type: "join", from: userId });
-          await sendSignal({ type: "ready", from: userId });
+          reconnectAttemptsRef.current = 0;
+          isSubscribedRef.current = true;
+          setErrorMessage("");
+
+          try {
+            await channel.track({
+              userId,
+              joinedAt: new Date().toISOString(),
+            });
+            await sendSignal({ type: "join", from: userId });
+            await sendSignal({ type: "ready", from: userId });
+          } catch {
+            if (isMounted) {
+              setConnectionStatus("connecting");
+              setErrorMessage("Connected to the room, retrying live session sync...");
+            }
+          }
+
           updatePresenceState();
           readyHeartbeatTimerRef.current = setInterval(() => {
-            void sendSignal({ type: "ready", from: userId }).catch(() => {
-              if (isMounted) {
-                setConnectionStatus("error");
-                setErrorMessage("The live session signaling channel stopped responding.");
-              }
-            });
+            void sendSignal({ type: "ready", from: userId });
           }, 2000);
           offerRetryTimerRef.current = setInterval(() => {
             if (isInitiator && remoteJoinedRef.current) {
@@ -553,6 +603,12 @@ export function useLiveSessionCall({
         clearInterval(readyHeartbeatTimerRef.current);
         readyHeartbeatTimerRef.current = null;
       }
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+      isSubscribedRef.current = false;
+      reconnectAttemptsRef.current = 0;
       void sendSignal({ type: "leave", from: userId });
       if (channelRef.current) {
         void supabase.removeChannel(channelRef.current);
