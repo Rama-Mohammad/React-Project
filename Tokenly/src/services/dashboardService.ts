@@ -1,6 +1,10 @@
 import { supabase } from "../lib/supabaseClient";
 import { getSessionsAuthDebugContext, logSessionsQuery } from "./sessionDebug";
 
+
+// -------------------------
+// PROFILE
+// -------------------------
 export async function getDashboardProfile(user_id: string) {
   return await supabase
     .from("profiles")
@@ -9,115 +13,167 @@ export async function getDashboardProfile(user_id: string) {
     .single();
 }
 
+
+// -------------------------
+// STATS (OPTIMIZED - NO HEAVY DATA FETCH)
+// -------------------------
 export async function getDashboardStats(user_id: string) {
   const { session, user, authError } = await getSessionsAuthDebugContext();
-  logSessionsQuery("getDashboardStats sessions query start", {
+
+  logSessionsQuery("getDashboardStats start", {
     session,
     user,
-    payload: {
-      user_id,
-      filter: `.or(helper_id.eq.${user_id},requester_id.eq.${user_id})`,
-      select: "id, status, helper_id, requester_id",
-    },
+    payload: { user_id },
     error: authError,
   });
 
-  const [sessionsRes, requestsRes, offersRes] = await Promise.all([
+  if (authError) {
+    return {
+      completedSessions: 0,
+      upcomingSessions: 0,
+      totalHelpGiven: 0,
+      totalHelpReceived: 0,
+      activeRequests: 0,
+      offersSubmitted: 0,
+      offersAccepted: 0,
+    };
+  }
+
+  const [
+    completedSessions,
+    upcomingSessions,
+    helpGiven,
+    helpReceived,
+    requestsCount,
+    offersSubmitted,
+    offersAccepted,
+  ] = await Promise.all([
     supabase
       .from("sessions")
-      .select("id, status, helper_id, requester_id")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "completed")
       .or(`helper_id.eq.${user_id},requester_id.eq.${user_id}`),
 
     supabase
+      .from("sessions")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "upcoming")
+      .or(`helper_id.eq.${user_id},requester_id.eq.${user_id}`),
+
+    supabase
+      .from("sessions")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "completed")
+      .eq("helper_id", user_id),
+
+    supabase
+      .from("sessions")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "completed")
+      .eq("requester_id", user_id),
+
+    supabase
       .from("requests")
-      .select("id")
+      .select("*", { count: "exact", head: true })
       .eq("requester_id", user_id),
 
     supabase
       .from("offers")
-      .select("id, status")
+      .select("*", { count: "exact", head: true })
       .eq("helper_id", user_id),
+
+    supabase
+      .from("offers")
+      .select("*", { count: "exact", head: true })
+      .eq("helper_id", user_id)
+      .eq("status", "accepted"),
   ]);
 
-  logSessionsQuery("getDashboardStats sessions query result", {
-    session,
-    user,
-    payload: {
-      user_id,
-      filter: `.or(helper_id.eq.${user_id},requester_id.eq.${user_id})`,
-      select: "id, status, helper_id, requester_id",
-    },
-    error: authError ?? sessionsRes.error,
-  });
-
-  const sessions = sessionsRes.data ?? [];
-  const requests = requestsRes.data ?? [];
-  const offers = offersRes.data ?? [];
-
-  const completedSessions = sessions.filter((s) => s.status === "completed");
-
   return {
-    completedSessions: completedSessions.length,
-    upcomingSessions: sessions.filter((s) => s.status === "upcoming").length,
-    totalHelpGiven: completedSessions.filter((s) => s.helper_id === user_id).length,
-    totalHelpReceived: completedSessions.filter((s) => s.requester_id === user_id).length,
-    activeRequests: requests.length,
-    offersSubmitted: offers.length,
-    offersAccepted: offers.filter((o) => o.status === "accepted").length,
+    completedSessions: completedSessions.count ?? 0,
+    upcomingSessions: upcomingSessions.count ?? 0,
+    totalHelpGiven: helpGiven.count ?? 0,
+    totalHelpReceived: helpReceived.count ?? 0,
+    activeRequests: requestsCount.count ?? 0,
+    offersSubmitted: offersSubmitted.count ?? 0,
+    offersAccepted: offersAccepted.count ?? 0,
   };
 }
 
+
+// -------------------------
+// SESSIONS (LIGHTWEIGHT)
+// -------------------------
 export async function getDashboardSessions(user_id: string) {
-  const { session, user, authError } = await getSessionsAuthDebugContext();
-  const payload = {
-    user_id,
-    filter: `.or(helper_id.eq.${user_id},requester_id.eq.${user_id})`,
-    limit: 20,
-  };
+  return await supabase
+    .from("sessions")
+    .select(`
+      id,
+      status,
+      scheduled_at,
+      duration_minutes
+    `)
+    .or(`helper_id.eq.${user_id},requester_id.eq.${user_id}`)
+    .order("scheduled_at", { ascending: true })
+    .limit(20);
+}
 
-  logSessionsQuery("getDashboardSessions start", { session, user, payload, error: authError });
-  if (authError) {
-    return { data: null, error: authError };
-  }
 
-  const result = await supabase
+// -------------------------
+// SESSION DETAILS (NO "*")
+// -------------------------
+export async function getSessionDetails(session_id: string) {
+  return await supabase
     .from("sessions")
     .select(`
       id,
       status,
       scheduled_at,
       duration_minutes,
-      helper_id,
-      requester_id,
-      request_id,
-      help_offer_request_id,
-      direct_request_id,
-      request:requests(id, title, category, credit_cost),
-      help_offer_request:help_offer_requests!sessions_help_offer_request_id_fkey(
+      created_at,
+      request:requests(
         id,
-      help_offer:help_offers!help_offer_requests_help_offer_id_fkey(
-      id,
-      title,
-      category,
-      credit_cost
-    )
-  ),
-  direct_request:direct_requests!sessions_direct_request_id_fkey(
-    id,
-    title,
-    category,
-    credit_cost
-    ),
-      helper:profiles!sessions_helper_id_fkey(id, full_name, profile_image_url),
-      requester:profiles!sessions_requester_id_fkey(id, full_name, profile_image_url)
+        title
+      ),
+      helper:profiles(
+        id,
+        full_name,
+        profile_image_url
+      ),
+      requester:profiles(
+        id,
+        full_name,
+        profile_image_url
+      )
     `)
-    .or(`helper_id.eq.${user_id},requester_id.eq.${user_id}`)
-    .order("scheduled_at", { ascending: true, nullsFirst: false })
-    .limit(20);
-  logSessionsQuery("getDashboardSessions result", { session, user, payload, error: result.error });
-  return result;
+    .eq("id", session_id)
+    .single();
 }
 
+
+// -------------------------
+// DASHBOARD DATA BATCH (SAFE)
+// -------------------------
+export async function getDashboardData(user_id: string) {
+  const results = await Promise.allSettled([
+    getDashboardProfile(user_id),
+    getDashboardStats(user_id),
+    getDashboardSessions(user_id),
+    getDashboardOffers(user_id),
+    getDashboardDirectRequests(user_id),
+    getDashboardSentDirectRequests(user_id),
+    getDashboardHelpOfferRequests(user_id),
+  ]);
+
+  return results.map((r) =>
+    r.status === "fulfilled" ? r.value : null
+  );
+}
+
+
+// -------------------------
+// OFFERS
+// -------------------------
 export async function getDashboardOffers(user_id: string) {
   return await supabase
     .from("offers")
@@ -125,21 +181,22 @@ export async function getDashboardOffers(user_id: string) {
       id,
       status,
       created_at,
-      request:requests(id, title, credit_cost, requester:profiles!requests_requester_id_fkey(full_name))
+      request_id
     `)
     .eq("helper_id", user_id)
     .order("created_at", { ascending: false })
     .limit(10);
 }
 
-//to get direct requests 
+
+// -------------------------
+// DIRECT REQUESTS (RECEIVED)
+// -------------------------
 export async function getDashboardDirectRequests(helper_id: string) {
   return await supabase
     .from("direct_requests")
     .select(`
       id,
-      helper_id,
-      requester_id,
       title,
       message,
       category,
@@ -147,14 +204,7 @@ export async function getDashboardDirectRequests(helper_id: string) {
       credit_cost,
       status,
       created_at,
-      requester:profiles!direct_requests_requester_id_fkey(
-        id,
-        full_name,
-        username,
-        avg_rating,
-        profile_image_url
-      ),
-      helper:profiles!direct_requests_helper_id_fkey(
+      requester:profiles(
         id,
         full_name,
         username,
@@ -167,13 +217,15 @@ export async function getDashboardDirectRequests(helper_id: string) {
     .limit(10);
 }
 
+
+// -------------------------
+// DIRECT REQUESTS (SENT)
+// -------------------------
 export async function getDashboardSentDirectRequests(requester_id: string) {
   return await supabase
     .from("direct_requests")
     .select(`
       id,
-      helper_id,
-      requester_id,
       title,
       message,
       category,
@@ -181,14 +233,7 @@ export async function getDashboardSentDirectRequests(requester_id: string) {
       credit_cost,
       status,
       created_at,
-      requester:profiles!direct_requests_requester_id_fkey(
-        id,
-        full_name,
-        username,
-        avg_rating,
-        profile_image_url
-      ),
-      helper:profiles!direct_requests_helper_id_fkey(
+      helper:profiles(
         id,
         full_name,
         username,
@@ -201,6 +246,10 @@ export async function getDashboardSentDirectRequests(requester_id: string) {
     .limit(10);
 }
 
+
+// -------------------------
+// HELP OFFER REQUESTS
+// -------------------------
 export async function getDashboardHelpOfferRequests(helper_id: string) {
   return await supabase
     .from("help_offer_requests")
@@ -209,13 +258,13 @@ export async function getDashboardHelpOfferRequests(helper_id: string) {
       message,
       status,
       created_at,
-      requester:profiles!help_offer_requests_requester_id_fkey(
+      requester:profiles(
         id,
         full_name,
         username,
         profile_image_url
       ),
-      help_offer:help_offers!help_offer_requests_help_offer_id_fkey!inner(
+      help_offer:help_offers(
         id,
         title,
         credit_cost,

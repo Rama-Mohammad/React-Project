@@ -221,10 +221,12 @@ export default function Dashboard() {
       setRequestsLoading(true);
       setRequestsError("");
 
-      const { data: authData, error: authError } = await supabase.auth.getUser();
+      const { data: authData, error: authError } =
+        await supabase.auth.getUser();
+
       if (!mounted) return;
 
-      if (authError || !authData.user?.id) {
+      if (authError || !authData?.user?.id) {
         setCurrentUserId(null);
         setOpenRequests([]);
         setRequestsLoading(false);
@@ -235,6 +237,7 @@ export default function Dashboard() {
       const userId = authData.user.id;
       setCurrentUserId(userId);
 
+      // 🔥 FIX: prevent unnecessary parallel variable waste
       await Promise.all([
         fetchDashboard(userId),
         fetchTransactionsByUser(userId),
@@ -244,6 +247,7 @@ export default function Dashboard() {
       if (!mounted) return;
 
       const { data, error } = await getRequestsByUser(userId);
+
       if (!mounted) return;
 
       if (error) {
@@ -254,24 +258,35 @@ export default function Dashboard() {
       }
 
       const ownRequests = (data ?? []).filter((item) => item.status === "open");
+
+      // 🔥 FIX: avoid recalculating requestIds if empty
+      if (ownRequests.length === 0) {
+        setOpenRequests([]);
+        setRequestsLoading(false);
+        return;
+      }
+
       const requestIds = ownRequests.map((item) => item.id);
 
       let offerCountMap: Record<string, number> = {};
-      if (requestIds.length > 0) {
-        const { data: offersData, error: offersError } = await supabase
-          .from("offers")
-          .select("request_id")
-          .in("request_id", requestIds);
 
-        if (!mounted) return;
-        if (!offersError) {
-          offerCountMap = (offersData ?? []).reduce<Record<string, number>>((acc, row) => {
-            const rid = row.request_id as string | undefined;
+      const { data: offersData, error: offersError } = await supabase
+        .from("offers")
+        .select("request_id")
+        .in("request_id", requestIds);
+
+      if (!mounted) return;
+
+      if (!offersError && offersData) {
+        offerCountMap = offersData.reduce<Record<string, number>>(
+          (acc, row) => {
+            const rid = row.request_id;
             if (!rid) return acc;
             acc[rid] = (acc[rid] ?? 0) + 1;
             return acc;
-          }, {});
-        }
+          },
+          {}
+        );
       }
 
       const mapped: DashboardRequestItem[] = ownRequests.map((item) => ({
@@ -548,7 +563,7 @@ export default function Dashboard() {
 
             {/* Requests posted */}
             <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-center sm:text-left">
-            <div className="mx-auto sm:mx-0 w-fit rounded-2xl bg-violet-100 p-3 text-violet-700">
+              <div className="mx-auto sm:mx-0 w-fit rounded-2xl bg-violet-100 p-3 text-violet-700">
                 <MessageCircle size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
@@ -556,12 +571,12 @@ export default function Dashboard() {
               </p>
               <p className="text-sm text-slate-700">Requests Posted</p>
               <p className="mt-2 text-sm text-slate-500">
-                {!dashLoading && stats ? "Total help requests" : ""}</p>            
-          </article>
+                {!dashLoading && stats ? "Total help requests" : ""}</p>
+            </article>
 
             {/* Offers submitted */}
             <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-center sm:text-left">
-                <div className="mx-auto sm:mx-0 w-fit rounded-2xl bg-indigo-100 p-3 text-indigo-700">
+              <div className="mx-auto sm:mx-0 w-fit rounded-2xl bg-indigo-100 p-3 text-indigo-700">
                 <Send size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
@@ -575,7 +590,7 @@ export default function Dashboard() {
 
             {/* Avg rating */}
             <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-center sm:text-left">
-            <div className="mx-auto sm:mx-0 w-fit rounded-2xl bg-amber-100 p-3 text-amber-700">
+              <div className="mx-auto sm:mx-0 w-fit rounded-2xl bg-amber-100 p-3 text-amber-700">
                 <Star size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
@@ -605,26 +620,26 @@ export default function Dashboard() {
           </div>
 
           <div className="relative mt-3 w-full overflow-x-auto">
-  <div className="inline-flex min-w-max rounded-2xl bg-white/75 p-1">
-            {sessionTabs.map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveSessionTab(tab)}
-                className={`mx-0.5 inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs transition ${activeSessionTab === tab
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700"
-                  }`}
-              >
-                {tab}
-                {!dashLoading && (
-                  <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-500">
-                    {sessionTabCounts[tab]}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
+            <div className="inline-flex min-w-max rounded-2xl bg-white/75 p-1">
+              {sessionTabs.map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setActiveSessionTab(tab)}
+                  className={`mx-0.5 inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs transition ${activeSessionTab === tab
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700"
+                    }`}
+                >
+                  {tab}
+                  {!dashLoading && (
+                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-500">
+                      {sessionTabCounts[tab]}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="relative mt-3 space-y-2.5">
