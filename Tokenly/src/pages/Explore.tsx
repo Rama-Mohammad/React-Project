@@ -60,6 +60,23 @@ function buildDynamicOptions(values: (string | null | undefined)[], fallback: st
   return ["All", ...(unique.length > 0 ? unique : [fallback])];
 }
 
+function preserveSelectedOption(options: string[], selectedOption: string, defaultOption: string): string[] {
+  if (selectedOption === defaultOption || options.includes(selectedOption)) {
+    return options;
+  }
+
+  return [...options, selectedOption];
+}
+
+const HELPER_BASIC_FILTERS = [
+  "All",
+  "Programming",
+  "Design",
+  "Writing",
+  "Web Development",
+  "Machine Learning",
+] as const;
+
 export default function Explore() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
@@ -75,6 +92,7 @@ export default function Explore() {
   const [search, setSearch] = useState("");
   const [showMoreSkillFilters, setShowMoreSkillFilters] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedHelperCategories, setSelectedHelperCategories] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("Newest");
   const [urgency, setUrgency] = useState("All");
   const [duration, setDuration] = useState("Any");
@@ -106,6 +124,7 @@ export default function Explore() {
   const [requestsHasMore, setRequestsHasMore] = useState(true);
   const [skillsHasMore, setSkillsHasMore] = useState(true);
   const [offersHasMore, setOffersHasMore] = useState(true);
+  const [requestCategoryCatalog, setRequestCategoryCatalog] = useState<string[]>(["All"]);
 
   const requestedCategory = useMemo(() => {
     return new URLSearchParams(location.search).get("category")?.trim() ?? "";
@@ -192,6 +211,20 @@ export default function Explore() {
       setRequestsHasMore(liveOpenRequests.length > 0 && liveOpenRequests.length % PAGE_SIZE === 0);
     }
   }, [liveOpenRequests, requestsLoading]);
+
+  useEffect(() => {
+    setRequestCategoryCatalog((current) => {
+      const discovered = liveOpenRequests
+        .map((item) => item.category)
+        .filter((item): item is string => Boolean(item?.trim()));
+
+      return Array.from(new Set([...current, ...discovered])).sort((a, b) => {
+        if (a === "All") return -1;
+        if (b === "All") return 1;
+        return a.localeCompare(b);
+      });
+    });
+  }, [liveOpenRequests]);
 
   // Reset skills pagination when tab changes
   useEffect(() => {
@@ -405,11 +438,14 @@ export default function Explore() {
   const filteredHelpers: HelperItem[] = useMemo(() => {
     let data = [...liveHelpers];
 
-    if (selectedCategory !== "All") {
+    if (selectedHelperCategories.length > 0) {
       data = data.filter(
         (item) =>
-          item.categories.includes(selectedCategory) ||
-          item.skills.includes(selectedCategory)
+          selectedHelperCategories.some(
+            (selectedSkill) =>
+              item.categories.includes(selectedSkill) ||
+              item.skills.includes(selectedSkill)
+          )
       );
     }
 
@@ -451,7 +487,7 @@ export default function Explore() {
     }
 
     return data;
-  }, [liveHelpers, onlineOnly, rating, search, selectedCategory, sortBy]);
+  }, [liveHelpers, onlineOnly, rating, search, selectedHelperCategories, sortBy]);
 
   const filteredSkills: SkillItem[] = useMemo(() => {
     let data = liveSkills.map((item) => mapSkillToExploreItem(item));
@@ -510,16 +546,24 @@ export default function Explore() {
   }, [liveOffers, search, selectedCategory, sortBy]);
 
   const requestCategoryOptions = useMemo(
-    () => buildDynamicOptions(liveOpenRequests.map((item) => item.category), "General"),
-    [liveOpenRequests]
+    () =>
+      preserveSelectedOption(
+        requestCategoryCatalog.length > 1 ? requestCategoryCatalog : ["All", "General"],
+        selectedCategory,
+        "All"
+      ),
+    [requestCategoryCatalog, selectedCategory]
   );
 
   const helperCategoryOptions = useMemo(
-    () =>
-      buildDynamicOptions(
+    () => {
+      const dynamicOptions = buildDynamicOptions(
         liveHelpers.flatMap((item) => [...item.categories, ...item.skills]),
         "General"
-      ),
+      );
+
+      return Array.from(new Set([...HELPER_BASIC_FILTERS, ...dynamicOptions]));
+    },
     [liveHelpers]
   );
 
@@ -539,8 +583,8 @@ export default function Explore() {
     const available = new Set<Urgency>(liveOpenRequests.map((item) =>
       item.urgency === "high" ? "High" : item.urgency === "medium" ? "Medium" : "Low"
     ));
-    return priorities.filter((item) => item === "All" || available.has(item));
-  }, [liveOpenRequests]);
+    return priorities.filter((item) => item === "All" || available.has(item) || item === urgency);
+  }, [liveOpenRequests, urgency]);
 
   const requestDurationOptions = useMemo(() => {
     const availableDurations = liveOpenRequests.map((item) => item.duration_minutes ?? 0);
@@ -551,8 +595,8 @@ export default function Explore() {
     if (availableDurations.some((value) => value > 45 && value <= 60)) options.push("<=60 min");
     if (availableDurations.some((value) => value > 60)) options.push(">60 min");
 
-    return options;
-  }, [liveOpenRequests]);
+    return preserveSelectedOption(options, duration, "Any");
+  }, [duration, liveOpenRequests]);
 
   const helperRatingOptions = useMemo(() => {
     const maxRating = liveHelpers.reduce((highest, item) => Math.max(highest, item.rating), 0);
@@ -580,14 +624,20 @@ export default function Explore() {
 
   // Reset category filter when tab changes and current selection no longer applies
   useEffect(() => {
+    if (activeTab === "helpers") {
+      setSelectedHelperCategories((current) =>
+        current.filter((category) => currentCategories.includes(category))
+      );
+      return;
+    }
+
     if (!currentCategories.includes(selectedCategory)) {
       setSelectedCategory("All");
     }
-  }, [currentCategories, selectedCategory]);
+  }, [activeTab, currentCategories, selectedCategory]);
 
   useEffect(() => {
     if (!requestedCategory) {
-      setSelectedCategory("All");
       return;
     }
 
@@ -596,9 +646,39 @@ export default function Explore() {
     );
 
     if (matchedCategory) {
-      setSelectedCategory(matchedCategory);
+      if (activeTab === "helpers") {
+        setSelectedHelperCategories([matchedCategory]);
+      } else {
+        setSelectedCategory(matchedCategory);
+      }
     }
-  }, [currentCategories, requestedCategory]);
+  }, [activeTab, currentCategories, requestedCategory]);
+
+  const handleHelperCategoryToggle = (value: string) => {
+    setSelectedHelperCategories((current) => {
+      if (value === "All") {
+        return [];
+      }
+
+      if (current.includes(value)) {
+        return current.filter((item) => item !== value);
+      }
+
+      return [...current, value];
+    });
+  };
+
+  const resetRequestFilters = () => {
+    setSelectedCategory("All");
+    setUrgency("All");
+    setDuration("Any");
+  };
+
+  const resetHelperFilters = () => {
+    setSelectedHelperCategories([]);
+    setRating("Any rating");
+    setOnlineOnly(false);
+  };
 
   useEffect(() => {
     if (activeTab === "requests" && !(requestUrgencyOptions as string[]).includes(urgency)) {
@@ -674,6 +754,7 @@ export default function Explore() {
     setActiveTab(tab);
     setSearch("");
     setSelectedCategory("All");
+    setSelectedHelperCategories([]);
     setUrgency("All");
     setDuration("Any");
     setRating("Any rating");
@@ -744,10 +825,14 @@ export default function Explore() {
                 levelOptions={skillLevelOptions}
                 selectedCategory={selectedCategory}
                 onCategoryChange={setSelectedCategory}
+                selectedHelperCategories={selectedHelperCategories}
+                onHelperCategoryToggle={handleHelperCategoryToggle}
+                onResetHelperFilters={resetHelperFilters}
                 urgency={urgency}
                 onUrgencyChange={setUrgency}
                 duration={duration}
                 onDurationChange={setDuration}
+                onResetRequestFilters={resetRequestFilters}
                 rating={rating}
                 onRatingChange={setRating}
                 onlineOnly={onlineOnly}

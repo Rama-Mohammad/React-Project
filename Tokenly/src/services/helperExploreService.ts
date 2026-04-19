@@ -9,6 +9,7 @@ export type ExploreProfileRow = {
   title: string | null;
   bio: string | null;
   profile_image_url: string | null;
+  last_seen: string | null;
 };
 
 export type ExploreSkillRow = {
