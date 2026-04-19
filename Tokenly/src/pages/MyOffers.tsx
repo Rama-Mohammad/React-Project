@@ -335,7 +335,7 @@ export default function MyOffers() {
         title="Delete this independent offer?"
         message="This offer will be removed from your public listings."
         itemName={pendingIndependentOffer?.title}
-        details={pendingIndependentOffer ? `${pendingIndependentOffer.duration_minutes ?? 0} min � ${pendingIndependentOffer.credit_cost ?? 0} tokens` : undefined}
+        details={pendingIndependentOffer ? `${pendingIndependentOffer.duration_minutes ?? 0} min - ${pendingIndependentOffer.credit_cost ?? 0} tokens` : undefined}
         confirmLabel="Delete Offer"
         loading={Boolean(pendingIndependentOffer && deletingIndependentOfferId === pendingIndependentOffer.id)}
         onCancel={() => setPendingDeleteIndependentOfferId(null)}
@@ -349,7 +349,7 @@ export default function MyOffers() {
         title="Delete this request-based offer?"
         message="This submitted offer will be removed from the request."
         itemName={pendingRequestOffer?.request?.title ?? "Unknown request"}
-        details={pendingRequestOffer ? `${pendingRequestOffer.request?.duration_minutes ?? 0} min � ${pendingRequestOffer.request?.credit_cost ?? 0} tokens` : undefined}
+        details={pendingRequestOffer ? `${pendingRequestOffer.request?.duration_minutes ?? 0} min - ${pendingRequestOffer.request?.credit_cost ?? 0} tokens` : undefined}
         confirmLabel="Delete Offer"
         loading={Boolean(pendingRequestOffer && deletingRequestOfferId === pendingRequestOffer.id)}
         onCancel={() => setPendingDeleteRequestOfferId(null)}
@@ -361,6 +361,7 @@ export default function MyOffers() {
     </div>
   );
 }
+
 
 
 

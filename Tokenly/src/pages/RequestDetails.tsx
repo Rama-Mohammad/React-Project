@@ -775,7 +775,7 @@ export default function RequestDetails() {
         title="Delete this request?"
         message="This request will be removed permanently."
         itemName={request.title}
-        details={`${request.offers} offers � ${request.credits} tokens`}
+        details={`${request.offers} offers - ${request.credits} tokens`}
         confirmLabel="Delete Request"
         loading={isDeletingRequest}
         onCancel={() => setShowDeleteConfirm(false)}
@@ -787,6 +787,7 @@ export default function RequestDetails() {
     </div>
   );
 }
+
 
 
 
