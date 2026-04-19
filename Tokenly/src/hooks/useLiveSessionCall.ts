@@ -155,7 +155,15 @@ export function useLiveSessionCall({
       const channel = channelRef.current;
       if (!channel) return;
 
-      await channel.httpSend("signal", payload);
+      const result = await channel.send({
+        type: "broadcast",
+        event: "signal",
+        payload,
+      });
+
+      if (result !== "ok") {
+        throw new Error("Live session signaling could not be delivered.");
+      }
     };
 
     const flushPendingCandidates = async (peer: RTCPeerConnection) => {
@@ -454,7 +462,7 @@ export function useLiveSessionCall({
 
         const channel = supabase.channel(`live-session:${sessionId}`, {
           config: {
-            broadcast: { self: false },
+            broadcast: { self: false, ack: true },
             presence: { key: userId },
           },
         });
