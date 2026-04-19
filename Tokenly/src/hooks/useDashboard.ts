@@ -120,7 +120,7 @@ export default function useDashboard() {
           credits: isHelper
             ? (s.request?.credit_cost ?? helpOfferValue?.credit_cost ?? directRequestValue?.credit_cost ?? 0)
             : -(s.request?.credit_cost ?? helpOfferValue?.credit_cost ?? directRequestValue?.credit_cost ?? 0),
-          action: uiStatus !== "Completed" ? "Mark Complete" : undefined,
+          action: isHelper && dbStatus === "active" ? "Mark Complete" : undefined,
         };
       })
       .sort((a, b) => {

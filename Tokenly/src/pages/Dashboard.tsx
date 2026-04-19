@@ -89,6 +89,7 @@ export default function Dashboard() {
   const [pendingCompleteId, setPendingCompleteId] = useState<string | null>(null);
   const [transferToast, setTransferToast] = useState<{ credits: number } | null>(null);
   const [showCreditDetails, setShowCreditDetails] = useState(false);
+  const [sessionActionError, setSessionActionError] = useState("");
   const [directRequestActionId, setDirectRequestActionId] = useState<string | null>(null);
   const [pendingScheduleId, setPendingScheduleId] = useState<string | null>(null);
   const [scheduledAtInput, setScheduledAtInput] = useState<string>("");
@@ -300,6 +301,7 @@ export default function Dashboard() {
   }, [currentUserId, rawSessions]);
 
   const handleMarkComplete = async (id: string) => {
+    setSessionActionError("");
     const { session, user, authError } = await getSessionsAuthDebugContext();
     const payload = { id, status: "completed" };
 
@@ -310,7 +312,10 @@ export default function Dashboard() {
       error: authError,
     });
 
-    if (authError) return;
+    if (authError) {
+      setSessionActionError(authError.message ?? "You need to be signed in to complete this session.");
+      return false;
+    }
 
     const { error } = await updateSessionStatus(id, "completed");
 
@@ -321,7 +326,10 @@ export default function Dashboard() {
       error,
     });
 
-    if (error) return;
+    if (error) {
+      setSessionActionError(error.message ?? "Could not complete this session.");
+      return false;
+    }
 
     if (currentUserId) {
       await Promise.all([
@@ -342,6 +350,8 @@ export default function Dashboard() {
         };
       })
     );
+
+    return true;
   };
 
   const pendingSession = pendingCompleteId
@@ -1079,6 +1089,14 @@ export default function Dashboard() {
         </div>
       ) : null}
 
+      {sessionActionError ? (
+        <div className="pointer-events-none fixed bottom-5 left-5 z-60">
+          <div className="min-w-65 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-xl">
+            {sessionActionError}
+          </div>
+        </div>
+      ) : null}
+
       {/* -- Mark complete confirm modal -- */}
       {pendingSession ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -1095,7 +1113,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-slate-900">Mark Session Complete?</h3>
-                <p className="mt-0.5 text-sm text-slate-500">This will update the session status</p>
+                <p className="mt-0.5 text-sm text-slate-500">This will complete the session and move the requester&apos;s tokens to the helper.</p>
               </div>
             </div>
             <div className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50/50 p-3">
@@ -1118,8 +1136,9 @@ export default function Dashboard() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  void handleMarkComplete(pendingSession.id);
+                onClick={async () => {
+                  const succeeded = await handleMarkComplete(pendingSession.id);
+                  if (!succeeded) return;
                   setPendingCompleteId(null);
                   setTransferToast({ credits: Math.abs(pendingSession.credits) });
                 }}

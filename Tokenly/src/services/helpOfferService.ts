@@ -6,6 +6,7 @@ import type {
   HelpOfferRequestInput,
 } from "../types/helpOffer";
 import { createNotification } from "./notificationService";
+import { ensureSessionForBooking } from "./sessionService";
 
 // ─── HELP OFFERS ────────────────────────────────────────────────────────────
 
@@ -260,19 +261,14 @@ export async function acceptHelpOfferRequest(
     .update({ status: "accepted" })
     .eq("id", hor.help_offer_id);
 
-  // 5. Create the session — store help_offer_request_id (Flow 2)
-  const { data: session, error: sessionError } = await supabase
-    .from("sessions")
-    .insert({
-      helper_id: helpOffer.helper_id,
-      requester_id: hor.requester_id,
-      help_offer_request_id: helpOfferRequestId,
-      duration_minutes: helpOffer.duration_minutes,
-      scheduled_at: scheduledAt ?? (helpOffer as any).proposed_at ?? null,
-      status: "upcoming",
-    })
-    .select()
-    .single();
+  // 5. Create or refresh the session — store help_offer_request_id (Flow 2)
+  const { data: session, error: sessionError } = await ensureSessionForBooking({
+    helper_id: helpOffer.helper_id,
+    requester_id: hor.requester_id,
+    help_offer_request_id: helpOfferRequestId,
+    duration_minutes: helpOffer.duration_minutes,
+    scheduled_at: scheduledAt ?? (helpOffer as any).proposed_at ?? null,
+  });
 
   if (sessionError) return { data: null, error: sessionError };
 
