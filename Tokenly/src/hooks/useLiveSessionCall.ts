@@ -156,15 +156,11 @@ export function useLiveSessionCall({
       const channel = channelRef.current;
       if (!channel) return;
 
-      const result = await channel.send({
+      await channel.send({
         type: "broadcast",
         event: "signal",
         payload,
       });
-
-      if (result !== "ok") {
-        throw new Error("Live session signaling could not be delivered.");
-      }
     };
 
     const flushPendingCandidates = async (peer: RTCPeerConnection) => {
@@ -463,7 +459,7 @@ export function useLiveSessionCall({
 
         const channel = supabase.channel(`live-session:${sessionId}`, {
           config: {
-            broadcast: { self: false, ack: true },
+            broadcast: { self: false },
             presence: { key: userId },
           },
         });
@@ -558,7 +554,9 @@ export function useLiveSessionCall({
         readyHeartbeatTimerRef.current = null;
       }
       void sendSignal({ type: "leave", from: userId });
-      channelRef.current?.unsubscribe();
+      if (channelRef.current) {
+        void supabase.removeChannel(channelRef.current);
+      }
       channelRef.current = null;
       peerRef.current?.close();
       peerRef.current = null;
