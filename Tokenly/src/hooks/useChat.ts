@@ -39,6 +39,10 @@ export const useChat = ({
 
   useEffect(() => {
     if (!sessionId || !currentUserId) return;
+    console.log("SESSION DEBUG:", {
+  sessionId,
+  currentUserId,
+});
 
     let isMounted = true;
 
@@ -134,7 +138,7 @@ export const useChat = ({
   .subscribe((status) => {
     console.log("📡 subscription status:", status);
   });
-  
+
     const pollTimer = setInterval(() => {
       void loadMessages();
     }, 3000);
