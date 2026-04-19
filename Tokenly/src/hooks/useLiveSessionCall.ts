@@ -64,6 +64,7 @@ export function useLiveSessionCall({
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
   const offerRetryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const presencePollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const readyHeartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const getUserMediaCompat = async (constraints: MediaStreamConstraints) => {
     if (typeof navigator === "undefined") {
@@ -495,6 +496,14 @@ export function useLiveSessionCall({
         });
 
         channel.subscribe(async (status) => {
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+            if (isMounted) {
+              setConnectionStatus("error");
+              setErrorMessage("The live session realtime channel could not stay connected.");
+            }
+            return;
+          }
+
           if (status !== "SUBSCRIBED") return;
           await channel.track({
             userId,
@@ -503,6 +512,14 @@ export function useLiveSessionCall({
           await sendSignal({ type: "join", from: userId });
           await sendSignal({ type: "ready", from: userId });
           updatePresenceState();
+          readyHeartbeatTimerRef.current = setInterval(() => {
+            void sendSignal({ type: "ready", from: userId }).catch(() => {
+              if (isMounted) {
+                setConnectionStatus("error");
+                setErrorMessage("The live session signaling channel stopped responding.");
+              }
+            });
+          }, 2000);
           offerRetryTimerRef.current = setInterval(() => {
             if (isInitiator && remoteJoinedRef.current) {
               void maybeCreateOffer();
@@ -535,6 +552,10 @@ export function useLiveSessionCall({
       if (presencePollTimerRef.current) {
         clearInterval(presencePollTimerRef.current);
         presencePollTimerRef.current = null;
+      }
+      if (readyHeartbeatTimerRef.current) {
+        clearInterval(readyHeartbeatTimerRef.current);
+        readyHeartbeatTimerRef.current = null;
       }
       void sendSignal({ type: "leave", from: userId });
       channelRef.current?.unsubscribe();
