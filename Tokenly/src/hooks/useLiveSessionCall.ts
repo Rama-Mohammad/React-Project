@@ -40,7 +40,7 @@ export function useLiveSessionCall({
   sessionId,
   userId,
   enabled,
-  isInitiator: _isInitiator,
+  isInitiator,
 }: UseLiveSessionCallOptions) {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
@@ -64,6 +64,10 @@ export function useLiveSessionCall({
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
   const offerRetryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const presencePollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const readyHeartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+  const isSubscribedRef = useRef(false);
 
   const getUserMediaCompat = async (constraints: MediaStreamConstraints) => {
     if (typeof navigator === "undefined") {
@@ -150,12 +154,17 @@ export function useLiveSessionCall({
     if (!enabled || !sessionId || !userId) return;
 
     let isMounted = true;
+    let hasStartedRealtime = false;
 
     const sendSignal = async (payload: SignalPayload) => {
       const channel = channelRef.current;
-      if (!channel) return;
+      if (!channel || !isSubscribedRef.current) return;
 
-      await channel.httpSend("signal", payload);
+      await channel.send({
+        type: "broadcast",
+        event: "signal",
+        payload,
+      });
     };
 
     const flushPendingCandidates = async (peer: RTCPeerConnection) => {
@@ -231,6 +240,7 @@ export function useLiveSessionCall({
       };
 
       peer.onnegotiationneeded = async () => {
+        if (!isInitiator) return;
         if (!remoteJoinedRef.current) return;
         await maybeCreateOffer();
       };
@@ -290,6 +300,7 @@ export function useLiveSessionCall({
     };
 
     const maybeCreateOffer = async () => {
+      if (!isInitiator) return;
       if (!remoteJoinedRef.current) return;
 
       const peer = buildPeer();
@@ -361,7 +372,9 @@ export function useLiveSessionCall({
         if (payload.type === "join") {
           await sendSignal({ type: "ready", from: userId });
         }
-        await maybeCreateOffer();
+        if (isInitiator) {
+          await maybeCreateOffer();
+        }
         return;
       }
 
@@ -427,6 +440,9 @@ export function useLiveSessionCall({
     };
 
     const start = async () => {
+      if (hasStartedRealtime) return;
+      hasStartedRealtime = true;
+
       try {
         setConnectionStatus("joining");
         setErrorMessage("");
@@ -483,16 +499,75 @@ export function useLiveSessionCall({
         });
 
         channel.subscribe(async (status) => {
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+            isSubscribedRef.current = false;
+
+            if (readyHeartbeatTimerRef.current) {
+              clearInterval(readyHeartbeatTimerRef.current);
+              readyHeartbeatTimerRef.current = null;
+            }
+            if (offerRetryTimerRef.current) {
+              clearInterval(offerRetryTimerRef.current);
+              offerRetryTimerRef.current = null;
+            }
+            if (presencePollTimerRef.current) {
+              clearInterval(presencePollTimerRef.current);
+              presencePollTimerRef.current = null;
+            }
+
+            if (!isMounted) return;
+
+            if (reconnectAttemptsRef.current < 3) {
+              reconnectAttemptsRef.current += 1;
+              setConnectionStatus("connecting");
+              setErrorMessage(`Reconnecting to the live session... (${reconnectAttemptsRef.current}/3)`);
+
+              if (channelRef.current) {
+                void supabase.removeChannel(channelRef.current);
+                channelRef.current = null;
+              }
+
+              if (reconnectTimerRef.current) {
+                clearTimeout(reconnectTimerRef.current);
+              }
+
+              reconnectTimerRef.current = setTimeout(() => {
+                hasStartedRealtime = false;
+                void start();
+              }, 1200);
+              return;
+            }
+
+            setConnectionStatus("error");
+            setErrorMessage("The live session realtime channel could not stay connected.");
+            return;
+          }
+
           if (status !== "SUBSCRIBED") return;
-          await channel.track({
-            userId,
-            joinedAt: new Date().toISOString(),
-          });
-          await sendSignal({ type: "join", from: userId });
-          await sendSignal({ type: "ready", from: userId });
+          reconnectAttemptsRef.current = 0;
+          isSubscribedRef.current = true;
+          setErrorMessage("");
+
+          try {
+            await channel.track({
+              userId,
+              joinedAt: new Date().toISOString(),
+            });
+            await sendSignal({ type: "join", from: userId });
+            await sendSignal({ type: "ready", from: userId });
+          } catch {
+            if (isMounted) {
+              setConnectionStatus("connecting");
+              setErrorMessage("Connected to the room, retrying live session sync...");
+            }
+          }
+
           updatePresenceState();
+          readyHeartbeatTimerRef.current = setInterval(() => {
+            void sendSignal({ type: "ready", from: userId });
+          }, 2000);
           offerRetryTimerRef.current = setInterval(() => {
-            if (remoteJoinedRef.current) {
+            if (isInitiator && remoteJoinedRef.current) {
               void maybeCreateOffer();
             }
           }, 2500);
@@ -524,8 +599,20 @@ export function useLiveSessionCall({
         clearInterval(presencePollTimerRef.current);
         presencePollTimerRef.current = null;
       }
+      if (readyHeartbeatTimerRef.current) {
+        clearInterval(readyHeartbeatTimerRef.current);
+        readyHeartbeatTimerRef.current = null;
+      }
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+      isSubscribedRef.current = false;
+      reconnectAttemptsRef.current = 0;
       void sendSignal({ type: "leave", from: userId });
-      channelRef.current?.unsubscribe();
+      if (channelRef.current) {
+        void supabase.removeChannel(channelRef.current);
+      }
       channelRef.current = null;
       peerRef.current?.close();
       peerRef.current = null;
@@ -541,7 +628,7 @@ export function useLiveSessionCall({
       screenTrackRef.current = null;
       setRemoteStream(null);
     };
-  }, [enabled, sessionId, userId]);
+  }, [enabled, isInitiator, sessionId, userId]);
 
   const toggleAudio = () => {
     const stream = cameraStreamRef.current ?? localStreamRef.current;

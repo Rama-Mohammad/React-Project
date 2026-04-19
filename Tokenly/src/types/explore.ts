@@ -109,12 +109,16 @@ export interface FilterSideBarProps {
   onUrgencyChange: (value: string) => void;
   duration: string;
   onDurationChange: (value: string) => void;
+  onResetRequestFilters?: () => void;
   rating: string;
   onRatingChange: (value: string) => void;
   onlineOnly: boolean;
   onOnlineOnlyChange: (value: boolean) => void;
   level: string;
   onLevelChange: (value: string) => void;
+  selectedHelperCategories?: string[];
+  onHelperCategoryToggle?: (value: string) => void;
+  onResetHelperFilters?: () => void;
   totalCount: number;
 }
 

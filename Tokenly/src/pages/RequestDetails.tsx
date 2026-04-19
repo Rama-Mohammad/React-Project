@@ -58,6 +58,21 @@ export default function RequestDetails() {
   const [offerActionId, setOfferActionId] = useState<string | null>(null);
   const [sessionsCompleted, setSessionsCompleted] = useState(0);
 
+  const formatAvailabilityValue = (value?: string | null) => {
+    if (!value) return "Not provided";
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return value;
+
+    return new Intl.DateTimeFormat("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(parsed);
+  };
+
   useEffect(() => {
     if (!requestId) {
       setIsLoadingRequest(false);
@@ -420,7 +435,11 @@ export default function RequestDetails() {
           ? String((error as { message?: string }).message)
           : "Failed to submit offer.";
       console.error("Offer submission failed:", error);
-      setOfferError(detailedMessage || "Failed to submit offer.");
+      if (detailedMessage.toLowerCase().includes('infinite recursion detected in policy for relation "offers"')) {
+        setOfferError("Offer submission is being blocked by the current Supabase offers policy. The database policy for the offers table needs to be fixed.");
+      } else {
+        setOfferError(detailedMessage || "Failed to submit offer.");
+      }
     } finally {
       setIsSubmittingOffer(false);
     }
@@ -603,7 +622,7 @@ export default function RequestDetails() {
                         <p className="mt-3 text-sm text-slate-700">{offer.message || "No message provided."}</p>
                         <p className="mt-2 text-xs text-slate-600">
                           <span className="font-semibold text-slate-700">Availability:</span>{" "}
-                          {offer.availability || "Not provided"}
+                          {formatAvailabilityValue(offer.availability)}
                         </p>
 
                         {canManageOffers ? (
@@ -667,9 +686,10 @@ export default function RequestDetails() {
                 Your availability
               </label>
               <input
+                type="datetime-local"
                 value={availability}
                 onChange={(event) => setAvailability(event.target.value)}
-                placeholder="e.g. Today 3-6 PM UTC, or anytime tomorrow"
+                min={new Date().toISOString().slice(0, 16)}
                 className="mt-2 h-11 w-full rounded-2xl border border-slate-200/80 bg-white/92 px-4 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
               />
 
@@ -775,7 +795,7 @@ export default function RequestDetails() {
         title="Delete this request?"
         message="This request will be removed permanently."
         itemName={request.title}
-        details={`${request.offers} offers � ${request.credits} tokens`}
+        details={`${request.offers} offers - ${request.credits} tokens`}
         confirmLabel="Delete Request"
         loading={isDeletingRequest}
         onCancel={() => setShowDeleteConfirm(false)}
@@ -787,6 +807,7 @@ export default function RequestDetails() {
     </div>
   );
 }
+
 
 
 

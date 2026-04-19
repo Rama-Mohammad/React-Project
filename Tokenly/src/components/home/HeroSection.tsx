@@ -3,9 +3,20 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import RatingStars from "../common/RatingStars";
 import useAuth from "../../hooks/useAuth";
+import { getSupabaseTransformedImageUrl } from "../../utils/supabaseImage";
+
+const HERO_IMAGE_URL = getSupabaseTransformedImageUrl(
+  "https://cggkruccjfhgxhqkjamk.supabase.co/storage/v1/object/public/assets/hero_image.png",
+  { width: 1600, quality: 68 }
+);
+const HERO_PLACEHOLDER_URL = getSupabaseTransformedImageUrl(
+  "https://cggkruccjfhgxhqkjamk.supabase.co/storage/v1/object/public/assets/hero_image.png",
+  { width: 48, quality: 25 }
+);
 
 const HeroSection = () => {
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
+  const [isHeroImageLoaded, setIsHeroImageLoaded] = useState(false);
   const { isAuthenticated, loading } = useAuth();
 
   useEffect(() => {
@@ -25,9 +36,26 @@ const HeroSection = () => {
       <section className="relative min-h-screen overflow-x-clip">
         <div className="absolute left-1/2 top-0 h-full w-screen -translate-x-1/2 border-b border-white/40 bg-white/35 backdrop-blur-xl">
           <img
-            src="https://cggkruccjfhgxhqkjamk.supabase.co/storage/v1/object/public/assets/hero_image.png"
+            src={HERO_PLACEHOLDER_URL}
+            alt=""
+            aria-hidden="true"
+            className={`absolute inset-0 h-full w-full object-cover blur-2xl transition-opacity duration-500 ${
+              isHeroImageLoaded ? "opacity-0" : "opacity-15"
+            }`}
+          />
+          {!isHeroImageLoaded ? (
+            <div className="absolute inset-0 animate-pulse bg-[linear-gradient(110deg,rgba(255,255,255,0.06)_8%,rgba(255,255,255,0.14)_18%,rgba(255,255,255,0.06)_33%)]" />
+          ) : null}
+          <img
+            src={HERO_IMAGE_URL}
             alt="People connecting and learning together"
-            className="h-full w-full object-cover opacity-15"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+            onLoad={() => setIsHeroImageLoaded(true)}
+            className={`h-full w-full object-cover transition-opacity duration-700 ${
+              isHeroImageLoaded ? "opacity-15" : "opacity-0"
+            }`}
           />
         </div>
 

@@ -7,9 +7,15 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { supabase } from "../lib/supabaseClient";
 import { createRequest } from "../services/requestService";
 import { sendDirectRequest } from "../services/directRequestService";
+import { getProfileCreditBalance } from "../services/profileService";
 import type { NeedBy, RequiredSection, SessionType } from "../types/page";
 
 const durationChoices = [30, 45, 60, 90, 120];
+const PRESET_SKILLS = ["Design", "Marketing", "Music", "Programming", "Writing"];
+
+function normalizeSkillName(value: string) {
+  return value.trim().toLowerCase();
+}
 
 export default function RequestHelper() {
   const { helperId } = useParams<{ helperId: string }>();
@@ -29,6 +35,8 @@ export default function RequestHelper() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [customSkillInput, setCustomSkillInput] = useState("");
+  const [showCustomSkillInput, setShowCustomSkillInput] = useState(false);
   const [sessionType, setSessionType] = useState<SessionType | null>(null);
   const [durationMinutes, setDurationMinutes] = useState<number | null>(null);
   const [creditsToOffer, setCreditsToOffer] = useState<number>(6);
@@ -37,6 +45,7 @@ export default function RequestHelper() {
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sectionError, setSectionError] = useState<RequiredSection | null>(null);
+  const [availableTokens, setAvailableTokens] = useState(0);
 
   const sectionRefs = useRef<Record<RequiredSection, HTMLElement | null>>({
     title: null,
@@ -47,7 +56,6 @@ export default function RequestHelper() {
     urgency: null,
   });
 
-  const availableCredits = 12;
 
   // isGenericRequestFlow = no specific helper targeted → public request
   // isDirectFlow = specific helper targeted → direct_request
@@ -140,22 +148,52 @@ export default function RequestHelper() {
     return () => window.clearTimeout(id);
   }, [submitError]);
 
-  const allSkills = [
-    "Programming", "Mathematics", "Machine Learning", "Data Science",
-    "Web Development", "Algorithms", "System Design", "Writing",
-    "Statistics", "Database",
-  ];
+  useEffect(() => {
+    let mounted = true;
+
+    void (async () => {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (!mounted || authError || !authData.user?.id) return;
+
+      const { data: balanceData, error: balanceError } = await getProfileCreditBalance(authData.user.id);
+      if (!mounted || balanceError) return;
+
+      const balance = Number(balanceData?.credit_balance ?? 0);
+      setAvailableTokens(balance);
+      setCreditsToOffer((current) => Math.min(balance, current));
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const toggleSkill = (skill: string) => {
-    setSelectedSkills((prev) =>
-      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
+    setSelectedSkills((prev) => (prev.includes(skill) ? [] : [skill]));
+  };
+
+  const addCustomSkill = () => {
+    const trimmedSkill = customSkillInput.trim();
+    if (!trimmedSkill) return;
+
+    const normalizedSkill = normalizeSkillName(trimmedSkill);
+    const alreadySelected = selectedSkills.some(
+      (skill) => normalizeSkillName(skill) === normalizedSkill
     );
+
+    if (!alreadySelected) {
+      setSelectedSkills([trimmedSkill]);
+    }
+
+    setCustomSkillInput("");
   };
 
   const resetForm = () => {
     setTitle("");
     setDescription("");
     setSelectedSkills([]);
+    setCustomSkillInput("");
+    setShowCustomSkillInput(false);
     setSessionType(null);
     setDurationMinutes(null);
     setCreditsToOffer(6);
@@ -377,7 +415,7 @@ export default function RequestHelper() {
                   Skill area <span className="text-rose-500">*</span>
                 </label>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {allSkills.map((skill) => (
+                  {PRESET_SKILLS.map((skill) => (
                     <button
                       key={skill}
                       type="button"
@@ -391,7 +429,59 @@ export default function RequestHelper() {
                       {skill}
                     </button>
                   ))}
+                  <button
+                    type="button"
+                    onClick={() => setShowCustomSkillInput((current) => !current)}
+                    className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+                      showCustomSkillInput
+                        ? "border-indigo-300 bg-indigo-50 text-indigo-700"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:bg-indigo-50/50"
+                    }`}
+                  >
+                    Other
+                  </button>
                 </div>
+                {showCustomSkillInput ? (
+                  <div className="mt-3 flex flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50/70 p-3 sm:flex-row sm:items-center">
+                    <input
+                      type="text"
+                      value={customSkillInput}
+                      onChange={(e) => setCustomSkillInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addCustomSkill();
+                        }
+                      }}
+                      maxLength={40}
+                      placeholder="Write your skill name"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                    />
+                    <button
+                      type="button"
+                      onClick={addCustomSkill}
+                      className="rounded-xl border border-indigo-200 bg-white px-3.5 py-2 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-50"
+                    >
+                      Add
+                    </button>
+                  </div>
+                ) : null}
+                {selectedSkills.some((skill) => !PRESET_SKILLS.includes(skill)) ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {selectedSkills
+                      .filter((skill) => !PRESET_SKILLS.includes(skill))
+                      .map((skill) => (
+                        <button
+                          key={skill}
+                          type="button"
+                          onClick={() => toggleSkill(skill)}
+                          className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700 transition hover:border-sky-300 hover:bg-sky-100"
+                        >
+                          {skill} x
+                        </button>
+                      ))}
+                  </div>
+                ) : null}
                 {sectionError === "skills" ? (
                   <p className="mt-1 text-xs text-rose-500">Please select at least one skill.</p>
                 ) : null}
@@ -542,15 +632,15 @@ export default function RequestHelper() {
 
           {/* Right sidebar */}
           <aside className="space-y-4 lg:sticky lg:top-20">
-            {/* Credits picker */}
+            {/* Tokens picker */}
             <section className="explore-glass rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
-              <h2 className="text-base font-semibold text-slate-900">Credits to offer</h2>
-              <p className="mt-1 text-xs text-slate-500">You have {availableCredits} credits available.</p>
+              <h2 className="text-base font-semibold text-slate-900">Tokens to offer</h2>
+              <p className="mt-1 text-xs text-slate-500">You have {availableTokens} tokens available.</p>
 
               <div className="mt-4 flex items-center justify-between gap-3">
                 <button
                   type="button"
-                  onClick={() => setCreditsToOffer((c) => Math.max(1, c - 1))}
+                  onClick={() => setCreditsToOffer((c) => Math.max(0, c - 1))}
                   className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50"
                 >
                   −
@@ -561,7 +651,7 @@ export default function RequestHelper() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setCreditsToOffer((c) => Math.min(availableCredits, c + 1))}
+                  onClick={() => setCreditsToOffer((c) => Math.min(availableTokens, c + 1))}
                   className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50"
                 >
                   +
@@ -570,7 +660,7 @@ export default function RequestHelper() {
 
               {helper.creditsPerHour > 0 && durationMinutes ? (
                 <p className="mt-3 text-xs text-slate-500">
-                  Suggested: ~{Math.round((helper.creditsPerHour / 60) * durationMinutes)} credits for {durationMinutes} min
+                  Suggested: ~{Math.round((helper.creditsPerHour / 60) * durationMinutes)} tokens for {durationMinutes} min
                 </p>
               ) : null}
             </section>
@@ -586,7 +676,7 @@ export default function RequestHelper() {
                   <>
                     <li>• Be specific about what you've already tried</li>
                     <li>• Mention the desired outcome, not just the problem</li>
-                    <li>• Higher credits attract more experienced helpers</li>
+                    <li>• Higher tokens attract more experienced helpers</li>
                     <li>• Shorter sessions fill up faster</li>
                   </>
                 ) : (

@@ -1,6 +1,7 @@
 import { supabase } from "../lib/supabaseClient";
 import type { DirectRequest, DirectRequestInput } from "../types/directRequest";
 import { createNotification } from "./notificationService";
+import { ensureSessionForBooking } from "./sessionService";
 
 // User sends a private session request to a specific helper
 export async function sendDirectRequest(data: DirectRequestInput) {
@@ -100,19 +101,14 @@ export async function acceptDirectRequest(
 
   if (acceptError) return { data: null, error: acceptError };
 
-  // Create the session — store direct_request_id (Flow 3)
-  const { data: session, error: sessionError } = await supabase
-    .from("sessions")
-    .insert({
-      helper_id: dr.helper_id,
-      requester_id: dr.requester_id,
-      direct_request_id: directRequestId,
-      duration_minutes: dr.duration_minutes,
-      scheduled_at: scheduledAt,
-      status: "upcoming",
-    })
-    .select()
-    .single();
+  // Create or refresh the session — store direct_request_id (Flow 3)
+  const { data: session, error: sessionError } = await ensureSessionForBooking({
+    helper_id: dr.helper_id,
+    requester_id: dr.requester_id,
+    direct_request_id: directRequestId,
+    duration_minutes: dr.duration_minutes,
+    scheduled_at: scheduledAt,
+  });
 
   if (sessionError) return { data: null, error: sessionError };
 

@@ -79,6 +79,7 @@ export function mapProfileToHelperItem(
     profileImageUrl: profile.profile_image_url ?? undefined,
     rating,
     online: false,
+    lastSeen: profile.last_seen ?? undefined,
     responseTime: "N/A",
     bio: profile.bio ?? profile.title ?? "No bio available yet.",
     badges,

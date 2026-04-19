@@ -3,7 +3,7 @@ import { getSessionsAuthDebugContext, logSessionsQuery } from "./sessionDebug";
 import type { SessionStatus } from "../types/session";
 import { createTransaction } from "./transactionService";
 
-export async function createSession(data: {
+export type SessionInsertInput = {
   helper_id: string;
   requester_id: string;
   scheduled_at?: string;
@@ -12,7 +12,92 @@ export async function createSession(data: {
   offer_id?: string;
   help_offer_request_id?: string;
   direct_request_id?: string;
-}) {
+};
+
+type SessionRelationKey = "offer_id" | "help_offer_request_id" | "direct_request_id";
+
+function getSessionRelationLookup(data: SessionInsertInput): { column: SessionRelationKey; value: string } | null {
+  if (data.offer_id) return { column: "offer_id", value: data.offer_id };
+  if (data.help_offer_request_id) return { column: "help_offer_request_id", value: data.help_offer_request_id };
+  if (data.direct_request_id) return { column: "direct_request_id", value: data.direct_request_id };
+  return null;
+}
+
+export async function ensureSessionForBooking(data: SessionInsertInput) {
+  const { session, user, authError } = await getSessionsAuthDebugContext();
+  const relationLookup = getSessionRelationLookup(data);
+  const payload = { ...data, status: "upcoming" };
+
+  logSessionsQuery("ensureSessionForBooking start", { session, user, payload, error: authError });
+  if (authError) return { data: null, error: authError };
+
+  if (!relationLookup) {
+    return {
+      data: null,
+      error: new Error("A booking session must be linked to an offer, help-offer request, or direct request."),
+    };
+  }
+
+  const existingLookup = await supabase
+    .from("sessions")
+    .select("id, status")
+    .eq(relationLookup.column, relationLookup.value)
+    .maybeSingle();
+
+  logSessionsQuery("ensureSessionForBooking existing lookup result", {
+    session,
+    user,
+    payload: relationLookup,
+    error: existingLookup.error,
+  });
+
+  if (existingLookup.error) {
+    return { data: null, error: existingLookup.error };
+  }
+
+  if (existingLookup.data?.id) {
+    const updates: Record<string, unknown> = {
+      helper_id: data.helper_id,
+      requester_id: data.requester_id,
+      duration_minutes: data.duration_minutes ?? null,
+    };
+
+    if (data.scheduled_at !== undefined) {
+      updates.scheduled_at = data.scheduled_at;
+    }
+
+    if (existingLookup.data.status === "cancelled") {
+      updates.status = "upcoming";
+    }
+
+    const updateResult = await supabase
+      .from("sessions")
+      .update(updates)
+      .eq("id", existingLookup.data.id)
+      .select()
+      .single();
+
+    logSessionsQuery("ensureSessionForBooking existing session update result", {
+      session,
+      user,
+      payload: { sessionId: existingLookup.data.id, updates },
+      error: updateResult.error,
+    });
+
+    return updateResult;
+  }
+
+  const createResult = await supabase
+    .from("sessions")
+    .insert(payload)
+    .select()
+    .single();
+
+  logSessionsQuery("ensureSessionForBooking insert result", { session, user, payload, error: createResult.error });
+  return createResult;
+}
+
+export async function createSession(data: SessionInsertInput) {
   const { session, user, authError } = await getSessionsAuthDebugContext();
   const payload = { ...data, status: "upcoming" };
   logSessionsQuery("createSession insert start", { session, user, payload, error: authError });
@@ -193,6 +278,13 @@ export async function updateSessionStatus(id: string, status: SessionStatus) {
       help_offer_request_id: string | null;
       direct_request_id: string | null;
     };
+
+    if (user?.id !== sessionRow.helper_id) {
+      return {
+        data: null,
+        error: new Error("Only the helper can mark this session as completed."),
+      };
+    }
 
     // Resolve credit cost from whichever flow created this session
     const { creditCost, title } = await resolveSessionCreditCost({

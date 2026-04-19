@@ -33,6 +33,7 @@ const SessionsPage: React.FC = () => {
   const [creditsBalance, setCreditsBalance] = useState(0);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState("");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
@@ -244,6 +245,13 @@ const SessionsPage: React.FC = () => {
   const handleJoin = (sessionId: string) => navigate(`/session/${sessionId}`);
 
   const handleMarkComplete = (sessionId: string) => {
+    const session = sessions.find((item) => item.id === sessionId);
+    if (!session || session.role !== "helping" || session.status !== "active") {
+      setActionError("Only the helper can complete an active session.");
+      return;
+    }
+
+    setActionError("");
     setSelectedSessionId(sessionId);
     setShowConfirmModal(true);
   };
@@ -251,13 +259,12 @@ const SessionsPage: React.FC = () => {
   const confirmMarkComplete = async () => {
     if (!selectedSessionId) return;
 
-    const { error } = await updateSessionStatus(
-      selectedSessionId,
-      "completed"
-    );
+    setActionError("");
+    const { error } = await updateSessionStatus(selectedSessionId, "completed");
 
     if (error) {
       console.error(error);
+      setActionError(error.message ?? "Could not complete this session.");
       return;
     }
 
@@ -426,6 +433,11 @@ const SessionsPage: React.FC = () => {
           </div>
 
           <div className="mt-3 rounded-2xl border border-slate-300 bg-transparent p-3 backdrop-blur-sm sm:p-4">
+            {actionError ? (
+              <div className="mb-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                {actionError}
+              </div>
+            ) : null}
             <div className="space-y-2.5">
               {loading ? (
                 <div className="flex flex-col items-center justify-center gap-3 py-14">
@@ -560,14 +572,16 @@ const SessionsPage: React.FC = () => {
                                 <Video size={16} />
                                 Join Live
                               </button>
-                              <button
-                                type="button"
-                                onClick={() => handleMarkComplete(session.id)}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-100"
-                              >
-                                <Check size={16} />
-                                Mark Complete
-                              </button>
+                              {session.role === "helping" ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleMarkComplete(session.id)}
+                                  className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-100"
+                                >
+                                  <Check size={16} />
+                                  Mark Complete
+                                </button>
+                              ) : null}
                             </>
                           ) : null}
 
@@ -599,7 +613,7 @@ const SessionsPage: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-slate-300 bg-white/95 p-5 shadow-2xl">
             <h3 className="text-base font-semibold text-slate-900">Mark session as complete?</h3>
-            <p className="mt-1 text-base text-slate-500">This will move the session to Completed.</p>
+            <p className="mt-1 text-base text-slate-500">This will complete the session and transfer the tokens from the requester to the helper.</p>
 
             <div className="mt-4 flex justify-end gap-2">
               <button
