@@ -40,7 +40,7 @@ export function useLiveSessionCall({
   sessionId,
   userId,
   enabled,
-  isInitiator: _isInitiator,
+  isInitiator,
 }: UseLiveSessionCallOptions) {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
@@ -231,6 +231,7 @@ export function useLiveSessionCall({
       };
 
       peer.onnegotiationneeded = async () => {
+        if (!isInitiator) return;
         if (!remoteJoinedRef.current) return;
         await maybeCreateOffer();
       };
@@ -290,6 +291,7 @@ export function useLiveSessionCall({
     };
 
     const maybeCreateOffer = async () => {
+      if (!isInitiator) return;
       if (!remoteJoinedRef.current) return;
 
       const peer = buildPeer();
@@ -361,7 +363,9 @@ export function useLiveSessionCall({
         if (payload.type === "join") {
           await sendSignal({ type: "ready", from: userId });
         }
-        await maybeCreateOffer();
+        if (isInitiator) {
+          await maybeCreateOffer();
+        }
         return;
       }
 
@@ -492,7 +496,7 @@ export function useLiveSessionCall({
           await sendSignal({ type: "ready", from: userId });
           updatePresenceState();
           offerRetryTimerRef.current = setInterval(() => {
-            if (remoteJoinedRef.current) {
+            if (isInitiator && remoteJoinedRef.current) {
               void maybeCreateOffer();
             }
           }, 2500);
@@ -541,7 +545,7 @@ export function useLiveSessionCall({
       screenTrackRef.current = null;
       setRemoteStream(null);
     };
-  }, [enabled, sessionId, userId]);
+  }, [enabled, isInitiator, sessionId, userId]);
 
   const toggleAudio = () => {
     const stream = cameraStreamRef.current ?? localStreamRef.current;
