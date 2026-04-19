@@ -12,6 +12,7 @@ export const getMessages = async (sessionId: string): Promise<Message[]> => {
   return data || [];
 };
 
+
 export const sendMessage = async (
   sessionId: string,
   senderId: string,
