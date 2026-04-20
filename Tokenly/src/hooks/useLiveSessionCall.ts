@@ -68,6 +68,7 @@ export function useLiveSessionCall({
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const isSubscribedRef = useRef(false);
+  const isLeavingRef = useRef(false);
 
   const getUserMediaCompat = async (constraints: MediaStreamConstraints) => {
     if (typeof navigator === "undefined") {
@@ -260,11 +261,18 @@ export function useLiveSessionCall({
           return;
         }
 
-        if (state === "failed" || state === "disconnected") {
+        if (state === "failed") {
           setConnectionStatus("error");
-          setErrorMessage(
-            "The call connection dropped. If this keeps happening across devices, add TURN credentials in .env."
-          );
+          setErrorMessage("Connection failed.");
+        }
+
+        if (state === "disconnected") {
+          if (isLeavingRef.current) return;
+
+          setConnectionStatus("waiting");
+
+          // optional but better UX
+          setErrorMessage("User left the session");
         }
       };
 
@@ -283,8 +291,17 @@ export function useLiveSessionCall({
           return;
         }
 
-        if (state === "failed" || state === "disconnected") {
+        if (state === "failed") {
           setConnectionStatus("error");
+        }
+
+        if (state === "disconnected") {
+          if (isLeavingRef.current) return;
+
+          setConnectionStatus("waiting");
+
+          // optional but better UX
+          setErrorMessage("User left the session");
         }
       };
 
@@ -426,16 +443,19 @@ export function useLiveSessionCall({
         }
         return;
       }
-
       if (payload.type === "leave") {
         remoteJoinedRef.current = false;
         remoteSignalSeenRef.current = false;
         remoteStreamRef.current = null;
+
         if (isMounted) {
           setParticipantCount(1);
           setRemoteStream(null);
           setConnectionStatus("waiting");
+          setErrorMessage("User left the session");
         }
+
+        return;
       }
     };
 
@@ -590,7 +610,10 @@ export function useLiveSessionCall({
     void start();
 
     return () => {
+      if (isLeavingRef.current) return;
+      isLeavingRef.current = true;
       isMounted = false;
+
       if (offerRetryTimerRef.current) {
         clearInterval(offerRetryTimerRef.current);
         offerRetryTimerRef.current = null;
@@ -609,7 +632,13 @@ export function useLiveSessionCall({
       }
       isSubscribedRef.current = false;
       reconnectAttemptsRef.current = 0;
-      void sendSignal({ type: "leave", from: userId });
+      if (channelRef.current && isSubscribedRef.current) {
+        void channelRef.current.send({
+          type: "broadcast",
+          event: "signal",
+          payload: { type: "leave", from: userId },
+        });
+      }
       if (channelRef.current) {
         void supabase.removeChannel(channelRef.current);
       }
