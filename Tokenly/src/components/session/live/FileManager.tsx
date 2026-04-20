@@ -8,10 +8,15 @@ const FileManager: React.FC<FileManagerProps> = ({ onFileUpload, files, onDownlo
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || isUploading) return;
+
     setIsUploading(true);
-    await onFileUpload(file);
-    setIsUploading(false);
+    try {
+      await onFileUpload(file);
+    } finally {
+      setIsUploading(false);
+      e.target.value = "";
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -26,8 +31,9 @@ const FileManager: React.FC<FileManagerProps> = ({ onFileUpload, files, onDownlo
         <h3 className="font-semibold text-slate-900">Files</h3>
         <label className="cursor-pointer">
           <input type="file" onChange={handleFileSelect} className="hidden" disabled={isUploading} />
-          <span className="rounded-lg bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] px-3 py-1 text-sm text-white transition hover:opacity-95">
-            <FontAwesomeIcon icon={faUpload} className="mr-2" />
+          <span className={`rounded-lg px-3 py-1 text-sm text-white transition
+  ${isUploading ? "bg-indigo-300" : "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] hover:opacity-95"}
+`}>            <FontAwesomeIcon icon={faUpload} className="mr-2" />
             {isUploading ? "Uploading..." : "Upload"}
           </span>
         </label>

@@ -55,7 +55,7 @@ export default function OnboardingForm({
           <User className="w-5 h-5 text-purple-600" />
         </div>
         <h1 className="text-2xl font-bold text-slate-900 leading-tight">
-          Welcome, {firstName}! 👋
+          Welcome, {firstName}! 
         </h1>
         <p className="text-slate-500 text-sm mt-1.5">
           Let's set up your profile — you can always edit this later

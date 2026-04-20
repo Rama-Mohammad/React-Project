@@ -13,6 +13,8 @@ import { getSessionById, updateSessionStatus } from "../services/sessionService"
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import type { ChecklistItem, FileAttachment } from "../types/session";
 import { useSharedChecklist } from "../hooks/useSharedChecklist";
+import { supabase } from "../lib/supabaseClient";
+import { uploadSessionFile, deleteSessionFile } from "../services/storageService";
 
 type TabType = "agenda" | "files";
 
@@ -67,16 +69,16 @@ const SessionLivePage: React.FC = () => {
   });
 
   const {
-  items: checklistItems,
-  addItem: handleAddItem,
-  toggleItem: handleToggleItem,
-  editItem: handleEditItem,
-} = useSharedChecklist({
-  sessionId: sessionId ?? "",
-  userId: currentUserId,
-enabled: sessionStatus === "ready" && !!currentUserId,
-  initialItems: defaultChecklistItems,
-});
+    items: checklistItems,
+    addItem: handleAddItem,
+    toggleItem: handleToggleItem,
+    editItem: handleEditItem,
+  } = useSharedChecklist({
+    sessionId: sessionId ?? "",
+    userId: currentUserId,
+    enabled: sessionStatus === "ready" && !!currentUserId,
+    initialItems: defaultChecklistItems,
+  });
   useEffect(() => {
     let isMounted = true;
 
@@ -138,6 +140,103 @@ enabled: sessionStatus === "ready" && !!currentUserId,
     };
   }, [sessionId]);
 
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const loadFiles = async () => {
+      const { data, error } = await supabase
+        .from("session_files")
+        .select("*")
+        .eq("session_id", sessionId)
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      setFiles(
+        (data || []).map((f) => ({
+          id: f.id,
+          name: f.name,
+          size: f.size,
+          type: f.type,
+          uploadedBy: f.uploader_id,
+          uploadedAt: new Date(f.created_at),
+          url: f.url,
+          path: f.path,
+        }))
+      );
+    };
+
+    loadFiles();
+  }, [sessionId]);
+
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const channel = supabase
+      .channel(`files-${sessionId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "session_files",
+          filter: `session_id=eq.${sessionId}`,
+        },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const f = payload.new;
+
+            setFiles((prev) => [
+              ...prev,
+              {
+                id: f.id,
+                name: f.name,
+                size: f.size,
+                type: f.type,
+                uploadedBy: f.uploader_id,
+                uploadedAt: new Date(f.created_at),
+                url: f.url,
+              },
+            ]);
+          }
+
+          if (payload.eventType === "DELETE") {
+            const f = payload.old;
+            setFiles((prev) => prev.filter((x) => x.id !== f.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [sessionId]);
+
+  const handleDeleteFile = async (fileId: string) => {
+    const file = files.find((f) => f.id === fileId);
+    if (!file) return;
+
+    // 1. delete from DB
+    const { error } = await supabase
+      .from("session_files")
+      .delete()
+      .eq("id", fileId);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    if (!file.path) return;
+    await deleteSessionFile(file.path);
+    
+    setFiles((prev) => prev.filter((f) => f.id !== fileId));
+  };
+
   const handleSendMessage = async (text: string) => {
     if (!sessionId || !currentUserId || sessionStatus !== "ready") return;
 
@@ -146,17 +245,48 @@ enabled: sessionStatus === "ready" && !!currentUserId,
   };
 
   const handleFileUpload = async (file: File) => {
-    await new Promise((resolve) => setTimeout(resolve, 700));
-    const newFile: FileAttachment = {
-      id: Date.now().toString(),
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      url: URL.createObjectURL(file),
-      uploadedBy: "You",
-      uploadedAt: new Date(),
-    };
-    setFiles((prev) => [...prev, newFile]);
+    if (!sessionId || !currentUserId) return;
+
+    const { data, error } = await uploadSessionFile(
+      sessionId,
+      currentUserId,
+      file
+    );
+
+    if (error || !data) return;
+
+    const { data: inserted, error: dbError } = await supabase
+      .from("session_files")
+      .insert({
+        session_id: sessionId,
+        uploader_id: currentUserId,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        path: data.path,
+        url: data.url,
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error(dbError);
+      return;
+    }
+
+    setFiles((prev) => [
+      ...prev,
+      {
+        id: inserted.id,
+        name: inserted.name,
+        size: inserted.size,
+        type: inserted.type,
+        uploadedBy: currentUserName,
+        uploadedAt: new Date(inserted.created_at),
+        url: inserted.url,
+        path: inserted.path,
+      },
+    ]);
   };
 
   const handleDownload = (fileId: string) => {
@@ -164,10 +294,6 @@ enabled: sessionStatus === "ready" && !!currentUserId,
     if (file) window.open(file.url, "_blank");
   };
 
-  const handleDeleteFile = (fileId: string) => {
-    setFiles((prev) => prev.filter((file) => file.id !== fileId));
-    setPendingDeleteFileId(null);
-  };
 
   const pendingDeleteFile = pendingDeleteFileId
     ? files.find((file) => file.id === pendingDeleteFileId) ?? null
@@ -265,8 +391,8 @@ enabled: sessionStatus === "ready" && !!currentUserId,
               <button
                 onClick={() => setActiveTab("agenda")}
                 className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${activeTab === "agenda"
-                    ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white shadow-[0_10px_20px_-14px_rgba(99,102,241,0.8)]"
-                    : "text-slate-600 hover:bg-indigo-50 hover:text-slate-800"
+                  ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white shadow-[0_10px_20px_-14px_rgba(99,102,241,0.8)]"
+                  : "text-slate-600 hover:bg-indigo-50 hover:text-slate-800"
                   }`}
               >
                 <ClipboardList size={15} />
@@ -275,8 +401,8 @@ enabled: sessionStatus === "ready" && !!currentUserId,
               <button
                 onClick={() => setActiveTab("files")}
                 className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${activeTab === "files"
-                    ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white shadow-[0_10px_20px_-14px_rgba(99,102,241,0.8)]"
-                    : "text-slate-600 hover:bg-indigo-50 hover:text-slate-800"
+                  ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white shadow-[0_10px_20px_-14px_rgba(99,102,241,0.8)]"
+                  : "text-slate-600 hover:bg-indigo-50 hover:text-slate-800"
                   }`}
               >
                 <Paperclip size={15} />

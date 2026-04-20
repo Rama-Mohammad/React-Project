@@ -70,6 +70,7 @@ export interface FileAttachment {
   uploadedAt: Date;
   thumbnailUrl?: string;
   isImage?: boolean;
+  path?: string;
 }
 
 export interface VideoPlaceholderProps {
