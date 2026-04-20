@@ -108,6 +108,7 @@ export interface ChecklistProps {
   items: ChecklistItem[];
   onToggleItem: (itemId: string) => void;
   onAddItem: (text: string) => void;
+  onEditItem: (id: string, text: string) => void;
   isEditable: boolean;
 }
 

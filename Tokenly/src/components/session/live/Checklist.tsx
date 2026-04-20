@@ -1,13 +1,22 @@
 import React, { useState } from "react";
 import type { ChecklistProps } from "../../../types/session";
 
-const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, isEditable }) => {
+const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, onEditItem, isEditable }) => {
   const [newItemText, setNewItemText] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
 
   const handleAdd = () => {
     if (!newItemText.trim()) return;
     onAddItem(newItemText.trim());
     setNewItemText("");
+  };
+
+  const handleSaveEdit = (id: string) => {
+    if (!editText.trim()) return;
+    onEditItem(id, editText.trim());
+    setEditingId(null);
+    setEditText("");
   };
 
   const completedCount = items.filter((item) => item.completed).length;
@@ -43,9 +52,42 @@ const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, i
                 onChange={() => onToggleItem(item.id)}
                 className="mt-0.5 accent-indigo-600"
               />
-              <span className={`text-sm ${item.completed ? "text-slate-400 line-through" : "text-slate-700"}`}>
-                {item.text}
-              </span>
+              <div className="flex w-full items-center justify-between gap-2">
+                {editingId === item.id ? (
+                  <input
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    className="flex-1 rounded border px-2 py-1 text-sm"
+                  />
+                ) : (
+                  <span className={`text-sm ${item.completed ? "text-slate-400 line-through" : "text-slate-700"}`}>
+                    {item.text}
+                  </span>
+                )}
+
+                {isEditable && (
+                  <div className="flex gap-2">
+                    {editingId === item.id ? (
+                      <button
+                        onClick={() => handleSaveEdit(item.id)}
+                        className="text-xs text-green-600"
+                      >
+                        Save
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setEditingId(item.id);
+                          setEditText(item.text);
+                        }}
+                        className="text-xs text-indigo-600"
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </label>
           ))
         )}

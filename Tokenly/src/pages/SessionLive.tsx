@@ -6,7 +6,6 @@ import ChatWindow from "../components/session/live/ChatWindow";
 import FileManager from "../components/session/live/FileManager";
 import Checklist from "../components/session/live/Checklist";
 import { useChat } from "../hooks/useChat";
-import { useSharedChecklist } from "../hooks/useSharedChecklist";
 import { useLiveSessionCall } from "../hooks/useLiveSessionCall";
 import { getCurrentUser } from "../services/authService";
 import { sendMessage } from "../services/chatService";
@@ -37,6 +36,11 @@ const SessionLivePage: React.FC = () => {
   const [sessionError, setSessionError] = useState("");
   const [files, setFiles] = useState<FileAttachment[]>([]);
   const [pendingDeleteFileId, setPendingDeleteFileId] = useState<string | null>(null);
+
+const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(() => {
+  const saved = localStorage.getItem(`checklist-${sessionId}`);
+  return saved ? JSON.parse(saved) : defaultChecklistItems;
+});
   const { messages, appendLocalMessage } = useChat({
     sessionId: sessionId ?? "",
     currentUserId,
@@ -64,16 +68,40 @@ const SessionLivePage: React.FC = () => {
     isInitiator,
   });
 
-  const {
-    items: checklistItems,
-    toggleItem: handleToggleItem,
-    addItem: handleAddItem,
-  } = useSharedChecklist({
-    sessionId: sessionId ?? "",
-    userId: currentUserId,
-    enabled: sessionStatus === "ready",
-    initialItems: defaultChecklistItems,
-  });
+
+  useEffect(() => {
+  if (!sessionId) return;
+  localStorage.setItem(
+    `checklist-${sessionId}`,
+    JSON.stringify(checklistItems)
+  );
+}, [checklistItems, sessionId]);
+
+  const handleAddItem = (text: string) => {
+  const newItem: ChecklistItem = {
+    id: Date.now().toString(),
+    text,
+    completed: false,
+  };
+
+  setChecklistItems((prev) => [...prev, newItem]);
+};
+
+const handleEditItem = (id: string, text: string) => {
+  setChecklistItems((prev) =>
+    prev.map((item) =>
+      item.id === id ? { ...item, text } : item
+    )
+  );
+};
+
+const handleToggleItem = (id: string) => {
+  setChecklistItems((prev) =>
+    prev.map((item) =>
+      item.id === id ? { ...item, completed: !item.completed } : item
+    )
+  );
+};
 
   useEffect(() => {
     let isMounted = true;
@@ -288,6 +316,7 @@ const SessionLivePage: React.FC = () => {
                   items={checklistItems}
                   onToggleItem={handleToggleItem}
                   onAddItem={handleAddItem}
+                  onEditItem={handleEditItem}
                   isEditable
                 />
               ) : (
