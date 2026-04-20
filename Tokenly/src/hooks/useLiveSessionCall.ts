@@ -675,28 +675,62 @@ export function useLiveSessionCall({
     setIsScreenSharing(false);
   };
 
+  const isMobileDevice = () => {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+};
+
+  // const toggleScreenShare = async () => {
+  //   if (isScreenSharing) {
+  //     await stopScreenShare();
+  //     return;
+  //   }
+
+  //   try {
+  //     const displayStream = await getDisplayMediaCompat({ video: true });
+  //     const screenTrack = displayStream.getVideoTracks()[0];
+  //     if (!screenTrack) return;
+
+  //     screenTrackRef.current = screenTrack;
+  //     await replaceActiveVideoTrack(screenTrack);
+  //     setIsScreenSharing(true);
+
+  //     screenTrack.onended = () => {
+  //       void stopScreenShare();
+  //     };
+  //   } catch (error) {
+  //     setErrorMessage(error instanceof Error ? error.message : "Could not start screen sharing.");
+  //   }
+  // };
+
   const toggleScreenShare = async () => {
-    if (isScreenSharing) {
-      await stopScreenShare();
-      return;
-    }
+  if (isScreenSharing) {
+    await stopScreenShare();
+    return;
+  }
 
-    try {
-      const displayStream = await getDisplayMediaCompat({ video: true });
-      const screenTrack = displayStream.getVideoTracks()[0];
-      if (!screenTrack) return;
+  if (isMobileDevice()) {
+    setErrorMessage("Screen sharing is not supported on mobile devices.");
+    return;
+  }
 
-      screenTrackRef.current = screenTrack;
-      await replaceActiveVideoTrack(screenTrack);
-      setIsScreenSharing(true);
+  try {
+    const displayStream = await getDisplayMediaCompat({ video: true });
+    const screenTrack = displayStream.getVideoTracks()[0];
+    if (!screenTrack) return;
 
-      screenTrack.onended = () => {
-        void stopScreenShare();
-      };
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Could not start screen sharing.");
-    }
-  };
+    screenTrackRef.current = screenTrack;
+    await replaceActiveVideoTrack(screenTrack);
+    setIsScreenSharing(true);
+
+    screenTrack.onended = () => {
+      void stopScreenShare();
+    };
+  } catch (error) {
+    setErrorMessage(
+      error instanceof Error ? error.message : "Could not start screen sharing."
+    );
+  }
+};
 
   return {
     localStream,

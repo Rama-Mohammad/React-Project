@@ -12,6 +12,7 @@ import { sendMessage } from "../services/chatService";
 import { getSessionById, updateSessionStatus } from "../services/sessionService";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import type { ChecklistItem, FileAttachment } from "../types/session";
+import { useSharedChecklist } from "../hooks/useSharedChecklist";
 
 type TabType = "agenda" | "files";
 
@@ -37,10 +38,6 @@ const SessionLivePage: React.FC = () => {
   const [files, setFiles] = useState<FileAttachment[]>([]);
   const [pendingDeleteFileId, setPendingDeleteFileId] = useState<string | null>(null);
 
-const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(() => {
-  const saved = localStorage.getItem(`checklist-${sessionId}`);
-  return saved ? JSON.parse(saved) : defaultChecklistItems;
-});
   const { messages, appendLocalMessage } = useChat({
     sessionId: sessionId ?? "",
     currentUserId,
@@ -68,41 +65,17 @@ const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(() => {
     isInitiator,
   });
 
-
-  useEffect(() => {
-  if (!sessionId) return;
-  localStorage.setItem(
-    `checklist-${sessionId}`,
-    JSON.stringify(checklistItems)
-  );
-}, [checklistItems, sessionId]);
-
-  const handleAddItem = (text: string) => {
-  const newItem: ChecklistItem = {
-    id: Date.now().toString(),
-    text,
-    completed: false,
-  };
-
-  setChecklistItems((prev) => [...prev, newItem]);
-};
-
-const handleEditItem = (id: string, text: string) => {
-  setChecklistItems((prev) =>
-    prev.map((item) =>
-      item.id === id ? { ...item, text } : item
-    )
-  );
-};
-
-const handleToggleItem = (id: string) => {
-  setChecklistItems((prev) =>
-    prev.map((item) =>
-      item.id === id ? { ...item, completed: !item.completed } : item
-    )
-  );
-};
-
+  const {
+  items: checklistItems,
+  addItem: handleAddItem,
+  toggleItem: handleToggleItem,
+  editItem: handleEditItem,
+} = useSharedChecklist({
+  sessionId: sessionId ?? "",
+  userId: currentUserId,
+enabled: sessionStatus === "ready" && !!currentUserId,
+  initialItems: defaultChecklistItems,
+});
   useEffect(() => {
     let isMounted = true;
 

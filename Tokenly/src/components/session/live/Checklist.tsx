@@ -14,9 +14,8 @@ const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, o
 
   const handleSaveEdit = (id: string) => {
     if (!editText.trim()) return;
-    onEditItem(id, editText.trim());
+    onEditItem?.(id, editText.trim());
     setEditingId(null);
-    setEditText("");
   };
 
   const completedCount = items.filter((item) => item.completed).length;
@@ -49,7 +48,10 @@ const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, o
               <input
                 type="checkbox"
                 checked={item.completed}
-                onChange={() => onToggleItem(item.id)}
+                onChange={() => {
+                  if (editingId === item.id) return;
+                  onToggleItem(item.id);
+                }}
                 className="mt-0.5 accent-indigo-600"
               />
               <div className="flex w-full items-center justify-between gap-2">
@@ -99,8 +101,9 @@ const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, o
             type="text"
             value={newItemText}
             onChange={(e) => setNewItemText(e.target.value)}
-            onKeyPress={(e) => (e.key === "Enter" ? handleAdd() : null)}
-            placeholder="Add new item..."
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleAdd();
+            }} placeholder="Add new item..."
             className="flex-1 rounded-lg border border-indigo-200 bg-indigo-50/50 px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-200"
           />
           <button
