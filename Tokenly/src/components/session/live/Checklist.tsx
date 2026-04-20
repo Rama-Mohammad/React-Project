@@ -1,10 +1,24 @@
 import React, { useState } from "react";
 import type { ChecklistProps } from "../../../types/session";
 
-const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, onEditItem, isEditable }) => {
+const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, onEditItem, onRemoveItem, isEditable }) => {
   const [newItemText, setNewItemText] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+  if (editingId) {
+    inputRef.current?.focus();
+  }
+}, [editingId]);
+
+  React.useEffect(() => {
+  if (editingId) {
+    const item = items.find(i => i.id === editingId);
+    if (item) setEditText(item.text);
+  }
+}, [editingId, items]);
 
   const handleAdd = () => {
     if (!newItemText.trim()) return;
@@ -59,6 +73,7 @@ const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, o
                   <input
                     value={editText}
                     onChange={(e) => setEditText(e.target.value)}
+                    ref={inputRef}
                     className="flex-1 rounded border px-2 py-1 text-sm"
                   />
                 ) : (
@@ -86,7 +101,14 @@ const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, o
                       >
                         Edit
                       </button>
+                      
                     )}
+                    <button
+  onClick={() => onRemoveItem?.(item.id)}
+  className="text-xs text-red-600"
+>
+  Delete
+</button>
                   </div>
                 )}
               </div>
