@@ -117,6 +117,7 @@ export interface ChatWindowProps {
   sessionId: string;
   messages: Message[];
   onSendMessage: (text: string) => void;
+   onClearChat?: () => void;
   isActive: boolean;
   currentUserId: string;
 }

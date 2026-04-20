@@ -7,11 +7,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   onSendMessage,
   isActive,
   currentUserId,
+    onClearChat,
 }) => {
   const [inputText, setInputText] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const forceScrollRef = useRef(false);
 
   const isNearBottom = () => {
     const el = messagesContainerRef.current;
@@ -20,22 +22,28 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     return el.scrollHeight - el.scrollTop - el.clientHeight < 100;
   };
 
-  useEffect(() => {
-    const container = messagesContainerRef.current;
-    if (!container) return;
+  const shouldAutoScrollRef = useRef(true);
 
-    if (isNearBottom()) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
+const handleScroll = () => {
+  shouldAutoScrollRef.current = isNearBottom();
+};
 
-  const handleSend = () => {
-    if (!inputText.trim() || !isActive) return;
+useEffect(() => {
+  if (forceScrollRef.current || shouldAutoScrollRef.current) {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    forceScrollRef.current = false; // reset
+  }
+}, [messages]);
 
-    onSendMessage(inputText.trim());
-    setInputText("");
-    inputRef.current?.focus();
-  };
+const handleSend = () => {
+  if (!inputText.trim() || !isActive) return;
+
+  forceScrollRef.current = true; 
+
+  onSendMessage(inputText.trim());
+  setInputText("");
+  inputRef.current?.focus();
+};
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -45,18 +53,31 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   };
 
   return (
-    <div className="flex h-full flex-col rounded-xl border border-indigo-200/70 bg-white/75 backdrop-blur">
-
+    <div className="flex h-[500px] flex-col rounded-xl border border-indigo-200/70 bg-white/75 backdrop-blur">
       {/* Header */}
-      <div className="border-b border-indigo-200/70 bg-indigo-50/60 p-3">
-        <h3 className="font-semibold text-slate-900">Chat</h3>
-        <p className="text-xs text-slate-500">
-          {isActive ? "Connected" : "Reconnecting..."}
-        </p>
-      </div>
+<div className="flex items-center justify-between border-b border-indigo-200/70 bg-indigo-50/60 p-3">
+  <div>
+    <h3 className="font-semibold text-slate-900">Chat</h3>
+    <p className="text-xs text-slate-500">
+      {isActive ? "Connected" : "Reconnecting..."}
+    </p>
+  </div>
+
+  <button
+    onClick={onClearChat}
+    className="text-xs text-red-600 hover:underline"
+  >
+    Clear
+  </button>
+</div>
+      
 
       {/* Messages */}
-      <div className="flex-1 space-y-3 overflow-y-auto p-3">
+      <div
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3"
+      >
         {messages.length === 0 ? (
           <div className="mt-8 text-center text-sm text-slate-400">
             No messages yet. Start the conversation.
@@ -100,4 +121,4 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   );
 };
 
-export default ChatWindow;
+export default React.memo(ChatWindow);

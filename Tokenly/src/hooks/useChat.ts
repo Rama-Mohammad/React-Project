@@ -101,24 +101,6 @@ export const useChat = ({
 
     void loadMessages();
 
-    // const channel = supabase
-    //   .channel(`chat-${sessionId}`)
-    //   .on(
-    //     "postgres_changes",
-    //     {
-    //       event: "INSERT",
-    //       schema: "public",
-    //       table: "session_messages",
-    //       filter: `session_id=eq.${sessionId}`,
-    //     },
-    //     (payload) => {
-    //       const msg: any = payload.new;
-    //       mergeMessages([mapMessage(msg)]);
-    //     }
-    //   )
-    //   .subscribe();
-
-
   const channel = supabase
   .channel(`chat-${sessionId}`)
   .on(
@@ -130,14 +112,11 @@ export const useChat = ({
       filter: `session_id=eq.${sessionId}`,
     },
     (payload) => {
-      console.log("📩 realtime event received:", payload);
       const msg: any = payload.new;
       mergeMessages([mapMessage(msg)]);
     }
   )
-  .subscribe((status) => {
-    console.log("📡 subscription status:", status);
-  });
+
 
     const pollTimer = setInterval(() => {
       void loadMessages();

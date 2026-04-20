@@ -38,6 +38,7 @@ const SessionLivePage: React.FC = () => {
   const [files, setFiles] = useState<FileAttachment[]>([]);
   const [pendingDeleteFileId, setPendingDeleteFileId] = useState<string | null>(null);
 
+
   const { messages, appendLocalMessage } = useChat({
     sessionId: sessionId ?? "",
     currentUserId,
