@@ -36,12 +36,11 @@ const SessionLivePage: React.FC = () => {
   const [sessionError, setSessionError] = useState("");
   const [files, setFiles] = useState<FileAttachment[]>([]);
   const [pendingDeleteFileId, setPendingDeleteFileId] = useState<string | null>(null);
-  const [isLeaving, setIsLeaving] = useState(false);
 
-  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(() => {
-    const saved = localStorage.getItem(`checklist-${sessionId}`);
-    return saved ? JSON.parse(saved) : defaultChecklistItems;
-  });
+const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>(() => {
+  const saved = localStorage.getItem(`checklist-${sessionId}`);
+  return saved ? JSON.parse(saved) : defaultChecklistItems;
+});
   const { messages, appendLocalMessage } = useChat({
     sessionId: sessionId ?? "",
     currentUserId,
@@ -71,38 +70,38 @@ const SessionLivePage: React.FC = () => {
 
 
   useEffect(() => {
-    if (!sessionId) return;
-    localStorage.setItem(
-      `checklist-${sessionId}`,
-      JSON.stringify(checklistItems)
-    );
-  }, [checklistItems, sessionId]);
+  if (!sessionId) return;
+  localStorage.setItem(
+    `checklist-${sessionId}`,
+    JSON.stringify(checklistItems)
+  );
+}, [checklistItems, sessionId]);
 
   const handleAddItem = (text: string) => {
-    const newItem: ChecklistItem = {
-      id: Date.now().toString(),
-      text,
-      completed: false,
-    };
-
-    setChecklistItems((prev) => [...prev, newItem]);
+  const newItem: ChecklistItem = {
+    id: Date.now().toString(),
+    text,
+    completed: false,
   };
 
-  const handleEditItem = (id: string, text: string) => {
-    setChecklistItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, text } : item
-      )
-    );
-  };
+  setChecklistItems((prev) => [...prev, newItem]);
+};
 
-  const handleToggleItem = (id: string) => {
-    setChecklistItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, completed: !item.completed } : item
-      )
-    );
-  };
+const handleEditItem = (id: string, text: string) => {
+  setChecklistItems((prev) =>
+    prev.map((item) =>
+      item.id === id ? { ...item, text } : item
+    )
+  );
+};
+
+const handleToggleItem = (id: string) => {
+  setChecklistItems((prev) =>
+    prev.map((item) =>
+      item.id === id ? { ...item, completed: !item.completed } : item
+    )
+  );
+};
 
   useEffect(() => {
     let isMounted = true;
@@ -219,11 +218,7 @@ const SessionLivePage: React.FC = () => {
           <p className="mt-2 text-sm text-slate-600">{sessionError}</p>
           <button
             type="button"
-            onClick={() => {
-              setIsLeaving(true);
-              setHasJoinedCall(false);
-              navigate("/sessions");
-            }}
+            onClick={() => navigate("/sessions")}
             className="mt-4 rounded-lg bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-95"
           >
             Back to Sessions
@@ -296,8 +291,8 @@ const SessionLivePage: React.FC = () => {
               <button
                 onClick={() => setActiveTab("agenda")}
                 className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${activeTab === "agenda"
-                  ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white shadow-[0_10px_20px_-14px_rgba(99,102,241,0.8)]"
-                  : "text-slate-600 hover:bg-indigo-50 hover:text-slate-800"
+                    ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white shadow-[0_10px_20px_-14px_rgba(99,102,241,0.8)]"
+                    : "text-slate-600 hover:bg-indigo-50 hover:text-slate-800"
                   }`}
               >
                 <ClipboardList size={15} />
@@ -306,8 +301,8 @@ const SessionLivePage: React.FC = () => {
               <button
                 onClick={() => setActiveTab("files")}
                 className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${activeTab === "files"
-                  ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white shadow-[0_10px_20px_-14px_rgba(99,102,241,0.8)]"
-                  : "text-slate-600 hover:bg-indigo-50 hover:text-slate-800"
+                    ? "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] text-white shadow-[0_10px_20px_-14px_rgba(99,102,241,0.8)]"
+                    : "text-slate-600 hover:bg-indigo-50 hover:text-slate-800"
                   }`}
               >
                 <Paperclip size={15} />
