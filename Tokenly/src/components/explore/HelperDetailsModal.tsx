@@ -4,7 +4,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
-import useAuth from "../../hooks/useAuth";
+import useAuthRedirect from "../../hooks/useAuthRedirect";
 import RatingStars from "../common/RatingStars";
 import Avatar from "../common/Avatar";
 import type { HelperCardProps } from "../../types/explore";
@@ -21,7 +21,7 @@ export default function HelperDetailsModal({
   isOpen,
   onClose,
 }: HelperDetailsModalProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, authRedirectState } = useAuthRedirect();
 
   const ctaLink = isAuthenticated
     ? `/helpers/${item.id}/request`
@@ -129,10 +129,11 @@ export default function HelperDetailsModal({
           </div>
 
           {/* CTA */}
-          <Link
-            to={ctaLink}
-            className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-white text-sm font-semibold hover:bg-indigo-700"
-          >
+        <Link
+          to={ctaLink}
+          state={!isAuthenticated ? authRedirectState : undefined}
+          className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-white text-sm font-semibold hover:bg-indigo-700"
+        >
             <MessageCircle size={16} />
             Request Help
           </Link>

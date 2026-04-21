@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import useAuth from "../../hooks/useAuth";
+import useAuthRedirect from "../../hooks/useAuthRedirect";
 
 export default function Footer() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, authRedirectState } = useAuthRedirect();
   const year = new Date().getFullYear();
   const iconHoverClass =
     "inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white/70 transition duration-500 hover:-translate-y-1 hover:scale-110 hover:rotate-3 hover:border-indigo-300 hover:bg-[linear-gradient(135deg,#eef2ff_0%,#ede9fe_100%)] hover:text-indigo-600 hover:shadow-[0_12px_24px_-14px_rgba(99,102,241,0.85)]";
@@ -50,20 +50,20 @@ export default function Footer() {
             <div className="mt-3 space-y-2 text-sm text-slate-700 flex flex-col items-center md:items-start">
               <Link to="/home" className={linkHoverClass}>Home</Link>
               <Link to="/explore" className={linkHoverClass}>Explore</Link>
-              <Link to={gatedLink("/dashboard")} className={linkHoverClass}>Dashboard</Link>
-              <Link to={gatedLink("/sessions")} className={linkHoverClass}>Sessions</Link>
-              <Link to={gatedLink("/profile")} className={linkHoverClass}>Profile</Link>
+              <Link to={gatedLink("/dashboard")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Dashboard</Link>
+              <Link to={gatedLink("/sessions")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Sessions</Link>
+              <Link to={gatedLink("/profile")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Profile</Link>
             </div>
           </div>
 
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Company</p>
             <div className="mt-3 space-y-2 text-sm text-slate-700 flex flex-col items-center md:items-start">
-              <Link to={gatedLink("/explore")} className={linkHoverClass}>Browse Requests</Link>
-              <Link to={gatedLink("/explore?tab=helpers#explore-tabs-bar")} className={linkHoverClass}>Find Helpers</Link>
-              <Link to={gatedLink("/explore?tab=skills#explore-tabs-bar")} className={linkHoverClass}>Explore Skills</Link>
-              <Link to={gatedLink("/sessions?status=active")} className={linkHoverClass}>Live Sessions</Link>
-              <Link to={gatedLink("/helpers/h1/request")} className={linkHoverClass}>Create Request</Link>
+              <Link to={gatedLink("/explore")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Browse Requests</Link>
+              <Link to={gatedLink("/explore?tab=helpers#explore-tabs-bar")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Find Helpers</Link>
+              <Link to={gatedLink("/explore?tab=skills#explore-tabs-bar")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Explore Skills</Link>
+              <Link to={gatedLink("/sessions?status=active")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Live Sessions</Link>
+              <Link to={gatedLink("/helpers/h1/request")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Create Request</Link>
             </div>
           </div>
 

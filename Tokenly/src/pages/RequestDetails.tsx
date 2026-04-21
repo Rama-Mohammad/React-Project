@@ -25,6 +25,7 @@ import {
   getProfileCompletedSessionsCount,
   getProfileCreditBalance,
 } from "../services/profileService";
+import useAuthRedirect from "../hooks/useAuthRedirect";
 import { deleteRequest, getRequestById } from "../services/requestService";
 import { mapRequestToExploreItem } from "../utils/exploreMappers";
 import type { RequestItem } from "../types/explore";
@@ -39,6 +40,7 @@ const urgencyStyles: Record<string, string> = {
 export default function RequestDetails() {
   const { requestId } = useParams<{ requestId: string }>();
   const navigate = useNavigate();
+  const { requireAuth } = useAuthRedirect();
   const [request, setRequest] = useState<RequestItem | null>(null);
   const [requestOwnerId, setRequestOwnerId] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -358,6 +360,10 @@ export default function RequestDetails() {
   };
 
   const handleSubmitOffer = async () => {
+    if (!requireAuth(() => undefined)) {
+      return;
+    }
+
     const messageValue = offerMessage.trim();
     const availabilityValue = availability.trim();
 

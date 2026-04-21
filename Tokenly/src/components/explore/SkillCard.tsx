@@ -1,6 +1,6 @@
 import { ArrowRight, Sparkles, Users } from "lucide-react";
 import { Link } from "react-router-dom";
-import useAuth from "../../hooks/useAuth";
+import useAuthRedirect from "../../hooks/useAuthRedirect";
 import RatingStars from "../common/RatingStars";
 import Avatar from "../common/Avatar";
 import type { ExploreSkillCardProps } from "../../types/explore";
@@ -12,7 +12,7 @@ const levelStyles: Record<string, string> = {
 };
 
 export default function SkillCard({ item }: ExploreSkillCardProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, authRedirectState } = useAuthRedirect();
   const ctaLink = isAuthenticated ? `/skills/${item.id}/helpers` : "/auth?mode=signin";
 
   return (
@@ -75,6 +75,7 @@ export default function SkillCard({ item }: ExploreSkillCardProps) {
 
         <Link
           to={ctaLink}
+          state={!isAuthenticated ? authRedirectState : undefined}
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-500 transition duration-300 hover:gap-2 hover:text-indigo-600"
         >
           Find helpers

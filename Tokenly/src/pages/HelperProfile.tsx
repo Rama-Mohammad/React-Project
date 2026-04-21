@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { MapPin, Calendar, Star, Clock3, Coins, Sparkles, Globe } from "lucide-react";
 import Avatar from "../components/common/Avatar";
 import { supabase } from "../lib/supabaseClient";
+import useAuthRedirect from "../hooks/useAuthRedirect";
 import {
   getPublicHelperProfileCore,
   getHelperOpenOffers,
@@ -51,6 +52,7 @@ export default function HelperProfile() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { authRedirectState } = useAuthRedirect();
 
   // Load current user to determine if viewing own profile
   useEffect(() => {
@@ -183,6 +185,7 @@ export default function HelperProfile() {
                 {/* Flow 3: send a direct request to this specific helper */}
                 <Link
                   to={currentUserId ? `/helpers/${profile.id}/request` : "/auth?mode=signin"}
+                  state={!currentUserId ? authRedirectState : undefined}
                   className="inline-flex h-10 items-center rounded-xl bg-linear-to-r from-indigo-500 to-violet-500 px-4 text-sm font-semibold text-white transition hover:brightness-105"
                 >
                   Request directly
@@ -331,6 +334,7 @@ export default function HelperProfile() {
                       {/* Link to the public booking page — Flow 2 entry point */}
                       <Link
                         to={currentUserId ? `/offers/${offer.id}` : "/auth?mode=signin"}
+                        state={!currentUserId ? authRedirectState : undefined}
                         className="mt-3 inline-flex h-8 w-full items-center justify-center rounded-xl bg-indigo-600 text-xs font-semibold text-white transition hover:bg-indigo-700"
                       >
                         Book this offer
@@ -346,6 +350,7 @@ export default function HelperProfile() {
                 {!isOwnProfile ? (
                   <Link
                     to={currentUserId ? `/helpers/${profile.id}/request` : "/auth?mode=signin"}
+                    state={!currentUserId ? authRedirectState : undefined}
                     className="mt-3 inline-flex text-xs font-semibold text-indigo-600 hover:text-indigo-800"
                   >
                     Request them directly →

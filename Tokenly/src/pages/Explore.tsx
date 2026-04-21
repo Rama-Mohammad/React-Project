@@ -22,6 +22,7 @@ import { getExploreHelpers } from "../services/helperExploreService";
 import { mapProfileToHelperItem } from "../utils/helperExploreMapper";
 import { getOpenHelpOffers } from "../services/helpOfferService";
 import useAuth from "../hooks/useAuth";
+import useAuthRedirect from "../hooks/useAuthRedirect";
 import tokenlyLogo from "../assets/favicon_tokenly.svg";
 
 function matchesSearch(text: string, search: string) {
@@ -104,6 +105,7 @@ const HELPER_BASIC_FILTERS = [
 
 export default function Explore() {
   const { isAuthenticated } = useAuth();
+  const { authRedirectState } = useAuthRedirect();
   const location = useLocation();
   const tabsBarRef = useRef<HTMLDivElement | null>(null);
   const pendingPaginationScrollRef = useRef<{
@@ -1089,6 +1091,7 @@ export default function Explore() {
                       {/* Links to the help offer detail page — user can submit a help_offer_request from there */}
                       <Link
                         to={isAuthenticated ? `/offers/${item.id}?source=help_offer` : "/auth?mode=signin"}
+                        state={!isAuthenticated ? authRedirectState : undefined}
                         className="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700"
                       >
                         Book

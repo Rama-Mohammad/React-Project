@@ -8,7 +8,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import useAuth from "../../hooks/useAuth";
+import useAuthRedirect from "../../hooks/useAuthRedirect";
 import Avatar from "../common/Avatar";
 import TagOverflowList from "../common/TagOverflowList";
 import type { HelperCardProps } from "../../types/explore";
@@ -50,7 +50,7 @@ interface HelperCardPropsWithCallback extends HelperCardProps {
 }
 
 export default function HelperCard({ item }: HelperCardPropsWithCallback) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, authRedirectState } = useAuthRedirect();
   const ctaLink = isAuthenticated
     ? `/helpers/${item.id}/request`
     : "/auth?mode=signin";
@@ -151,6 +151,7 @@ export default function HelperCard({ item }: HelperCardPropsWithCallback) {
 
           <Link
             to={ctaLink}
+            state={!isAuthenticated ? authRedirectState : undefined}
             className="inline-flex h-9 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition duration-200 hover:bg-slate-50 sm:ml-0"
           >
             Request

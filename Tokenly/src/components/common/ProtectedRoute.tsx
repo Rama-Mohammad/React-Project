@@ -1,14 +1,15 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import Loader from './Loader';
 import type { ProtectedRouteProps } from '../../types/common';
+import useAuth from '../../hooks/useAuth';
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requiredRole
 }) => {
-  const loading = false;
-  const isAuthenticated = true;
+  const location = useLocation();
+  const { loading, isAuthenticated } = useAuth();
   const user = { role: 'user' as const };
 
   if (loading) {
@@ -20,7 +21,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/auth" replace />;
+    return (
+      <Navigate
+        to="/auth?mode=signin"
+        replace
+        state={{ from: `${location.pathname}${location.search}${location.hash}` }}
+      />
+    );
   }
 
   if (requiredRole && user?.role !== requiredRole) {

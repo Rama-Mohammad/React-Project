@@ -31,6 +31,7 @@ import TokenOptions from "../pages/TokenOptions";
 import AccountSettings from "../pages/AccountSettings";
 import ErrorPage from "../pages/ErrorPage";
 import NotFound from "../pages/NotFound";
+import ProtectedRoute from "../components/common/ProtectedRoute";
 
 function ErrorTestPage(): never {
   throw new Error("This is a test route for the Tokenly error page.");
@@ -77,11 +78,11 @@ export const router = createBrowserRouter(
             },
             {
               path: "/my-offers/help-offer/:offerId",
-              element: <HelpOfferDetails />,
+              element: <ProtectedRoute><HelpOfferDetails /></ProtectedRoute>,
             },
             {
               path: "/my-offers/independent/:offerId",
-              element: <HelpOfferDetails />,
+              element: <ProtectedRoute><HelpOfferDetails /></ProtectedRoute>,
             },
             {
               path: "/helpers/:helperId",
@@ -89,43 +90,43 @@ export const router = createBrowserRouter(
             },
             {
               path: "/helpers/:helperId/request",
-              element: <RequestHelper />,
+              element: <ProtectedRoute><RequestHelper /></ProtectedRoute>,
             },
             {
               path: "/sessions/request/:sessionId",
-              element: <SessionRequestDetails />,
+              element: <ProtectedRoute><SessionRequestDetails /></ProtectedRoute>,
             },
             {
               path: "/sessions",
-              element: <Sessions />,
+              element: <ProtectedRoute><Sessions /></ProtectedRoute>,
             },
             {
               path: "/offers/:offerId/appointment",
-              element: <OfferAppointment />,
+              element: <ProtectedRoute><OfferAppointment /></ProtectedRoute>,
             },
             {
               path: "/request/new",
-              element: <RequestHelper />,
+              element: <ProtectedRoute><RequestHelper /></ProtectedRoute>,
             },
             {
               path: "/create-offer",
-              element: <CreateOffer />,
+              element: <ProtectedRoute><CreateOffer /></ProtectedRoute>,
             },
             {
               path: "/skills/:skillId/helpers",
-              element: <SkillHelpers />,
+              element: <ProtectedRoute><SkillHelpers /></ProtectedRoute>,
             },
             {
               path: "/my-offers",
-              element: <MyOffers />,
+              element: <ProtectedRoute><MyOffers /></ProtectedRoute>,
             },
             {
               path: "/dashboard",
-              element: <Dashboard />,
+              element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
             },
             {
               path: "/profile",
-              element: <Profile />,
+              element: <ProtectedRoute><Profile /></ProtectedRoute>,
             },
             {
               path: "/profile/:identifier",
@@ -133,15 +134,15 @@ export const router = createBrowserRouter(
             },
             {
               path: "/activity",
-              element: <Activity />,
+              element: <ProtectedRoute><Activity /></ProtectedRoute>,
             },
             {
               path: "/tokens/options",
-              element: <TokenOptions />,
+              element: <ProtectedRoute><TokenOptions /></ProtectedRoute>,
             },
             {
               path: "/account-settings",
-              element: <AccountSettings />,
+              element: <ProtectedRoute><AccountSettings /></ProtectedRoute>,
             },
             {
               path: "/help",
@@ -183,7 +184,7 @@ export const router = createBrowserRouter(
         },
         {
           path: "/session/:sessionId",
-          element: <SessionLivePage />,
+          element: <ProtectedRoute><SessionLivePage /></ProtectedRoute>,
         },
         { path: "/auth", element: <AuthPage /> },
         {
@@ -195,8 +196,8 @@ export const router = createBrowserRouter(
           path: "/error-test",
           element: <ErrorTestPage />,
         },
-        {path: "/profile", element: <Profile/>},
-        {path: "/users/:userId", element: <Profile/>}
+        {path: "/profile", element: <ProtectedRoute><Profile /></ProtectedRoute>},
+        {path: "/users/:userId", element: <ProtectedRoute><Profile /></ProtectedRoute>}
       ],
     },
   ],

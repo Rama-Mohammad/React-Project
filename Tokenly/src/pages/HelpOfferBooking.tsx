@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Clock3, Coins, Sparkles, Star, CheckCircle2 } from "lucide-react";
 import Avatar from "../components/common/Avatar";
 import { supabase } from "../lib/supabaseClient";
+import useAuthRedirect from "../hooks/useAuthRedirect";
 import { getHelpOfferById, submitHelpOfferRequest } from "../services/helpOfferService";
 import { getPublicHelperProfileCore } from "../services/profileService";
 import type { HelpOffer } from "../types/helpOffer";
@@ -22,6 +23,7 @@ const levelStyle: Record<string, string> = {
 
 export default function HelpOfferBooking() {
   const { offerId } = useParams<{ offerId: string }>();
+  const { authRedirectState, requireAuth } = useAuthRedirect();
 
   const [offer, setOffer] = useState<HelpOffer | null>(null);
   const [helperProfile, setHelperProfile] = useState<{
@@ -99,6 +101,9 @@ export default function HelpOfferBooking() {
   }, [currentUserId, offer]);
 
   const handleSubmit = async () => {
+    if (!requireAuth(() => undefined)) {
+      return;
+    }
     if (!currentUserId) { setSubmitError("Please sign in to book this offer."); return; }
     if (!offer) return;
     if (!canBook) { setSubmitError("You cannot book this offer."); return; }
@@ -367,7 +372,7 @@ export default function HelpOfferBooking() {
 
                   {!currentUserId ? (
                     <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                      <Link to="/auth" className="font-semibold underline">Sign in</Link> to book this offer.
+                      <Link to="/auth?mode=signin" state={authRedirectState} className="font-semibold underline">Sign in</Link> to book this offer.
                     </p>
                   ) : !canBook && offer.status !== "open" ? (
                     <p className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">

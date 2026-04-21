@@ -1,6 +1,7 @@
 ﻿import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
+import type { AuthRedirectState } from "../hooks/useAuthRedirect";
 import NewPasswordForm from "../components/auth/NewPasswordForm";
 import OnboardingForm from "../components/auth/OnBoardingForm";
 import type { OnboardingData } from "../types/onboardingdata"
@@ -44,7 +45,14 @@ function getInitialMode(searchParams: URLSearchParams): AuthMode {
 
 export default function AuthPage() {
     const [searchParams] = useSearchParams();
+    const location = useLocation();
     const navigate = useNavigate();
+    const locationState = location.state as AuthRedirectState | null;
+    const requestedRedirect = locationState?.from;
+    const redirectTarget =
+        requestedRedirect && !requestedRedirect.startsWith("/auth")
+            ? requestedRedirect
+            : "/explore";
 
     const [mode, setMode] = useState<AuthMode>(() => getInitialMode(searchParams));
     const [slideDirection, setSlideDirection] = useState<1 | -1>(1);
@@ -110,9 +118,9 @@ export default function AuthPage() {
 
     useEffect(() => {
         if (isAuthenticated && !isRecoveryRoute && !onboardingActiveRef.current && !showOnboarding && !shouldForceOnboarding) {
-            navigate("/explore", { replace: true });
+            navigate(redirectTarget, { replace: true });
         }
-    }, [isAuthenticated, isRecoveryRoute, navigate, showOnboarding, shouldForceOnboarding]);
+    }, [isAuthenticated, isRecoveryRoute, navigate, redirectTarget, showOnboarding, shouldForceOnboarding]);
 
     useEffect(() => {
         if (!shouldForceOnboarding || !user || onboardingActiveRef.current || showOnboarding) return;
@@ -166,7 +174,7 @@ export default function AuthPage() {
     const handleSignIn = async (identifier: string, password: string) => {
         const success = await signIn(identifier, password);
         if (success) {
-            navigate("/explore", { replace: true });
+            navigate(redirectTarget, { replace: true });
         }
         return success;
     };
@@ -174,7 +182,7 @@ export default function AuthPage() {
     const handleOnboardingSubmit = async (data: OnboardingData) => {
         if (!user) {
             onboardingActiveRef.current = false;
-            navigate("/explore", { replace: true });
+            navigate(redirectTarget, { replace: true });
             return true;
         }
 
@@ -212,20 +220,20 @@ export default function AuthPage() {
         setOnboardingLoading(false);
         markOnboardingCompleted(user.id);
         onboardingActiveRef.current = false;
-        navigate("/explore", { replace: true });
+        navigate(redirectTarget, { replace: true });
         return true;
     };
 
     const handleOnboardingSkip = () => {
         if (user) markOnboardingCompleted(user.id);
         onboardingActiveRef.current = false;
-        navigate("/explore", { replace: true });
+        navigate(redirectTarget, { replace: true });
     };
 
     const handleNewPassword = async (newPassword: string) => {
         const success = await changePassword(newPassword);
         if (success) {
-            setTimeout(() => navigate("/auth?mode=signin", { replace: true }), 2000);
+            setTimeout(() => navigate("/auth?mode=signin", { replace: true, state: { from: redirectTarget } }), 2000);
         }
     };
 

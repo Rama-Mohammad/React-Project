@@ -1,6 +1,6 @@
 import { Clock3, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-import useAuth from "../../hooks/useAuth";
+import useAuthRedirect from "../../hooks/useAuthRedirect";
 import RatingStars from "../common/RatingStars";
 import Avatar from "../common/Avatar";
 import type { RequestCardProps } from "../../types/explore";
@@ -27,7 +27,7 @@ const urgencyColors: Record<string, string> = {
 };
 
 export default function RequestCard({ item }: RequestCardProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, authRedirectState } = useAuthRedirect();
   const ctaLink = isAuthenticated ? `/requests/${item.id}` : "/auth?mode=signin";
 
   return (
@@ -111,6 +111,7 @@ export default function RequestCard({ item }: RequestCardProps) {
 
           <Link
             to={ctaLink}
+            state={!isAuthenticated ? authRedirectState : undefined}
             className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition duration-200 hover:bg-slate-50"
           >
             View
