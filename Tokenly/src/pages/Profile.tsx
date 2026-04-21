@@ -300,7 +300,7 @@ const Profile: React.FC = () => {
         ) : null}
         {pageError ? <p className="mb-3 text-xs text-rose-600">{pageError}</p> : null}
 
-        <ProfileHeader user={user} onEdit={() => setIsEditModalOpen(true)} />
+        <ProfileHeader user={user} onEdit={() => setIsEditModalOpen(true)} isOwner={true} />
 
         {loading ? (
           <div className="flex flex-col items-center justify-center gap-3 py-20">

@@ -56,6 +56,7 @@ export type ProfileHeaderUser = {
 export interface ProfileHeaderProps {
   user: ProfileHeaderUser;
   onEdit: () => void;
+  isOwner: boolean;
 }
 
 export type ProfileSkill = {

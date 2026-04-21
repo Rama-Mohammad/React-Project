@@ -191,6 +191,8 @@ export const router = createBrowserRouter(
           path: "/error-test",
           element: <ErrorTestPage />,
         },
+        {path: "/profile", element: <Profile/>},
+        {path: "/users/:userId", element: <Profile/>}
       ],
     },
   ],

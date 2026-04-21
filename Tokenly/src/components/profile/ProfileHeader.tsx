@@ -21,7 +21,7 @@ function normalizeWebsiteUrl(value?: string) {
   return /^https?:\/\//i.test(value) ? value : `https://${value}`;
 }
 
-const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
+const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) => {
   const [copied, setCopied] = useState(false);
   const [isQrOpen, setIsQrOpen] = useState(false);
 
@@ -67,7 +67,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
                 user.avatarInitials
               )}
             </div>
-            
+
 
             <div className="pb-1">
               <div className="flex flex-wrap items-center gap-2">
@@ -101,14 +101,17 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit }) => {
             >
               <QrCode size={15} />
             </button>
-            <button
-              type="button"
-              onClick={onEdit}
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white/90 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-indigo-200 hover:text-indigo-600"
-            >
-              <PencilLine size={14} />
-              Edit Profile
-            </button>
+
+            {isOwner && (
+              <button
+                type="button"
+                onClick={onEdit}
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white/90 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-indigo-200 hover:text-indigo-600"
+              >
+                <PencilLine size={14} />
+                Edit Profile
+              </button>
+            )}
           </div>
         </div>
 
