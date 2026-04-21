@@ -39,6 +39,7 @@ const SessionLivePage: React.FC = () => {
   const [sessionError, setSessionError] = useState("");
   const [files, setFiles] = useState<FileAttachment[]>([]);
   const [pendingDeleteFileId, setPendingDeleteFileId] = useState<string | null>(null);
+  const [sessionData, setSessionData] = useState<any>(null);
 
 
   const { messages, appendLocalMessage } = useChat({
@@ -73,6 +74,7 @@ const SessionLivePage: React.FC = () => {
     addItem: handleAddItem,
     toggleItem: handleToggleItem,
     editItem: handleEditItem,
+    removeItem: handleRemoveItem,
   } = useSharedChecklist({
     sessionId: sessionId ?? "",
     userId: currentUserId,
@@ -110,6 +112,7 @@ const SessionLivePage: React.FC = () => {
         setSessionError(fetchSessionError?.message ?? "We could not load this session.");
         return;
       }
+      setSessionData(sessionData);
 
       const isHelper = sessionData.helper_id === userData.user.id;
       const initiatorId = [sessionData.helper_id, sessionData.requester_id].sort()[0];
@@ -159,7 +162,7 @@ const SessionLivePage: React.FC = () => {
         (data || []).map((f) => ({
           id: f.id,
           name: f.name,
-          size: f.size,
+          size: f.file_size_bytes,
           type: f.type,
           uploadedBy: f.uploader_id,
           uploadedAt: new Date(f.created_at),
@@ -205,6 +208,7 @@ const SessionLivePage: React.FC = () => {
 
           if (payload.eventType === "DELETE") {
             const f = payload.old;
+
             setFiles((prev) => prev.filter((x) => x.id !== f.id));
           }
         }
@@ -220,20 +224,16 @@ const SessionLivePage: React.FC = () => {
     const file = files.find((f) => f.id === fileId);
     if (!file) return;
 
-    // 1. delete from DB
     const { error } = await supabase
       .from("session_files")
       .delete()
       .eq("id", fileId);
 
-    if (error) {
-      console.error(error);
-      return;
-    }
+    if (error) throw error;
 
-    if (!file.path) return;
-    await deleteSessionFile(file.path);
-    
+    if (file.path) {
+      await deleteSessionFile(file.path);
+    }
     setFiles((prev) => prev.filter((f) => f.id !== fileId));
   };
 
@@ -245,7 +245,20 @@ const SessionLivePage: React.FC = () => {
   };
 
   const handleFileUpload = async (file: File) => {
-    if (!sessionId || !currentUserId) return;
+    if (!sessionId || !currentUserId) {
+      console.log("Missing sessionId or currentUserId", {
+        sessionId,
+        currentUserId,
+      });
+      return;
+    }
+
+    console.log("START FILE UPLOAD:", {
+      fileName: file.name,
+      fileSize: file.size,
+      sessionId,
+      currentUserId,
+    });
 
     const { data, error } = await uploadSessionFile(
       sessionId,
@@ -253,24 +266,29 @@ const SessionLivePage: React.FC = () => {
       file
     );
 
-    if (error || !data) return;
+
+    if (error || !data) {
+      console.error("Storage upload failed:", error);
+      return;
+    }
+
 
     const { data: inserted, error: dbError } = await supabase
       .from("session_files")
       .insert({
         session_id: sessionId,
         uploader_id: currentUserId,
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        path: data.path,
-        url: data.url,
+        file_name: file.name,
+        file_url: data.url,
+        file_size_bytes: file.size,
+        created_at: new Date().toISOString(),
       })
       .select()
       .single();
 
+
     if (dbError) {
-      console.error(dbError);
+      console.error(" DB insert failed:", dbError);
       return;
     }
 
@@ -279,7 +297,7 @@ const SessionLivePage: React.FC = () => {
       {
         id: inserted.id,
         name: inserted.name,
-        size: inserted.size,
+        size: inserted.file_size_bytes,
         type: inserted.type,
         uploadedBy: currentUserName,
         uploadedAt: new Date(inserted.created_at),
@@ -287,6 +305,7 @@ const SessionLivePage: React.FC = () => {
         path: inserted.path,
       },
     ]);
+
   };
 
   const handleDownload = (fileId: string) => {
@@ -335,7 +354,7 @@ const SessionLivePage: React.FC = () => {
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-indigo-500">Live Session</p>
             <h1 className="break-all text-base font-semibold text-slate-900 sm:text-lg">
-              Session #{sessionId ?? "unknown"}
+              {sessionData?.request?.title ?? `Session #${sessionId}`}
             </h1>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/70 px-3 py-1.5 text-xs font-medium text-indigo-700">
@@ -417,6 +436,7 @@ const SessionLivePage: React.FC = () => {
                   onToggleItem={handleToggleItem}
                   onAddItem={handleAddItem}
                   onEditItem={handleEditItem}
+                  onRemoveItem={handleRemoveItem}
                   isEditable
                 />
               ) : (
@@ -456,9 +476,11 @@ const SessionLivePage: React.FC = () => {
         }
         confirmLabel="Delete File"
         onCancel={() => setPendingDeleteFileId(null)}
-        onConfirm={() => {
+        onConfirm={async () => {
           if (!pendingDeleteFile) return;
-          handleDeleteFile(pendingDeleteFile.id);
+
+          await handleDeleteFile(pendingDeleteFile.id);
+          setPendingDeleteFileId(null);
         }}
       />
     </div>

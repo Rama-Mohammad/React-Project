@@ -27,11 +27,9 @@ export default function ConfirmDeleteModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <button
-        type="button"
+      <div
         className="absolute inset-0 bg-slate-900/35 backdrop-blur-sm"
         onClick={onCancel}
-        aria-label="Close delete confirmation"
       />
 
       <div className="relative w-full max-w-md rounded-2xl border border-rose-100 bg-white p-5 shadow-xl">
@@ -62,13 +60,23 @@ export default function ConfirmDeleteModal({
           </button>
           <button
             type="button"
-            onClick={() => void onConfirm()}
+            onClick={async () => {
+              console.log("🗑️ DELETE CLICKED");
+
+              try {
+                await onConfirm();
+                console.log("✅ DELETE SUCCESS");
+
+                onCancel(); // ✅ CLOSE MODAL HERE
+              } catch (err) {
+                console.error("❌ DELETE FAILED:", err);
+              }
+            }}
             disabled={loading}
-            className={`rounded-xl px-3 py-2 text-sm font-semibold text-white transition ${
-              loading
+            className={`rounded-xl px-3 py-2 text-sm font-semibold text-white transition ${loading
                 ? "cursor-not-allowed bg-rose-300"
                 : "bg-[linear-gradient(135deg,#e11d48_0%,#f43f5e_100%)] hover:brightness-105"
-            }`}
+              }`}
           >
             {loading ? "Deleting..." : confirmLabel}
           </button>

@@ -4,6 +4,7 @@ const SESSION_FILES_BUCKET = "session-files";
 const PROFILES_BUCKET = "profile-pics";
 
 export async function uploadSessionFile(
+  
   session_id: string,
   uploader_id: string,
   file: File
@@ -24,7 +25,7 @@ export async function uploadSessionFile(
     error: null,
   };
 }
-
+ 
 export async function deleteSessionFile(path: string) {
   return await supabase.storage.from(SESSION_FILES_BUCKET).remove([path]);
 }

@@ -7,7 +7,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   onSendMessage,
   isActive,
   currentUserId,
-    onClearChat,
 }) => {
   const [inputText, setInputText] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -29,9 +28,9 @@ const handleScroll = () => {
 };
 
 useEffect(() => {
-  if (forceScrollRef.current || shouldAutoScrollRef.current) {
+  if (forceScrollRef.current) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    forceScrollRef.current = false; // reset
+    forceScrollRef.current = false;
   }
 }, [messages]);
 
@@ -63,12 +62,6 @@ const handleSend = () => {
     </p>
   </div>
 
-  <button
-    onClick={onClearChat}
-    className="text-xs text-red-600 hover:underline"
-  >
-    Clear
-  </button>
 </div>
       
 

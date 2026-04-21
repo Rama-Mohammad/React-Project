@@ -8,17 +8,17 @@ const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, o
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-  if (editingId) {
-    inputRef.current?.focus();
-  }
-}, [editingId]);
+    if (editingId) {
+      inputRef.current?.focus();
+    }
+  }, [editingId]);
 
   React.useEffect(() => {
-  if (editingId) {
-    const item = items.find(i => i.id === editingId);
-    if (item) setEditText(item.text);
-  }
-}, [editingId, items]);
+    if (editingId) {
+      const item = items.find(i => i.id === editingId);
+      if (item) setEditText(item.text);
+    }
+  }, [editingId, items]);
 
   const handleAdd = () => {
     if (!newItemText.trim()) return;
@@ -101,14 +101,14 @@ const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, o
                       >
                         Edit
                       </button>
-                      
+
                     )}
                     <button
-  onClick={() => onRemoveItem?.(item.id)}
-  className="text-xs text-red-600"
->
-  Delete
-</button>
+                      onClick={() => onRemoveItem?.(item.id)}
+                      className="text-xs text-red-600"
+                    >
+                      Delete
+                    </button>
                   </div>
                 )}
               </div>

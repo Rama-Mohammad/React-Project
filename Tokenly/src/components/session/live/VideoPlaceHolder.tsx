@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { LogIn, LogOut, Mic, MicOff, MonitorUp, Video, VideoOff, Wifi, WifiOff } from "lucide-react";
 import type { VideoPlaceholderProps } from "../../../types/session";
 
@@ -38,6 +38,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
   onToggleAudio,
   onShareScreen,
 }) => {
+  const isMobile = useIsMobile();
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
@@ -67,6 +68,21 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
     }
   };
 
+  function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 768);
+
+    check();
+    window.addEventListener("resize", check);
+
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  return isMobile;
+}
+
   useEffect(() => {
     attachStream(localVideoRef.current, localStream ?? null, true);
   }, [localStream, isVideoEnabled]);
@@ -76,39 +92,44 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
   }, [remoteStream]);
 
   return (
-    <div className="relative flex aspect-video w-full min-h-[240px] max-h-[68vh] overflow-hidden rounded-2xl border border-indigo-200/70 bg-slate-950 shadow-[0_22px_42px_-30px_rgba(15,23,42,0.9)] sm:min-h-[320px]">
-      <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
-        <span className={`rounded-full px-3 py-1 text-xs font-semibold text-white ${statusTone[connectionStatus]}`}>
-          {statusLabel[connectionStatus]}
-        </span>
-        <span className="rounded-full bg-slate-900/70 px-3 py-1 text-xs font-medium text-slate-200">
-          {participantCount} participant{participantCount === 1 ? "" : "s"}
-        </span>
-      </div>
+<div className="relative flex w-full h-[100vh] sm:h-auto sm:aspect-video overflow-hidden rounded-none sm:rounded-2xl ...">    
+ <div className="absolute top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2">
 
-      <div className="absolute right-3 top-3 z-20 flex items-center gap-2">
-        <div className="rounded-full bg-slate-900/70 px-3 py-1 text-xs font-medium text-slate-200">
-          {isScreenSharing ? "Sharing screen" : "Camera view"}
+        {/* LEFT */}
+        <div className="flex items-center gap-2">
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold text-white ${statusTone[connectionStatus]}`}>
+            {statusLabel[connectionStatus]}
+          </span>
+
+          <span className="rounded-full bg-slate-900/70 px-3 py-1 text-xs text-slate-200">
+            {participantCount} participant{participantCount === 1 ? "" : "s"}
+          </span>
         </div>
-        {isInCall ? (
-          <button
-            type="button"
-            onClick={onLeaveCall}
-            className="inline-flex items-center gap-1 rounded-full bg-rose-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-rose-700"
-          >
-            <LogOut size={13} />
-            Leave call
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={onJoinCall}
-            className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-emerald-700"
-          >
-            <LogIn size={13} />
-            Join call
-          </button>
-        )}
+
+        {/* RIGHT */}
+        <div className="flex items-center gap-2">
+          <div className="rounded-full bg-slate-900/70 px-3 py-1 text-xs text-slate-200">
+            {isScreenSharing ? "Sharing screen" : "Camera view"}
+          </div>
+
+          {isInCall ? (
+            <button
+              onClick={onLeaveCall}
+              className="inline-flex items-center gap-1 rounded-full bg-rose-600 px-3 py-1 text-xs text-white"
+            >
+              <LogOut size={13} />
+              Leave
+            </button>
+          ) : (
+            <button
+              onClick={onJoinCall}
+              className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-xs text-white"
+            >
+              <LogIn size={13} />
+              Join
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="relative h-full w-full flex-1 overflow-hidden bg-slate-900">
@@ -212,16 +233,18 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
             {isAudioEnabled ? <Mic size={16} /> : <MicOff size={16} />}
             {isAudioEnabled ? "Mic on" : "Mic off"}
           </button>
-          <button
-            type="button"
-            onClick={onShareScreen}
-            className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-white transition sm:text-sm ${
-              isScreenSharing ? "bg-emerald-600 hover:bg-emerald-700" : "bg-indigo-600 hover:bg-indigo-700"
-            }`}
-          >
-            <MonitorUp size={16} />
-            {isScreenSharing ? "Stop share" : "Share screen"}
-          </button>
+          {!isMobile && (
+  <button
+    type="button"
+    onClick={onShareScreen}
+    className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-white transition sm:text-sm ${
+      isScreenSharing ? "bg-emerald-600 hover:bg-emerald-700" : "bg-indigo-600 hover:bg-indigo-700"
+    }`}
+  >
+    <MonitorUp size={16} />
+    {isScreenSharing ? "Stop share" : "Share screen"}
+  </button>
+)}
         </div>
       ) : null}
 

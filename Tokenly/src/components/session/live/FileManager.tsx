@@ -53,8 +53,8 @@ const FileManager: React.FC<FileManagerProps> = ({ onFileUpload, files, onDownlo
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-slate-900">{file.name}</p>
                   <p className="text-xs text-slate-500">
-                    {formatFileSize(file.size)} • {file.uploadedBy}
-                  </p>
+  {formatFileSize(Number(file.size) || 0)}
+</p>
                 </div>
               </div>
               <button
