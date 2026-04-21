@@ -38,14 +38,42 @@ const urgencyStyles: Record<string, string> = {
   high: "bg-rose-50 text-rose-600",
 };
 
+type PublicProfile = {
+  id: string;
+  full_name: string | null;
+  username: string | null;
+  bio: string | null;
+  profile_image_url: string | null;
+  cover_image_url: string | null;
+  avg_rating: number | null;
+  credit_balance?: number | null;
+  created_at: string;
+  title: string | null;
+  institution: string | null;
+  location: string | null;
+  website: string | null;
+};
+
+type PublicProfileReview = {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  reviewer?: {
+    full_name?: string | null;
+    username?: string | null;
+    profile_image_url?: string | null;
+  } | null;
+};
+
 const Profile: React.FC = () => {
   const { identifier } = useParams<{ identifier?: string }>();
   const { user: authUser, isAuthenticated } = useAuth();
   const { authRedirectState } = useAuthRedirect();
   const {
-    profile: liveProfile,
+    profile: rawLiveProfile,
     skills: liveSkills,
-    reviews: liveReviews,
+    reviews: rawLiveReviews,
     helpOffers,
     loading,
     detailsLoading,
@@ -64,6 +92,9 @@ const Profile: React.FC = () => {
   } = usePortfolio();
   const { editProfile } = useProfiles();
   const { addSkill, editSkill: editSkillHook, removeSkill } = useSkills();
+
+  const liveProfile = rawLiveProfile as PublicProfile | null;
+  const liveReviews = rawLiveReviews as PublicProfileReview[];
 
   const [resolvedProfileId, setResolvedProfileId] = useState("");
   const [routeLoading, setRouteLoading] = useState(true);
@@ -241,7 +272,7 @@ const Profile: React.FC = () => {
   }, [livePortfolio]);
 
   const reviews: UiReview[] = useMemo(() => {
-    return liveReviews.map((review: any) => ({
+    return liveReviews.map((review) => ({
       id: review.id,
       reviewerName: review.reviewer?.full_name || review.reviewer?.username || "Community Member",
       reviewerImageUrl: review.reviewer?.profile_image_url || "",
