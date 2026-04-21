@@ -14,9 +14,8 @@ import {
 import ThemedSelect from "../components/common/ThemedSelect";
 import Avatar from "../components/common/Avatar";
 import type { Session } from "../types/session";
-import { getSessionsByUser } from "../services/sessionService";
+import { getSessionsByUser, updateSessionStatus } from "../services/sessionService";
 import { getCurrentUser } from "../services/authService";
-import { updateSessionStatus } from "../services/sessionService";
 import { getProfileCreditBalance } from "../services/profileService";
 
 type SessionFilter = "upcoming" | "active" | "completed" | "all";
