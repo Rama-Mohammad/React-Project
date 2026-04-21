@@ -151,6 +151,7 @@ export function useLiveSessionCall({
   };
 
   const sendSignal = async (payload: SignalPayload) => {
+  console.log("📤 SENDING SIGNAL:", payload);
   const channel = channelRef.current;
 
   if (!channel || !isSubscribedRef.current) return;
@@ -528,6 +529,7 @@ peer.oniceconnectionstatechange = () => {
         channelRef.current = channel;
 
         channel.on("broadcast", { event: "signal" }, async ({ payload }) => {
+            console.log("📩 RECEIVED SIGNAL:", payload);
           try {
             await handleSignal(payload as SignalPayload);
           } catch (error) {
