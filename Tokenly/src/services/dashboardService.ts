@@ -99,11 +99,6 @@ export async function getDashboardStats(user_id: string) {
     offersAccepted: offersAccepted.count ?? 0,
   };
 }
-
-
-// -------------------------
-// SESSIONS (LIGHTWEIGHT)
-// -------------------------
 export async function getDashboardSessions(user_id: string) {
   return await supabase
     .from("sessions")
@@ -111,17 +106,40 @@ export async function getDashboardSessions(user_id: string) {
       id,
       status,
       scheduled_at,
-      duration_minutes
+      duration_minutes,
+      helper_id,
+      requester_id,
+      request_id,
+      help_offer_request_id,
+      direct_request_id,
+      request:requests(id, title, category, credit_cost),
+      help_offer_request:help_offer_requests!sessions_help_offer_request_id_fkey(
+        id,
+        help_offer:help_offers!help_offer_requests_help_offer_id_fkey(
+          id,
+          title,
+          category,
+          credit_cost
+        )
+      ),
+      direct_request:direct_requests!sessions_direct_request_id_fkey(
+        id,
+        title,
+        category,
+        credit_cost
+      ),
+      helper:profiles!sessions_helper_id_fkey(id, full_name, profile_image_url),
+      requester:profiles!sessions_requester_id_fkey(id, full_name, profile_image_url)
     `)
     .or(`helper_id.eq.${user_id},requester_id.eq.${user_id}`)
-    .order("scheduled_at", { ascending: true })
+    .order("scheduled_at", { ascending: true, nullsFirst: false })
     .limit(20);
 }
 
 
 // -------------------------
 // SESSION DETAILS (NO "*")
-// -------------------------
+
 export async function getSessionDetails(session_id: string) {
   return await supabase
     .from("sessions")
@@ -204,7 +222,7 @@ export async function getDashboardDirectRequests(helper_id: string) {
       credit_cost,
       status,
       created_at,
-      requester:profiles(
+      requester:profiles!direct_requests_requester_id_fkey(
         id,
         full_name,
         username,
@@ -218,9 +236,8 @@ export async function getDashboardDirectRequests(helper_id: string) {
 }
 
 
-// -------------------------
 // DIRECT REQUESTS (SENT)
-// -------------------------
+
 export async function getDashboardSentDirectRequests(requester_id: string) {
   return await supabase
     .from("direct_requests")
@@ -233,7 +250,7 @@ export async function getDashboardSentDirectRequests(requester_id: string) {
       credit_cost,
       status,
       created_at,
-      helper:profiles(
+      helper:profiles!direct_requests_helper_id_fkey(
         id,
         full_name,
         username,
@@ -246,10 +263,7 @@ export async function getDashboardSentDirectRequests(requester_id: string) {
     .limit(10);
 }
 
-
-// -------------------------
 // HELP OFFER REQUESTS
-// -------------------------
 export async function getDashboardHelpOfferRequests(helper_id: string) {
   return await supabase
     .from("help_offer_requests")
@@ -258,13 +272,13 @@ export async function getDashboardHelpOfferRequests(helper_id: string) {
       message,
       status,
       created_at,
-      requester:profiles(
+      requester:profiles!help_offer_requests_requester_id_fkey(
         id,
         full_name,
         username,
         profile_image_url
       ),
-      help_offer:help_offers(
+      help_offer:help_offers!help_offer_requests_help_offer_id_fkey!inner(
         id,
         title,
         credit_cost,
