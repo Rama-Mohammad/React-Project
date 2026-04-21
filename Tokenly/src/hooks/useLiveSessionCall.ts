@@ -287,25 +287,37 @@ if (state === "disconnected") {
 }
       };
 
-      peer.oniceconnectionstatechange = () => {
-        if (!isMounted) return;
+peer.oniceconnectionstatechange = () => {
+  const state = peer.iceConnectionState;
 
-        const state = peer.iceConnectionState;
-        if (state === "connected" || state === "completed") {
-          setConnectionStatus("connected");
-          setErrorMessage("");
-          return;
-        }
+  if (!isMounted) return;
 
-        if (state === "checking") {
-          setConnectionStatus("connecting");
-          return;
-        }
+  console.log("ICE STATE:", state);
 
-        if (state === "failed" || state === "disconnected") {
-          setConnectionStatus("error");
-        }
-      };
+  if (state === "connected" || state === "completed") {
+    setConnectionStatus("connected");
+    setErrorMessage("");
+    return;
+  }
+
+  if (state === "checking" || state === "new") {
+    setConnectionStatus("connecting");
+    return;
+  }
+
+  if (state === "disconnected") {
+    // 🔥 IMPORTANT: treat as temporary or peer left
+    setConnectionStatus("waiting");
+    setErrorMessage("");
+    return;
+  }
+
+  if (state === "failed") {
+    // ❌ DO NOT show error immediately
+    setConnectionStatus("waiting");
+    setErrorMessage("");
+  }
+};
 
       const currentStream = localStreamRef.current;
       if (currentStream) {
@@ -448,16 +460,37 @@ if (state === "disconnected") {
         return;
       }
 
+      // if (payload.type === "leave") {
+      //   remoteJoinedRef.current = false;
+      //   remoteSignalSeenRef.current = false;
+      //   remoteStreamRef.current = null;
+      //   if (isMounted) {
+      //     setParticipantCount(1);
+      //     setRemoteStream(null);
+      //     setConnectionStatus("waiting");
+      //   }
+      // }
+
       if (payload.type === "leave") {
-        remoteJoinedRef.current = false;
-        remoteSignalSeenRef.current = false;
-        remoteStreamRef.current = null;
-        if (isMounted) {
-          setParticipantCount(1);
-          setRemoteStream(null);
-          setConnectionStatus("waiting");
-        }
-      }
+  remoteJoinedRef.current = false;
+  remoteSignalSeenRef.current = false;
+
+  const peer = peerRef.current;
+
+  if (peer) {
+    peer.getReceivers().forEach(r => {
+      r.track?.stop();
+    });
+  }
+
+  remoteStreamRef.current = null;
+
+  setRemoteStream(null);
+  setParticipantCount(1);
+  setConnectionStatus("waiting");
+
+  return;
+}
     };
 
     const start = async () => {
@@ -702,16 +735,43 @@ const leaveCall = async () => {
   try {
     setConnectionStatus("idle");
 
-    // 1. Send leave signal ONLY if channel is still active
     if (channelRef.current && isSubscribedRef.current) {
-      await sendSignal({ type: "leave", from: userId });
-    }
+  try {
+    await channelRef.current.send({
+      type: "broadcast",
+      event: "signal",
+      payload: { type: "leave", from: userId },
+    });
+  } catch {}
+}
 
-    // 2. Close peer connection first
-    peerRef.current?.close();
-    peerRef.current = null;
+    // peerRef.current?.close();
+    // peerRef.current = null;
 
-    // 3. Remove Supabase channel safely
+    const peer = peerRef.current;
+
+if (peer) {
+  peer.getSenders().forEach(s => {
+    try {
+      s.track?.stop();
+    } catch {}
+  });
+
+  peer.getReceivers().forEach(r => {
+    try {
+      r.track?.stop();
+    } catch {}
+  });
+
+  peer.ontrack = null;
+  peer.onicecandidate = null;
+  peer.onconnectionstatechange = null;
+  peer.oniceconnectionstatechange = null;
+
+  peer.close();
+}
+peerRef.current = null;
+
     if (channelRef.current) {
       await supabase.removeChannel(channelRef.current);
       channelRef.current = null;
