@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { CircleDot, ClipboardList, Paperclip } from "lucide-react";
+import { CircleDot, ClipboardList, Paperclip, Star } from "lucide-react";
 import VideoPlaceholder from "../components/session/live/VideoPlaceHolder";
 import ChatWindow from "../components/session/live/ChatWindow";
 import FileManager from "../components/session/live/FileManager";
@@ -15,6 +15,7 @@ import type { ChecklistItem, FileAttachment } from "../types/session";
 import { useSharedChecklist } from "../hooks/useSharedChecklist";
 import { supabase } from "../lib/supabaseClient";
 import { uploadSessionFile, deleteSessionFile } from "../services/storageService";
+import { createReview, hasUserReviewedSession } from "../services/reviewService";
 
 type TabType = "agenda" | "files";
 
@@ -40,7 +41,56 @@ const SessionLivePage: React.FC = () => {
   const [files, setFiles] = useState<FileAttachment[]>([]);
   const [pendingDeleteFileId, setPendingDeleteFileId] = useState<string | null>(null);
   const [sessionData, setSessionData] = useState<any>(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasExistingReview, setHasExistingReview] = useState(false);
+  const [reviewError, setReviewError] = useState("");
+  const [shouldNavigateAfterReview, setShouldNavigateAfterReview] = useState(false);
 
+  const helperId = sessionData?.helper_id ?? "";
+  const canReviewHelper = Boolean(currentUserId && helperId && currentUserId !== helperId);
+
+  const resetReviewModalState = () => {
+    setShowReviewModal(false);
+    setRating(0);
+    setReviewText("");
+    setIsSubmitting(false);
+    setReviewError("");
+  };
+
+  const closeReviewModal = () => {
+    resetReviewModalState();
+
+    if (shouldNavigateAfterReview) {
+      setShouldNavigateAfterReview(false);
+      navigate("/sessions");
+    }
+  };
+
+  const maybeOpenReviewModal = async (options?: { navigateAfterClose?: boolean }) => {
+    if (!sessionId || !currentUserId || !helperId || !canReviewHelper) {
+      if (options?.navigateAfterClose) {
+        navigate("/sessions");
+      }
+      return;
+    }
+
+    const alreadyReviewed = await hasUserReviewedSession(sessionId, currentUserId);
+    setHasExistingReview(alreadyReviewed);
+
+    if (alreadyReviewed) {
+      if (options?.navigateAfterClose) {
+        navigate("/sessions");
+      }
+      return;
+    }
+
+    setReviewError("");
+    setShouldNavigateAfterReview(Boolean(options?.navigateAfterClose));
+    setShowReviewModal(true);
+  };
 
   const { messages, appendLocalMessage } = useChat({
     sessionId: sessionId ?? "",
@@ -134,6 +184,13 @@ const SessionLivePage: React.FC = () => {
         await updateSessionStatus(sessionId, "active");
       }
       setSessionStatus("ready");
+
+      if (userData.user.id !== sessionData.helper_id) {
+        const alreadyReviewed = await hasUserReviewedSession(sessionId, userData.user.id);
+        if (isMounted) {
+          setHasExistingReview(alreadyReviewed);
+        }
+      }
     };
 
     void loadSessionContext();
@@ -142,6 +199,40 @@ const SessionLivePage: React.FC = () => {
       isMounted = false;
     };
   }, [sessionId]);
+
+  useEffect(() => {
+    if (!sessionId || !currentUserId) return;
+
+    const channel = supabase
+      .channel(`session-review-status-${sessionId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "sessions",
+          filter: `id=eq.${sessionId}`,
+        },
+        async (payload) => {
+          const nextStatus = payload.new?.status;
+
+          setSessionData((prev: any) => (prev ? { ...prev, ...payload.new } : prev));
+
+          if (
+            nextStatus === "completed" &&
+            payload.old?.status !== "completed" &&
+            payload.new?.helper_id !== currentUserId
+          ) {
+            await maybeOpenReviewModal();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUserId, sessionId, helperId, canReviewHelper]);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -313,6 +404,35 @@ const SessionLivePage: React.FC = () => {
     if (file) window.open(file.url, "_blank");
   };
 
+  const handleLeaveSession = async () => {
+    setHasJoinedCall(false);
+    await maybeOpenReviewModal({ navigateAfterClose: true });
+  };
+
+  const handleSubmitReview = async () => {
+    if (!sessionId || !currentUserId || !helperId || !rating || hasExistingReview) return;
+
+    setIsSubmitting(true);
+    setReviewError("");
+
+    const { error } = await createReview({
+      session_id: sessionId,
+      reviewer_id: currentUserId,
+      reviewee_id: helperId,
+      rating,
+      comment: reviewText.trim() || undefined,
+    });
+
+    if (error) {
+      setReviewError(error.message ?? "Could not submit your review.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    setHasExistingReview(true);
+    setIsSubmitting(false);
+    closeReviewModal();
+  };
 
   const pendingDeleteFile = pendingDeleteFileId
     ? files.find((file) => file.id === pendingDeleteFileId) ?? null
@@ -456,7 +576,9 @@ const SessionLivePage: React.FC = () => {
       <footer className="border-t border-indigo-200/70 bg-white/55 px-4 py-3 backdrop-blur-xl sm:px-6">
         <div className="mx-auto flex w-full max-w-[1600px] justify-center">
           <button
-            onClick={() => navigate("/sessions")}
+            onClick={() => {
+              void handleLeaveSession();
+            }}
             className="rounded-lg bg-[linear-gradient(90deg,#ef4444,#f97316)] px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_22px_-16px_rgba(239,68,68,0.85)] transition hover:opacity-95"
           >
             Leave Session
@@ -483,6 +605,82 @@ const SessionLivePage: React.FC = () => {
           setPendingDeleteFileId(null);
         }}
       />
+
+      {showReviewModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-slate-900/35 backdrop-blur-sm"
+            onClick={closeReviewModal}
+          />
+
+          <div className="relative w-full max-w-md rounded-2xl border border-indigo-100 bg-white p-5 shadow-xl">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900">Rate your helper</h3>
+              <p className="mt-1 text-sm text-slate-500">
+                Share a quick rating for this session.
+              </p>
+            </div>
+
+            <div className="mt-4 flex items-center gap-2">
+              {Array.from({ length: 5 }, (_, index) => {
+                const starValue = index + 1;
+                const active = starValue <= rating;
+
+                return (
+                  <button
+                    key={starValue}
+                    type="button"
+                    onClick={() => setRating(starValue)}
+                    className="rounded-lg p-1 text-amber-400 transition hover:scale-105"
+                    aria-label={`Rate ${starValue} star${starValue === 1 ? "" : "s"}`}
+                  >
+                    <Star
+                      size={28}
+                      className={active ? "fill-amber-400 text-amber-400" : "text-slate-300"}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+
+            <textarea
+              value={reviewText}
+              onChange={(event) => setReviewText(event.target.value)}
+              placeholder="Write an optional review"
+              rows={4}
+              className="mt-4 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+            />
+
+            {reviewError ? (
+              <p className="mt-3 text-sm text-rose-600">{reviewError}</p>
+            ) : null}
+
+            <div className="mt-5 grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={closeReviewModal}
+                className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              >
+                Not now
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  void handleSubmitReview();
+                }}
+                disabled={!rating || isSubmitting}
+                className={`rounded-xl px-3 py-2 text-sm font-semibold text-white transition ${
+                  !rating || isSubmitting
+                    ? "cursor-not-allowed bg-indigo-300"
+                    : "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] hover:opacity-95"
+                }`}
+              >
+                {isSubmitting ? "Submitting..." : "Submit review"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };
