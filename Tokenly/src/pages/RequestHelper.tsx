@@ -693,7 +693,7 @@ export default function RequestHelper() {
             {/* Link back to helper profile */}
             {!isGenericRequestFlow && helperId ? (
               <Link
-                to={`/helpers/${helperId}`}
+                to={`/profile/${encodeURIComponent(helperId)}`}
                 className="block rounded-3xl border border-white/55 bg-white/80 p-4 text-center text-xs font-semibold text-indigo-600 backdrop-blur transition hover:bg-white"
               >
                 View {helper.name}'s full profile →
