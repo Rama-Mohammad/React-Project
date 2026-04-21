@@ -251,16 +251,18 @@ const SessionLivePage: React.FC = () => {
       }
 
       setFiles(
-        (data || []).map((f) => ({
-          id: f.id,
-          name: f.name,
-          size: f.file_size_bytes,
-          type: f.type,
-          uploadedBy: f.uploader_id,
-          uploadedAt: new Date(f.created_at),
-          url: f.url,
-          path: f.path,
-        }))
+        (data || []).map((f) => (
+          {
+            id: f.id,
+            name: f.file_name,
+            size: f.file_size_bytes,
+            type: f.file_type,
+            uploadedBy: f.uploader_id,
+            uploadedAt: new Date(f.created_at),
+            url: f.file_url,
+            path: f.path,
+          }
+        ))
       );
     };
 
@@ -388,14 +390,14 @@ const SessionLivePage: React.FC = () => {
       ...prev,
       {
         id: inserted.id,
-        name: inserted.name,
+        name: inserted.file_name,
         size: inserted.file_size_bytes,
-        type: inserted.type,
+        type: inserted.file_type,
         uploadedBy: currentUserName,
         uploadedAt: new Date(inserted.created_at),
-        url: inserted.url,
+        url: inserted.file_url,
         path: inserted.path,
-      },
+      }
     ]);
 
   };
@@ -472,7 +474,7 @@ const handleLeaveSession = async () => {
   return (
     <div className="flex min-h-screen flex-col bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_52%,#f3e8ff_100%)] text-slate-900">
       <header className="border-b border-indigo-200/70 bg-white/55 px-4 py-3 backdrop-blur-xl sm:px-5">
-        <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-3">
+        <div className="mx-auto flex w-full max-w-400 items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-indigo-500">Live Session</p>
             <h1 className="break-all text-base font-semibold text-slate-900 sm:text-lg">
@@ -494,7 +496,7 @@ const handleLeaveSession = async () => {
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 p-3 sm:p-4">
+      <main className="mx-auto flex w-full max-w-400 flex-1 flex-col gap-4 p-3 sm:p-4">
         <section className="flex min-w-0 flex-col">
           <VideoPlaceholder
             localStream={localStream}
@@ -576,7 +578,7 @@ const handleLeaveSession = async () => {
       </main>
 
       <footer className="border-t border-indigo-200/70 bg-white/55 px-4 py-3 backdrop-blur-xl sm:px-6">
-        <div className="mx-auto flex w-full max-w-[1600px] justify-center">
+        <div className="mx-auto flex w-full max-w-400 justify-center">
           <button
             onClick={() => {
               void handleLeaveSession();
@@ -671,11 +673,10 @@ const handleLeaveSession = async () => {
                   void handleSubmitReview();
                 }}
                 disabled={!rating || isSubmitting}
-                className={`rounded-xl px-3 py-2 text-sm font-semibold text-white transition ${
-                  !rating || isSubmitting
-                    ? "cursor-not-allowed bg-indigo-300"
-                    : "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] hover:opacity-95"
-                }`}
+                className={`rounded-xl px-3 py-2 text-sm font-semibold text-white transition ${!rating || isSubmitting
+                  ? "cursor-not-allowed bg-indigo-300"
+                  : "bg-[linear-gradient(90deg,#6366f1,#8b5cf6)] hover:opacity-95"
+                  }`}
               >
                 {isSubmitting ? "Submitting..." : "Submit review"}
               </button>
