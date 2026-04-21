@@ -47,25 +47,21 @@ export default function useRequests(): UseRequestsResult {
         setLoading(false);
     }
 
-    async function fetchOpenRequests(filters?: RequestFilters, append = false) {
+    async function fetchOpenRequests(filters?: RequestFilters) {
         setLoading(true);
         setError("");
 
-        const { data, error } = await getAllOpenRequests(filters);
+        const { data, error, count } = await getAllOpenRequests(filters);
 
         if (error) {
             setError(error.message);
             setLoading(false);
-            return;
+            return null;
         }
 
-        if (append) {
-            setRequests((prev) => [...prev, ...(data ?? [])]);
-        } else {
-            setRequests(data ?? []);
-        }
-
+        setRequests(data ?? []);
         setLoading(false);
+        return count ?? 0;
     }
 
     async function submitRequest(data: RequestInput) {

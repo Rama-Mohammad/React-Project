@@ -106,7 +106,7 @@ export async function getAllOpenRequests(filters?: {
           name
         )
       )
-    `)
+    `, { count: "exact" })
     .eq("status", "open")
     .order("created_at", { ascending: false });
 

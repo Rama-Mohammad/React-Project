@@ -24,7 +24,7 @@ export async function getAllSkills(opts?: { page?: number; pageSize?: number }) 
         avg_rating,
         profile_image_url
       )
-    `)
+    `, { count: "exact" })
     .order("sessions_count", { ascending: false })
     .range(from, to);
 }

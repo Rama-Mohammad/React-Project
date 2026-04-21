@@ -40,7 +40,7 @@ export type UseRequestsResult = {
   error: string;
   fetchRequestById: (id: string) => Promise<void>;
   fetchRequestsByUser: (user_id: string) => Promise<void>;
-  fetchOpenRequests: (filters?: RequestFilters, append?: boolean) => Promise<void>;
+  fetchOpenRequests: (filters?: RequestFilters) => Promise<number | null>;
   submitRequest: (data: RequestInput) => Promise<boolean>;
   changeRequestStatus: (id: string, status: RequestStatus) => Promise<boolean>;
   removeRequest: (id: string) => Promise<boolean>;

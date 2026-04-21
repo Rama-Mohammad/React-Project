@@ -40,7 +40,7 @@ export async function getOpenHelpOffers(opts?: { page?: number; pageSize?: numbe
       skills:help_offer_skills(
         skill:skills(name)
       )
-    `)
+    `, { count: "exact" })
     .eq("status", "open")
     .order("created_at", { ascending: false })
     .range(from, to);

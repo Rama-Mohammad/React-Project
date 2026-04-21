@@ -34,6 +34,32 @@ function getEnterStyle(index: number): CSSProperties {
   } as CSSProperties;
 }
 
+function buildPagination(currentPage: number, totalPages: number): Array<number | "ellipsis"> {
+  if (totalPages <= 1) return [1];
+  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+
+  const pages = new Set<number>([1, totalPages, currentPage + 1]);
+  for (let offset = -1; offset <= 1; offset += 1) {
+    const candidate = currentPage + 1 + offset;
+    if (candidate > 1 && candidate < totalPages) {
+      pages.add(candidate);
+    }
+  }
+
+  const sortedPages = Array.from(pages).sort((a, b) => a - b);
+  const pagination: Array<number | "ellipsis"> = [];
+
+  sortedPages.forEach((page, index) => {
+    const previous = sortedPages[index - 1];
+    if (previous && page - previous > 1) {
+      pagination.push("ellipsis");
+    }
+    pagination.push(page);
+  });
+
+  return pagination;
+}
+
 function toRelativeAge(dateValue?: string | null): string {
   if (!dateValue) return "just now";
   const date = new Date(dateValue);
@@ -80,6 +106,10 @@ export default function Explore() {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
   const tabsBarRef = useRef<HTMLDivElement | null>(null);
+  const pendingPaginationScrollRef = useRef<{
+    page: number;
+    tab: ExploreTab;
+  } | null>(null);
   const [selectedHelperForModal, setSelectedHelperForModal] = useState<HelperItem | null>(null);
   const {
     requests: liveOpenRequests,
@@ -120,9 +150,9 @@ export default function Explore() {
   const [skillsPage, setSkillsPage] = useState(0);
   const [offersPage, setOffersPage] = useState(0);
 
-  const [requestsHasMore, setRequestsHasMore] = useState(true);
-  const [skillsHasMore, setSkillsHasMore] = useState(true);
-  const [offersHasMore, setOffersHasMore] = useState(true);
+  const [requestsTotal, setRequestsTotal] = useState(0);
+  const [skillsTotal, setSkillsTotal] = useState(0);
+  const [offersTotal, setOffersTotal] = useState(0);
   const [requestCategoryCatalog, setRequestCategoryCatalog] = useState<string[]>(["All"]);
 
   const requestedCategory = useMemo(() => {
@@ -165,7 +195,6 @@ export default function Explore() {
   // Reset requests pagination when filters or tab change
   useEffect(() => {
     setRequestsPage(0);
-    setRequestsHasMore(true);
   }, [activeTab, duration, selectedCategory, urgency]);
 
   // Requests tab: refetch when filters or page changes
@@ -173,16 +202,12 @@ export default function Explore() {
     if (activeTab !== "requests") return;
 
     let mounted = true;
-    const isFirstPage = requestsPage === 0;
-
     const mappedUrgency =
       urgency === "Low" ? "low" : urgency === "Medium" ? "medium" : urgency === "High" ? "high" : undefined;
     const mappedDuration =
       duration === "<=30 min" ? 30 : duration === "<=45 min" ? 45 : duration === "<=60 min" ? 60 : undefined;
 
-    if (isFirstPage) {
-      setCountsLoading((current) => ({ ...current, requests: true }));
-    }
+    setCountsLoading((current) => ({ ...current, requests: true }));
 
     void fetchOpenRequests(
       {
@@ -191,10 +216,10 @@ export default function Explore() {
         max_duration: mappedDuration,
         page: requestsPage,
         pageSize: PAGE_SIZE,
-      },
-      !isFirstPage
-    ).then(() => {
+      }
+    ).then((count) => {
       if (!mounted) return;
+      setRequestsTotal(count ?? 0);
       setCountsLoading((current) => ({ ...current, requests: false }));
     });
 
@@ -203,13 +228,6 @@ export default function Explore() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, duration, selectedCategory, urgency, requestsPage]);
-
-  // Track whether more requests exist after each fetch
-  useEffect(() => {
-    if (!requestsLoading) {
-      setRequestsHasMore(liveOpenRequests.length > 0 && liveOpenRequests.length % PAGE_SIZE === 0);
-    }
-  }, [liveOpenRequests, requestsLoading]);
 
   useEffect(() => {
     setRequestCategoryCatalog((current) => {
@@ -228,7 +246,6 @@ export default function Explore() {
   // Reset skills pagination when tab changes
   useEffect(() => {
     setSkillsPage(0);
-    setSkillsHasMore(true);
   }, [activeTab]);
 
   // Skills tab: fetch when tab is active or page changes
@@ -236,33 +253,24 @@ export default function Explore() {
     if (activeTab !== "skills") return;
 
     let mounted = true;
-    const isFirstPage = skillsPage === 0;
+    setSkillsLoading(true);
+    setSkillsError("");
+    setCountsLoading((current) => ({ ...current, skills: true }));
 
-    if (isFirstPage) {
-      setSkillsLoading(true);
-      setSkillsError("");
-      setCountsLoading((current) => ({ ...current, skills: true }));
-    }
-
-    void getAllSkills({ page: skillsPage, pageSize: PAGE_SIZE }).then(({ data, error }) => {
+    void getAllSkills({ page: skillsPage, pageSize: PAGE_SIZE }).then(({ data, error, count }) => {
       if (!mounted) return;
 
       if (error) {
         setSkillsError(error.message);
-        if (isFirstPage) setLiveSkills([]);
+        setLiveSkills([]);
         setSkillsLoading(false);
         setCountsLoading((current) => ({ ...current, skills: false }));
         return;
       }
 
       const incoming = (data ?? []) as SkillWithRelations[];
-      if (isFirstPage) {
-        setLiveSkills(incoming);
-      } else {
-        setLiveSkills((prev) => [...prev, ...incoming]);
-      }
-
-      setSkillsHasMore(incoming.length === PAGE_SIZE);
+      setLiveSkills(incoming);
+      setSkillsTotal(count ?? 0);
       setSkillsLoading(false);
       setCountsLoading((current) => ({ ...current, skills: false }));
     });
@@ -309,7 +317,6 @@ export default function Explore() {
   // Reset offers pagination when tab changes
   useEffect(() => {
     setOffersPage(0);
-    setOffersHasMore(true);
   }, [activeTab]);
 
   // Offers tab: fetch open help_offers only (Flow 2 — helper-initiated)
@@ -318,20 +325,16 @@ export default function Explore() {
     if (activeTab !== "offers") return;
 
     let mounted = true;
-    const isFirstPage = offersPage === 0;
+    setOffersLoading(true);
+    setOffersError("");
+    setCountsLoading((current) => ({ ...current, offers: true }));
 
-    if (isFirstPage) {
-      setOffersLoading(true);
-      setOffersError("");
-      setCountsLoading((current) => ({ ...current, offers: true }));
-    }
-
-    void getOpenHelpOffers({ page: offersPage, pageSize: PAGE_SIZE }).then(({ data, error }) => {
+    void getOpenHelpOffers({ page: offersPage, pageSize: PAGE_SIZE }).then(({ data, error, count }) => {
       if (!mounted) return;
 
       if (error) {
         setOffersError(error.message ?? "Failed to load offers");
-        if (isFirstPage) setLiveOffers([]);
+        setLiveOffers([]);
         setOffersLoading(false);
         setCountsLoading((current) => ({ ...current, offers: false }));
         return;
@@ -378,13 +381,8 @@ export default function Explore() {
         };
       });
 
-      if (isFirstPage) {
-        setLiveOffers(mapped);
-      } else {
-        setLiveOffers((prev) => [...prev, ...mapped]);
-      }
-
-      setOffersHasMore(mapped.length === PAGE_SIZE);
+      setLiveOffers(mapped);
+      setOffersTotal(count ?? 0);
       setOffersLoading(false);
       setCountsLoading((current) => ({ ...current, offers: false }));
     });
@@ -766,6 +764,97 @@ export default function Explore() {
     if (tab === "offers") setSortBy("Newest");
   };
 
+  const scrollToExploreHeader = () => {
+    const scrollTarget = tabsBarRef.current;
+    if (!scrollTarget) return;
+
+    const offset = 24;
+    const targetTop = scrollTarget.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({
+      top: Math.max(0, targetTop),
+      behavior: "smooth",
+    });
+  };
+
+  const handlePaginationChange = (page: number, onPageChange: (page: number) => void) => {
+    pendingPaginationScrollRef.current = { page, tab: activeTab };
+    scrollToExploreHeader();
+    onPageChange(page);
+  };
+
+  useEffect(() => {
+    const pendingScroll = pendingPaginationScrollRef.current;
+    if (!pendingScroll || pendingScroll.tab !== activeTab) return;
+
+    const isCurrentTabLoading =
+      (activeTab === "requests" && requestsLoading) ||
+      (activeTab === "skills" && skillsLoading) ||
+      (activeTab === "offers" && offersLoading);
+
+    if (isCurrentTabLoading) return;
+
+    pendingPaginationScrollRef.current = null;
+
+    window.requestAnimationFrame(scrollToExploreHeader);
+    window.setTimeout(scrollToExploreHeader, 120);
+  }, [activeTab, offersLoading, requestsLoading, skillsLoading, offersPage, requestsPage, skillsPage]);
+
+  const requestsTotalPages = Math.max(1, Math.ceil(requestsTotal / PAGE_SIZE));
+  const skillsTotalPages = Math.max(1, Math.ceil(skillsTotal / PAGE_SIZE));
+  const offersTotalPages = Math.max(1, Math.ceil(offersTotal / PAGE_SIZE));
+
+  const renderPagination = (
+    currentPage: number,
+    totalPages: number,
+    onPageChange: (page: number) => void,
+    isLoading: boolean
+  ) => {
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+        <button
+          type="button"
+          onClick={() => handlePaginationChange(currentPage - 1, onPageChange)}
+          disabled={currentPage === 0 || isLoading}
+          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Prev
+        </button>
+        {buildPagination(currentPage, totalPages).map((item, index) =>
+          item === "ellipsis" ? (
+            <span key={`ellipsis-${currentPage}-${index}`} className="px-1 text-sm text-slate-400">
+              ...
+            </span>
+          ) : (
+            <button
+              key={item}
+              type="button"
+              onClick={() => handlePaginationChange(item - 1, onPageChange)}
+              disabled={isLoading}
+              aria-current={item === currentPage + 1 ? "page" : undefined}
+              className={`min-w-10 rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                item === currentPage + 1
+                  ? "border-indigo-500 bg-indigo-600 text-white"
+                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              } disabled:cursor-not-allowed disabled:opacity-50`}
+            >
+              {item}
+            </button>
+          )
+        )}
+        <button
+          type="button"
+          onClick={() => handlePaginationChange(currentPage + 1, onPageChange)}
+          disabled={currentPage >= totalPages - 1 || isLoading}
+          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className="relative min-h-full overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <div className="pointer-events-none absolute inset-0">
@@ -866,16 +955,7 @@ export default function Explore() {
                   </div>
                 ))}
               </div>
-              {requestsHasMore && !requestsLoading && (
-                <div className="mt-6 flex justify-center">
-                  <button
-                    onClick={() => setRequestsPage((p) => p + 1)}
-                    className="rounded-lg border border-slate-200 bg-white px-6 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                  >
-                    Load more
-                  </button>
-                </div>
-              )}
+              {renderPagination(requestsPage, requestsTotalPages, setRequestsPage, requestsLoading)}
             </>
           ) : null}
 
@@ -916,16 +996,7 @@ export default function Explore() {
                   </div>
                 ))}
               </div>
-              {skillsHasMore && !skillsLoading && (
-                <div className="mt-6 flex justify-center">
-                  <button
-                    onClick={() => setSkillsPage((p) => p + 1)}
-                    className="rounded-lg border border-slate-200 bg-white px-6 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                  >
-                    Load more
-                  </button>
-                </div>
-              )}
+              {renderPagination(skillsPage, skillsTotalPages, setSkillsPage, skillsLoading)}
             </>
           ) : null}
 
@@ -1033,16 +1104,7 @@ export default function Explore() {
                   </div>
                 ) : null}
               </div>
-              {offersHasMore && !offersLoading && (
-                <div className="mt-6 flex justify-center">
-                  <button
-                    onClick={() => setOffersPage((p) => p + 1)}
-                    className="rounded-lg border border-slate-200 bg-white px-6 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                  >
-                    Load more
-                  </button>
-                </div>
-              )}
+              {renderPagination(offersPage, offersTotalPages, setOffersPage, offersLoading)}
             </>
           ) : null}
         </section>
