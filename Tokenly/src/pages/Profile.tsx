@@ -63,6 +63,8 @@ const Profile: React.FC = () => {
     if (!liveProfile) {
       return {
         id: "",
+        username: "",
+        publicProfileUrl: "",
         name: "",
         title: "",
         location: "",
@@ -91,6 +93,8 @@ const Profile: React.FC = () => {
 
     return {
       id: liveProfile.id,
+      username: liveProfile.username || "",
+      publicProfileUrl: "",
       name,
       title: liveProfile.title || liveProfile.institution || "",
       location: liveProfile.location || "",
@@ -109,6 +113,28 @@ const Profile: React.FC = () => {
       },
     };
   }, [liveProfile, liveReviews, liveSkills]);
+
+  const publicProfileIdentifier = useMemo(() => {
+    const username = liveProfile?.username?.trim();
+    if (username) return username;
+    return liveProfile?.id ?? "";
+  }, [liveProfile?.id, liveProfile?.username]);
+
+  const publicProfileUrl = useMemo(() => {
+    if (!publicProfileIdentifier || typeof window === "undefined") return "";
+    return new URL(
+      `profile/${encodeURIComponent(publicProfileIdentifier)}`,
+      `${window.location.origin}${import.meta.env.BASE_URL}`
+    ).toString();
+  }, [publicProfileIdentifier]);
+
+  const profileHeaderUser = useMemo(
+    () => ({
+      ...user,
+      publicProfileUrl,
+    }),
+    [publicProfileUrl, user]
+  );
 
   const skills: UiSkill[] = useMemo(() => {
     return liveSkills.map((s) => ({
@@ -302,7 +328,7 @@ const Profile: React.FC = () => {
         ) : null}
         {pageError ? <p className="mb-3 text-xs text-rose-600">{pageError}</p> : null}
 
-        <ProfileHeader user={user} onEdit={() => setIsEditModalOpen(true)} isOwner={true} />
+        <ProfileHeader user={profileHeaderUser} onEdit={() => setIsEditModalOpen(true)} isOwner={true} />
 
         {loading ? (
           <div className="flex flex-col items-center justify-center gap-3 py-20">

@@ -128,6 +128,10 @@ export const router = createBrowserRouter(
               element: <Profile />,
             },
             {
+              path: "/profile/:identifier",
+              element: <HelperProfile />,
+            },
+            {
               path: "/activity",
               element: <Activity />,
             },

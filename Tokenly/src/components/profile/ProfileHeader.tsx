@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import {
   CalendarDays,
   Check,
+  Copy,
+  Download,
   Globe,
   GraduationCap,
   MapPin,
@@ -13,6 +15,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
+import { QRCodeCanvas } from "qrcode.react";
 import RatingStars from "../common/RatingStars";
 import type { ProfileHeaderProps } from "../../types/profile";
 
@@ -24,9 +27,17 @@ function normalizeWebsiteUrl(value?: string) {
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) => {
   const [copied, setCopied] = useState(false);
   const [isQrOpen, setIsQrOpen] = useState(false);
-  const profileUrl = user.id
-    ? `${window.location.origin}${import.meta.env.BASE_URL}helpers/${user.id}`
-    : window.location.href;
+  const profileUrl = user.publicProfileUrl || window.location.href;
+
+  const handleCopyProfileLink = async () => {
+    try {
+      await navigator.clipboard.writeText(profileUrl);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1400);
+    } catch {
+      // no-op if clipboard is unavailable
+    }
+  };
 
   const handleShareProfile = async () => {
     const shareData = {
@@ -41,16 +52,29 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
         return;
       }
 
-      await navigator.clipboard.writeText(profileUrl);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1400);
+      await handleCopyProfileLink();
     } catch {
       // no-op if share is canceled or clipboard is unavailable
     }
   };
 
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(profileUrl)}`;
   const websiteUrl = normalizeWebsiteUrl(user.website);
+
+  const handleDownloadQr = () => {
+    const canvas = document.getElementById("profile-qr-canvas");
+    if (!(canvas instanceof HTMLCanvasElement)) return;
+
+    const pngUrl = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    const safeName = (user.name || "tokenly-profile")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    link.href = pngUrl;
+    link.download = `${safeName || "tokenly-profile"}-qr.png`;
+    link.click();
+  };
 
   return (
     <section className="mb-6 border-b border-slate-200/60 pb-6">
@@ -182,27 +206,45 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
             </button>
 
             <h3 className="text-base font-semibold text-slate-900">Profile QR Code</h3>
-            <p className="mt-1 text-xs text-slate-500">Scan to open this profile</p>
+            <p className="mt-1 text-xs text-slate-500">Scan to view profile</p>
 
-            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
-              <img src={qrCodeUrl} alt={`${user.name} profile QR code`} className="h-full w-full rounded-lg bg-white" />
+            <div className="mt-4 flex justify-center rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div className="rounded-lg bg-white p-3">
+                <QRCodeCanvas
+                  id="profile-qr-canvas"
+                  value={profileUrl}
+                  size={220}
+                  marginSize={2}
+                  bgColor="#FFFFFF"
+                  fgColor="#1E293B"
+                  level="M"
+                  title={`${user.name} profile QR code`}
+                />
+              </div>
             </div>
 
-            <div className="mt-4 flex items-center justify-end gap-2">
+            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Public profile link</p>
+              <p className="mt-1 break-all text-xs text-slate-600">{profileUrl}</p>
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
               <button
                 type="button"
-                onClick={handleShareProfile}
-                className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                onClick={handleCopyProfileLink}
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
               >
-                Copy Link
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+                {copied ? "Copied" : "Copy Link"}
               </button>
-              <a
-                href={qrCodeUrl}
-                download={`${user.name.replace(/\s+/g, "-").toLowerCase()}-profile-qr.png`}
-                className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 transition hover:bg-indigo-100"
+              <button
+                type="button"
+                onClick={handleDownloadQr}
+                className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 transition hover:bg-indigo-100"
               >
+                <Download size={14} />
                 Download QR
-              </a>
+              </button>
             </div>
           </div>
         </div>

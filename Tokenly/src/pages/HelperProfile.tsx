@@ -3,7 +3,11 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, MapPin, Calendar, Star, Clock3, Coins, Sparkles, Globe } from "lucide-react";
 import Avatar from "../components/common/Avatar";
 import { supabase } from "../lib/supabaseClient";
-import { getPublicHelperProfileCore, getHelperOpenOffers } from "../services/profileService";
+import {
+  getPublicHelperProfileCore,
+  getHelperOpenOffers,
+  resolvePublicProfileIdentifier,
+} from "../services/profileService";
 
 const levelStyle: Record<string, string> = {
   beginner: "bg-emerald-50 text-emerald-700",
@@ -24,7 +28,8 @@ function normalizeWebsiteUrl(value?: string | null) {
 }
 
 export default function HelperProfile() {
-  const { helperId } = useParams<{ helperId: string }>();
+  const { helperId, identifier } = useParams<{ helperId?: string; identifier?: string }>();
+  const requestedIdentifier = helperId ?? identifier ?? "";
 
   const [profile, setProfile] = useState<{
     id: string;
@@ -55,30 +60,44 @@ export default function HelperProfile() {
   }, []);
 
   useEffect(() => {
-    if (!helperId) { setError("Helper not found."); setLoading(false); return; }
+    if (!requestedIdentifier) { setError("Helper not found."); setLoading(false); return; }
     let mounted = true;
     setLoading(true);
+    setError("");
 
-    void getPublicHelperProfileCore(helperId).then((result) => {
+    void (async () => {
+      const resolved = await resolvePublicProfileIdentifier(requestedIdentifier);
       if (!mounted) return;
-      if (result.error || !result.profile) {
-        setError(result.error?.message ?? "Helper not found.");
+
+      if (resolved.error || !resolved.data?.id) {
+        setError(resolved.error?.message ?? "Helper not found.");
         setLoading(false);
         return;
       }
-      setProfile(result.profile as typeof profile);
-      setSkills(result.skills as typeof skills);
-      setReviews(result.reviews as unknown as typeof reviews);
-      setLoading(false);
-    });
 
-    void getHelperOpenOffers(helperId).then(({ data }) => {
+      const resolvedId = resolved.data.id;
+      const [profileResult, offersResult] = await Promise.all([
+        getPublicHelperProfileCore(resolvedId),
+        getHelperOpenOffers(resolvedId),
+      ]);
+
       if (!mounted) return;
-      setHelpOffers((data ?? []) as typeof helpOffers);
-    });
+
+      if (profileResult.error || !profileResult.profile) {
+        setError(profileResult.error?.message ?? "Helper not found.");
+        setLoading(false);
+        return;
+      }
+
+      setProfile(profileResult.profile as typeof profile);
+      setSkills(profileResult.skills as typeof skills);
+      setReviews(profileResult.reviews as unknown as typeof reviews);
+      setHelpOffers((offersResult.data ?? []) as typeof helpOffers);
+      setLoading(false);
+    })();
 
     return () => { mounted = false; };
-  }, [helperId]);
+  }, [requestedIdentifier]);
 
   const helperName = profile?.full_name ?? profile?.username ?? "Helper";
   const memberSince = profile?.created_at
@@ -93,7 +112,7 @@ export default function HelperProfile() {
     return avg.toFixed(1);
   }, [profile?.avg_rating, reviews]);
 
-  const isOwnProfile = currentUserId === helperId;
+  const isOwnProfile = currentUserId === profile?.id;
 
   if (loading) {
     return (

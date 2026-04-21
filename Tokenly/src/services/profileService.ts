@@ -143,3 +143,28 @@ export async function getHelperOpenOffers(helper_id: string) {
     .eq("status", "open")
     .order("created_at", { ascending: false });
 }
+
+export async function resolvePublicProfileIdentifier(identifier: string) {
+  const normalized = identifier.trim();
+  if (!normalized) {
+    return { data: null, error: { message: "Profile identifier is required." } };
+  }
+
+  const looksLikeUuid = normalized.includes("-");
+  const primaryLookup = looksLikeUuid
+    ? await getProfileById(normalized)
+    : await getProfileByUsername(normalized.toLowerCase());
+
+  if (primaryLookup.data) {
+    return { data: primaryLookup.data, error: null };
+  }
+
+  const fallbackLookup = looksLikeUuid
+    ? await getProfileByUsername(normalized.toLowerCase())
+    : await getProfileById(normalized);
+
+  return {
+    data: fallbackLookup.data ?? null,
+    error: fallbackLookup.error ?? primaryLookup.error,
+  };
+}

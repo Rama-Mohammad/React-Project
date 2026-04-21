@@ -40,6 +40,8 @@ export type ProfileHeaderStats = {
 
 export type ProfileHeaderUser = {
   id?: string;
+  username?: string;
+  publicProfileUrl?: string;
   name: string;
   title: string;
   location: string;
