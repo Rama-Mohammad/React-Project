@@ -112,6 +112,7 @@ const SessionLivePage: React.FC = () => {
     toggleAudio,
     toggleVideo,
     toggleScreenShare,
+    leaveCall,
   } = useLiveSessionCall({
     sessionId: sessionId ?? "",
     userId: currentUserId,
@@ -404,10 +405,11 @@ const SessionLivePage: React.FC = () => {
     if (file) window.open(file.url, "_blank");
   };
 
-  const handleLeaveSession = async () => {
-    setHasJoinedCall(false);
-    await maybeOpenReviewModal({ navigateAfterClose: true });
-  };
+const handleLeaveSession = async () => {
+  await leaveCall();
+  setHasJoinedCall(false);
+  await maybeOpenReviewModal({ navigateAfterClose: true });
+};
 
   const handleSubmitReview = async () => {
     if (!sessionId || !currentUserId || !helperId || !rating || hasExistingReview) return;

@@ -150,22 +150,27 @@ export function useLiveSessionCall({
       : new Error("Camera or microphone access could not be started on this device.");
   };
 
+  const sendSignal = async (payload: SignalPayload) => {
+  const channel = channelRef.current;
+
+  if (!channel || !isSubscribedRef.current) return;
+
+  try {
+    await channel.send({
+      type: "broadcast",
+      event: "signal",
+      payload,
+    });
+  } catch (err) {
+    console.warn("sendSignal failed:", err);
+  }
+};
+
   useEffect(() => {
     if (!enabled || !sessionId || !userId) return;
 
     let isMounted = true;
     let hasStartedRealtime = false;
-
-    const sendSignal = async (payload: SignalPayload) => {
-      const channel = channelRef.current;
-      if (!channel || !isSubscribedRef.current) return;
-
-      await channel.send({
-        type: "broadcast",
-        event: "signal",
-        payload,
-      });
-    };
 
     const flushPendingCandidates = async (peer: RTCPeerConnection) => {
       while (pendingCandidatesRef.current.length > 0) {
@@ -260,12 +265,26 @@ export function useLiveSessionCall({
           return;
         }
 
-        if (state === "failed" || state === "disconnected") {
-          setConnectionStatus("error");
-          setErrorMessage(
-            "The call connection dropped. If this keeps happening across devices, add TURN credentials in .env."
-          );
-        }
+        // if (state === "failed" || state === "disconnected") {
+        //   setConnectionStatus("error");
+        //   setErrorMessage(
+        //     "The call connection dropped. If this keeps happening across devices, add TURN credentials in .env."
+        //   );
+        // }
+        if (state === "failed") {
+  setConnectionStatus("error");
+  setErrorMessage("Connection failed. Please try rejoining the call.");
+  return;
+}
+
+if (state === "disconnected") {
+  // DON'T treat as error — could be user leaving or temporary drop
+  if (remoteStreamRef.current) {
+    setConnectionStatus("waiting");
+    setErrorMessage("");
+  }
+  return;
+}
       };
 
       peer.oniceconnectionstatechange = () => {
@@ -298,6 +317,8 @@ export function useLiveSessionCall({
       peerRef.current = peer;
       return peer;
     };
+
+ 
 
     const maybeCreateOffer = async () => {
       if (!isInitiator) return;
@@ -658,6 +679,8 @@ export function useLiveSessionCall({
       await sender.replaceTrack(track);
     }
 
+  
+
     const audioTracks = (cameraStreamRef.current ?? localStreamRef.current)?.getAudioTracks() ?? [];
     const previewStream = new MediaStream([track, ...audioTracks]);
     localStreamRef.current = previewStream;
@@ -675,32 +698,49 @@ export function useLiveSessionCall({
     setIsScreenSharing(false);
   };
 
+const leaveCall = async () => {
+  try {
+    setConnectionStatus("idle");
+
+    // 1. Send leave signal ONLY if channel is still active
+    if (channelRef.current && isSubscribedRef.current) {
+      await sendSignal({ type: "leave", from: userId });
+    }
+
+    // 2. Close peer connection first
+    peerRef.current?.close();
+    peerRef.current = null;
+
+    // 3. Remove Supabase channel safely
+    if (channelRef.current) {
+      await supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+
+    isSubscribedRef.current = false;
+
+    // 4. Stop media tracks safely
+    localStreamRef.current?.getTracks().forEach(t => t.stop());
+    cameraStreamRef.current?.getTracks().forEach(t => t.stop());
+    screenTrackRef.current?.stop();
+
+    // 5. Clear refs + state
+    localStreamRef.current = null;
+    cameraStreamRef.current = null;
+    screenTrackRef.current = null;
+
+    setLocalStream(null);
+    setRemoteStream(null);
+
+  } catch (err) {
+    console.error("leaveCall error", err);
+  }
+};
+
   const isMobileDevice = () => {
   return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 };
 
-  // const toggleScreenShare = async () => {
-  //   if (isScreenSharing) {
-  //     await stopScreenShare();
-  //     return;
-  //   }
-
-  //   try {
-  //     const displayStream = await getDisplayMediaCompat({ video: true });
-  //     const screenTrack = displayStream.getVideoTracks()[0];
-  //     if (!screenTrack) return;
-
-  //     screenTrackRef.current = screenTrack;
-  //     await replaceActiveVideoTrack(screenTrack);
-  //     setIsScreenSharing(true);
-
-  //     screenTrack.onended = () => {
-  //       void stopScreenShare();
-  //     };
-  //   } catch (error) {
-  //     setErrorMessage(error instanceof Error ? error.message : "Could not start screen sharing.");
-  //   }
-  // };
 
   const toggleScreenShare = async () => {
   if (isScreenSharing) {
@@ -744,5 +784,6 @@ export function useLiveSessionCall({
     toggleAudio,
     toggleVideo,
     toggleScreenShare,
+    leaveCall,
   };
 }
