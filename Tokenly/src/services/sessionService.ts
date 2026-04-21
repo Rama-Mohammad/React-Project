@@ -124,7 +124,14 @@ export async function getSessionById(id: string) {
 
   const result = await supabase
     .from("sessions")
-    .select("*, request:requests(*), helper:profiles!helper_id(*), requester:profiles!requester_id(*)")
+    .select(`
+      *,
+      helper:profiles!sessions_helper_id_fkey(*),
+      requester:profiles!sessions_requester_id_fkey(*),
+      request:requests(*),
+      help_offer_request:help_offer_requests(*, help_offer:help_offers(*)),
+      direct_request:direct_requests(*)
+    `)
     .eq("id", id)
     .single();
   logSessionsQuery("getSessionById result", { session, user, payload, error: result.error });
