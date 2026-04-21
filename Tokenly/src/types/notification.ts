@@ -15,7 +15,9 @@ export type NotificationType =
   // Flow 3 — direct_request events
   | "direct_request_received"       // helper gets this when someone sends them a direct request
   | "direct_request_accepted"       // requester gets this when helper accepts
-  | "direct_request_rejected";      // requester gets this when helper rejects
+  | "direct_request_rejected"       // requester gets this when helper rejects
+  | "chat_message_received";         // user gets this when they receive a new chat message
+  
 
 export type Notification = {
   id: string;
@@ -24,7 +26,7 @@ export type Notification = {
   title: string;
   message: string;
   related_id?: string;
-  related_type?: "session" | "request" | "offer" | "review" | "help_offer" | "direct_request";
+  related_type?: "session" | "request" | "offer" | "review" | "help_offer" | "direct_request" | "chat";
   is_read: boolean;
   created_at: string;
 };

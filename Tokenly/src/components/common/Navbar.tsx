@@ -15,6 +15,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import useProfiles from "../../hooks/useProfile";
 import tokenlyLogo from "/images/nav-logo.svg";
+import NotificationBell from "../notifications/NotificationBell";
 
 const navLinkBase =
   "inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold transition duration-200";
@@ -74,11 +75,11 @@ export default function Navbar() {
 
   const initials = profile?.full_name
     ? profile.full_name
-        .split(" ")
-        .map((name) => name[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase()
+      .split(" ")
+      .map((name) => name[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase()
     : (user?.email?.[0].toUpperCase() ?? "?");
 
   const sharedLinks = (onClick?: () => void) => (
@@ -106,7 +107,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/55 bg-white/72 backdrop-blur-2xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-4 lg:px-8">
-          <div className="flex min-w-0 items-center justify-start pl-[2px] lg:pl-[2px]">
+        <div className="flex min-w-0 items-center justify-start pl-[2px] lg:pl-[2px]">
           <NavLink
             to="/"
             className="flex shrink-0 items-center transition hover:opacity-95 -ml-2"
@@ -130,6 +131,9 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center justify-end gap-2 pl-4 lg:pl-0 sm:gap-3">
+          {isAuthenticated && user && (
+            <NotificationBell userId={user.id} />
+          )}
           {loading ? (
             <div className="h-10 w-10 animate-pulse rounded-full bg-slate-100" />
           ) : isAuthenticated ? (

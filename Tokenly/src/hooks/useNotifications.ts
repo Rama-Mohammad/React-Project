@@ -92,15 +92,21 @@ export default function useNotifications(): UseNotificationsResult {
         return true;
     }
 
-    function subscribeToLive(user_id: string) {
-        const channel = subscribeToNotifications(user_id, (newNotification) => {
-            setNotifications((prev) => [newNotification as Notification, ...prev]);
-        });
+function subscribeToLive(user_id: string) {
+    const channel = subscribeToNotifications(user_id, (newNotification) => {
+        setNotifications((prev) => {
+            const exists = prev.some((n) => n.id === (newNotification as Notification).id);
 
-        return () => {
-            void channel.unsubscribe();
-        };
-    }
+            if (exists) return prev;
+
+            return [newNotification as Notification, ...prev];
+        });
+    });
+
+    return () => {
+        void channel.unsubscribe();
+    };
+}
 
     return {
         notifications,

@@ -176,6 +176,7 @@ export const router = createBrowserRouter(
               path: "/cookies",
               element: <CookiePolicy />,
             },
+            
             {
               path: "*",
               element: <NotFound />,
