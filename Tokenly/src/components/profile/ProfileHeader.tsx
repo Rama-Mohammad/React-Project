@@ -139,17 +139,15 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
             >
               {copied ? <Check size={15} /> : <Share2 size={15} />}
             </button>
-            {isOwner ? (
-              <button
-                type="button"
-                onClick={() => setIsQrOpen(true)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white/85 text-slate-600 transition hover:border-sky-200 hover:text-sky-600"
-                aria-label="Show profile QR code"
-                title="Show profile QR code"
-              >
-                <QrCode size={15} />
-              </button>
-            ) : null}
+            <button
+              type="button"
+              onClick={() => setIsQrOpen(true)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white/85 text-slate-600 transition hover:border-sky-200 hover:text-sky-600"
+              aria-label="Show profile QR code"
+              title="Show profile QR code"
+            >
+              <QrCode size={15} />
+            </button>
 
             {isOwner && (
               <button

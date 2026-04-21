@@ -30,6 +30,7 @@ export type DashboardStats = {
   activeRequests: number;
   offersSubmitted: number;
   offersAccepted: number;
+  reviewCount: number;
 };
 
 export default function useDashboard() {

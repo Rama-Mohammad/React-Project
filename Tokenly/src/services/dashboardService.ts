@@ -36,6 +36,7 @@ export async function getDashboardStats(user_id: string) {
       activeRequests: 0,
       offersSubmitted: 0,
       offersAccepted: 0,
+      reviewCount: 0,
     };
   }
 
@@ -47,6 +48,7 @@ export async function getDashboardStats(user_id: string) {
     requestsCount,
     offersSubmitted,
     offersAccepted,
+    reviewsCount,
   ] = await Promise.all([
     supabase
       .from("sessions")
@@ -87,6 +89,11 @@ export async function getDashboardStats(user_id: string) {
       .select("*", { count: "exact", head: true })
       .eq("helper_id", user_id)
       .eq("status", "accepted"),
+
+    supabase
+      .from("reviews")
+      .select("id", { count: "exact", head: true })
+      .eq("reviewee_id", user_id),
   ]);
 
   return {
@@ -97,6 +104,7 @@ export async function getDashboardStats(user_id: string) {
     activeRequests: requestsCount.count ?? 0,
     offersSubmitted: offersSubmitted.count ?? 0,
     offersAccepted: offersAccepted.count ?? 0,
+    reviewCount: reviewsCount.count ?? 0,
   };
 }
 export async function getDashboardSessions(user_id: string) {

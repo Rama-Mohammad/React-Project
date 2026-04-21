@@ -398,7 +398,8 @@ export default function Dashboard() {
   const initials = getInitials(profile?.full_name);
   const creditBalance = profile?.credit_balance ?? 0;
   const avgRating = profile?.avg_rating ?? 0;
-  const reviewCount = stats ? stats.completedSessions : 0;
+  const reviewCount = stats?.reviewCount ?? 0;
+  const displayedAvgRating = reviewCount > 0 ? avgRating : 0;
 
   return (
     <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
@@ -432,8 +433,11 @@ export default function Dashboard() {
                 <div className="mt-3 flex flex-wrap items-center gap-2.5">
                   {!dashLoading && (
                     <>
-                      <RatingStars value={Math.round(avgRating)} />
-                      <span className="text-sm text-slate-500">{avgRating.toFixed(1)} rating</span>
+                      <RatingStars value={displayedAvgRating} />
+                      <span className="text-sm text-slate-500">
+                        {displayedAvgRating.toFixed(1)} rating
+                        {reviewCount > 0 ? ` · ${reviewCount} ${reviewCount === 1 ? "review" : "reviews"}` : ""}
+                      </span>
                     </>
                   )}
                 </div>
@@ -539,8 +543,8 @@ export default function Dashboard() {
                   <div className="mt-3 flex items-center justify-between rounded-2xl border border-indigo-200/70 bg-indigo-50/80 px-4 py-3">
                     <p className="text-sm font-semibold text-slate-700">Average Rating as Helper</p>
                     <div className="flex items-center gap-1.5 text-slate-700">
-                      <RatingStars value={Math.round(avgRating)} />
-                      <span className="text-lg font-semibold leading-none">{avgRating.toFixed(1)}</span>
+                      <RatingStars value={displayedAvgRating} />
+                      <span className="text-lg font-semibold leading-none">{displayedAvgRating.toFixed(1)}</span>
                     </div>
                   </div>
                 </>
@@ -594,10 +598,12 @@ export default function Dashboard() {
                 <Star size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
-                {dashLoading ? "" : avgRating.toFixed(1)}
+                {dashLoading ? "" : displayedAvgRating.toFixed(1)}
               </p>
               <p className="text-sm text-slate-700">Avg. Rating</p>
-              <p className="mt-2 text-sm text-slate-500">{dashLoading ? "" : `From ${reviewCount} sessions`}</p>
+              <p className="mt-2 text-sm text-slate-500">
+                {dashLoading ? "" : `From ${reviewCount} ${reviewCount === 1 ? "review" : "reviews"}`}
+              </p>
             </article>
           </div>
         </section>
