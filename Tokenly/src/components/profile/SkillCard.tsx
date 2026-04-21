@@ -29,14 +29,20 @@ const SkillCard: React.FC<ProfileSkillCardProps> = ({ skill, onDelete, onEdit })
             {skill.category}
           </span>
         </div>
-        <div className="flex items-center gap-1">
-          <button onClick={() => onEdit?.(skill)} className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-indigo-500" aria-label="Edit skill">
-            <PenLine size={14} />
-          </button>
-          <button onClick={() => onDelete?.(skill.id)} className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-rose-500" aria-label="Delete skill">
-            <Trash2 size={14} />
-          </button>
-        </div>
+        {onEdit || onDelete ? (
+          <div className="flex items-center gap-1">
+            {onEdit ? (
+              <button onClick={() => onEdit(skill)} className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-indigo-500" aria-label="Edit skill">
+                <PenLine size={14} />
+              </button>
+            ) : null}
+            {onDelete ? (
+              <button onClick={() => onDelete(skill.id)} className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-rose-500" aria-label="Delete skill">
+                <Trash2 size={14} />
+              </button>
+            ) : null}
+          </div>
+        ) : null}
       </div>
       <div className="mb-2 flex items-center gap-2">
         <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${getLevelColor(skill.level)}`}>{skill.level}</span>

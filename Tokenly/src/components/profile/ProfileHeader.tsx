@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   CalendarDays,
   Check,
@@ -27,19 +27,32 @@ function normalizeWebsiteUrl(value?: string) {
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) => {
   const [copied, setCopied] = useState(false);
   const [isQrOpen, setIsQrOpen] = useState(false);
+  const shareInFlightRef = useRef(false);
   const profileUrl = user.publicProfileUrl || window.location.href;
 
+  const copyProfileLink = async () => {
+    await navigator.clipboard.writeText(profileUrl);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1400);
+  };
+
   const handleCopyProfileLink = async () => {
+    if (shareInFlightRef.current) return;
+
+    shareInFlightRef.current = true;
     try {
-      await navigator.clipboard.writeText(profileUrl);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1400);
+      await copyProfileLink();
     } catch {
       // no-op if clipboard is unavailable
+    } finally {
+      shareInFlightRef.current = false;
     }
   };
 
   const handleShareProfile = async () => {
+    if (shareInFlightRef.current) return;
+
+    shareInFlightRef.current = true;
     const shareData = {
       title: `${user.name} on Tokenly`,
       text: `Check out ${user.name}'s profile`,
@@ -52,9 +65,18 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
         return;
       }
 
-      await handleCopyProfileLink();
-    } catch {
-      // no-op if share is canceled or clipboard is unavailable
+      await copyProfileLink();
+    } catch (error) {
+      const errorName =
+        typeof error === "object" && error && "name" in error
+          ? String((error as { name?: string }).name)
+          : "";
+
+      if (errorName !== "AbortError") {
+        // no-op if share/clipboard is unavailable
+      }
+    } finally {
+      shareInFlightRef.current = false;
     }
   };
 
@@ -117,15 +139,17 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
             >
               {copied ? <Check size={15} /> : <Share2 size={15} />}
             </button>
-            <button
-              type="button"
-              onClick={() => setIsQrOpen(true)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white/85 text-slate-600 transition hover:border-sky-200 hover:text-sky-600"
-              aria-label="Show profile QR code"
-              title="Show profile QR code"
-            >
-              <QrCode size={15} />
-            </button>
+            {isOwner ? (
+              <button
+                type="button"
+                onClick={() => setIsQrOpen(true)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white/85 text-slate-600 transition hover:border-sky-200 hover:text-sky-600"
+                aria-label="Show profile QR code"
+                title="Show profile QR code"
+              >
+                <QrCode size={15} />
+              </button>
+            ) : null}
 
             {isOwner && (
               <button
@@ -177,7 +201,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
           <div className="flex items-center gap-2 rounded-lg bg-white/55 px-3 py-2 text-sm text-slate-600">
             <Sparkles size={15} className="text-indigo-500" />
             <span className="text-lg font-bold text-slate-900">{user.stats.creditsEarned === 0 && !user.name ? "" : user.stats.creditsEarned}</span>
-            Tokens
+            {isOwner ? "Tokens" : "Skills"}
           </div>
           <div className="flex items-center gap-2 rounded-lg bg-white/55 px-3 py-2 text-sm text-slate-600">
             <MessageSquareMore size={15} className="text-indigo-500" />

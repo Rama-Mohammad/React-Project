@@ -8,7 +8,7 @@ import {
   ShieldCheck,
   Trash2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import Avatar from "../components/common/Avatar";
@@ -59,6 +59,7 @@ export default function RequestDetails() {
   const [offersError, setOffersError] = useState("");
   const [offerActionId, setOfferActionId] = useState<string | null>(null);
   const [sessionsCompleted, setSessionsCompleted] = useState(0);
+  const shareInFlightRef = useRef(false);
 
   const formatAvailabilityValue = (value?: string | null) => {
     if (!value) return "Not provided";
@@ -221,6 +222,9 @@ export default function RequestDetails() {
   };
 
   const handleShare = async () => {
+    if (shareInFlightRef.current) return;
+
+    shareInFlightRef.current = true;
     const shareUrl = window.location.href;
     const shareTitle = `${request.title} | Tokenly`;
 
@@ -237,8 +241,17 @@ export default function RequestDetails() {
 
       await navigator.clipboard.writeText(shareUrl);
       setActionFeedback("Request link copied to clipboard.");
-    } catch {
-      setActionFeedback("Could not share right now. Please try again.");
+    } catch (error) {
+      const errorName =
+        typeof error === "object" && error && "name" in error
+          ? String((error as { name?: string }).name)
+          : "";
+
+      if (errorName !== "AbortError") {
+        setActionFeedback("Could not share right now. Please try again.");
+      }
+    } finally {
+      shareInFlightRef.current = false;
     }
   };
 

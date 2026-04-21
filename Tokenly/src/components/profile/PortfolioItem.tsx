@@ -41,25 +41,31 @@ const PortfolioItem: React.FC<PortfolioItemProps> = ({ item, onEdit, onDelete })
           {item.type}
         </span>
 
-        <div className="absolute right-3 top-3 flex overflow-hidden rounded-xl border border-white/75 bg-white/90 shadow-sm opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
-          <button
-            type="button"
-            onClick={() => onEdit?.(item)}
-            className="inline-flex h-9 w-9 flex-none items-center justify-center p-0 text-slate-600 transition-colors hover:bg-slate-100 hover:text-indigo-600 focus:outline-none"
-            aria-label="Edit portfolio item"
-          >
-            <PenLine size={15} />
-          </button>
-          <div className="w-px bg-slate-200" />
-          <button
-            type="button"
-            onClick={() => onDelete?.(item.id)}
-            className="inline-flex h-9 w-9 flex-none items-center justify-center p-0 text-slate-500 transition-colors hover:bg-slate-100 hover:text-rose-600 focus:outline-none"
-            aria-label="Delete portfolio item"
-          >
-            <Trash2 size={15} />
-          </button>
-        </div>
+        {onEdit || onDelete ? (
+          <div className="absolute right-3 top-3 flex overflow-hidden rounded-xl border border-white/75 bg-white/90 shadow-sm opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
+            {onEdit ? (
+              <button
+                type="button"
+                onClick={() => onEdit(item)}
+                className="inline-flex h-9 w-9 flex-none items-center justify-center p-0 text-slate-600 transition-colors hover:bg-slate-100 hover:text-indigo-600 focus:outline-none"
+                aria-label="Edit portfolio item"
+              >
+                <PenLine size={15} />
+              </button>
+            ) : null}
+            {onEdit && onDelete ? <div className="w-px bg-slate-200" /> : null}
+            {onDelete ? (
+              <button
+                type="button"
+                onClick={() => onDelete(item.id)}
+                className="inline-flex h-9 w-9 flex-none items-center justify-center p-0 text-slate-500 transition-colors hover:bg-slate-100 hover:text-rose-600 focus:outline-none"
+                aria-label="Delete portfolio item"
+              >
+                <Trash2 size={15} />
+              </button>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       <div className="flex flex-1 flex-col p-4">

@@ -1,5 +1,7 @@
 import { supabase } from "../lib/supabaseClient";
 
+const PROFILE_IDENTIFIER_CACHE = new Map<string, { id: string; username?: string | null }>();
+
 export async function getProfileById(id: string) {
   return await supabase
     .from("profiles")
@@ -106,14 +108,23 @@ export async function updateLastSeen(user_id: string) {
     .eq("id", user_id);
 }
 
+export async function getPublicProfileBasic(
+  helper_id: string,
+  options?: { includePrivate?: boolean }
+) {
+  const profileColumns = options?.includePrivate
+    ? "id, full_name, username, bio, profile_image_url, cover_image_url, avg_rating, credit_balance, created_at, title, institution, location, website"
+    : "id, full_name, username, bio, profile_image_url, cover_image_url, avg_rating, created_at, title, institution, location, website";
 
-export async function getPublicHelperProfileCore(helper_id: string) {
-  const [profileRes, skillsRes, reviewsRes] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("id, full_name, username, bio, profile_image_url, cover_image_url, avg_rating, credit_balance, created_at, title, institution, location, website, last_seen")
-      .eq("id", helper_id)
-      .single(),
+  return await supabase
+    .from("profiles")
+    .select(profileColumns)
+    .eq("id", helper_id)
+    .single();
+}
+
+export async function getPublicProfileDetails(helper_id: string) {
+  const [skillsRes, reviewsRes] = await Promise.all([
     supabase
       .from("skills")
       .select("id, name, category, level, sessions_count, description")
@@ -128,20 +139,45 @@ export async function getPublicHelperProfileCore(helper_id: string) {
   ]);
 
   return {
-    profile: profileRes.data ?? null,
     skills: skillsRes.data ?? [],
     reviews: reviewsRes.data ?? [],
-    error: profileRes.error ?? skillsRes.error ?? reviewsRes.error ?? null,
+    error: skillsRes.error ?? reviewsRes.error ?? null,
   };
 }
 
-export async function getHelperOpenOffers(helper_id: string) {
-  return await supabase
+export async function getPublicHelperProfileCore(
+  helper_id: string,
+  options?: { includePrivate?: boolean }
+) {
+  const [profileRes, detailsRes] = await Promise.all([
+    getPublicProfileBasic(helper_id, options),
+    getPublicProfileDetails(helper_id),
+  ]);
+
+  return {
+    profile: profileRes.data ?? null,
+    skills: detailsRes.skills,
+    reviews: detailsRes.reviews,
+    error: profileRes.error ?? detailsRes.error ?? null,
+  };
+}
+
+export async function getHelperOpenOffers(
+  helper_id: string,
+  options?: { limit?: number }
+) {
+  let query = supabase
     .from("help_offers")
     .select("id, title, description, category, urgency, duration_minutes, credit_cost, status, created_at")
     .eq("helper_id", helper_id)
     .eq("status", "open")
     .order("created_at", { ascending: false });
+
+  if (typeof options?.limit === "number" && options.limit > 0) {
+    query = query.limit(options.limit);
+  }
+
+  return await query;
 }
 
 export async function resolvePublicProfileIdentifier(identifier: string) {
@@ -150,18 +186,32 @@ export async function resolvePublicProfileIdentifier(identifier: string) {
     return { data: null, error: { message: "Profile identifier is required." } };
   }
 
+  const cacheKey = normalized.toLowerCase();
+  const cached = PROFILE_IDENTIFIER_CACHE.get(cacheKey);
+  if (cached) {
+    return { data: cached, error: null };
+  }
+
+  const identifierColumns = "id, username";
   const looksLikeUuid = normalized.includes("-");
+  if (looksLikeUuid) {
+    const directMatch = { id: normalized, username: null };
+    PROFILE_IDENTIFIER_CACHE.set(cacheKey, directMatch);
+    return { data: directMatch, error: null };
+  }
+
   const primaryLookup = looksLikeUuid
-    ? await getProfileById(normalized)
-    : await getProfileByUsername(normalized.toLowerCase());
+    ? await supabase.from("profiles").select(identifierColumns).eq("id", normalized).single()
+    : await supabase.from("profiles").select(identifierColumns).eq("username", normalized.toLowerCase()).single();
 
   if (primaryLookup.data) {
+    PROFILE_IDENTIFIER_CACHE.set(cacheKey, primaryLookup.data);
     return { data: primaryLookup.data, error: null };
   }
 
   const fallbackLookup = looksLikeUuid
-    ? await getProfileByUsername(normalized.toLowerCase())
-    : await getProfileById(normalized);
+    ? await supabase.from("profiles").select(identifierColumns).eq("username", normalized.toLowerCase()).single()
+    : await supabase.from("profiles").select(identifierColumns).eq("id", normalized).single();
 
   return {
     data: fallbackLookup.data ?? null,

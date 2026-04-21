@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabaseClient";
 export async function getPortfolioByUser(user_id: string) {
   return await supabase
     .from("portfolio_items")
-    .select("*")
+    .select("id, user_id, title, description, type, tags, date, created_at")
     .eq("user_id", user_id)
     .order("created_at", { ascending: false });
 }
