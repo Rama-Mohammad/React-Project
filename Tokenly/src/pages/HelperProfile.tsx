@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, MapPin, Calendar, Star, Clock3, Coins, Sparkles, Globe } from "lucide-react";
+import { MapPin, Calendar, Star, Clock3, Coins, Sparkles, Globe } from "lucide-react";
 import Avatar from "../components/common/Avatar";
 import { supabase } from "../lib/supabaseClient";
 import {
@@ -138,17 +138,8 @@ export default function HelperProfile() {
       </div>
 
       <main className="relative z-10 mx-auto max-w-4xl px-4 py-6 sm:px-5 lg:py-8">
-        {/* Back */}
-        <Link
-          to="/explore?tab=helpers"
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900"
-        >
-          <ArrowLeft size={15} />
-          Back to Helpers
-        </Link>
-
         {/* Profile header */}
-        <section className="mt-4 rounded-3xl border border-white/55 bg-white/80 p-5 shadow-sm backdrop-blur-xl md:p-6">
+        <section className="rounded-3xl border border-white/55 bg-white/80 p-5 shadow-sm backdrop-blur-xl md:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-4">
               <Avatar
@@ -191,7 +182,7 @@ export default function HelperProfile() {
               <div className="flex flex-col gap-2 sm:items-end">
                 {/* Flow 3: send a direct request to this specific helper */}
                 <Link
-                  to={`/helpers/${helperId}/request`}
+                  to={currentUserId ? `/helpers/${profile.id}/request` : "/auth?mode=signin"}
                   className="inline-flex h-10 items-center rounded-xl bg-linear-to-r from-indigo-500 to-violet-500 px-4 text-sm font-semibold text-white transition hover:brightness-105"
                 >
                   Request directly
@@ -200,14 +191,7 @@ export default function HelperProfile() {
                   <p className="text-xs text-slate-500">or browse their open offers below</p>
                 ) : null}
               </div>
-            ) : (
-              <Link
-                to="/profile"
-                className="inline-flex h-10 items-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-              >
-                Edit Profile
-              </Link>
-            )}
+            ) : null}
           </div>
 
           {profile.bio ? (
@@ -346,7 +330,7 @@ export default function HelperProfile() {
 
                       {/* Link to the public booking page — Flow 2 entry point */}
                       <Link
-                        to={`/offers/${offer.id}`}
+                        to={currentUserId ? `/offers/${offer.id}` : "/auth?mode=signin"}
                         className="mt-3 inline-flex h-8 w-full items-center justify-center rounded-xl bg-indigo-600 text-xs font-semibold text-white transition hover:bg-indigo-700"
                       >
                         Book this offer
@@ -361,7 +345,7 @@ export default function HelperProfile() {
                 <p className="mt-2 text-sm text-slate-500">No open offers right now.</p>
                 {!isOwnProfile ? (
                   <Link
-                    to={`/helpers/${helperId}/request`}
+                    to={currentUserId ? `/helpers/${profile.id}/request` : "/auth?mode=signin"}
                     className="mt-3 inline-flex text-xs font-semibold text-indigo-600 hover:text-indigo-800"
                   >
                     Request them directly →
