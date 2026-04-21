@@ -39,6 +39,7 @@ export type ProfileHeaderStats = {
 };
 
 export type ProfileHeaderUser = {
+  id?: string;
   name: string;
   title: string;
   location: string;

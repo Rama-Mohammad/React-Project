@@ -24,9 +24,11 @@ function normalizeWebsiteUrl(value?: string) {
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) => {
   const [copied, setCopied] = useState(false);
   const [isQrOpen, setIsQrOpen] = useState(false);
+  const profileUrl = user.id
+    ? `${window.location.origin}${import.meta.env.BASE_URL}helpers/${user.id}`
+    : window.location.href;
 
   const handleShareProfile = async () => {
-    const profileUrl = window.location.href;
     const shareData = {
       title: `${user.name} on Tokenly`,
       text: `Check out ${user.name}'s profile`,
@@ -47,7 +49,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
     }
   };
 
-  const profileUrl = window.location.href;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(profileUrl)}`;
   const websiteUrl = normalizeWebsiteUrl(user.website);
 

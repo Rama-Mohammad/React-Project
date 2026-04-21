@@ -62,6 +62,7 @@ const Profile: React.FC = () => {
   const user: ProfileHeaderUser = useMemo(() => {
     if (!liveProfile) {
       return {
+        id: "",
         name: "",
         title: "",
         location: "",
@@ -89,6 +90,7 @@ const Profile: React.FC = () => {
     });
 
     return {
+      id: liveProfile.id,
       name,
       title: liveProfile.title || liveProfile.institution || "",
       location: liveProfile.location || "",
