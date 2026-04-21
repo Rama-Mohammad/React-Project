@@ -279,11 +279,18 @@ export function useLiveSessionCall({
 }
 
 if (state === "disconnected") {
-  // DON'T treat as error — could be user leaving or temporary drop
-  if (remoteStreamRef.current) {
-    setConnectionStatus("waiting");
-    setErrorMessage("");
-  }
+  console.log("⚠️ ICE DISCONNECTED → attempting recovery");
+
+  setConnectionStatus("connecting");
+
+  // try to recover instead of failing
+  setTimeout(() => {
+    if (peerRef.current && peerRef.current.restartIce) {
+      console.log("🔄 ICE restart triggered");
+      peerRef.current.restartIce();
+    }
+  }, 1000);
+
   return;
 }
       };
