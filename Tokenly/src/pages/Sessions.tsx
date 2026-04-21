@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import ThemedSelect from "../components/common/ThemedSelect";
 import Avatar from "../components/common/Avatar";
+import Loader from "../components/common/Loader";
 import type { Session } from "../types/session";
 import { getSessionsByUser, updateSessionStatus } from "../services/sessionService";
 import { getCurrentUser } from "../services/authService";
@@ -22,7 +23,6 @@ type SessionFilter = "upcoming" | "active" | "completed" | "all";
 type RoleFilter = "all" | "helping" | "receiving";
 type SortBy = "newest" | "oldest";
 
-import tokenlyLogo from "../assets/favicon_tokenly.svg";
 
 const SessionsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -439,14 +439,7 @@ const SessionsPage: React.FC = () => {
             ) : null}
             <div className="space-y-2.5">
               {loading ? (
-                <div className="flex flex-col items-center justify-center gap-3 py-14">
-                  <img
-                    src={tokenlyLogo}
-                    alt="Loading"
-                    className="h-9 w-9 animate-spin"
-                    style={{ animationDuration: "1.2s", animationTimingFunction: "linear" }}
-                  />
-                </div>
+                <Loader className="py-14" />
               ) : filteredSessions.map((session) => {
                 const isActive = session.status === "active";
                 const isCompleted = session.status === "completed";

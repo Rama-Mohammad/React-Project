@@ -1,6 +1,7 @@
 import { Calendar, Coins, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import Loader from "../components/common/Loader";
 import useTransactions from "../hooks/useTransactions";
 import { supabase } from "../lib/supabaseClient";
 
@@ -79,7 +80,9 @@ export default function Activity() {
             {authError ? (
               <div className="px-4 py-5 text-sm text-rose-600 sm:px-5">{authError}</div>
             ) : loading ? (
-              <div className="px-4 py-5 text-sm text-slate-500 sm:px-5">Loading activity...</div>
+              <div className="px-4 py-5 sm:px-5">
+                <Loader inline label="Loading activity..." />
+              </div>
             ) : error ? (
               <div className="px-4 py-5 text-sm text-rose-600 sm:px-5">{error}</div>
             ) : allActivity.length === 0 ? (

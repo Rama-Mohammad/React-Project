@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Plus, Coins, Clock3, Sparkles } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
+import Loader from "../components/common/Loader";
 import ProfileHeader from "../components/profile/ProfileHeader";
 import SkillCard from "../components/profile/SkillCard";
 import PortfolioItem from "../components/profile/PortfolioItem";
@@ -19,7 +20,6 @@ import useSkills from "../hooks/useSkills";
 import { resolvePublicProfileIdentifier } from "../services/profileService";
 import type { PortfolioEntry, UiReview, UiSkill } from "../types/page";
 import type { EditProfileUserInput, ProfileHeaderUser, ReviewSortBy } from "../types/profile";
-import tokenlyLogo from "../assets/favicon_tokenly.svg";
 
 const toTitleCase = (value: string) =>
   value ? `${value.charAt(0).toUpperCase()}${value.slice(1).toLowerCase()}` : value;
@@ -388,17 +388,10 @@ const Profile: React.FC = () => {
         <ProfileHeader user={user} onEdit={() => setIsEditModalOpen(true)} isOwner={isOwner} />
 
         {isPageLoading ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-20">
-            <img
-              src={tokenlyLogo}
-              alt="Loading"
-              className="h-10 w-10 animate-spin"
-              style={{ animationDuration: "1.2s", animationTimingFunction: "linear" }}
-            />
-            <p className="text-sm text-slate-400">
-              {identifier ? "Loading profile..." : "Loading your profile..."}
-            </p>
-          </div>
+          <Loader
+            className="py-20"
+            label={identifier ? "Loading profile..." : "Loading your profile..."}
+          />
         ) : liveProfile ? (
           <>
             <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1.7fr_1.3fr]">
@@ -424,7 +417,7 @@ const Profile: React.FC = () => {
                 </div>
                 <div className="mt-3 grid gap-1 md:grid-cols-2">
                   {detailsLoading ? (
-                    <p className="py-4 text-center text-slate-500 md:col-span-2">Loading skills...</p>
+                    <Loader inline className="py-4 md:col-span-2" label="Loading skills..." />
                   ) : skills.length > 0 ? (
                     skills.map((skill) => (
                       <SkillCard
@@ -446,7 +439,7 @@ const Profile: React.FC = () => {
                 <RatingsSummary reviews={reviews} embedded sortBy={reviewSortBy} onSortChange={setReviewSortBy} />
                 <div className="mt-4 space-y-3.5 border-t border-slate-200/70 pt-4">
                   {detailsLoading ? (
-                    <p className="py-4 text-center text-slate-500">Loading reviews...</p>
+                    <Loader inline className="py-4" label="Loading reviews..." />
                   ) : visibleReviews.length > 0 ? (
                     visibleReviews.map((review) => <ReviewCard key={review.id} review={review} />)
                   ) : (
@@ -561,7 +554,7 @@ const Profile: React.FC = () => {
               <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
                 {portfolioLoading ? (
                   <div className="rounded-2xl border border-slate-200 bg-white/60 p-8 text-center md:col-span-2">
-                    <p className="text-sm text-slate-500">Loading portfolio...</p>
+                    <Loader inline label="Loading portfolio..." />
                   </div>
                 ) : portfolioError ? (
                   <div className="rounded-2xl border border-rose-200 bg-rose-50 p-8 text-center md:col-span-2">

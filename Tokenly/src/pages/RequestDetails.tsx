@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import Avatar from "../components/common/Avatar";
+import Loader from "../components/common/Loader";
 import RatingStars from "../components/common/RatingStars";
 import { supabase } from "../lib/supabaseClient";
 import {
@@ -29,7 +30,6 @@ import useAuthRedirect from "../hooks/useAuthRedirect";
 import { deleteRequest, getRequestById } from "../services/requestService";
 import { mapRequestToExploreItem } from "../utils/exploreMappers";
 import type { RequestItem } from "../types/explore";
-import tokenlyLogo from "../assets/favicon_tokenly.svg";
 
 const urgencyStyles: Record<string, string> = {
   High: "bg-rose-50 text-rose-600",
@@ -164,19 +164,7 @@ export default function RequestDetails() {
   }, [request?.id]);
 
   if (isLoadingRequest) {
-    return (
-<div className="flex flex-col items-center justify-center gap-3 py-14">
-  <img
-    src={tokenlyLogo}
-    alt="Loading"
-    className="h-9 w-9 animate-spin"
-    style={{
-      animationDuration: "1.2s",
-      animationTimingFunction: "linear",
-    }}
-  />
-</div>
-    );
+    return <Loader className="py-14" />;
   }
 
   // to handle errors
@@ -581,8 +569,8 @@ export default function RequestDetails() {
               </div>
 
               {offersLoading ? (
-                <div className="mt-4 rounded-2xl border border-slate-200/80 bg-white/90 p-4 text-sm text-slate-600">
-                  Loading offers...
+                <div className="mt-4 rounded-2xl border border-slate-200/80 bg-white/90 p-4">
+                  <Loader inline label="Loading offers..." />
                 </div>
               ) : offersError ? (
                 <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">

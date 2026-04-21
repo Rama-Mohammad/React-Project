@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Loader from "../common/Loader";
 
 function validatePassword(password: string): string | null {
     if (!password) return "Password is required";
@@ -187,10 +188,7 @@ export default function NewPasswordForm({
                 >
                     {loading ? (
                         <>
-                            <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                            </svg>
+                            <Loader size={18} inline className="gap-0" />
                             Updating...
                         </>
                     ) : (

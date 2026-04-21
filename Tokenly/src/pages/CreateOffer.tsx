@@ -1,6 +1,7 @@
 import { Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import Loader from "../components/common/Loader";
 import ThemedSelect from "../components/common/ThemedSelect";
 import { supabase } from "../lib/supabaseClient";
 
@@ -231,7 +232,11 @@ export default function CreateOffer() {
                 icon={<Sparkles size={14} />}
                 disabled={skillsLoading || skills.length === 0}
               />
-              {skillsLoading ? <p className="mt-1 text-xs text-slate-500">Loading your skills...</p> : null}
+              {skillsLoading ? (
+                <div className="mt-1">
+                  <Loader inline label="Loading your skills..." />
+                </div>
+              ) : null}
               {skillsError ? <p className="mt-1 text-xs text-rose-600">{skillsError}</p> : null}
             </div>
 

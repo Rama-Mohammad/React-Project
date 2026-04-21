@@ -1,6 +1,7 @@
 import { ArrowLeft, Code2, Search, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import Loader from "../components/common/Loader";
 import ThemedSelect from "../components/common/ThemedSelect";
 import HelperCard from "../components/explore/HelperCard";
 import type { HelperItem, SkillItem } from "../types/explore";
@@ -143,7 +144,7 @@ export default function SkillHelpers() {
       return (
         <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
           <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
-            <h1 className="text-3xl font-bold text-slate-900">Loading skill...</h1>
+            <Loader inline label="Loading skill..." />
           </main>
         </div>
       );

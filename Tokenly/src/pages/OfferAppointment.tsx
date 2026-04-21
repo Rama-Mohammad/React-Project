@@ -1,6 +1,7 @@
 import { CalendarDays, CheckCircle2, Clock3, Coins, Sparkles, Video } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import Loader from "../components/common/Loader";
 import { supabase } from "../lib/supabaseClient";
 import {
   acceptOffer,
@@ -338,7 +339,7 @@ export default function OfferAppointment() {
 
         {loading ? (
           <section className="explore-glass rounded-3xl border border-white/55 bg-white/80 p-6 backdrop-blur-xl">
-            <p className="text-sm text-slate-600">Loading offer appointment details...</p>
+            <Loader inline label="Loading offer appointment details..." />
           </section>
         ) : error || (!requestOffer && !independentOffer) ? (
           <section className="explore-glass rounded-3xl border border-white/55 bg-white/80 p-6 text-center backdrop-blur-xl">

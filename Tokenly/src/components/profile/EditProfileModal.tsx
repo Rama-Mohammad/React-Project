@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
-import { Camera, ImagePlus, Loader2, Trash2 } from 'lucide-react';
+import { Camera, ImagePlus, Trash2 } from 'lucide-react';
+import Loader from '../common/Loader';
 import type { EditProfileModalProps } from '../../types/profile';
 import { uploadAvatar, uploadCover } from '../../services/storageService';
 
@@ -257,7 +258,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             {/* Uploading indicator */}
             {uploading ? (
               <div className="flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-2 text-sm text-indigo-700">
-                <Loader2 size={14} className="animate-spin" />
+                <Loader size={14} inline className="gap-0" />
                 Uploading image...
               </div>
             ) : null}

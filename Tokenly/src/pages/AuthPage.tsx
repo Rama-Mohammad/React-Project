@@ -1,5 +1,6 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import Loader from "../components/common/Loader";
 import useAuth from "../hooks/useAuth";
 import type { AuthRedirectState } from "../hooks/useAuthRedirect";
 import NewPasswordForm from "../components/auth/NewPasswordForm";
@@ -241,8 +242,7 @@ export default function AuthPage() {
         return (
             <div className="relative h-dvh w-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex items-center justify-center p-4">
                 <div className="relative z-10 rounded-2xl border border-white/70 bg-white/85 p-8 text-center shadow-sm backdrop-blur-xl">
-                    <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-500" />
-                    <p className="text-sm font-medium text-slate-700">Finalizing your email confirmation...</p>
+                    <Loader inline label="Finalizing your email confirmation..." />
                 </div>
             </div>
         );

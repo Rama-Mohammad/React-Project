@@ -4,6 +4,7 @@
 import { CheckCircle2, Coins, Lightbulb, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import Loader from "../components/common/Loader";
 import { supabase } from "../lib/supabaseClient";
 import { createRequest } from "../services/requestService";
 import { sendDirectRequest } from "../services/directRequestService";
@@ -317,9 +318,7 @@ export default function RequestHelper() {
     return (
       <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
         <main className="mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-20 text-center">
-          <h1 className="text-3xl font-bold text-slate-900">
-            {isGenericRequestFlow ? "Opening request form..." : "Loading helper..."}
-          </h1>
+          <Loader inline label={isGenericRequestFlow ? "Opening request form..." : "Loading helper..."} />
         </main>
       </div>
     );

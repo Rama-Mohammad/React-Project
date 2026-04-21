@@ -10,6 +10,7 @@ import SkillCard from "../components/explore/SkillCard";
 import StatsHero from "../components/explore/StatsHero";
 import HelperDetailsModal from "../components/explore/HelperDetailsModal";
 import Avatar from "../components/common/Avatar";
+import Loader from "../components/common/Loader";
 import {
   mapRequestToExploreItem,
   mapSkillToExploreItem,
@@ -23,7 +24,6 @@ import { mapProfileToHelperItem } from "../utils/helperExploreMapper";
 import { getOpenHelpOffers } from "../services/helpOfferService";
 import useAuth from "../hooks/useAuth";
 import useAuthRedirect from "../hooks/useAuthRedirect";
-import tokenlyLogo from "../assets/favicon_tokenly.svg";
 
 function matchesSearch(text: string, search: string) {
   return text.toLowerCase().includes(search.toLowerCase().trim());
@@ -936,14 +936,7 @@ export default function Explore() {
 
           {/* -- Requests -- */}
           {activeTab === "requests" && requestsLoading && requestsPage === 0 ? (
-            <div className="mt-5 flex flex-col items-center justify-center gap-3 py-16">
-              <img
-                src={tokenlyLogo}
-                alt="Loading"
-                className="h-10 w-10 animate-spin"
-                style={{ animationDuration: "1.2s" }}
-              />
-            </div>
+            <Loader className="mt-5 py-16" />
           ) : activeTab === "requests" && requestsError ? (
             <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
               {requestsError}
@@ -963,8 +956,8 @@ export default function Explore() {
 
           {/* -- Helpers -- */}
           {activeTab === "helpers" && helpersLoading ? (
-            <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
-              Loading helpers...
+            <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6">
+              <Loader inline label="Loading helpers..." />
             </div>
           ) : activeTab === "helpers" && helpersError ? (
             <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
@@ -982,8 +975,8 @@ export default function Explore() {
 
           {/* -- Skills -- */}
           {activeTab === "skills" && skillsLoading && skillsPage === 0 ? (
-            <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
-              Loading skills...
+            <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6">
+              <Loader inline label="Loading skills..." />
             </div>
           ) : activeTab === "skills" && skillsError ? (
             <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
@@ -1007,8 +1000,8 @@ export default function Explore() {
                A user browses these and clicks "Book" to submit a help_offer_request.
                This is NOT the `offers` table — those are private responses to requests. */}
           {activeTab === "offers" && offersLoading && offersPage === 0 ? (
-            <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
-              Loading offers...
+            <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6">
+              <Loader inline label="Loading offers..." />
             </div>
           ) : activeTab === "offers" && offersError ? (
             <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">

@@ -13,11 +13,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const user = { role: 'user' as const };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader />
-      </div>
-    );
+    return <Loader fullScreen label="Loading Tokenly..." />;
   }
 
   if (!isAuthenticated) {

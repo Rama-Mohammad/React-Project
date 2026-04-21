@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { Camera, MapPin, BookOpen, User, ArrowRight, Loader2 } from "lucide-react";
+import { Camera, MapPin, BookOpen, User, ArrowRight } from "lucide-react";
+import Loader from "../common/Loader";
 import type { OnboardingData } from "../../types/onboardingdata";
 
 
@@ -182,7 +183,7 @@ export default function OnboardingForm({
             className="inline-flex items-center justify-center gap-2 w-full rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 active:bg-slate-950 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader size={16} inline className="gap-0" />
             ) : (
               <>
                 Complete Setup

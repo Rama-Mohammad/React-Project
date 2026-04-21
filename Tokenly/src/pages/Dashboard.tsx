@@ -18,6 +18,7 @@ import { Link } from "react-router-dom";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import RatingStars from "../components/common/RatingStars";
 import Avatar from "../components/common/Avatar";
+import Loader from "../components/common/Loader";
 import { supabase } from "../lib/supabaseClient";
 import { deleteRequest, getRequestsByUser } from "../services/requestService";
 import { getSessionsAuthDebugContext, logSessionsQuery } from "../services/sessionDebug";
@@ -31,7 +32,6 @@ import type {
 } from "../types/dashboard";
 import { acceptDirectRequest, rejectDirectRequest } from "../services/directRequestService";
 import { acceptHelpOfferRequest, rejectHelpOfferRequest } from "../services/helpOfferService";
-import tokenlyLogo from "../assets/favicon_tokenly.svg";
 const sessionTabs: SessionTabLabel[] = ["All", "Upcoming", "Active", "Completed"];
 
 function skillTone(skill: string) {
@@ -644,9 +644,7 @@ export default function Dashboard() {
 
           <div className="relative mt-3 space-y-2.5">
             {dashLoading ? (
-              <div className="flex flex-col items-center justify-center gap-3 py-10">
-                <img src={tokenlyLogo} alt="Loading" className="h-9 w-9 animate-spin" style={{ animationDuration: "1.2s", animationTimingFunction: "linear" }} />
-              </div>
+                <Loader className="py-10" />
             ) : previewSessions.length === 0 ? (
               <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
                 No sessions in this tab yet.
@@ -926,9 +924,7 @@ export default function Dashboard() {
             </div>
             <div className="space-y-2 p-4">
               {requestsLoading ? (
-                <div className="flex flex-col items-center justify-center gap-3 py-8">
-                  <img src={tokenlyLogo} alt="Loading" className="h-9 w-9 animate-spin" style={{ animationDuration: "1.2s", animationTimingFunction: "linear" }} />
-                </div>
+                <Loader className="py-8" />
               ) : requestsError ? (
                 <div className="rounded-2xl border border-rose-300/80 bg-rose-50/80 p-4 text-sm text-rose-700">
                   {requestsError}
@@ -988,9 +984,7 @@ export default function Dashboard() {
             </div>
             <div className="space-y-2 p-4">
               {dashLoading ? (
-                <div className="flex flex-col items-center justify-center gap-3 py-8">
-                  <img src={tokenlyLogo} alt="Loading" className="h-9 w-9 animate-spin" style={{ animationDuration: "1.2s", animationTimingFunction: "linear" }} />
-                </div>
+                  <Loader className="py-8" />
               ) : submittedOffers.length === 0 ? (
                 <div className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-sm text-slate-600">
                   You haven't submitted any offers yet.
@@ -1045,9 +1039,7 @@ export default function Dashboard() {
 
           <div className="relative">
             {dashLoading ? (
-              <div className="flex flex-col items-center justify-center gap-3 py-8">
-                <img src={tokenlyLogo} alt="Loading" className="h-9 w-9 animate-spin" style={{ animationDuration: "1.2s", animationTimingFunction: "linear" }} />
-              </div>
+                <Loader className="py-8" />
             ) : activityPreview.length === 0 ? (
               <div className="px-4 py-5 text-sm text-slate-500">No activity yet.</div>
             ) : (

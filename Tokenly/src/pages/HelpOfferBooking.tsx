@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Clock3, Coins, Sparkles, Star, CheckCircle2 } from "lucide-react";
 import Avatar from "../components/common/Avatar";
+import Loader from "../components/common/Loader";
 import { supabase } from "../lib/supabaseClient";
 import useAuthRedirect from "../hooks/useAuthRedirect";
 import { getHelpOfferById, submitHelpOfferRequest } from "../services/helpOfferService";
@@ -135,7 +136,9 @@ export default function HelpOfferBooking() {
   if (loading) {
     return (
       <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)]">
-        <main className="mx-auto max-w-4xl px-4 py-10 text-sm text-slate-500">Loading offer...</main>
+        <main className="mx-auto max-w-4xl px-4 py-10">
+          <Loader inline label="Loading offer..." />
+        </main>
       </div>
     );
   }

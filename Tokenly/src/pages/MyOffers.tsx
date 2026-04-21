@@ -2,6 +2,7 @@ import { Clock3, MessageSquareText, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
+import Loader from "../components/common/Loader";
 import { supabase } from "../lib/supabaseClient";
 import { getOffersForHelper, type OfferForHelperRow } from "../services/offerService";
 
@@ -157,8 +158,8 @@ export default function MyOffers() {
           </p>
 
           {loading ? (
-            <div className="mt-5 rounded-2xl border border-slate-200/80 bg-white/90 p-4 text-sm text-slate-600">
-              Loading your offers...
+            <div className="mt-5 rounded-2xl border border-slate-200/80 bg-white/90 p-4">
+              <Loader inline label="Loading your offers..." />
             </div>
           ) : error ? (
             <div className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">

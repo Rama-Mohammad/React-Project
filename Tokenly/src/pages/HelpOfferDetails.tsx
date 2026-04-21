@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Clock3, Coins, Sparkles, MessageCircle, CheckCircle2, XCircle, Star } from "lucide-react";
 import Avatar from "../components/common/Avatar";
+import Loader from "../components/common/Loader";
 import { supabase } from "../lib/supabaseClient";
 import { getHelpOfferById } from "../services/helpOfferService";
 import { getRequestsForHelpOffer, acceptHelpOfferRequest, rejectHelpOfferRequest } from "../services/helpOfferService";
 import type { HelpOffer, HelpOfferRequest } from "../types/helpOffer";
-import tokenlyLogo from "../assets/favicon_tokenly.svg";
 
 type IncomingRequest = HelpOfferRequest & {
   requester: {
@@ -127,7 +127,9 @@ export default function HelpOfferDetails() {
   if (loading) {
     return (
       <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)]">
-        <main className="mx-auto max-w-3xl px-4 py-10 text-sm text-slate-500">Loading offer...</main>
+        <main className="mx-auto max-w-3xl px-4 py-10">
+          <Loader inline label="Loading offer..." />
+        </main>
       </div>
     );
   }
@@ -221,17 +223,8 @@ export default function HelpOfferDetails() {
           ) : null}
 
           {requestsLoading ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-14">
-              <img
-                src={tokenlyLogo}
-                alt="Loading"
-                className="h-9 w-9 animate-spin"
-                style={{
-                  animationDuration: "1.2s",
-                  animationTimingFunction: "linear",
-                }}
-              />
-            </div>) : requests.length === 0 ? (
+            <Loader className="py-14" />
+          ) : requests.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-center text-sm text-slate-500">
                 No one has requested this offer yet. Share it to get bookings.
               </div>
