@@ -244,7 +244,7 @@ const SessionLivePage: React.FC = () => {
         .select("*")
         .eq("session_id", sessionId)
         .order("created_at", { ascending: true });
-
+console.log("INITIAL FILE LOAD", data);
       if (error) {
         console.error(error);
         return;
@@ -264,6 +264,7 @@ const SessionLivePage: React.FC = () => {
           }
         ))
       );
+      
     };
 
     loadFiles();
@@ -284,23 +285,27 @@ const SessionLivePage: React.FC = () => {
         },
         (payload) => {
           if (payload.eventType === "INSERT") {
+              console.log("REALTIME INSERT RECEIVED", payload.new);
+
             const f = payload.new;
 
             setFiles((prev) => [
               ...prev,
               {
                 id: f.id,
-                name: f.name,
-                size: f.size,
-                type: f.type,
+                name: f.file_name,
+                size: f.file_size_bytes,
+                type: f.file_type,
                 uploadedBy: f.uploader_id,
                 uploadedAt: new Date(f.created_at),
-                url: f.url,
+                url: f.file_url,
+                path: f.path,
               },
             ]);
           }
 
           if (payload.eventType === "DELETE") {
+            console.log("REALTIME DELETE RECEIVED", payload.old);
             const f = payload.old;
 
             setFiles((prev) => prev.filter((x) => x.id !== f.id));
@@ -339,6 +344,7 @@ const SessionLivePage: React.FC = () => {
   };
 
   const handleFileUpload = async (file: File) => {
+    console.log("📤 UPLOAD START", { sessionId, currentUserId, file });
     if (!sessionId || !currentUserId) {
       console.log("Missing sessionId or currentUserId", {
         sessionId,
@@ -359,7 +365,7 @@ const SessionLivePage: React.FC = () => {
       currentUserId,
       file
     );
-
+    console.log(" STORAGE RESULT", { data, error });
 
     if (error || !data) {
       console.error("Storage upload failed:", error);
@@ -375,17 +381,19 @@ const SessionLivePage: React.FC = () => {
         file_name: file.name,
         file_url: data.url,
         file_size_bytes: file.size,
+        file_type: file.type, 
+        path: data.path,
         created_at: new Date().toISOString(),
       })
       .select()
       .single();
 
-
+console.log("DB INSERT RESULT", { inserted, dbError });
     if (dbError) {
       console.error(" DB insert failed:", dbError);
       return;
     }
-
+console.log(" ADDING FILE TO STATE", inserted);
     setFiles((prev) => [
       ...prev,
       {
