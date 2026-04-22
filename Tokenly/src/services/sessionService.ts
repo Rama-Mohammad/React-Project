@@ -212,7 +212,7 @@ export async function getSessionById(id: string) {
       request: requestResult.data ?? null,
       help_offer_request: helpOfferRequestResult.data ?? null,
       direct_request: directRequestResult.data ?? null,
-      title: requestResult.data?.title ?? "Session",
+      title: requestResult.data?.title ?? helpOfferRequestResult.data?.help_offer?.title ?? directRequestResult.data?.title ?? "Session",
     },
     error: null,
   };
