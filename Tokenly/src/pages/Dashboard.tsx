@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Check, Coins } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import AnalyticsSection from "../components/dashboard/AnalyticsSection";
 import DashboardSidebar, { DashboardTopBar } from "../components/dashboard/DashboardSidebar";
 import type { DashboardSectionId } from "../components/dashboard/DashboardSidebar";
@@ -26,6 +27,7 @@ import { acceptDirectRequest, rejectDirectRequest } from "../services/directRequ
 import { acceptHelpOfferRequest, rejectHelpOfferRequest } from "../services/helpOfferService";
 
 export default function Dashboard() {
+  const [searchParams] = useSearchParams();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<DashboardSectionId>("overview");
   const [activeSessionTab, setActiveSessionTab] = useState<SessionTabLabel>("All");
@@ -331,6 +333,22 @@ export default function Dashboard() {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    const requestedSection = searchParams.get("section");
+    const validSections: DashboardSectionId[] = [
+      "overview",
+      "analytics",
+      "sessions",
+      "inbox",
+      "requests",
+      "activity",
+    ];
+
+    if (requestedSection && validSections.includes(requestedSection as DashboardSectionId)) {
+      setActiveSection(requestedSection as DashboardSectionId);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (currentUserId) {

@@ -13,16 +13,32 @@ export default function NotificationItem({
   const navigate = useNavigate();
 
   function getDestination() {
-    if (notification.related_type === "session" && notification.related_id) {
-      return `/session/${notification.related_id}`;
-    }
-
-    if (notification.type === "help_offer_request_received") {
-      return "/my-offers";
-    }
-
-    if (notification.type === "direct_request_received" || notification.type === "direct_request_rejected") {
-      return "/dashboard";
+    switch (notification.type) {
+      case "session_completed":
+        return "/sessions?filter=completed";
+      case "session_starting":
+        return notification.related_id ? `/session/${notification.related_id}` : "/sessions?filter=active";
+      case "offer_accepted":
+      case "offer_rejected":
+      case "help_offer_request_received":
+        return "/my-offers";
+      case "direct_request_received":
+      case "direct_request_rejected":
+        return "/dashboard?section=inbox";
+      case "direct_request_accepted":
+      case "help_offer_request_accepted":
+        return "/sessions?filter=upcoming";
+      case "help_offer_request_rejected":
+      case "review_received":
+      case "credits_earned":
+      case "credits_spent":
+        return "/activity";
+      case "request_expired":
+        return notification.related_id ? `/requests/${notification.related_id}` : "/dashboard?section=requests";
+      case "chat_message_received":
+        return "/dashboard?section=inbox";
+      default:
+        break;
     }
 
     if (notification.related_type === "request" && notification.related_id) {
@@ -30,11 +46,11 @@ export default function NotificationItem({
     }
 
     if (notification.related_type === "offer" && notification.related_id) {
-      return `/offers/${notification.related_id}`;
+      return "/my-offers";
     }
 
-    if (notification.related_type === "chat" && notification.related_id) {
-      return `/chat/${notification.related_id}`;
+    if (notification.related_type === "session" && notification.related_id) {
+      return `/session/${notification.related_id}`;
     }
 
     if (notification.related_type === "review") {

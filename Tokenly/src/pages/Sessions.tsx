@@ -26,7 +26,7 @@ type SortBy = "newest" | "oldest";
 
 const SessionsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [_searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [activeFilter, setActiveFilter] = useState<SessionFilter>("all");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [creditsBalance, setCreditsBalance] = useState(0);
@@ -38,6 +38,15 @@ const SessionsPage: React.FC = () => {
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [sortBy, setSortBy] = useState<SortBy>("newest");
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const requestedFilter = searchParams.get("filter");
+    const validFilters: SessionFilter[] = ["all", "upcoming", "active", "completed"];
+
+    if (requestedFilter && validFilters.includes(requestedFilter as SessionFilter)) {
+      setActiveFilter(requestedFilter as SessionFilter);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchSessions = async () => {

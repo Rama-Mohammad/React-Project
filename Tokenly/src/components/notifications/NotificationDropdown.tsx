@@ -37,7 +37,7 @@ export default function NotificationDropdown({
         </div>
       </div>
 
-      <div className="max-h-[min(24rem,calc(100vh-7rem))] overflow-y-auto p-2">
+      <div className="max-h-[min(17rem,calc(100vh-7rem))] overflow-y-auto p-2">
         {loading ? (
           <p className="rounded-2xl px-3 py-8 text-center text-sm text-slate-500">
             Loading notifications...
