@@ -1,11 +1,73 @@
 import Avatar from "../common/Avatar";
 import type { DashboardDirectRequestItem } from "../../types/dashboard";
-import { DashboardEmptyState, DashboardPanel, DashboardPanelHeader } from "./ui";
 
 type SentRequestsSectionProps = {
   items: DashboardDirectRequestItem[];
   emptyMessage?: string;
 };
+
+function joinClasses(...classes: Array<string | undefined | false>) {
+  return classes.filter(Boolean).join(" ");
+}
+
+function DashboardPanel({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={joinClasses(
+        "rounded-[32px] border border-white/80 bg-white/84 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.26)] backdrop-blur-xl",
+        className
+      )}
+    >
+      {children}
+    </section>
+  );
+}
+
+function DashboardPanelHeader({
+  title,
+  badge,
+}: {
+  title: string;
+  badge?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-slate-100 p-5">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-lg font-semibold text-slate-950">{title}</h3>
+            {badge}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DashboardEmptyState({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={joinClasses(
+        "rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 text-sm text-slate-600",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
 
 function getStatusPresentation(status: DashboardDirectRequestItem["status"]) {
   if (status === "accepted") {

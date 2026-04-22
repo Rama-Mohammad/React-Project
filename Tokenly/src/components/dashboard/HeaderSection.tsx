@@ -71,7 +71,7 @@ export default function HeaderSection({
   availablePct,
   stats,
 }: HeaderSectionProps) {
-  const name = fullName?.trim() || "Your dashboard";
+  const name = fullName?.trim() || "Dashboard";
   const completedSessions = stats?.completedSessions ?? 0;
   const activeRequests = stats?.activeRequests ?? 0;
   const offersSubmitted = stats?.offersSubmitted ?? 0;
@@ -97,9 +97,7 @@ export default function HeaderSection({
 
               <div className="min-w-0">
                 <p className="text-sm font-medium text-indigo-400">Dashboard</p>
-                <h2 className="truncate text-3xl font-semibold tracking-tight text-slate-950">
-                  {dashLoading ? "Loading dashboard..." : name}
-                </h2>
+                <h2 className="truncate text-3xl font-semibold tracking-tight text-slate-950">{name}</h2>
                 <p className="mt-1 max-w-2xl text-sm text-slate-500">
                   Keep track of your sessions, requests, offers, and token movement in one streamlined space.
                 </p>

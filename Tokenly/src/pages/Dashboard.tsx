@@ -265,11 +265,8 @@ export default function Dashboard() {
       const userId = authData.user.id;
       setCurrentUserId(userId);
 
-      // 🔥 FIX: prevent unnecessary parallel variable waste
-      await Promise.all([
-        fetchDashboard(userId),
-        fetchTransactionsByUser(userId),
-      ]);
+      void fetchDashboard(userId);
+      void fetchTransactionsByUser(userId);
 
       if (!mounted) return;
 
@@ -435,7 +432,7 @@ export default function Dashboard() {
 
   return (
     <div className="relative min-h-full overflow-hidden bg-transparent text-slate-900">
-      <main className="relative mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
+      <main className="relative mx-auto w-full max-w-[1600px] px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-5 xl:grid-cols-[17.5rem_minmax(0,1fr)]">
           <DashboardSidebar
             mobileOpen={mobileNavOpen}

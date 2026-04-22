@@ -17,37 +17,66 @@ import type {
   DashboardStats,
 } from "../types/dashboard";
 
+type DashboardCacheState = {
+  profile: DashboardProfile | null;
+  stats: DashboardStats | null;
+  rawSessions: any[];
+  rawOffers: any[];
+  rawIncomingDirectRequests: unknown[];
+  rawSentDirectRequests: unknown[];
+  rawHelpOfferRequests: unknown[];
+};
+
+const DASHBOARD_CACHE_KEY = "tokenly-dashboard-cache";
+
+function readDashboardCache(): DashboardCacheState | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.localStorage.getItem(DASHBOARD_CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as DashboardCacheState;
+  } catch {
+    return null;
+  }
+}
+
+function writeDashboardCache(value: DashboardCacheState) {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.localStorage.setItem(DASHBOARD_CACHE_KEY, JSON.stringify(value));
+  } catch {
+    // Ignore cache write failures and keep live data flowing.
+  }
+}
+
 export default function useDashboard() {
-  const [profile, setProfile] = useState<DashboardProfile | null>(null);
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [rawSessions, setRawSessions] = useState<any[]>([]);
-  const [rawOffers, setRawOffers] = useState<any[]>([]);
-  const [rawIncomingDirectRequests, setRawIncomingDirectRequests] = useState<unknown[]>([]);
-  const [rawSentDirectRequests, setRawSentDirectRequests] = useState<unknown[]>([]);
-  const [rawHelpOfferRequests, setRawHelpOfferRequests] = useState<unknown[]>([]);
-  const [loading, setLoading] = useState(false);
+  const cached = readDashboardCache();
+  const [profile, setProfile] = useState<DashboardProfile | null>(cached?.profile ?? null);
+  const [stats, setStats] = useState<DashboardStats | null>(cached?.stats ?? null);
+  const [rawSessions, setRawSessions] = useState<any[]>(cached?.rawSessions ?? []);
+  const [rawOffers, setRawOffers] = useState<any[]>(cached?.rawOffers ?? []);
+  const [rawIncomingDirectRequests, setRawIncomingDirectRequests] = useState<unknown[]>(
+    cached?.rawIncomingDirectRequests ?? []
+  );
+  const [rawSentDirectRequests, setRawSentDirectRequests] = useState<unknown[]>(
+    cached?.rawSentDirectRequests ?? []
+  );
+  const [rawHelpOfferRequests, setRawHelpOfferRequests] = useState<unknown[]>(
+    cached?.rawHelpOfferRequests ?? []
+  );
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState("");
 
   async function fetchDashboard(user_id: string) {
-    setLoading(true);
+    if (!cached) setLoading(true);
     setError("");
 
-    const [
-      profileRes,
-      statsData,
-      sessionsRes,
-      offersRes,
-      directRequestsRes,
-      sentDirectRequestsRes,
-      helpOfferRequestsRes,
-    ] = await Promise.all([
+    const [profileRes, statsData, sessionsRes] = await Promise.all([
       getDashboardProfile(user_id),
       getDashboardStats(user_id),
       getDashboardSessions(user_id),
-      getDashboardOffers(user_id),
-      getDashboardDirectRequests(user_id),
-      getDashboardSentDirectRequests(user_id),
-      getDashboardHelpOfferRequests(user_id),
     ]);
 
     if (profileRes.error) setError(profileRes.error.message);
@@ -55,11 +84,51 @@ export default function useDashboard() {
 
     setStats(statsData);
     setRawSessions(sessionsRes.data ?? []);
-    setRawOffers(offersRes.data ?? []);
-    setRawIncomingDirectRequests(directRequestsRes.data ?? []);
-    setRawSentDirectRequests(sentDirectRequestsRes.data ?? []);
-    setRawHelpOfferRequests(helpOfferRequestsRes.data ?? []);
     setLoading(false);
+
+    const criticalCache: DashboardCacheState = {
+      profile: profileRes.error ? null : profileRes.data,
+      stats: statsData,
+      rawSessions: sessionsRes.data ?? [],
+      rawOffers,
+      rawIncomingDirectRequests,
+      rawSentDirectRequests,
+      rawHelpOfferRequests,
+    };
+
+    writeDashboardCache(criticalCache);
+
+    void Promise.all([
+      getDashboardOffers(user_id),
+      getDashboardDirectRequests(user_id),
+      getDashboardSentDirectRequests(user_id),
+      getDashboardHelpOfferRequests(user_id),
+    ]).then(([
+      offersRes,
+      directRequestsRes,
+      sentDirectRequestsRes,
+      helpOfferRequestsRes,
+    ]) => {
+      const nextRawOffers = offersRes.data ?? [];
+      const nextIncomingDirectRequests = directRequestsRes.data ?? [];
+      const nextSentDirectRequests = sentDirectRequestsRes.data ?? [];
+      const nextHelpOfferRequests = helpOfferRequestsRes.data ?? [];
+
+      setRawOffers(nextRawOffers);
+      setRawIncomingDirectRequests(nextIncomingDirectRequests);
+      setRawSentDirectRequests(nextSentDirectRequests);
+      setRawHelpOfferRequests(nextHelpOfferRequests);
+
+      writeDashboardCache({
+        profile: profileRes.error ? null : profileRes.data,
+        stats: statsData,
+        rawSessions: sessionsRes.data ?? [],
+        rawOffers: nextRawOffers,
+        rawIncomingDirectRequests: nextIncomingDirectRequests,
+        rawSentDirectRequests: nextSentDirectRequests,
+        rawHelpOfferRequests: nextHelpOfferRequests,
+      });
+    });
   }
 
   function mapSessions(user_id: string): DashboardSessionItem[] {
