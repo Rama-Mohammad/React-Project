@@ -151,8 +151,10 @@ export async function getSessionById(id: string) {
   }
 
   const baseSession = sessionResult.data as {
+    id: string;
     helper_id: string;
     requester_id: string;
+    status: string;
     request_id?: string | null;
     help_offer_request_id?: string | null;
     direct_request_id?: string | null;
