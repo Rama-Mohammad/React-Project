@@ -85,11 +85,11 @@ const SessionsPage: React.FC = () => {
           ? s.direct_request[0] ?? null
           : s.direct_request ?? null;
 
-        const title =
-          s.request?.title ??
-          helpOfferValue?.title ??
-          directRequestValue?.title ??
-          "Untitled Session";
+        if (!s.request) {
+          console.warn("Missing request for session", s.id);
+        }
+
+        const title = s.request?.title ?? "Session";
 
         const category =
           s.request?.category ??

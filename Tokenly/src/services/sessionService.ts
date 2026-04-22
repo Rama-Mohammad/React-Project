@@ -24,6 +24,17 @@ function getSessionRelationLookup(data: SessionInsertInput): { column: SessionRe
   return null;
 }
 
+function normalizeSessionRecord<T extends { id?: string; request?: { title?: string | null } | null }>(session: T): T & { title: string } {
+  if (!session.request) {
+    console.warn("Missing request for session", session.id);
+  }
+
+  return {
+    ...session,
+    title: session.request?.title ?? "Session",
+  };
+}
+
 export async function ensureSessionForBooking(data: SessionInsertInput) {
   const { session, user, authError } = await getSessionsAuthDebugContext();
   const relationLookup = getSessionRelationLookup(data);
@@ -123,20 +134,88 @@ export async function getSessionById(id: string) {
     return { data: null, error: authError };
   }
 
-  const result = await supabase
+  const sessionResult = await supabase
     .from("sessions")
-    .select(`
-      *,
-      helper:profiles!sessions_helper_id_fkey(*),
-      requester:profiles!sessions_requester_id_fkey(*),
-      request:requests(*),
-      help_offer_request:help_offer_requests(*, help_offer:help_offers(*)),
-      direct_request:direct_requests(*)
-    `)
+    .select("*")
     .eq("id", id)
-    .single();
-  logSessionsQuery("getSessionById result", { session, user, payload, error: result.error });
-  return result;
+    .maybeSingle();
+
+  if (sessionResult.error || !sessionResult.data) {
+    logSessionsQuery("getSessionById base session result", {
+      session,
+      user,
+      payload,
+      error: sessionResult.error,
+    });
+    return { data: null, error: sessionResult.error ?? new Error("Session not found.") };
+  }
+
+  const baseSession = sessionResult.data as {
+    helper_id: string;
+    requester_id: string;
+    request_id?: string | null;
+    help_offer_request_id?: string | null;
+    direct_request_id?: string | null;
+    [key: string]: unknown;
+  };
+
+  const [
+    helperResult,
+    requesterResult,
+    requestResult,
+    helpOfferRequestResult,
+    directRequestResult,
+  ] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", baseSession.helper_id).maybeSingle(),
+    supabase.from("profiles").select("*").eq("id", baseSession.requester_id).maybeSingle(),
+    baseSession.request_id
+      ? supabase.from("requests").select("*").eq("id", baseSession.request_id).maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+    baseSession.help_offer_request_id
+      ? supabase
+          .from("help_offer_requests")
+          .select(`
+            *,
+            help_offer:help_offers(*)
+          `)
+          .eq("id", baseSession.help_offer_request_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+    baseSession.direct_request_id
+      ? supabase.from("direct_requests").select("*").eq("id", baseSession.direct_request_id).maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
+
+  const relationError =
+    helperResult.error ??
+    requesterResult.error ??
+    requestResult.error ??
+    helpOfferRequestResult.error ??
+    directRequestResult.error;
+
+  logSessionsQuery("getSessionById result", {
+    session,
+    user,
+    payload,
+    error: relationError,
+  });
+
+  if (relationError) {
+    return { data: null, error: relationError };
+  }
+
+  return {
+    data: {
+      ...baseSession,
+      helper: helperResult.data ?? null,
+      requester: requesterResult.data ?? null,
+      request: requestResult.data ?? null,
+      help_offer_request: helpOfferRequestResult.data ?? null,
+      direct_request: directRequestResult.data ?? null,
+      title: requestResult.data?.title ?? "Session",
+    },
+    error: null,
+  };
 }
 
 export async function getSessionsByUser(user_id: string) {
@@ -177,7 +256,10 @@ export async function getSessionsByUser(user_id: string) {
     .or(`helper_id.eq.${user_id},requester_id.eq.${user_id}`)
     .order("scheduled_at", { ascending: false });
   logSessionsQuery("getSessionsByUser result", { session, user, payload, error: result.error });
-  return result;
+  return {
+    ...result,
+    data: result.data?.map((item) => normalizeSessionRecord(item)) ?? null,
+  };
 }
 
 export async function getSessionsByStatus(user_id: string, status: SessionStatus) {
@@ -197,7 +279,10 @@ export async function getSessionsByStatus(user_id: string, status: SessionStatus
     .from("sessions")
     .select(`
       *,
-      request:requests(*),
+      request:requests(
+        id,
+        title
+      ),
       helper:profiles!helper_id(*),
       requester:profiles!requester_id(*)
     `)
@@ -205,7 +290,10 @@ export async function getSessionsByStatus(user_id: string, status: SessionStatus
     .eq("status", status)
     .order("scheduled_at", { ascending: true });
   logSessionsQuery("getSessionsByStatus result", { session, user, payload, error: result.error });
-  return result;
+  return {
+    ...result,
+    data: result.data?.map((item) => normalizeSessionRecord(item)) ?? null,
+  };
 }
 
 export async function updateSessionStatus(id: string, status: SessionStatus) {

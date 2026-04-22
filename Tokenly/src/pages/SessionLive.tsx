@@ -478,14 +478,7 @@ const SessionLivePage: React.FC = () => {
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-indigo-500">Live Session</p>
             <h1 className="break-all text-base font-semibold text-slate-900 sm:text-lg">
-              {
-                sessionData?.request?.title ??
-                (Array.isArray(sessionData?.help_offer_request)
-                  ? sessionData?.help_offer_request[0]?.help_offer?.title
-                  : sessionData?.help_offer_request?.help_offer?.title) ??
-                sessionData?.direct_request?.title ??
-                "Live Session"
-              }
+              {sessionData?.request?.title ?? "Session"}
             </h1>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/70 px-3 py-1.5 text-xs font-medium text-indigo-700">

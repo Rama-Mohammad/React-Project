@@ -108,9 +108,13 @@ export default function useDashboard() {
             : scheduledDate.toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
           : "TBD";
 
+        if (!s.request) {
+          console.warn("Missing request for session", s.id);
+        }
+
         return {
           id: s.id,
-          topic: s.request?.title ?? helpOfferValue?.title ?? directRequestValue?.title ?? "Session",
+          topic: s.request?.title ?? "Session",
           skill: s.request?.category ?? helpOfferValue?.category ?? directRequestValue?.category ?? "General",
           status: uiStatus,
           role: (isHelper ? "Helping" : "Receiving help") as DashboardSessionItem["role"],
