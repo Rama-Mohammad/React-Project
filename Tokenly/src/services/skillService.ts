@@ -2,12 +2,7 @@ import { supabase } from "../lib/supabaseClient";
 import type { SkillLevel, SkillCategory } from "../types/skill";
 
 export async function getAllSkills(opts?: { page?: number; pageSize?: number }) {
-  const page = opts?.page ?? 0;
-  const pageSize = opts?.pageSize ?? 12;
-  const from = page * pageSize;
-  const to = from + pageSize - 1;
-
-  return await supabase
+  let query = supabase
     .from("skills")
     .select(`
       id,
@@ -25,8 +20,15 @@ export async function getAllSkills(opts?: { page?: number; pageSize?: number }) 
         profile_image_url
       )
     `, { count: "exact" })
-    .order("sessions_count", { ascending: false })
-    .range(from, to);
+    .order("sessions_count", { ascending: false });
+
+  if (typeof opts?.page === "number" && typeof opts?.pageSize === "number") {
+    const from = opts.page * opts.pageSize;
+    const to = from + opts.pageSize - 1;
+    query = query.range(from, to);
+  }
+
+  return await query;
 }
 
 export async function getSkillsByUser(user_id: string) {

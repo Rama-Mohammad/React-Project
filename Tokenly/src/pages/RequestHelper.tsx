@@ -9,7 +9,7 @@ import { supabase } from "../lib/supabaseClient";
 import { createRequest } from "../services/requestService";
 import { sendDirectRequest } from "../services/directRequestService";
 import { getProfileCreditBalance } from "../services/profileService";
-import type { NeedBy, RequiredSection, SessionType } from "../types/page";
+import type { NeedBy, RequiredSection } from "../types/page";
 
 const durationChoices = [30, 45, 60, 90, 120];
 const PRESET_SKILLS = ["Design", "Marketing", "Music", "Programming", "Writing"];
@@ -38,7 +38,6 @@ export default function RequestHelper() {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [customSkillInput, setCustomSkillInput] = useState("");
   const [showCustomSkillInput, setShowCustomSkillInput] = useState(false);
-  const [sessionType, setSessionType] = useState<SessionType | null>(null);
   const [durationMinutes, setDurationMinutes] = useState<number | null>(null);
   const [creditsToOffer, setCreditsToOffer] = useState<number>(6);
   const [needBy, setNeedBy] = useState<NeedBy | null>(null);
@@ -52,7 +51,6 @@ export default function RequestHelper() {
     title: null,
     skills: null,
     description: null,
-    sessionType: null,
     duration: null,
     urgency: null,
   });
@@ -195,7 +193,6 @@ export default function RequestHelper() {
     setSelectedSkills([]);
     setCustomSkillInput("");
     setShowCustomSkillInput(false);
-    setSessionType(null);
     setDurationMinutes(null);
     setCreditsToOffer(6);
     setNeedBy(null);
@@ -209,7 +206,6 @@ export default function RequestHelper() {
     if (!title.trim()) { setSectionError("title"); return; }
     if (selectedSkills.length === 0) { setSectionError("skills"); return; }
     if (!description.trim()) { setSectionError("description"); return; }
-    if (!sessionType) { setSectionError("sessionType"); return; }
     if (!durationMinutes) { setSectionError("duration"); return; }
     if (!needBy) { setSectionError("urgency"); return; }
 
@@ -512,35 +508,6 @@ export default function RequestHelper() {
                 <p className="mt-1 text-right text-xs text-slate-400">{description.length}/1000</p>
                 {sectionError === "description" ? (
                   <p className="mt-1 text-xs text-rose-500">Please describe what you need.</p>
-                ) : null}
-              </div>
-
-              {/* Session type */}
-              <div
-                ref={(el) => { sectionRefs.current.sessionType = el; }}
-                className="mt-5"
-              >
-                <label className="block text-sm font-semibold text-slate-800">
-                  Session format <span className="text-rose-500">*</span>
-                </label>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {(["one-on-one", "async", "group"] as SessionType[]).map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => setSessionType(type)}
-                      className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                        sessionType === type
-                          ? "border-indigo-300 bg-indigo-50 text-indigo-700"
-                          : "border-slate-200 bg-white text-slate-600 hover:border-indigo-200"
-                      }`}
-                    >
-                      {type === "one-on-one" ? "1-on-1 live" : type === "async" ? "Async video" : "Group session"}
-                    </button>
-                  ))}
-                </div>
-                {sectionError === "sessionType" ? (
-                  <p className="mt-1 text-xs text-rose-500">Please choose a format.</p>
                 ) : null}
               </div>
 

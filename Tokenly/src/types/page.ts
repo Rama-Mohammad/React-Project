@@ -1,12 +1,10 @@
 import type { PortfolioItemData, ProfileSkill, ReviewItem } from "./profile";
 
-export type SessionType = "one-on-one" | "async" | "group";
 export type NeedBy = "flexible" | "soon" | "urgent";
 export type RequiredSection =
   | "title"
   | "skills"
   | "description"
-  | "sessionType"
   | "duration"
   | "urgency";
 

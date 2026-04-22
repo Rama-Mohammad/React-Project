@@ -149,12 +149,10 @@ export default function Explore() {
   const PAGE_SIZE = 12;
 
   const [requestsPage, setRequestsPage] = useState(0);
+  const [helpersPage, setHelpersPage] = useState(0);
   const [skillsPage, setSkillsPage] = useState(0);
   const [offersPage, setOffersPage] = useState(0);
 
-  const [requestsTotal, setRequestsTotal] = useState(0);
-  const [skillsTotal, setSkillsTotal] = useState(0);
-  const [offersTotal, setOffersTotal] = useState(0);
   const [requestCategoryCatalog, setRequestCategoryCatalog] = useState<string[]>(["All"]);
 
   const requestedCategory = useMemo(() => {
@@ -194,34 +192,25 @@ export default function Explore() {
     return () => window.clearTimeout(id);
   }, [location.hash]);
 
-  // Reset requests pagination when filters or tab change
+  // Reset requests pagination when search, filters, or tab change
   useEffect(() => {
     setRequestsPage(0);
-  }, [activeTab, duration, selectedCategory, urgency]);
+  }, [activeTab, duration, search, selectedCategory, sortBy, urgency]);
 
-  // Requests tab: refetch when filters or page changes
+  useEffect(() => {
+    setHelpersPage(0);
+  }, [activeTab, rating, search, selectedHelperCategories, sortBy]);
+
+  // Requests tab: fetch the full open request list, then paginate filtered results locally
   useEffect(() => {
     if (activeTab !== "requests") return;
 
     let mounted = true;
-    const mappedUrgency =
-      urgency === "Low" ? "low" : urgency === "Medium" ? "medium" : urgency === "High" ? "high" : undefined;
-    const mappedDuration =
-      duration === "<=30 min" ? 30 : duration === "<=45 min" ? 45 : duration === "<=60 min" ? 60 : undefined;
 
     setCountsLoading((current) => ({ ...current, requests: true }));
 
-    void fetchOpenRequests(
-      {
-        category: selectedCategory === "All" ? undefined : selectedCategory,
-        urgency: mappedUrgency,
-        max_duration: mappedDuration,
-        page: requestsPage,
-        pageSize: PAGE_SIZE,
-      }
-    ).then((count) => {
+    void fetchOpenRequests().then(() => {
       if (!mounted) return;
-      setRequestsTotal(count ?? 0);
       setCountsLoading((current) => ({ ...current, requests: false }));
     });
 
@@ -229,7 +218,7 @@ export default function Explore() {
       mounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, duration, selectedCategory, urgency, requestsPage]);
+  }, [activeTab]);
 
   useEffect(() => {
     setRequestCategoryCatalog((current) => {
@@ -245,12 +234,12 @@ export default function Explore() {
     });
   }, [liveOpenRequests]);
 
-  // Reset skills pagination when tab changes
+  // Reset skills pagination when search, filters, or tab change
   useEffect(() => {
     setSkillsPage(0);
-  }, [activeTab]);
+  }, [activeTab, level, search, selectedCategory, sortBy]);
 
-  // Skills tab: fetch when tab is active or page changes
+  // Skills tab: fetch the full list, then paginate filtered results locally
   useEffect(() => {
     if (activeTab !== "skills") return;
 
@@ -259,7 +248,7 @@ export default function Explore() {
     setSkillsError("");
     setCountsLoading((current) => ({ ...current, skills: true }));
 
-    void getAllSkills({ page: skillsPage, pageSize: PAGE_SIZE }).then(({ data, error, count }) => {
+    void getAllSkills().then(({ data, error }) => {
       if (!mounted) return;
 
       if (error) {
@@ -272,7 +261,6 @@ export default function Explore() {
 
       const incoming = (data ?? []) as SkillWithRelations[];
       setLiveSkills(incoming);
-      setSkillsTotal(count ?? 0);
       setSkillsLoading(false);
       setCountsLoading((current) => ({ ...current, skills: false }));
     });
@@ -280,7 +268,7 @@ export default function Explore() {
     return () => {
       mounted = false;
     };
-  }, [activeTab, skillsPage]);
+  }, [activeTab]);
 
   // Helpers tab: fetch only profiles that have skills or open help_offers
   // online status is derived from last_seen (< 15 min = online)
@@ -316,10 +304,10 @@ export default function Explore() {
     };
   }, [activeTab]);
 
-  // Reset offers pagination when tab changes
+  // Reset offers pagination when search, filters, or tab change
   useEffect(() => {
     setOffersPage(0);
-  }, [activeTab]);
+  }, [activeTab, search, selectedCategory, sortBy]);
 
   // Offers tab: fetch open help_offers only (Flow 2 — helper-initiated)
   // This replaces the old broken fetch that mixed `offers` + `help_offers` together
@@ -331,7 +319,7 @@ export default function Explore() {
     setOffersError("");
     setCountsLoading((current) => ({ ...current, offers: true }));
 
-    void getOpenHelpOffers({ page: offersPage, pageSize: PAGE_SIZE }).then(({ data, error, count }) => {
+    void getOpenHelpOffers().then(({ data, error }) => {
       if (!mounted) return;
 
       if (error) {
@@ -384,7 +372,6 @@ export default function Explore() {
       });
 
       setLiveOffers(mapped);
-      setOffersTotal(count ?? 0);
       setOffersLoading(false);
       setCountsLoading((current) => ({ ...current, offers: false }));
     });
@@ -392,7 +379,7 @@ export default function Explore() {
     return () => {
       mounted = false;
     };
-  }, [activeTab, offersPage]);
+  }, [activeTab]);
 
   const filteredRequests: RequestItem[] = useMemo(() => {
     let data = liveOpenRequests.map((item) => mapRequestToExploreItem(item as never));
@@ -433,6 +420,17 @@ export default function Explore() {
 
     return data;
   }, [liveOpenRequests, selectedCategory, urgency, duration, search, sortBy]);
+
+  const requestsTotalPages = Math.max(1, Math.ceil(filteredRequests.length / PAGE_SIZE));
+  const safeRequestsPage = Math.min(requestsPage, Math.max(0, requestsTotalPages - 1));
+  const paginatedRequests = useMemo(
+    () =>
+      filteredRequests.slice(
+        safeRequestsPage * PAGE_SIZE,
+        (safeRequestsPage + 1) * PAGE_SIZE
+      ),
+    [filteredRequests, safeRequestsPage, PAGE_SIZE]
+  );
 
   const filteredHelpers: HelperItem[] = useMemo(() => {
     let data = [...liveHelpers];
@@ -483,6 +481,17 @@ export default function Explore() {
     return data;
   }, [liveHelpers, rating, search, selectedHelperCategories, sortBy]);
 
+  const helpersTotalPages = Math.max(1, Math.ceil(filteredHelpers.length / PAGE_SIZE));
+  const safeHelpersPage = Math.min(helpersPage, Math.max(0, helpersTotalPages - 1));
+  const paginatedHelpers = useMemo(
+    () =>
+      filteredHelpers.slice(
+        safeHelpersPage * PAGE_SIZE,
+        (safeHelpersPage + 1) * PAGE_SIZE
+      ),
+    [filteredHelpers, safeHelpersPage]
+  );
+
   const filteredSkills: SkillItem[] = useMemo(() => {
     let data = liveSkills.map((item) => mapSkillToExploreItem(item));
 
@@ -511,6 +520,17 @@ export default function Explore() {
     return data;
   }, [level, liveSkills, search, selectedCategory, sortBy]);
 
+  const skillsTotalPages = Math.max(1, Math.ceil(filteredSkills.length / PAGE_SIZE));
+  const safeSkillsPage = Math.min(skillsPage, Math.max(0, skillsTotalPages - 1));
+  const paginatedSkills = useMemo(
+    () =>
+      filteredSkills.slice(
+        safeSkillsPage * PAGE_SIZE,
+        (safeSkillsPage + 1) * PAGE_SIZE
+      ),
+    [filteredSkills, safeSkillsPage]
+  );
+
   // Offers tab filtering: searches title, helper name, category, description, skills
   // Sorting: Newest (default), Oldest, Highest Tokens
   const filteredOffers: HelpOfferItem[] = useMemo(() => {
@@ -538,6 +558,17 @@ export default function Explore() {
 
     return data;
   }, [liveOffers, search, selectedCategory, sortBy]);
+
+  const offersTotalPages = Math.max(1, Math.ceil(filteredOffers.length / PAGE_SIZE));
+  const safeOffersPage = Math.min(offersPage, Math.max(0, offersTotalPages - 1));
+  const paginatedOffers = useMemo(
+    () =>
+      filteredOffers.slice(
+        safeOffersPage * PAGE_SIZE,
+        (safeOffersPage + 1) * PAGE_SIZE
+      ),
+    [filteredOffers, safeOffersPage]
+  );
 
   const requestCategoryOptions = useMemo(
     () =>
@@ -784,6 +815,7 @@ export default function Explore() {
 
     const isCurrentTabLoading =
       (activeTab === "requests" && requestsLoading) ||
+      (activeTab === "helpers" && helpersLoading) ||
       (activeTab === "skills" && skillsLoading) ||
       (activeTab === "offers" && offersLoading);
 
@@ -793,11 +825,31 @@ export default function Explore() {
 
     window.requestAnimationFrame(scrollToExploreHeader);
     window.setTimeout(scrollToExploreHeader, 120);
-  }, [activeTab, offersLoading, requestsLoading, skillsLoading, offersPage, requestsPage, skillsPage]);
+  }, [activeTab, helpersLoading, offersLoading, requestsLoading, skillsLoading, helpersPage, offersPage, requestsPage, skillsPage]);
 
-  const requestsTotalPages = Math.max(1, Math.ceil(requestsTotal / PAGE_SIZE));
-  const skillsTotalPages = Math.max(1, Math.ceil(skillsTotal / PAGE_SIZE));
-  const offersTotalPages = Math.max(1, Math.ceil(offersTotal / PAGE_SIZE));
+  useEffect(() => {
+    if (requestsPage !== safeRequestsPage) {
+      setRequestsPage(safeRequestsPage);
+    }
+  }, [requestsPage, safeRequestsPage]);
+
+  useEffect(() => {
+    if (helpersPage !== safeHelpersPage) {
+      setHelpersPage(safeHelpersPage);
+    }
+  }, [helpersPage, safeHelpersPage]);
+
+  useEffect(() => {
+    if (skillsPage !== safeSkillsPage) {
+      setSkillsPage(safeSkillsPage);
+    }
+  }, [skillsPage, safeSkillsPage]);
+
+  useEffect(() => {
+    if (offersPage !== safeOffersPage) {
+      setOffersPage(safeOffersPage);
+    }
+  }, [offersPage, safeOffersPage]);
 
   const renderPagination = (
     currentPage: number,
@@ -938,11 +990,24 @@ export default function Explore() {
           ) : activeTab === "requests" ? (
             <>
               <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {filteredRequests.map((item, index) => (
-                  <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
-                    <RequestCard item={item} />
+                {paginatedRequests.length === 0 ? (
+                  <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">
+                    <p className="text-sm text-slate-500">
+                      {search.trim() ? "No results found" : "No requests match your filters."}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      {search.trim()
+                        ? "Try a different keyword or clear some filters."
+                        : "Try adjusting the category, urgency, or duration."}
+                    </p>
                   </div>
-                ))}
+                ) : (
+                  paginatedRequests.map((item, index) => (
+                    <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
+                      <RequestCard item={item} />
+                    </div>
+                  ))
+                )}
               </div>
               {renderPagination(requestsPage, requestsTotalPages, setRequestsPage, requestsLoading)}
             </>
@@ -958,13 +1023,29 @@ export default function Explore() {
               {helpersError}
             </div>
           ) : activeTab === "helpers" ? (
-            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredHelpers.map((item, index) => (
-                <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
-                  <HelperCard item={item} onShowMore={setSelectedHelperForModal} />
-                </div>
-              ))}
-            </div>
+            <>
+              <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {paginatedHelpers.length === 0 ? (
+                  <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">
+                    <p className="text-sm text-slate-500">
+                      {search.trim() ? "No results found" : "No helpers match your filters."}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      {search.trim()
+                        ? "Try a different keyword or clear some filters."
+                        : "Try adjusting the category or rating."}
+                    </p>
+                  </div>
+                ) : (
+                  paginatedHelpers.map((item, index) => (
+                    <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
+                      <HelperCard item={item} onShowMore={setSelectedHelperForModal} />
+                    </div>
+                  ))
+                )}
+              </div>
+              {renderPagination(helpersPage, helpersTotalPages, setHelpersPage, helpersLoading)}
+            </>
           ) : null}
 
           {/* -- Skills -- */}
@@ -979,11 +1060,24 @@ export default function Explore() {
           ) : activeTab === "skills" ? (
             <>
               <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {filteredSkills.map((item, index) => (
-                  <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
-                    <SkillCard item={item} />
+                {paginatedSkills.length === 0 ? (
+                  <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">
+                    <p className="text-sm text-slate-500">
+                      {search.trim() ? "No results found" : "No skills match your filters."}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      {search.trim()
+                        ? "Try a different keyword or clear some filters."
+                        : "Try adjusting the category or level."}
+                    </p>
                   </div>
-                ))}
+                ) : (
+                  paginatedSkills.map((item, index) => (
+                    <div key={item.id} className="explore-fade-in-up h-full" style={getEnterStyle(index)}>
+                      <SkillCard item={item} />
+                    </div>
+                  ))
+                )}
               </div>
               {renderPagination(skillsPage, skillsTotalPages, setSkillsPage, skillsLoading)}
             </>
@@ -1004,7 +1098,7 @@ export default function Explore() {
           ) : activeTab === "offers" ? (
             <>
               <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {filteredOffers.map((item, index) => (
+                {paginatedOffers.map((item, index) => (
                   <article
                     key={item.id}
                     className="explore-fade-in-up flex h-full flex-col rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur"
@@ -1087,10 +1181,16 @@ export default function Explore() {
                   </article>
                 ))}
 
-                {filteredOffers.length === 0 ? (
+                {paginatedOffers.length === 0 ? (
                   <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">
-                    <p className="text-sm text-slate-500">No open offers match your filters.</p>
-                    <p className="mt-1 text-xs text-slate-400">Try adjusting the category or search.</p>
+                    <p className="text-sm text-slate-500">
+                      {search.trim() ? "No results found" : "No open offers match your filters."}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      {search.trim()
+                        ? "Try a different keyword or clear some filters."
+                        : "Try adjusting the category or search."}
+                    </p>
                   </div>
                 ) : null}
               </div>

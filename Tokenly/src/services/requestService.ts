@@ -115,12 +115,12 @@ export async function getAllOpenRequests(filters?: {
   if (filters?.max_duration) {
     query = query.lte("duration_minutes", filters.max_duration);
   }
-  const page = filters?.page ?? 0;
-  const pageSize = filters?.pageSize ?? 12;
-  const from = page * pageSize;
-  const to = from + pageSize - 1;
+  if (typeof filters?.page === "number" && typeof filters?.pageSize === "number") {
+    const from = filters.page * filters.pageSize;
+    const to = from + filters.pageSize - 1;
+    query = query.range(from, to);
+  }
 
-  query = query.range(from, to);
   return await query;
 }
 

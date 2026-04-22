@@ -13,11 +13,7 @@ import { ensureSessionForBooking } from "./sessionService";
 // Used by the Offers tab in Explore — fetches all open help_offers with helper
 // profile and linked skill names
 export async function getOpenHelpOffers(opts?: { page?: number; pageSize?: number }) {
-  const page = opts?.page ?? 0;
-  const pageSize = opts?.pageSize ?? 12;
-  const from = page * pageSize;
-  const to = from + pageSize - 1;
-  const result = await supabase
+  let query = supabase
     .from("help_offers")
     .select(`
       id,
@@ -42,10 +38,15 @@ export async function getOpenHelpOffers(opts?: { page?: number; pageSize?: numbe
       )
     `, { count: "exact" })
     .eq("status", "open")
-    .order("created_at", { ascending: false })
-    .range(from, to);
+    .order("created_at", { ascending: false });
 
-  return result;
+  if (typeof opts?.page === "number" && typeof opts?.pageSize === "number") {
+    const from = opts.page * opts.pageSize;
+    const to = from + opts.pageSize - 1;
+    query = query.range(from, to);
+  }
+
+  return await query;
 }
 
 // Used by a helper's own profile/dashboard to see their posted offers

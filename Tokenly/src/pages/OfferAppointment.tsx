@@ -1,4 +1,4 @@
-import { CalendarDays, CheckCircle2, Clock3, Coins, Sparkles, Video } from "lucide-react";
+import { CalendarDays, Clock3, Coins, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Loader from "../components/common/Loader";
@@ -14,15 +14,8 @@ import {
 } from "../services/offerService";
 import { getProfileCreditBalance } from "../services/profileService";
 import { createRequest } from "../services/requestService";
-import type { SessionType } from "../types/page";
 
 type AppointmentSource = "request" | "independent";
-
-const sessionTypeOptions: Array<{ value: SessionType; title: string; description: string }> = [
-  { value: "one-on-one", title: "1-on-1 live session", description: "Real-time video call with the helper." },
-  { value: "async", title: "Recorded video review", description: "Send context and get feedback asynchronously." },
-  { value: "group", title: "Small group session", description: "Open the format for collaborative learning." },
-];
 
 function toLocalDateTimeInputValue(date: Date) {
   const year = date.getFullYear();
@@ -39,9 +32,6 @@ function buildDefaultAppointment() {
   return toLocalDateTimeInputValue(date);
 }
 
-function formatSessionTypeLabel(type: SessionType) {
-  return type === "one-on-one" ? "1-on-1 live session" : type === "async" ? "Recorded video review" : "Small group session";
-}
 
 export default function OfferAppointment() {
   const { offerId } = useParams<{ offerId: string }>();
@@ -55,7 +45,6 @@ export default function OfferAppointment() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [appointmentAt, setAppointmentAt] = useState(buildDefaultAppointment);
-  const [sessionType, setSessionType] = useState<SessionType>("one-on-one");
   const [prepMessage, setPrepMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -213,7 +202,6 @@ export default function OfferAppointment() {
       const selectedSlotText = [
         `Offerer availability: ${availabilityText}`,
         `Chosen appointment: ${scheduledDate.toLocaleString()}`,
-        `Session format: ${formatSessionTypeLabel(sessionType)}`,
         prepMessage.trim() ? `Requester note: ${prepMessage.trim()}` : "",
       ]
         .filter(Boolean)
@@ -231,7 +219,6 @@ export default function OfferAppointment() {
           description: [
             offerDescription,
             `Booked from independent offer by ${helperName}.`,
-            `Requested format: ${formatSessionTypeLabel(sessionType)}`,
             prepMessage.trim() ? `Prep message: ${prepMessage.trim()}` : "",
           ]
             .filter(Boolean)
@@ -364,7 +351,7 @@ export default function OfferAppointment() {
                   Schedule this session
                 </h1>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Review the offered availability, pick the best time, choose the session format, and confirm the booking with <span className="font-semibold text-slate-900">{helperName}</span>.
+                  Review the offered availability, pick the best time, and confirm the booking with <span className="font-semibold text-slate-900">{helperName}</span>.
                 </p>
               </div>
 
@@ -409,33 +396,6 @@ export default function OfferAppointment() {
                     className="mt-2 h-11 w-full rounded-2xl border border-slate-200/80 bg-white/92 px-4 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
                   />
                 </label>
-
-                <div className="mt-4">
-                  <p className="text-sm font-semibold text-slate-800">How do you want the session?</p>
-                  <div className="mt-3 grid gap-3 md:grid-cols-3">
-                    {sessionTypeOptions.map((option) => {
-                      const active = sessionType === option.value;
-                      return (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => setSessionType(option.value)}
-                          className={`rounded-2xl border p-4 text-left transition ${
-                            active
-                              ? "border-indigo-300 bg-indigo-50 shadow-sm"
-                              : "border-slate-200 bg-white hover:bg-slate-50"
-                          }`}
-                        >
-                          <div className="inline-flex rounded-xl bg-white/80 p-2 text-indigo-600">
-                            <Video size={16} />
-                          </div>
-                          <p className="mt-3 text-sm font-semibold text-slate-900">{option.title}</p>
-                          <p className="mt-1 text-xs leading-5 text-slate-500">{option.description}</p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
 
                 <label className="mt-4 block">
                   <span className="text-sm font-semibold text-slate-800">Message for the helper</span>
@@ -513,13 +473,6 @@ export default function OfferAppointment() {
                       Status
                     </span>
                     <span className="font-semibold text-slate-800 capitalize">{status}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-slate-600">
-                    <span className="inline-flex items-center gap-2">
-                      <CheckCircle2 size={15} className="text-indigo-400" />
-                      Format
-                    </span>
-                    <span className="font-semibold text-slate-800">{formatSessionTypeLabel(sessionType)}</span>
                   </div>
                 </div>
               </div>
