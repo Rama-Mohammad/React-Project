@@ -9,29 +9,13 @@ import {
   getDashboardHelpOfferRequests,
 } from "../services/dashboardService";
 import type {
+  DashboardHelpOfferRequestItem,
   DashboardDirectRequestItem,
   DashboardOfferItem,
+  DashboardProfile,
   DashboardSessionItem,
+  DashboardStats,
 } from "../types/dashboard";
-
-export type DashboardProfile = {
-  full_name: string;
-  credit_balance: number;
-  avg_rating: number;
-  profile_image_url: string | null;
-  username: string;
-};
-
-export type DashboardStats = {
-  completedSessions: number;
-  upcomingSessions: number;
-  totalHelpGiven: number;
-  totalHelpReceived: number;
-  activeRequests: number;
-  offersSubmitted: number;
-  offersAccepted: number;
-  reviewCount: number;
-};
 
 export default function useDashboard() {
   const [profile, setProfile] = useState<DashboardProfile | null>(null);
@@ -212,16 +196,7 @@ export default function useDashboard() {
     });
   }
 
-  function mapHelpOfferRequests(): Array<{
-    id: string;
-    title: string;
-    personName: string;
-    personImageUrl?: string;
-    message: string;
-    credits: number;
-    duration: number | null;
-    age: string;
-  }> {
+  function mapHelpOfferRequests(): DashboardHelpOfferRequestItem[] {
     return rawHelpOfferRequests.map((r: unknown) => {
       const req = r as Record<string, unknown>;
       const requesterRaw = req.requester as

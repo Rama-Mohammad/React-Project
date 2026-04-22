@@ -10,6 +10,25 @@ export interface CreditBalanceCardProps {
   onViewHistory: () => void;
 }
 
+export type DashboardProfile = {
+  full_name: string;
+  credit_balance: number;
+  avg_rating: number;
+  profile_image_url: string | null;
+  username: string;
+};
+
+export type DashboardStats = {
+  completedSessions: number;
+  upcomingSessions: number;
+  totalHelpGiven: number;
+  totalHelpReceived: number;
+  activeRequests: number;
+  offersSubmitted: number;
+  offersAccepted: number;
+  reviewCount: number;
+};
+
 export type SessionTabLabel = "All" | "Upcoming" | "Active" | "Completed";
 
 export type DashboardSessionItem = {
@@ -56,4 +75,15 @@ export type DashboardDirectRequestItem = {
   age: string;
   status: "pending" | "accepted" | "rejected" | "cancelled";
   direction: "incoming" | "outgoing";
+};
+
+export type DashboardHelpOfferRequestItem = {
+  id: string;
+  title: string;
+  personName: string;
+  personImageUrl?: string;
+  message: string;
+  credits: number;
+  duration: number | null;
+  age: string;
 };

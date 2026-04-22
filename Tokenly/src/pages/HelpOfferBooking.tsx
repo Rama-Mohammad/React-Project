@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Clock3, Coins, Sparkles, Star, CheckCircle2 } from "lucide-react";
 import Avatar from "../components/common/Avatar";
 import Loader from "../components/common/Loader";
 import { supabase } from "../lib/supabaseClient";
 import useAuthRedirect from "../hooks/useAuthRedirect";
 import { getHelpOfferById, submitHelpOfferRequest } from "../services/helpOfferService";
-import { getPublicHelperProfileCore } from "../services/profileService";
+import { getProfileCreditBalance, getPublicHelperProfileCore } from "../services/profileService";
 import type { HelpOffer } from "../types/helpOffer";
 
 const urgencyStyle: Record<string, string> = {
@@ -24,6 +24,7 @@ const levelStyle: Record<string, string> = {
 
 export default function HelpOfferBooking() {
   const { offerId } = useParams<{ offerId: string }>();
+  const navigate = useNavigate();
   const { authRedirectState, requireAuth } = useAuthRedirect();
 
   const [offer, setOffer] = useState<HelpOffer | null>(null);
@@ -50,6 +51,8 @@ export default function HelpOfferBooking() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [currentBalance, setCurrentBalance] = useState<number | null>(null);
+  const [showTokenOptionsModal, setShowTokenOptionsModal] = useState(false);
 
   // Load current user
   useEffect(() => {
@@ -57,6 +60,30 @@ export default function HelpOfferBooking() {
       setCurrentUserId(data.user?.id ?? null);
     });
   }, []);
+
+  useEffect(() => {
+    if (!currentUserId) {
+      setCurrentBalance(null);
+      return;
+    }
+
+    let mounted = true;
+
+    void getProfileCreditBalance(currentUserId).then(({ data, error: profileError }) => {
+      if (!mounted) return;
+
+      if (profileError) {
+        setCurrentBalance(null);
+        return;
+      }
+
+      setCurrentBalance(Number(data?.credit_balance ?? 0));
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [currentUserId]);
 
   // Load offer + helper profile in parallel
   useEffect(() => {
@@ -92,6 +119,11 @@ export default function HelpOfferBooking() {
     return () => { mounted = false; };
   }, [offerId]);
 
+  const hasEnoughTokens = useMemo(() => {
+    if (!offer || currentBalance == null) return true;
+    return currentBalance >= Number(offer.credit_cost ?? 0);
+  }, [currentBalance, offer]);
+
   const canBook = useMemo(() => {
     if (!currentUserId || !offer) return false;
     // Cannot book your own offer
@@ -107,6 +139,10 @@ export default function HelpOfferBooking() {
     }
     if (!currentUserId) { setSubmitError("Please sign in to book this offer."); return; }
     if (!offer) return;
+    if (!hasEnoughTokens) {
+      setShowTokenOptionsModal(true);
+      return;
+    }
     if (!canBook) { setSubmitError("You cannot book this offer."); return; }
 
     setSubmitting(true);
@@ -396,7 +432,7 @@ export default function HelpOfferBooking() {
                   <button
                     type="button"
                     onClick={() => void handleSubmit()}
-                    disabled={submitting || !canBook}
+                    disabled={submitting || (!canBook && hasEnoughTokens)}
                     className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-xl bg-linear-to-r from-indigo-500 via-sky-500 to-indigo-500 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {submitting ? "Sending..." : "Send Request"}
@@ -411,6 +447,43 @@ export default function HelpOfferBooking() {
           </aside>
         </div>
       </main>
+
+      {showTokenOptionsModal && offer ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <button
+            type="button"
+            className="absolute inset-0 bg-slate-900/35 backdrop-blur-sm"
+            onClick={() => setShowTokenOptionsModal(false)}
+            aria-label="Close token options"
+          />
+          <div className="relative w-full max-w-md rounded-3xl border border-rose-200 bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-slate-900">Not enough tokens</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              You need {offer.credit_cost} tokens to book this offer, but you only have {currentBalance ?? 0}.
+            </p>
+            <div className="mt-5 grid gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowTokenOptionsModal(false);
+                  navigate(`/tokens/options?required=${offer.credit_cost}&balance=${currentBalance ?? 0}`);
+                }}
+                className="rounded-2xl bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-4 py-3 text-center text-white transition hover:brightness-105"
+              >
+                <span className="block text-sm font-semibold">Get more tokens</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowTokenOptionsModal(false)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

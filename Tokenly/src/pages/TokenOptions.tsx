@@ -1,6 +1,8 @@
 import { Building2, CreditCard, PlusCircle, Wallet } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { supabase } from "../lib/supabaseClient";
+import { createTransaction } from "../services/transactionService";
 
 type TokenActionTab = "earn" | "buy";
 
@@ -8,14 +10,42 @@ export default function TokenOptions() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<TokenActionTab>("earn");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [liveBalance, setLiveBalance] = useState<number | null>(null);
   const [bankName, setBankName] = useState("");
   const [accountName, setAccountName] = useState("");
   const [iban, setIban] = useState("");
   const [tokenAmount, setTokenAmount] = useState("10");
   const [purchaseMessage, setPurchaseMessage] = useState("");
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
 
   const requiredTokens = Number(searchParams.get("required") ?? 0);
-  const currentBalance = Number(searchParams.get("balance") ?? 0);
+  const queryBalance = Number(searchParams.get("balance") ?? 0);
+  const currentBalance = liveBalance ?? queryBalance;
+
+  useEffect(() => {
+    let mounted = true;
+
+    void supabase.auth.getUser().then(async ({ data, error }) => {
+      if (!mounted || error || !data.user?.id) return;
+
+      setCurrentUserId(data.user.id);
+
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("credit_balance")
+        .eq("id", data.user.id)
+        .single();
+
+      if (!mounted || profileError) return;
+
+      setLiveBalance(Number(profileData?.credit_balance ?? 0));
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const shortage = useMemo(
     () => Math.max(0, requiredTokens - currentBalance),
@@ -24,14 +54,61 @@ export default function TokenOptions() {
   const tokenCount = Number(tokenAmount) || 0;
   const tokenUnitPrice = 4;
   const purchaseTotal = tokenCount * tokenUnitPrice;
+  const normalizedIban = iban.trim();
 
-  const handleBuyTokens = () => {
+  const handleBuyTokens = async () => {
     if (!bankName.trim() || !accountName.trim() || !iban.trim() || !tokenAmount.trim()) {
       setPurchaseMessage("Please fill in all bank account fields first.");
       return;
     }
 
-    setPurchaseMessage(`Bank purchase request created for ${tokenAmount} tokens.`);
+    if (normalizedIban.length !== 28) {
+      setPurchaseMessage("IBAN / account number must be exactly 28 characters.");
+      return;
+    }
+
+    const tokenAmountNumber = Number(tokenAmount);
+    if (!Number.isFinite(tokenAmountNumber) || tokenAmountNumber <= 0) {
+      setPurchaseMessage("Please enter a valid number of tokens first.");
+      return;
+    }
+
+    if (!currentUserId) {
+      setPurchaseMessage("Please sign in again to complete your purchase.");
+      return;
+    }
+
+    setPurchaseLoading(true);
+
+    const nextBalance = currentBalance + tokenAmountNumber;
+    const { error: balanceError } = await supabase
+      .from("profiles")
+      .update({ credit_balance: nextBalance })
+      .eq("id", currentUserId);
+
+    if (balanceError) {
+      setPurchaseMessage(balanceError.message ?? "Could not update your token balance.");
+      setPurchaseLoading(false);
+      return;
+    }
+
+    const { error: transactionError } = await createTransaction({
+      user_id: currentUserId,
+      amount: tokenAmountNumber,
+      type: "bonus",
+      description: `Bank purchase credited ${tokenAmountNumber} tokens.`,
+    });
+
+    if (transactionError) {
+      setPurchaseMessage(transactionError.message ?? "Your balance was updated, but we could not record the transaction.");
+      setLiveBalance(nextBalance);
+      setPurchaseLoading(false);
+      return;
+    }
+
+    setLiveBalance(nextBalance);
+    setPurchaseMessage(`Bank purchase completed. ${tokenAmountNumber} tokens were added to your balance.`);
+    setPurchaseLoading(false);
   };
 
   return (
@@ -157,10 +234,12 @@ export default function TokenOptions() {
                   <label className="mb-1.5 block text-sm font-semibold text-slate-800">IBAN / account number</label>
                   <input
                     value={iban}
-                    onChange={(event) => setIban(event.target.value)}
+                    onChange={(event) => setIban(event.target.value.slice(0, 28))}
                     placeholder="Bank account number"
+                    maxLength={28}
                     className="h-11 w-full rounded-2xl border border-slate-200/80 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
                   />
+                  <p className="mt-1 text-xs text-slate-400">{normalizedIban.length}/28 characters</p>
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-slate-800">Tokens to buy</label>
@@ -175,11 +254,12 @@ export default function TokenOptions() {
 
               <button
                 type="button"
-                onClick={handleBuyTokens}
-                className="mt-5 inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                onClick={() => void handleBuyTokens()}
+                disabled={purchaseLoading}
+                className="mt-5 inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Building2 size={16} />
-                Continue with Bank Account
+                {purchaseLoading ? "Processing..." : "Continue with Bank Account"}
               </button>
 
               {purchaseMessage ? (
