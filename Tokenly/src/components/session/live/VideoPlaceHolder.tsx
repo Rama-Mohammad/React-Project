@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { LogIn, LogOut, Mic, MicOff, MonitorUp, Video, VideoOff, Wifi, WifiOff } from "lucide-react";
+import { LogIn, Mic, MicOff, MonitorUp, Video, VideoOff, Wifi, WifiOff } from "lucide-react";
 import type { VideoPlaceholderProps } from "../../../types/session";
 
 const statusLabel: Record<VideoPlaceholderProps["connectionStatus"], string> = {
@@ -33,7 +33,6 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
   isScreenSharing,
   participantCount,
   onJoinCall,
-  onLeaveCall,
   onToggleVideo,
   onToggleAudio,
   onShareScreen,
@@ -112,15 +111,7 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
             {isScreenSharing ? "Sharing screen" : "Camera view"}
           </div>
 
-          {isInCall ? (
-            <button
-              onClick={onLeaveCall}
-              className="inline-flex items-center gap-1 rounded-full bg-rose-600 px-3 py-1 text-xs text-white"
-            >
-              <LogOut size={13} />
-              Leave
-            </button>
-          ) : (
+          {isInCall ? null : (
             <button
               onClick={onJoinCall}
               className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-xs text-white"

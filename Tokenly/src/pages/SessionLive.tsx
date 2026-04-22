@@ -503,7 +503,7 @@ const SessionLivePage: React.FC = () => {
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-400 flex-1 flex-col gap-4 p-3 sm:p-4">
+      <main className="mx-auto flex w-full max-w-400 flex-1 flex-col gap-4 p-3 pb-28 sm:p-4 sm:pb-32">
         <section className="flex min-w-0 flex-col">
           <VideoPlaceholder
             localStream={localStream}
@@ -584,7 +584,7 @@ const SessionLivePage: React.FC = () => {
         </aside>
       </main>
 
-      <footer className="border-t border-indigo-200/70 bg-white/55 px-4 py-3 backdrop-blur-xl sm:px-6">
+      <footer className="fixed inset-x-0 bottom-0 z-40 border-t border-indigo-200/70 bg-white/80 px-4 py-3 shadow-[0_-12px_30px_-24px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:px-6">
         <div className="mx-auto flex w-full max-w-400 justify-center">
           <button
             onClick={() => {
