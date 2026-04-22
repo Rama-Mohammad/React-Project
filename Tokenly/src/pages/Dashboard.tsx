@@ -1,9 +1,8 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Check, Coins } from "lucide-react";
 import AnalyticsSection from "../components/dashboard/AnalyticsSection";
-import DashboardSidebar from "../components/dashboard/DashboardSidebar";
+import DashboardSidebar, { DashboardTopBar } from "../components/dashboard/DashboardSidebar";
 import type { DashboardSectionId } from "../components/dashboard/DashboardSidebar";
-import DashboardTopBar from "../components/dashboard/DashboardTopBar";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import ActivitySection from "../components/dashboard/ActivitySection";
 import HeaderSection from "../components/dashboard/HeaderSection";
@@ -431,12 +430,10 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="relative min-h-full overflow-hidden bg-transparent text-slate-900">
+    <div className="relative min-h-full overflow-x-hidden overflow-y-visible bg-transparent text-slate-900">
       <main className="relative mx-auto w-full max-w-[1600px] px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-5 xl:grid-cols-[17.5rem_minmax(0,1fr)]">
           <DashboardSidebar
-            mobileOpen={mobileNavOpen}
-            onClose={() => setMobileNavOpen(false)}
             activeSection={activeSection}
             onSectionSelect={handleSidebarSectionSelect}
             stretchOnDesktop
@@ -444,7 +441,11 @@ export default function Dashboard() {
 
           <div className="min-w-0">
             <DashboardTopBar
-              onOpenMobileNav={() => setMobileNavOpen(true)}
+              mobileOpen={mobileNavOpen}
+              onToggleMobileNav={() => setMobileNavOpen((open) => !open)}
+              onCloseMobileNav={() => setMobileNavOpen(false)}
+              activeSection={activeSection}
+              onSectionSelect={handleSidebarSectionSelect}
             />
 
             {activeSection === "overview" ? (

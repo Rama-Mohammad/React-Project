@@ -1,10 +1,5 @@
 import type { Transaction } from ".";
 
-export interface ActivityFeedProps {
-  transactions: Transaction[];
-  onViewAll: () => void;
-}
-
 export interface CreditBalanceCardProps {
   balance: number;
   onViewHistory: () => void;
