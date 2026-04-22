@@ -2,12 +2,21 @@ import { supabase } from "../lib/supabaseClient";
 import type { NotificationType } from "../types/notification";
 
 export async function getNotificationsByUser(user_id: string) {
-  return await supabase
+  const result = await supabase
     .from("notifications")
     .select("id, user_id, type, title, message, is_read, related_id, related_type, created_at")
     .eq("user_id", user_id)
     .order("created_at", { ascending: false })
     .limit(30);
+
+  if (result.error) {
+    console.error("[notifications] getNotificationsByUser failed", {
+      user_id,
+      error: result.error,
+    });
+  }
+
+  return result;
 }
 
 export async function getUnreadNotifications(user_id: string) {
@@ -45,11 +54,26 @@ export async function createNotification(data: {
   related_id?: string;
   related_type?: "session" | "request" | "offer" | "review" | "help_offer" | "direct_request" | "chat";
 }) {
-  return await supabase
+  const result = await supabase
     .from("notifications")
     .insert({ ...data, is_read: false })
     .select()
     .single();
+
+  if (result.error) {
+    console.error("[notifications] createNotification failed", {
+      payload: data,
+      error: result.error,
+    });
+  } else {
+    console.log("[notifications] createNotification succeeded", {
+      id: result.data?.id,
+      user_id: data.user_id,
+      type: data.type,
+    });
+  }
+
+  return result;
 }
 
 
@@ -73,5 +97,13 @@ export function subscribeToNotifications(
       },
       (payload) => callback(payload.new)
     )
-    .subscribe();
+    .subscribe((status, error) => {
+      if (status === "CHANNEL_ERROR" || error) {
+        console.error("[notifications] realtime subscribe failed", {
+          user_id,
+          status,
+          error,
+        });
+      }
+    });
 }

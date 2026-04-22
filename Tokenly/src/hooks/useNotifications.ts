@@ -1,4 +1,4 @@
-import {useState } from "react";
+import { useCallback, useState } from "react";
 import type { Notification, UseNotificationsResult } from "../types/notification";
 import {
     getNotificationsByUser,
@@ -16,7 +16,7 @@ export default function useNotifications(): UseNotificationsResult {
 
     const unreadCount = notifications.filter((n) => !n.is_read).length;
 
-    async function fetchNotifications(user_id: string) {
+    const fetchNotifications = useCallback(async (user_id: string) => {
         setLoading(true);
         setError("");
 
@@ -30,9 +30,9 @@ export default function useNotifications(): UseNotificationsResult {
 
         setNotifications(data ?? []);
         setLoading(false);
-    }
+    }, []);
 
-    async function fetchUnread(user_id: string) {
+    const fetchUnread = useCallback(async (user_id: string) => {
         setLoading(true);
         setError("");
 
@@ -46,9 +46,9 @@ export default function useNotifications(): UseNotificationsResult {
 
         setNotifications(data ?? []);
         setLoading(false);
-    }
+    }, []);
 
-    async function markAsRead(id: string) {
+    const markAsRead = useCallback(async (id: string) => {
         setError("");
 
         const { error } = await markNotificationAsRead(id);
@@ -62,9 +62,9 @@ export default function useNotifications(): UseNotificationsResult {
             prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
         );
         return true;
-    }
+    }, []);
 
-    async function markAllAsRead(user_id: string) {
+    const markAllAsRead = useCallback(async (user_id: string) => {
         setError("");
 
         const { error } = await markAllNotificationsAsRead(user_id);
@@ -76,9 +76,9 @@ export default function useNotifications(): UseNotificationsResult {
 
         setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
         return true;
-    }
+    }, []);
 
-    async function removeNotification(id: string) {
+    const removeNotification = useCallback(async (id: string) => {
         setError("");
 
         const { error } = await deleteNotification(id);
@@ -90,23 +90,23 @@ export default function useNotifications(): UseNotificationsResult {
 
         setNotifications((prev) => prev.filter((n) => n.id !== id));
         return true;
-    }
+    }, []);
 
-function subscribeToLive(user_id: string) {
-    const channel = subscribeToNotifications(user_id, (newNotification) => {
-        setNotifications((prev) => {
-            const exists = prev.some((n) => n.id === (newNotification as Notification).id);
+    const subscribeToLive = useCallback((user_id: string) => {
+        const channel = subscribeToNotifications(user_id, (newNotification) => {
+            setNotifications((prev) => {
+                const exists = prev.some((n) => n.id === (newNotification as Notification).id);
 
-            if (exists) return prev;
+                if (exists) return prev;
 
-            return [newNotification as Notification, ...prev];
+                return [newNotification as Notification, ...prev];
+            });
         });
-    });
 
-    return () => {
-        void channel.unsubscribe();
-    };
-}
+        return () => {
+            void channel.unsubscribe();
+        };
+    }, []);
 
     return {
         notifications,

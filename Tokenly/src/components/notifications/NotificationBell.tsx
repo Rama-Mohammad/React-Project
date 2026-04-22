@@ -9,6 +9,8 @@ export default function NotificationBell({ userId }: { userId: string }) {
   const {
     notifications,
     unreadCount,
+    loading,
+    error,
     fetchNotifications,
     subscribeToLive,
     markAsRead,
@@ -20,11 +22,35 @@ export default function NotificationBell({ userId }: { userId: string }) {
   useEffect(() => {
     if (!userId) return;
 
-    fetchNotifications(userId);
+    void fetchNotifications(userId);
 
     const unsubscribe = subscribeToLive(userId);
     return () => unsubscribe();
   }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const intervalId = window.setInterval(() => {
+      void fetchNotifications(userId);
+    }, 15000);
+
+    const handleFocus = () => {
+      void fetchNotifications(userId);
+    };
+
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [userId, fetchNotifications]);
+
+  useEffect(() => {
+    if (!open || !userId) return;
+    void fetchNotifications(userId);
+  }, [open, userId, fetchNotifications]);
 
   // 👇 CLOSE ON OUTSIDE CLICK
   useEffect(() => {
@@ -65,6 +91,8 @@ export default function NotificationBell({ userId }: { userId: string }) {
             await markAsRead(id);
           }}
           onClose={() => setOpen(false)}
+          loading={loading}
+          error={error}
         />
       )}
     </div>
