@@ -134,7 +134,7 @@ export default function StatsHero({ stats, openHowItWorks = false }: StatsHeroPr
               <StatCard
                 icon={<Users size={19} />}
                 value={stats.helpersOnline}
-                label="Helpers Online"
+                label="Offers Available"
                 iconWrapClass="bg-sky-100"
                 iconClass="text-sky-500"
               />

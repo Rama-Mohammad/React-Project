@@ -448,11 +448,6 @@ export default function Explore() {
       );
     }
 
-    // Online filter now uses last_seen — a helper is online if seen within 15 minutes
-    if (onlineOnly) {
-      data = data.filter((item) => isOnline(item.lastSeen));
-    }
-
     if (rating !== "Any rating") {
       const min = rating === "4.0+" ? 4.0 : rating === "4.5+" ? 4.5 : 4.8;
       data = data.filter((item) => item.rating >= min);
@@ -486,7 +481,7 @@ export default function Explore() {
     }
 
     return data;
-  }, [liveHelpers, onlineOnly, rating, search, selectedHelperCategories, sortBy]);
+  }, [liveHelpers, rating, search, selectedHelperCategories, sortBy]);
 
   const filteredSkills: SkillItem[] = useMemo(() => {
     let data = liveSkills.map((item) => mapSkillToExploreItem(item));
@@ -729,12 +724,11 @@ export default function Explore() {
 
     return {
       activeRequests: liveCount || filteredRequests.length,
-      // Online count now uses last_seen < 15 min instead of a hardcoded boolean
-      helpersOnline: filteredHelpers.filter((helper) => isOnline(helper.lastSeen)).length,
+      helpersOnline: filteredOffers.length,
       sessionsToday: Math.max(1, Math.round(totalSessions / 20)),
       creditsExchanged: `${Math.max(1, Math.round(totalCredits / 10))}k`,
     };
-  }, [filteredHelpers, filteredRequests.length, liveHelpers, liveOpenRequests.length]);
+  }, [filteredOffers.length, filteredRequests.length, liveHelpers, liveOpenRequests.length]);
 
   const defaultHelperId = useMemo(() => {
     return filteredHelpers.find((helper) => isOnline(helper.lastSeen))?.id ?? liveHelpers[0]?.id ?? "h1";

@@ -93,7 +93,7 @@ export default function FilterSideBar({
   const hasActiveRequestFilters =
     selectedCategory !== "All" || urgency !== "All" || duration !== "Any";
   const hasActiveHelperFilters =
-    selectedHelperCategories.length > 0 || rating !== "Any rating" || onlineOnly;
+    selectedHelperCategories.length > 0 || rating !== "Any rating";
 
   return (
     <div className="explore-glass explore-fade-in-up rounded-[1.25rem] border border-white/50 bg-white/75 p-4 backdrop-blur-xl">
@@ -190,16 +190,6 @@ export default function FilterSideBar({
                     {item}
                   </ChipButton>
                 ))}
-
-                <ChipButton
-                  active={onlineOnly}
-                  onClick={() => onOnlineOnlyChange(!onlineOnly)}
-                >
-                  <span className="inline-flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-indigo-400" />
-                    Online now
-                  </span>
-                </ChipButton>
 
                 <button
                   type="button"
