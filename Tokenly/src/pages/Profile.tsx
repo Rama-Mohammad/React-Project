@@ -14,6 +14,7 @@ import AddPortfolioModal from "../components/profile/AddPortfolioModal";
 import useAuth from "../hooks/useAuth";
 import useAuthRedirect from "../hooks/useAuthRedirect";
 import usePublicHelperProfile from "../hooks/usePublicHelperProfile";
+import { clearProfileCache } from "../hooks/usePublicHelperProfile";
 import usePortfolio from "../hooks/usePortfolio";
 import useProfiles from "../hooks/useProfile";
 import useSkills from "../hooks/useSkills";
@@ -70,6 +71,7 @@ const Profile: React.FC = () => {
   const { identifier } = useParams<{ identifier?: string }>();
   const { user: authUser, isAuthenticated } = useAuth();
   const { authRedirectState } = useAuthRedirect();
+  const authUserId = authUser?.id;
   const {
     profile: rawLiveProfile,
     skills: liveSkills,
@@ -328,32 +330,47 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handleAddSkill = async (newSkill: Omit<UiSkill, "id">) => {
-    if (!authUser?.id || !isOwner) return;
-    await addSkill({
-      user_id: authUser.id,
-      name: newSkill.name,
-      category: newSkill.category as never,
-      level: newSkill.level.toLowerCase() as never,
-      description: newSkill.description,
-    });
-  };
+const handleAddSkill = async (newSkill: Omit<UiSkill, "id">) => {
+  if (!authUser?.id || !isOwner) return;
 
-  const handleUpdateSkill = async (updatedSkill: UiSkill) => {
-    if (!isOwner) return;
-    await editSkillHook(updatedSkill.id, {
-      name: updatedSkill.name,
-      category: updatedSkill.category as never,
-      level: updatedSkill.level.toLowerCase() as never,
-      description: updatedSkill.description,
-    });
-  };
+  await addSkill({
+    user_id: authUser.id,
+    name: newSkill.name,
+    category: newSkill.category as never,
+    level: newSkill.level.toLowerCase() as never,
+    description: newSkill.description,
+  });
 
-  const handleDeleteSkill = async (id: string) => {
-    if (!isOwner) return;
-    await removeSkill(id);
-    setPendingSkillDeleteId(null);
-  };
+  await fetchProfile(authUser.id, {
+    includePrivate: true,
+  });
+};
+
+
+const handleUpdateSkill = async (updatedSkill: UiSkill) => {
+  if (!isOwner || !authUserId) return;
+
+  clearProfileCache(authUserId, true); 
+
+  await editSkillHook(updatedSkill.id, {
+    name: updatedSkill.name,
+    category: updatedSkill.category as never,
+    level: updatedSkill.level.toLowerCase() as never,
+    description: updatedSkill.description,
+  });
+
+  await fetchProfile(authUserId, { includePrivate: true });
+};
+
+const handleDeleteSkill = async (id: string) => {
+  if (!isOwner || !authUserId) return;
+
+  clearProfileCache(authUserId, true); 
+
+  await removeSkill(id);
+  setPendingSkillDeleteId(null);
+  await fetchProfile(authUserId, { includePrivate: true });
+};
 
   const handleEditSkill = (skill: UiSkill) => {
     if (!isOwner) return;

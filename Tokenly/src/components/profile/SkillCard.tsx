@@ -16,8 +16,6 @@ const SkillCard: React.FC<ProfileSkillCardProps> = ({ skill, onDelete, onEdit })
     }
   };
 
-  const maxSessions = 10;
-  const progress = Math.min((skill.sessions / maxSessions) * 100, 100);
   const description = skill.description || "Practical sessions focused on real use cases and workflows.";
 
   return (
@@ -46,10 +44,6 @@ const SkillCard: React.FC<ProfileSkillCardProps> = ({ skill, onDelete, onEdit })
       </div>
       <div className="mb-2 flex items-center gap-2">
         <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${getLevelColor(skill.level)}`}>{skill.level}</span>
-        <span className="text-xs text-slate-500">{skill.sessions} {skill.sessions === 1 ? "session" : "sessions"}</span>
-      </div>
-      <div className="mb-2 h-2 w-full rounded-full bg-slate-200/80">
-        <div className="h-full rounded-full bg-linear-to-r from-indigo-500 to-sky-500" style={{ width: `${progress}%` }} />
       </div>
       <p className="text-xs leading-6 text-slate-600">{description}</p>
     </article>
