@@ -529,7 +529,7 @@ const SessionLivePage: React.FC = () => {
             />
           </div>
 
-          <div className="flex h-[500px] min-h-0 flex-col overflow-hidden rounded-xl border border-indigo-200/70 bg-white/75 shadow-[0_12px_28px_-22px_rgba(99,102,241,0.5)] backdrop-blur">
+          <div className="flex h-125 min-h-0 flex-col overflow-hidden rounded-xl border border-indigo-200/70 bg-white/75 shadow-[0_12px_28px_-22px_rgba(99,102,241,0.5)] backdrop-blur">
             <div className="flex border-b border-indigo-200/70 bg-indigo-50/60 p-1">
               <button
                 onClick={() => setActiveTab("agenda")}
