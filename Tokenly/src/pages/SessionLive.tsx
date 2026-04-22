@@ -286,6 +286,7 @@ const SessionLivePage: React.FC = () => {
           filter: `session_id=eq.${sessionId}`,
         },
         (payload) => {
+          console.log("FILE EVENT:", payload);
           if (payload.eventType === "INSERT") {
             const f = payload.new;
 
@@ -293,12 +294,13 @@ const SessionLivePage: React.FC = () => {
               ...prev,
               {
                 id: f.id,
-                name: f.name,
-                size: f.size,
-                type: f.type,
+                name: f.file_name,
+                size: f.file_size_bytes,
+                type: f.file_type ?? "file",
                 uploadedBy: f.uploader_id,
                 uploadedAt: new Date(f.created_at),
-                url: f.url,
+                url: f.file_url,
+                path: f.path,
               },
             ]);
           }
@@ -389,19 +391,19 @@ const SessionLivePage: React.FC = () => {
       return;
     }
 
-    setFiles((prev) => [
-      ...prev,
-      {
-        id: inserted.id,
-        name: inserted.file_name,
-        size: inserted.file_size_bytes,
-        type: inserted.file_type,
-        uploadedBy: currentUserName,
-        uploadedAt: new Date(inserted.created_at),
-        url: inserted.file_url,
-        path: inserted.path,
-      }
-    ]);
+    // setFiles((prev) => [
+    //   ...prev,
+    //   {
+    //     id: inserted.id,
+    //     name: inserted.file_name,
+    //     size: inserted.file_size_bytes,
+    //     type: inserted.file_type,
+    //     uploadedBy: currentUserName,
+    //     uploadedAt: new Date(inserted.created_at),
+    //     url: inserted.file_url,
+    //     path: inserted.path,
+    //   }
+    // ]);
 
   };
 
