@@ -43,7 +43,7 @@ export async function createNotification(data: {
   title: string;
   message: string;
   related_id?: string;
-  related_type?: "session" | "request" | "offer" | "review" | "help_offer" | "direct_request";
+  related_type?: "session" | "request" | "offer" | "review" | "help_offer" | "direct_request" | "chat";
 }) {
   return await supabase
     .from("notifications")

@@ -11,6 +11,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
     unreadCount,
     fetchNotifications,
     subscribeToLive,
+    markAsRead,
   } = useNotifications();
 
   const [open, setOpen] = useState(false);
@@ -58,7 +59,13 @@ export default function NotificationBell({ userId }: { userId: string }) {
       </button>
 
       {open && (
-        <NotificationDropdown notifications={notifications} />
+        <NotificationDropdown
+          notifications={notifications}
+          onNotificationRead={async (id) => {
+            await markAsRead(id);
+          }}
+          onClose={() => setOpen(false)}
+        />
       )}
     </div>
   );

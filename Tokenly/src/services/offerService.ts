@@ -133,6 +133,23 @@ export async function createOffer(
     payload,
   });
 
+  const { data: requestRecord, error: requestLookupError } = await supabase
+    .from("requests")
+    .select("id, requester_id, title")
+    .eq("id", request_id)
+    .maybeSingle();
+
+  if (!requestLookupError && requestRecord?.requester_id && requestRecord.requester_id !== user.id) {
+    await createNotification({
+      user_id: requestRecord.requester_id,
+      type: "offer_received",
+      title: "New offer received",
+      message: `Someone submitted an offer for "${requestRecord.title}"`,
+      related_id: requestRecord.id,
+      related_type: "request",
+    });
+  }
+
   return { data: data as Offer, error: null };
 }
 
@@ -326,6 +343,19 @@ export async function acceptOffer(
     return { data: null, error: offerFetchError };
   }
 
+  const { data: requestRecord } = await supabase
+    .from("requests")
+    .select("id, title")
+    .eq("id", request.id)
+    .maybeSingle();
+
+  const { data: rejectedPendingOffers } = await supabase
+    .from("offers")
+    .select("id, helper_id")
+    .eq("request_id", request.id)
+    .neq("id", offerId)
+    .eq("status", "pending");
+
   const { error: acceptError } = await supabase
     .from("offers")
     .update({ status: "accepted" })
@@ -462,16 +492,76 @@ export async function acceptOffer(
     related_type: "session",
   });
 
+  if (rejectedPendingOffers?.length) {
+    await Promise.all(
+      rejectedPendingOffers.map((rejectedOffer) =>
+        createNotification({
+          user_id: rejectedOffer.helper_id,
+          type: "offer_rejected",
+          title: "Your offer was not selected",
+          message: requestRecord?.title
+            ? `Another offer was accepted for "${requestRecord.title}"`
+            : "Another offer was accepted for this request",
+          related_id: request.id,
+          related_type: "request",
+        })
+      )
+    );
+  }
+
   return { data: sessionData, error: null };
 }
 
 export async function rejectOffer(offerId: string) {
-  return await supabase
+  const { data: offerRecord, error: offerLookupError } = await supabase
+    .from("offers")
+    .select(`
+      id,
+      helper_id,
+      request_id,
+      request:requests!offers_request_id_fkey(
+        id,
+        title
+      )
+    `)
+    .eq("id", offerId)
+    .maybeSingle();
+
+  if (offerLookupError) {
+    return { data: null, error: offerLookupError };
+  }
+
+  const result = await supabase
     .from("offers")
     .update({ status: "rejected" })
     .eq("id", offerId)
     .select()
     .single();
+
+  if (!result.error && offerRecord?.helper_id) {
+    const requestValue = (
+      offerRecord as {
+        request:
+          | { id: string; title: string | null }
+          | { id: string; title: string | null }[]
+          | null;
+      }
+    ).request;
+    const requestDetails = Array.isArray(requestValue) ? requestValue[0] ?? null : requestValue ?? null;
+
+    await createNotification({
+      user_id: offerRecord.helper_id,
+      type: "offer_rejected",
+      title: "Your offer was rejected",
+      message: requestDetails?.title
+        ? `Your offer for "${requestDetails.title}" was rejected`
+        : "Your offer was rejected",
+      related_id: requestDetails?.id ?? offerRecord.request_id,
+      related_type: "request",
+    });
+  }
+
+  return result;
 }
 
 export async function getOfferAppointmentDetails(offerId: string) {

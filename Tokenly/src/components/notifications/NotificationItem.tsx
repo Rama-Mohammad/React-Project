@@ -2,64 +2,75 @@ import { useNavigate } from "react-router-dom";
 import type { Notification } from "../../types/notification";
 
 export default function NotificationItem({
-    notification,
+  notification,
+  onRead,
+  onClose,
 }: {
-    notification: Notification;
+  notification: Notification;
+  onRead: (id: string) => void | Promise<void>;
+  onClose: () => void;
 }) {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    function handleClick() {
-        if (!notification.related_type || !notification.related_id) return;
-
-        switch (notification.related_type) {
-            case "session":
-                navigate(`/session/${notification.related_id}`); break;
-
-            case "request":
-                navigate(`/requests/${notification.related_id}`);
-                break;
-
-            case "offer":
-                navigate(`/offers/${notification.related_id}`);
-                break;
-
-            case "review":
-                navigate(`/reviews/${notification.related_id}`);
-                break;
-
-            case "help_offer":
-                navigate(`/help-offers/${notification.related_id}`);
-                break;
-
-            case "direct_request":
-                navigate(`/direct-requests/${notification.related_id}`);
-                break;
-                
-            case "chat":
-                navigate(`/chat/${notification.related_id}`);
-                break;
-
-            default:
-                break;
-        }
+  function getDestination() {
+    if (notification.related_type === "session" && notification.related_id) {
+      return `/session/${notification.related_id}`;
     }
 
-    return (
-        <div
-            onClick={handleClick}
-            className="p-3 border-b hover:bg-gray-50 cursor-pointer transition"
-        >
-            <p className="text-sm font-medium">
-                {notification.title}
-            </p>
+    if (notification.type === "help_offer_request_received") {
+      return "/my-offers";
+    }
 
-            <p className="text-xs text-gray-600">
-                {notification.message}
-            </p>
+    if (notification.type === "direct_request_received" || notification.type === "direct_request_rejected") {
+      return "/dashboard";
+    }
 
-            {!notification.is_read && (
-                <span className="text-xs text-blue-500">New</span>
-            )}
-        </div>
-    );
+    if (notification.related_type === "request" && notification.related_id) {
+      return `/requests/${notification.related_id}`;
+    }
+
+    if (notification.related_type === "offer" && notification.related_id) {
+      return `/offers/${notification.related_id}`;
+    }
+
+    if (notification.related_type === "chat" && notification.related_id) {
+      return `/chat/${notification.related_id}`;
+    }
+
+    if (notification.related_type === "review") {
+      return "/activity";
+    }
+
+    return "/dashboard";
+  }
+
+  async function handleClick() {
+    if (!notification.is_read) {
+      await onRead(notification.id);
+    }
+
+    onClose();
+    navigate(getDestination());
+  }
+
+  return (
+    <div
+      onClick={() => {
+        void handleClick();
+      }}
+      className="cursor-pointer border-b p-3 transition hover:bg-gray-50"
+    >
+      <p className="text-sm font-medium">
+        {notification.title}
+      </p>
+
+      <p className="text-xs text-gray-600">
+        {notification.message}
+      </p>
+
+      {!notification.is_read && (
+        <span className="text-xs text-blue-500">New</span>
+      )}
+    </div>
+  );
 }

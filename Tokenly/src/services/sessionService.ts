@@ -1,6 +1,7 @@
 import { supabase } from "../lib/supabaseClient";
 import { getSessionsAuthDebugContext, logSessionsQuery } from "./sessionDebug";
 import type { SessionStatus } from "../types/session";
+import { createNotification } from "./notificationService";
 // import { createTransaction } from "./transactionService";
 
 export type SessionInsertInput = {
@@ -276,13 +277,69 @@ export async function updateSessionStatus(id: string, status: SessionStatus) {
           : rawMsg;
       return { data: null, error: new Error(friendlyMsg) };
     }
+
+    await Promise.all([
+      createNotification({
+        user_id: sessionRow.requester_id,
+        type: "session_completed",
+        title: "Session completed",
+        message: "Your session has been marked as completed.",
+        related_id: id,
+        related_type: "session",
+      }),
+      createNotification({
+        user_id: sessionRow.helper_id,
+        type: "session_completed",
+        title: "Session completed",
+        message: "This session has been marked as completed.",
+        related_id: id,
+        related_type: "session",
+      }),
+    ]);
+
     return { data: null, error: null };
   }
+
+  let sessionParticipants:
+    | { helper_id: string; requester_id: string; status: SessionStatus }
+    | null = null;
+
+  if (status === "active") {
+    const sessionLookup = await supabase
+      .from("sessions")
+      .select("helper_id, requester_id, status")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (sessionLookup.error) {
+      return { data: null, error: sessionLookup.error };
+    }
+
+    sessionParticipants = sessionLookup.data as { helper_id: string; requester_id: string; status: SessionStatus } | null;
+  }
+
   const { error } = await supabase
     .from("sessions")
     .update(updates)
     .eq("id", id);
 
   logSessionsQuery("updateSessionStatus result", { session, user, payload, error });
+
+  if (!error && status === "active" && sessionParticipants && sessionParticipants.status !== "active") {
+    const recipientId =
+      user?.id === sessionParticipants.helper_id
+        ? sessionParticipants.requester_id
+        : sessionParticipants.helper_id;
+
+    await createNotification({
+      user_id: recipientId,
+      type: "session_starting",
+      title: "Your session is starting",
+      message: "The other participant joined and the live session is now active.",
+      related_id: id,
+      related_type: "session",
+    });
+  }
+
   return { data: null, error };
 }
