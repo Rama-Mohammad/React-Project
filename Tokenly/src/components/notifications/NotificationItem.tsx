@@ -58,19 +58,30 @@ export default function NotificationItem({
       onClick={() => {
         void handleClick();
       }}
-      className="cursor-pointer border-b p-3 transition hover:bg-gray-50"
+      className={[
+        "cursor-pointer rounded-2xl border px-3 py-3 transition",
+        notification.is_read
+          ? "border-transparent bg-white/70 hover:border-slate-200 hover:bg-white"
+          : "border-indigo-100 bg-[linear-gradient(135deg,#eef2ff_0%,#f8faff_100%)] shadow-[0_12px_24px_-22px_rgba(79,70,229,0.7)] hover:border-indigo-200",
+      ].join(" ")}
     >
-      <p className="text-sm font-medium">
-        {notification.title}
-      </p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-slate-900">
+            {notification.title}
+          </p>
 
-      <p className="text-xs text-gray-600">
-        {notification.message}
-      </p>
+          <p className="mt-1 text-xs leading-5 text-slate-600">
+            {notification.message}
+          </p>
+        </div>
 
-      {!notification.is_read && (
-        <span className="text-xs text-blue-500">New</span>
-      )}
+        {!notification.is_read && (
+          <span className="mt-0.5 inline-flex shrink-0 rounded-full bg-indigo-600 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white">
+            New
+          </span>
+        )}
+      </div>
     </div>
   );
 }

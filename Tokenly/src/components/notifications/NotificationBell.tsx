@@ -72,13 +72,16 @@ export default function NotificationBell({ userId }: { userId: string }) {
   return (
     <div ref={containerRef} className="relative">
       <button
+        type="button"
         onClick={() => setOpen((v) => !v)}
-        className="relative p-2 rounded-full hover:bg-slate-100 transition"
+        className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/90 bg-white/90 text-slate-700 shadow-[0_14px_30px_-28px_rgba(79,70,229,0.6)] transition hover:border-indigo-200 hover:bg-white hover:text-slate-900"
+        aria-label={open ? "Close notifications" : "Open notifications"}
+        aria-expanded={open}
       >
         <FontAwesomeIcon icon={faBell} className="text-slate-700 text-lg" />
 
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+          <span className="absolute -right-1 -top-1 min-w-[1.2rem] rounded-full bg-[linear-gradient(135deg,#ef4444_0%,#f97316_100%)] px-1.5 py-0.5 text-center text-[10px] font-semibold leading-none text-white shadow-[0_10px_18px_-10px_rgba(239,68,68,0.9)]">
             {unreadCount}
           </span>
         )}

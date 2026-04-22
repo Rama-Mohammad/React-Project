@@ -48,7 +48,9 @@ function OverviewStat({
       <div className={["mb-3 inline-flex rounded-2xl p-2.5", iconClass].join(" ")}>
         {icon}
       </div>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">{label}</p>
+      <p className="min-h-[2.75rem] text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+        {label}
+      </p>
       <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{value}</p>
       <p className="mt-1 text-sm text-slate-500">{sublabel}</p>
     </div>
