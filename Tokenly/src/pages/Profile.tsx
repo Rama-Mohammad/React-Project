@@ -21,6 +21,7 @@ import useSkills from "../hooks/useSkills";
 import { resolvePublicProfileIdentifier } from "../services/profileService";
 import type { PortfolioEntry, UiReview, UiSkill } from "../types/page";
 import type { EditProfileUserInput, ProfileHeaderUser, ReviewSortBy } from "../types/profile";
+import useSessions from "../hooks/useSessions";
 
 const toTitleCase = (value: string) =>
   value ? `${value.charAt(0).toUpperCase()}${value.slice(1).toLowerCase()}` : value;
@@ -92,6 +93,11 @@ const Profile: React.FC = () => {
     edit: editPortfolioItem,
     remove: removePortfolioItem,
   } = usePortfolio();
+
+  const {
+  fetchCompletedSessionsCount,
+  completedCount,
+} = useSessions();
   const { editProfile } = useProfiles();
   const { addSkill, editSkill: editSkillHook, removeSkill } = useSkills();
 
@@ -180,6 +186,13 @@ const Profile: React.FC = () => {
     void fetchPortfolio(profileId);
   }, [fetchPortfolio, resolvedProfileId]);
 
+  useEffect(() => {
+  const profileId = resolvedProfileId.trim();
+  if (!profileId) return;
+
+  fetchCompletedSessionsCount(profileId);
+}, [resolvedProfileId, fetchCompletedSessionsCount]);
+
   const isOwner = Boolean(authUser?.id && liveProfile?.id && authUser.id === liveProfile.id);
   const pageError = routeError || error;
 
@@ -244,7 +257,7 @@ const Profile: React.FC = () => {
       coverImage: liveProfile.cover_image_url || "",
       profileImageUrl: liveProfile.profile_image_url || "",
       stats: {
-        totalSessions: liveSkills.reduce((sum, skill) => sum + (skill.sessions_count ?? 0), 0),
+        totalSessions: completedCount, 
         creditsEarned: isOwner ? liveProfile.credit_balance ?? 0 : liveSkills.length,
         skillsTaught: liveReviews.length,
       },
@@ -303,6 +316,7 @@ const Profile: React.FC = () => {
   }, [reviews, reviewSortBy]);
 
   const visibleReviews = showAllReviews ? sortedReviews : sortedReviews.slice(0, 3);
+  
 
   const pendingSkill = pendingSkillDeleteId
     ? skills.find((item) => item.id === pendingSkillDeleteId) ?? null
@@ -330,47 +344,47 @@ const Profile: React.FC = () => {
     }
   };
 
-const handleAddSkill = async (newSkill: Omit<UiSkill, "id">) => {
-  if (!authUser?.id || !isOwner) return;
+  const handleAddSkill = async (newSkill: Omit<UiSkill, "id">) => {
+    if (!authUser?.id || !isOwner) return;
 
-  await addSkill({
-    user_id: authUser.id,
-    name: newSkill.name,
-    category: newSkill.category as never,
-    level: newSkill.level.toLowerCase() as never,
-    description: newSkill.description,
-  });
+    await addSkill({
+      user_id: authUser.id,
+      name: newSkill.name,
+      category: newSkill.category as never,
+      level: newSkill.level.toLowerCase() as never,
+      description: newSkill.description,
+    });
 
-  await fetchProfile(authUser.id, {
-    includePrivate: true,
-  });
-};
+    await fetchProfile(authUser.id, {
+      includePrivate: true,
+    });
+  };
 
 
-const handleUpdateSkill = async (updatedSkill: UiSkill) => {
-  if (!isOwner || !authUserId) return;
+  const handleUpdateSkill = async (updatedSkill: UiSkill) => {
+    if (!isOwner || !authUserId) return;
 
-  clearProfileCache(authUserId, true); 
+    clearProfileCache(authUserId, true);
 
-  await editSkillHook(updatedSkill.id, {
-    name: updatedSkill.name,
-    category: updatedSkill.category as never,
-    level: updatedSkill.level.toLowerCase() as never,
-    description: updatedSkill.description,
-  });
+    await editSkillHook(updatedSkill.id, {
+      name: updatedSkill.name,
+      category: updatedSkill.category as never,
+      level: updatedSkill.level.toLowerCase() as never,
+      description: updatedSkill.description,
+    });
 
-  await fetchProfile(authUserId, { includePrivate: true });
-};
+    await fetchProfile(authUserId, { includePrivate: true });
+  };
 
-const handleDeleteSkill = async (id: string) => {
-  if (!isOwner || !authUserId) return;
+  const handleDeleteSkill = async (id: string) => {
+    if (!isOwner || !authUserId) return;
 
-  clearProfileCache(authUserId, true); 
+    clearProfileCache(authUserId, true);
 
-  await removeSkill(id);
-  setPendingSkillDeleteId(null);
-  await fetchProfile(authUserId, { includePrivate: true });
-};
+    await removeSkill(id);
+    setPendingSkillDeleteId(null);
+    await fetchProfile(authUserId, { includePrivate: true });
+  };
 
   const handleEditSkill = (skill: UiSkill) => {
     if (!isOwner) return;

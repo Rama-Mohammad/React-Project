@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { SessionStartInput, SessionStatus, UseSessionsResult } from "../types/session";
+import { supabase } from "../lib/supabaseClient";
 import type { Session } from "../types/session";
 import {
     createSession,
@@ -14,6 +15,7 @@ export default function useSessions(): UseSessionsResult {
     const [sessions, setSessions] = useState<Session[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [completedCount, setCompletedCount] = useState(0);
 
     async function fetchSessionById(id: string) {
         setLoading(true);
@@ -102,6 +104,34 @@ export default function useSessions(): UseSessionsResult {
         return true;
     }
 
+    async function getCompletedSessionsCount(user_id: string) {
+        const { count, error } = await supabase
+            .from("sessions")
+            .select("*", { count: "exact", head: true })
+            .eq("status", "completed")
+            .or(`helper_id.eq.${user_id},requester_id.eq.${user_id}`);
+
+        return { count: count ?? 0, error };
+    }
+
+    async function fetchCompletedSessionsCount(user_id: string) {
+        setLoading(true);
+        setError("");
+
+        const { count, error } = await getCompletedSessionsCount(user_id);
+
+        if (error) {
+            setError(error.message);
+            setLoading(false);
+            return;
+        }
+
+        setCompletedCount(count);
+        setLoading(false);
+    }
+
+
+
     return {
         session,
         sessions,
@@ -112,5 +142,7 @@ export default function useSessions(): UseSessionsResult {
         fetchSessionsByStatus,
         startSession,
         changeSessionStatus,
+        completedCount,
+        fetchCompletedSessionsCount,
     };
 }
