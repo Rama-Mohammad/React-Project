@@ -27,6 +27,7 @@ export type DashboardStats = {
   offersSubmitted: number;
   offersAccepted: number;
   reviewCount: number;
+  averageRating: number;
 };
 
 export type SessionTabLabel = "All" | "Upcoming" | "Active" | "Completed";

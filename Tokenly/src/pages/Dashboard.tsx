@@ -423,7 +423,7 @@ export default function Dashboard() {
   const available = creditBalance;
   const total = available + spent;
   const availablePct = total > 0 ? Math.round((available / total) * 100) : 0;
-  const avgRating = profile?.avg_rating ?? 0;
+  const avgRating = stats?.averageRating ?? 0;
   const reviewCount = stats?.reviewCount ?? 0;
   const displayedAvgRating = !dashLoading ? avgRating : undefined;
   const handleSidebarSectionSelect = (sectionId: DashboardSectionId) => {

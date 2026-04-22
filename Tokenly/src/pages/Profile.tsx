@@ -208,6 +208,21 @@ const Profile: React.FC = () => {
     ).toString();
   }, [publicProfileIdentifier]);
 
+  const receivedReviews = useMemo(() => {
+    return liveReviews.filter((review) => Boolean(review?.id));
+  }, [liveReviews]);
+
+  const averageReceivedRating = useMemo(() => {
+    if (receivedReviews.length === 0) return 0;
+
+    return Number(
+      (
+        receivedReviews.reduce((sum, review) => sum + Number(review.rating ?? 0), 0) /
+        receivedReviews.length
+      ).toFixed(1)
+    );
+  }, [receivedReviews]);
+
   const user: ProfileHeaderUser = useMemo(() => {
     if (!liveProfile) {
       return {
@@ -251,18 +266,18 @@ const Profile: React.FC = () => {
       memberSince,
       bio: liveProfile.bio || "",
       avatarInitials: initials,
-      rating: liveProfile.avg_rating ?? 0,
-      totalRatings: liveReviews.length,
+      rating: averageReceivedRating,
+      totalRatings: receivedReviews.length,
       website: liveProfile.website || "",
       coverImage: liveProfile.cover_image_url || "",
       profileImageUrl: liveProfile.profile_image_url || "",
       stats: {
         totalSessions: completedCount, 
         creditsEarned: isOwner ? liveProfile.credit_balance ?? 0 : liveSkills.length,
-        skillsTaught: liveReviews.length,
+        skillsTaught: receivedReviews.length,
       },
     };
-  }, [isOwner, liveProfile, liveReviews.length, liveSkills, publicProfileUrl]);
+  }, [averageReceivedRating, completedCount, isOwner, liveProfile, publicProfileUrl, receivedReviews.length, liveSkills]);
 
   const skills: UiSkill[] = useMemo(() => {
     return liveSkills.map((skill) => ({
@@ -287,7 +302,7 @@ const Profile: React.FC = () => {
   }, [livePortfolio]);
 
   const reviews: UiReview[] = useMemo(() => {
-    return liveReviews.map((review) => ({
+    return receivedReviews.map((review) => ({
       id: review.id,
       reviewerName: review.reviewer?.full_name || review.reviewer?.username || "Community Member",
       reviewerImageUrl: review.reviewer?.profile_image_url || "",
@@ -301,7 +316,7 @@ const Profile: React.FC = () => {
       skillCategory: "General",
       sessionTopic: "Peer session",
     }));
-  }, [liveReviews]);
+  }, [receivedReviews]);
 
   const sortedReviews = useMemo(() => {
     const data = [...reviews];
