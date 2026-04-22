@@ -149,9 +149,12 @@ export type UseSessionsResult = {
   sessions: Session[];
   loading: boolean;
   error: string;
+
   fetchSessionById: (id: string) => Promise<void>;
   fetchSessionsByUser: (user_id: string) => Promise<void>;
   fetchSessionsByStatus: (user_id: string, status: SessionStatus) => Promise<void>;
   startSession: (data: SessionStartInput) => Promise<boolean>;
   changeSessionStatus: (id: string, status: SessionStatus) => Promise<boolean>;
+  completedCount: number;
+  fetchCompletedSessionsCount: (user_id: string) => Promise<void>;
 };

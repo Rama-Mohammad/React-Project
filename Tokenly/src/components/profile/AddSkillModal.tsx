@@ -139,18 +139,6 @@ const AddSkillModal: React.FC<AddSkillModalProps> = ({
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700">Sessions Completed</label>
-            <input
-              type="number"
-              value={formData.sessions}
-              onChange={(event) => setFormData({ ...formData, sessions: parseInt(event.target.value, 10) || 0 })}
-              className="mt-1 h-11.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
-              placeholder="0"
-              min="0"
-            />
-          </div>
-
           <div className="flex justify-end gap-3 border-t border-slate-200 pt-4">
             <button
               type="button"

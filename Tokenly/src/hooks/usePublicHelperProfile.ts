@@ -26,6 +26,10 @@ type ProfileSnapshot = {
 
 const profileCache = new Map<string, ProfileSnapshot>();
 const offersCache = new Map<string, ProfileCore["helpOffers"]>();
+export const clearProfileCache = (helperId: string, includePrivate?: boolean) => {
+  const key = `${helperId.trim()}:${includePrivate ? "private" : "public"}`;
+  profileCache.delete(key);
+};
 
 export default function usePublicHelperProfile(): ProfileCore {
   const [profile, setProfile] = useState<ProfileCore["profile"]>(null);
@@ -45,17 +49,23 @@ export default function usePublicHelperProfile(): ProfileCore {
     if (!normalizedHelperId) return;
 
     const profileCacheKey = `${normalizedHelperId}:${options?.includePrivate ? "private" : "public"}`;
+    // const cachedProfile = profileCache.get(profileCacheKey);
+
+    // if (cachedProfile) {
+    //   setProfile(cachedProfile.profile);
+    //   setSkills(cachedProfile.skills);
+    //   setReviews(cachedProfile.reviews);
+    //   setLoading(false);
+    //   setDetailsLoading(false);
+    //   setError("");
+    //   return;
+    // }
+
     const cachedProfile = profileCache.get(profileCacheKey);
 
-    if (cachedProfile) {
-      setProfile(cachedProfile.profile);
-      setSkills(cachedProfile.skills);
-      setReviews(cachedProfile.reviews);
-      setLoading(false);
-      setDetailsLoading(false);
-      setError("");
-      return;
-    }
+if (cachedProfile) {
+  profileCache.delete(profileCacheKey);
+}
 
     const requestId = latestProfileFetchRef.current + 1;
     latestProfileFetchRef.current = requestId;

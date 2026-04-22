@@ -15,8 +15,8 @@ export default function NotificationDropdown({
   error: string;
 }) {
   return (
-    <div className="absolute right-0 z-50 mt-2 w-96 overflow-hidden rounded-lg border bg-white shadow-lg">
-      <div className="p-3 border-b font-semibold">
+<div className="fixed right-2 top-14 z-50 w-72 sm:w-96 max-w-[95vw] overflow-hidden rounded-lg border bg-white shadow-lg">
+        <div className="p-3 border-b font-semibold">
         Notifications
       </div>
 
