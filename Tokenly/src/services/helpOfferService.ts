@@ -6,6 +6,7 @@ import type {
   HelpOfferRequestInput,
 } from "../types/helpOffer";
 import { createNotification } from "./notificationService";
+import { getProfileCreditBalance } from "./profileService";
 import { ensureSessionForBooking } from "./sessionService";
 
 // ─── HELP OFFERS ────────────────────────────────────────────────────────────
@@ -183,6 +184,34 @@ export async function getHelpOfferRequestsByUser(requester_id: string) {
 // User submits a request to a helper's help_offer
 // This replaces the old hack in OfferAppointment that created fake requests+offers
 export async function submitHelpOfferRequest(data: HelpOfferRequestInput) {
+  const { data: helpOfferForValidation, error: helpOfferError } = await supabase
+    .from("help_offers")
+    .select("id, helper_id, title, credit_cost, status")
+    .eq("id", data.help_offer_id)
+    .single();
+
+  if (helpOfferError || !helpOfferForValidation) {
+    return { data: null, error: helpOfferError ?? new Error("Help offer not found.") };
+  }
+
+  if (helpOfferForValidation.status !== "open") {
+    return { data: null, error: new Error("This offer is no longer available.") };
+  }
+
+  const { data: profileData, error: profileError } = await getProfileCreditBalance(data.requester_id);
+  if (profileError) {
+    return { data: null, error: new Error(profileError.message ?? "Could not verify your token balance.") };
+  }
+
+  const currentBalance = Number(profileData?.credit_balance ?? 0);
+  const requiredCredits = Number(helpOfferForValidation.credit_cost ?? 0);
+  if (currentBalance < requiredCredits) {
+    return {
+      data: null,
+      error: new Error(`You need ${requiredCredits} tokens to book this offer, but you only have ${currentBalance}.`),
+    };
+  }
+
   const { data: created, error } = await supabase
     .from("help_offer_requests")
     .insert({ ...data, status: "pending" })
@@ -192,18 +221,12 @@ export async function submitHelpOfferRequest(data: HelpOfferRequestInput) {
   if (error || !created) return { data: null, error };
 
   // Notify the helper that someone wants their offer
-  const { data: helpOffer } = await supabase
-    .from("help_offers")
-    .select("helper_id, title")
-    .eq("id", data.help_offer_id)
-    .single();
-
-  if (helpOffer?.helper_id) {
+  if (helpOfferForValidation.helper_id) {
     await createNotification({
-      user_id: helpOffer.helper_id,
+      user_id: helpOfferForValidation.helper_id,
       type: "help_offer_request_received",
       title: "Someone wants your help",
-      message: `A user requested your offer: "${helpOffer.title}"`,
+      message: `A user requested your offer: "${helpOfferForValidation.title}"`,
       related_id: created.id,
       related_type: "help_offer",
     });
