@@ -17,6 +17,7 @@ import { supabase } from "../lib/supabaseClient";
 import { uploadSessionFile, deleteSessionFile } from "../services/storageService";
 import { createReview, hasUserReviewedSession } from "../services/reviewService";
 
+
 type TabType = "agenda" | "files";
 
 const defaultChecklistItems: ChecklistItem[] = [
@@ -147,8 +148,10 @@ const SessionLivePage: React.FC = () => {
       setSessionStatus("loading");
       setSessionError("");
 
-      const [{ data: userData, error: userError }, { data: sessionData, error: fetchSessionError }] =
+      const [{ data: userData, error: userError }, { data, error: fetchSessionError }] =
         await Promise.all([getCurrentUser(), getSessionById(sessionId)]);
+      const session = data as any; // temporary fix
+      setSessionData(session);
 
       if (!isMounted) return;
 
@@ -181,7 +184,7 @@ const SessionLivePage: React.FC = () => {
       );
       setOtherParticipantId(isHelper ? sessionData.requester_id : sessionData.helper_id);
       setIsInitiator(initiatorId === userData.user.id);
-      if (sessionData.status === "upcoming") {
+      if (session?.status === "upcoming") {
         await updateSessionStatus(sessionId, "active");
       }
       setSessionStatus("ready");

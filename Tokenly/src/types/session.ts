@@ -73,6 +73,25 @@ export interface FileAttachment {
   path?: string;
 }
 
+export interface SessionDB {
+  id: string;
+  title: string;
+  category: string;
+  status: SessionStatus;
+  helper_id: string;
+  requester_id: string;
+
+  helper: any;
+  requester: any;
+  request?: any;
+  help_offer_request?: any;
+  direct_request?: any;
+
+  scheduled_at?: string;
+  duration_minutes?: number;
+  credits?: number;
+}
+
 export interface VideoPlaceholderProps {
   localStream?: MediaStream | null;
   remoteStream?: MediaStream | null;

@@ -9,6 +9,32 @@ import {
     updateSessionStatus,
 } from "../services/sessionService";
 
+function mapSession(db: any): Session {
+    return {
+        id: db.id,
+        title: db.title,
+        category: db.category,
+        status: db.status,
+        role: db.helper_id ? "helping" : "receiving",
+
+        otherParticipant: {
+            id: db.requester_id,
+            name: db.requester?.name ?? "Unknown",
+            avatar: db.requester?.avatar,
+        },
+
+        datetime: db.scheduled_at
+            ? new Date(db.scheduled_at)
+            : new Date(),
+
+        duration: db.duration_minutes ?? 0,
+        credits: db.credits ?? 0,
+
+        description: db.request?.description,
+        requestId: db.request?.id,
+    };
+}
+
 export default function useSessions(): UseSessionsResult {
     const [session, setSession] = useState<Session | null>(null);
     const [sessions, setSessions] = useState<Session[]>([]);
@@ -27,7 +53,7 @@ export default function useSessions(): UseSessionsResult {
             return;
         }
 
-        setSession(data);
+        setSession(mapSession(data)); 
         setLoading(false);
     }
 
