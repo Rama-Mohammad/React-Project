@@ -101,8 +101,8 @@ const HeroSection = () => {
 
 <div className="mt-8 flex items-center gap-2 text-slate-500 sm:flex sm:items-center">
   
-  {/* MOBILE STACKED VERSION */}
-<div className="mt-8 flex flex-col items-start gap-1 text-slate-500 sm:flex-row sm:items-center">
+{/* MOBILE VERSION */}
+<div className="mt-8 flex flex-col items-start gap-1 text-slate-500 sm:hidden">
   <div className="flex items-center gap-2">
     <span className="font-medium text-slate-700">4.9</span>
     <RatingStars value={4.9} sizeClassName="text-xl" />
@@ -111,17 +111,16 @@ const HeroSection = () => {
   <span className="text-slate-600">
     Loved by 8,500+ learners & helpers
   </span>
-
 </div>
 
-  {/* DESKTOP VERSION (unchanged) */}
-  <div className="hidden sm:flex items-center gap-2">
-    <RatingStars value={4.9} sizeClassName="text-xl" />
-    <span className="font-medium text-slate-700">4.9</span>
-    <span className="text-slate-600">
-      Loved by 8,500+ learners & helpers
-    </span>
-  </div>
+{/* DESKTOP VERSION */}
+<div className="hidden sm:flex items-center gap-2">
+  <RatingStars value={4.9} sizeClassName="text-xl" />
+  <span className="font-medium text-slate-700">4.9</span>
+  <span className="text-slate-600">
+    Loved by 8,500+ learners & helpers
+  </span>
+</div>
 
 </div>
           </div>

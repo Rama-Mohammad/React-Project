@@ -115,10 +115,17 @@ export default function Dashboard() {
   } = useDashboard();
   const { transactions, summary, fetchTransactionsByUser, fetchCreditSummary } = useTransactions();
 
-  const available = summary?.available ?? profile?.credit_balance ?? 0;
-  const spent = summary?.spent ?? 0;
-  const total = available + spent;
-  const availablePct = total > 0 ? Math.round((available / total) * 100) : 0;
+  const available = summary?.available ?? profile?.credit_balance;
+  const spent = summary?.spent;
+  const total =
+    available !== undefined && spent !== undefined
+      ? available + spent
+      : undefined;
+
+  const availablePct =
+    total && total > 0
+      ? Math.round((available! / total) * 100)
+      : undefined;
 
   const submittedOffers = useMemo(
     () => (currentUserId ? mapOffers() : []),
@@ -399,8 +406,7 @@ export default function Dashboard() {
   const creditBalance = profile?.credit_balance ?? 0;
   const avgRating = profile?.avg_rating ?? 0;
   const reviewCount = stats?.reviewCount ?? 0;
-  const displayedAvgRating = reviewCount > 0 ? avgRating : 0;
-
+  const displayedAvgRating = !dashLoading ? avgRating : undefined;
   return (
     <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
 
@@ -433,10 +439,11 @@ export default function Dashboard() {
                 <div className="mt-3 flex flex-wrap items-center gap-2.5">
                   {!dashLoading && (
                     <>
-                      <RatingStars value={displayedAvgRating} />
+                      <RatingStars value={displayedAvgRating ?? 0} />
                       <span className="text-sm text-slate-500">
-                        {displayedAvgRating.toFixed(1)} rating
-                        {reviewCount > 0 ? ` · ${reviewCount} ${reviewCount === 1 ? "review" : "reviews"}` : ""}
+                        {reviewCount > 0
+                          ? `${displayedAvgRating?.toFixed(1)} rating`
+                          : "No reviews yet"}
                       </span>
                     </>
                   )}
@@ -506,7 +513,7 @@ export default function Dashboard() {
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200/80">
                 <div
                   className="h-full bg-[linear-gradient(90deg,#93c5fd_0%,#93c5fd_58%,#c4b5fd_58%,#c4b5fd_100%)]"
-                  style={{ width: `${availablePct}%` }}
+                  style={{ width: `${availablePct ?? 0}%` }}
                 />
               </div>
 
@@ -543,8 +550,8 @@ export default function Dashboard() {
                   <div className="mt-3 flex items-center justify-between rounded-2xl border border-indigo-200/70 bg-indigo-50/80 px-4 py-3">
                     <p className="text-sm font-semibold text-slate-700">Average Rating as Helper</p>
                     <div className="flex items-center gap-1.5 text-slate-700">
-                      <RatingStars value={displayedAvgRating} />
-                      <span className="text-lg font-semibold leading-none">{displayedAvgRating.toFixed(1)}</span>
+                      <RatingStars value={displayedAvgRating ?? 0} />
+                      <span className="text-lg font-semibold leading-none">{displayedAvgRating?.toFixed(1)}</span>
                     </div>
                   </div>
                 </>
@@ -557,7 +564,7 @@ export default function Dashboard() {
                 <Check size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
-                {dashLoading ? "" : stats?.completedSessions ?? 0}
+                {dashLoading ? "" : stats?.completedSessions}
               </p>
               Sessions Completed
               <p className="mt-2 text-sm text-slate-500">
@@ -571,7 +578,7 @@ export default function Dashboard() {
                 <MessageCircle size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
-                {dashLoading ? "" : stats?.activeRequests ?? 0}
+                {dashLoading ? "" : stats?.activeRequests}
               </p>
               <p className="text-sm text-slate-700">Requests Posted</p>
               <p className="mt-2 text-sm text-slate-500">
@@ -584,11 +591,11 @@ export default function Dashboard() {
                 <Send size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
-                {dashLoading ? "" : stats?.offersSubmitted ?? 0}
+                {dashLoading ? "" : stats?.offersSubmitted}
               </p>
               <p className="text-sm text-slate-700">Offers Submitted</p>
               <p className="mt-2 text-sm text-slate-500">
-                {dashLoading ? "" : stats?.offersSubmitted ?? 0}
+                {dashLoading ? "" : stats?.offersSubmitted}
               </p>
             </article>
 
@@ -598,12 +605,14 @@ export default function Dashboard() {
                 <Star size={20} />
               </div>
               <p className="mt-4 text-2xl font-semibold">
-                {dashLoading ? "" : displayedAvgRating.toFixed(1)}
+                {dashLoading ? "" : displayedAvgRating?.toFixed(1)}
               </p>
               <p className="text-sm text-slate-700">Avg. Rating</p>
               <p className="mt-2 text-sm text-slate-500">
-                {dashLoading ? "" : `From ${reviewCount} ${reviewCount === 1 ? "review" : "reviews"}`}
-              </p>
+
+                {!dashLoading && stats
+                  ? `From ${reviewCount} ${reviewCount === 1 ? "review" : "reviews"}`
+                  : ""}              </p>
             </article>
           </div>
         </section>
@@ -650,7 +659,7 @@ export default function Dashboard() {
 
           <div className="relative mt-3 space-y-2.5">
             {dashLoading ? (
-                <Loader className="py-10" />
+              <Loader className="py-10" />
             ) : previewSessions.length === 0 ? (
               <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
                 No sessions in this tab yet.
@@ -990,7 +999,7 @@ export default function Dashboard() {
             </div>
             <div className="space-y-2 p-4">
               {dashLoading ? (
-                  <Loader className="py-8" />
+                <Loader className="py-8" />
               ) : submittedOffers.length === 0 ? (
                 <div className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-sm text-slate-600">
                   You haven't submitted any offers yet.
@@ -1045,7 +1054,7 @@ export default function Dashboard() {
 
           <div className="relative">
             {dashLoading ? (
-                <Loader className="py-8" />
+              <Loader className="py-8" />
             ) : activityPreview.length === 0 ? (
               <div className="px-4 py-5 text-sm text-slate-500">No activity yet.</div>
             ) : (
