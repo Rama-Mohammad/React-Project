@@ -56,9 +56,7 @@ export async function createNotification(data: {
 }) {
   const result = await supabase
     .from("notifications")
-    .insert({ ...data, is_read: false })
-    .select()
-    .single();
+    .insert({ ...data, is_read: false });
 
   if (result.error) {
     console.error("[notifications] createNotification failed", {
@@ -67,7 +65,6 @@ export async function createNotification(data: {
     });
   } else {
     console.log("[notifications] createNotification succeeded", {
-      id: result.data?.id,
       user_id: data.user_id,
       type: data.type,
     });

@@ -67,7 +67,11 @@ function logOfferInsertDebug(
 export async function createOffer(
   request_id: string,
   message?: string,
-  availability?: string
+  availability?: string,
+  notificationMeta?: {
+    requesterId?: string | null;
+    requestTitle?: string | null;
+  }
 ): Promise<CreateOfferResult> {
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
   const { data: userData, error: userError } = await supabase.auth.getUser();
@@ -133,20 +137,26 @@ export async function createOffer(
     payload,
   });
 
-  const { data: requestRecord, error: requestLookupError } = await supabase
-    .from("requests")
-    .select("id, requester_id, title")
-    .eq("id", request_id)
-    .maybeSingle();
+  const requesterId = notificationMeta?.requesterId ?? null;
+  const requestTitle = notificationMeta?.requestTitle ?? null;
 
-  if (!requestLookupError && requestRecord?.requester_id && requestRecord.requester_id !== user.id) {
+  if (requesterId && requesterId !== user.id) {
     await createNotification({
-      user_id: requestRecord.requester_id,
+      user_id: requesterId,
       type: "offer_received",
       title: "New offer received",
-      message: `Someone submitted an offer for "${requestRecord.title}"`,
-      related_id: requestRecord.id,
+      message: requestTitle
+        ? `Someone submitted an offer for "${requestTitle}"`
+        : "Someone submitted an offer for your request",
+      related_id: request_id,
       related_type: "request",
+    });
+  } else {
+    console.warn("[notifications] offer_received skipped", {
+      request_id,
+      requesterId,
+      helperId: user.id,
+      requestTitle,
     });
   }
 

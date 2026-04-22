@@ -13,6 +13,7 @@ import VisualPanel from "../components/auth/VisualPanel";
 import { getCurrentSession } from "../services/authService";
 import { getProfileById, uploadProfilePicture, updateProfile } from "../services/profileService";
 import type { AuthMode } from "../types/auth";
+import logoNoBg from "/images/logo-nobg.png";
 
 const ONBOARDING_STORAGE_PREFIX = "tokenly:onboarding-complete:";
 
@@ -311,7 +312,7 @@ export default function AuthPage() {
             </Link>
 
             <div className="absolute left-1/2 top-3 z-20 -translate-x-1/2 lg:hidden">
-                <img src="/images/logo-nobg.png" alt="Tokenly" className="h-28 w-auto object-contain sm:h-32" />
+                <img src={logoNoBg} alt="Tokenly" className="h-28 w-auto object-contain sm:h-32" />
             </div>
 
             <div className="flex h-full w-full max-w-5xl items-center justify-center">

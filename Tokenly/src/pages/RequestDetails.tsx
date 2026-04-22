@@ -429,7 +429,10 @@ export default function RequestDetails() {
         return;
       }
 
-      const { error } = await createOffer(request.id, messageValue, availabilityValue);
+      const { error } = await createOffer(request.id, messageValue, availabilityValue, {
+        requesterId: requestOwnerId,
+        requestTitle: request.title,
+      });
       if (error) throw error;
 
       setOfferFeedback("Offer submitted successfully.");
