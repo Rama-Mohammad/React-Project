@@ -1,5 +1,9 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Check, Coins } from "lucide-react";
+import AnalyticsSection from "../components/dashboard/AnalyticsSection";
+import DashboardSidebar from "../components/dashboard/DashboardSidebar";
+import type { DashboardSectionId } from "../components/dashboard/DashboardSidebar";
+import DashboardTopBar from "../components/dashboard/DashboardTopBar";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import ActivitySection from "../components/dashboard/ActivitySection";
 import HeaderSection from "../components/dashboard/HeaderSection";
@@ -7,7 +11,7 @@ import InboxSection from "../components/dashboard/InboxSection";
 import RequestsOverviewSection from "../components/dashboard/RequestsOverviewSection";
 import SentRequestsSection from "../components/dashboard/SentRequestsSection";
 import SessionsSection from "../components/dashboard/SessionsSection";
-import { getInitials, sessionTabs, toRelativeAge } from "../utils/dashboardUtils";
+import { getInitials, toRelativeAge } from "../utils/dashboardUtils";
 import { supabase } from "../lib/supabaseClient";
 import { deleteRequest, getRequestsByUser } from "../services/requestService";
 import { getSessionsAuthDebugContext, logSessionsQuery } from "../services/sessionDebug";
@@ -23,6 +27,8 @@ import { acceptDirectRequest, rejectDirectRequest } from "../services/directRequ
 import { acceptHelpOfferRequest, rejectHelpOfferRequest } from "../services/helpOfferService";
 
 export default function Dashboard() {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<DashboardSectionId>("overview");
   const [activeSessionTab, setActiveSessionTab] = useState<SessionTabLabel>("All");
   const [sessions, setSessions] = useState<DashboardSessionItem[]>([]);
   const [openRequests, setOpenRequests] = useState<DashboardRequestItem[]>([]);
@@ -33,7 +39,6 @@ export default function Dashboard() {
   const [pendingDeleteRequestId, setPendingDeleteRequestId] = useState<string | null>(null);
   const [pendingCompleteId, setPendingCompleteId] = useState<string | null>(null);
   const [transferToast, setTransferToast] = useState<{ credits: number } | null>(null);
-  const [showCreditDetails, setShowCreditDetails] = useState(false);
   const [sessionActionError, setSessionActionError] = useState("");
   const [directRequestActionId, setDirectRequestActionId] = useState<string | null>(null);
   const [pendingScheduleId, setPendingScheduleId] = useState<string | null>(null);
@@ -130,6 +135,62 @@ export default function Dashboard() {
     () => transactions.slice(0, 3),
     [transactions]
   );
+
+  const tokenFlowData = useMemo(() => {
+    return transactions
+      .slice(0, 7)
+      .reverse()
+      .map((item, index) => {
+        const createdAt = item.created_at ? new Date(item.created_at) : null;
+        const label = createdAt && !Number.isNaN(createdAt.getTime())
+          ? createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+          : `Point ${index + 1}`;
+        const isEarned = item.type === "earn" || item.type === "bonus";
+        const amount = Math.abs(Number(item.amount ?? 0));
+
+        return {
+          label,
+          earned: isEarned ? amount : 0,
+          spent: item.type === "spend" ? amount : 0,
+          net: isEarned ? amount : -amount,
+        };
+      });
+  }, [transactions]);
+
+  const weeklyActivityData = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat("en-US", { weekday: "short" });
+    const today = new Date();
+    const days = Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(today);
+      date.setDate(today.getDate() - (6 - index));
+      const key = date.toISOString().slice(0, 10);
+      return {
+        key,
+        label: formatter.format(date),
+        completed: 0,
+        upcoming: 0,
+      };
+    });
+
+    const dayMap = new Map(days.map((day) => [day.key, day]));
+
+    rawSessions.forEach((session) => {
+      const sourceDate = session?.scheduled_at ?? session?.created_at;
+      if (!sourceDate) return;
+
+      const date = new Date(sourceDate);
+      if (Number.isNaN(date.getTime())) return;
+
+      const key = date.toISOString().slice(0, 10);
+      const day = dayMap.get(key);
+      if (!day) return;
+
+      if (session?.status === "completed") day.completed += 1;
+      if (session?.status === "upcoming" || session?.status === "active") day.upcoming += 1;
+    });
+
+    return days;
+  }, [rawSessions]);
 
   const handleOpenScheduleModal = (id: string) => {
     setScheduledAtInput("");
@@ -368,83 +429,109 @@ export default function Dashboard() {
   const avgRating = profile?.avg_rating ?? 0;
   const reviewCount = stats?.reviewCount ?? 0;
   const displayedAvgRating = !dashLoading ? avgRating : undefined;
+  const handleSidebarSectionSelect = (sectionId: DashboardSectionId) => {
+    setActiveSection(sectionId);
+  };
+
   return (
-    <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
-      <main className="mx-auto w-full max-w-355 px-4 py-6 sm:px-6 lg:px-8">
-        <HeaderSection
-          profileImageUrl={profile?.profile_image_url}
-          fullName={fullName}
-          initials={initials}
-          dashLoading={dashLoading}
-          displayedAvgRating={displayedAvgRating}
-          reviewCount={reviewCount}
-          creditBalance={creditBalance}
-          showCreditDetails={showCreditDetails}
-          onToggleCreditDetails={() => setShowCreditDetails((prev) => !prev)}
-          available={available}
-          spent={spent}
-          received={received}
-          total={total}
-          availablePct={availablePct}
-          stats={stats}
-        />
-
-        <SessionsSection
-          dashLoading={dashLoading}
-          activeSessionTab={activeSessionTab}
-          onSessionTabChange={setActiveSessionTab}
-          sessionTabCounts={sessionTabCounts}
-          previewSessions={previewSessions}
-          onMarkComplete={setPendingCompleteId}
-        />
-
-        {incomingDirectRequests.length > 0 ? (
-          <InboxSection
-            title="Direct Requests"
-            count={incomingDirectRequests.length}
-            items={incomingDirectRequests}
-            accent="indigo"
-            actionLoadingId={directRequestActionId}
-            onAccept={handleOpenScheduleModal}
-            onReject={(id) => {
-              void handleRejectDirectRequest(id);
-            }}
+    <div className="relative min-h-full overflow-hidden bg-transparent text-slate-900">
+      <main className="relative mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
+        <div className="grid gap-5 xl:grid-cols-[17.5rem_minmax(0,1fr)]">
+          <DashboardSidebar
+            mobileOpen={mobileNavOpen}
+            onClose={() => setMobileNavOpen(false)}
+            activeSection={activeSection}
+            onSectionSelect={handleSidebarSectionSelect}
+            stretchOnDesktop
           />
-        ) : null}
 
-        {incomingHelpOfferRequests.length > 0 ? (
-          <InboxSection
-            title="Help Offer Requests"
-            count={incomingHelpOfferRequests.length}
-            items={incomingHelpOfferRequests}
-            accent="violet"
-            actionLoadingId={helpOfferRequestActionId}
-            onAccept={handleOpenScheduleHelpOfferModal}
-            onReject={(id) => {
-              void handleRejectHelpOfferRequest(id);
-            }}
-          />
-        ) : null}
+          <div className="min-w-0">
+            <DashboardTopBar
+              onOpenMobileNav={() => setMobileNavOpen(true)}
+            />
 
-        {sentDirectRequests.length > 0 ? (
-          <SentRequestsSection items={sentDirectRequests} />
-        ) : null}
+            {activeSection === "overview" ? (
+              <HeaderSection
+                className="xl:h-full"
+                profileImageUrl={profile?.profile_image_url}
+                fullName={fullName}
+                initials={initials}
+                dashLoading={dashLoading}
+                displayedAvgRating={displayedAvgRating}
+                reviewCount={reviewCount}
+                creditBalance={creditBalance}
+                available={available}
+                spent={spent}
+                received={received}
+                total={total}
+                availablePct={availablePct}
+                stats={stats}
+              />
+            ) : null}
 
-        <RequestsOverviewSection
-          requestsLoading={requestsLoading}
-          requestsError={requestsError}
-          openRequests={openRequests}
-          deletingRequestId={deletingRequestId}
-          onDeleteRequest={setPendingDeleteRequestId}
-          dashLoading={dashLoading}
-          submittedOffers={submittedOffers}
-        />
+            {activeSection === "analytics" ? (
+              <AnalyticsSection
+                tokenFlowData={tokenFlowData}
+                weeklyActivityData={weeklyActivityData}
+              />
+            ) : null}
 
-        <ActivitySection
-          dashLoading={dashLoading}
-          transactions={transactions}
-          activityPreview={activityPreview}
-        />
+            {activeSection === "sessions" ? (
+              <SessionsSection
+                dashLoading={dashLoading}
+                activeSessionTab={activeSessionTab}
+                onSessionTabChange={setActiveSessionTab}
+                sessionTabCounts={sessionTabCounts}
+                previewSessions={previewSessions}
+                onMarkComplete={setPendingCompleteId}
+              />
+            ) : null}
+
+            {activeSection === "inbox" ? (
+              <div className="grid grid-cols-1 gap-4 xl:h-full xl:grid-cols-2">
+                <InboxSection
+                  title="Direct Requests"
+                  count={incomingDirectRequests.length}
+                  items={incomingDirectRequests}
+                  emptyMessage="No direct requests yet."
+                  accent="indigo"
+                  actionLoadingId={directRequestActionId}
+                  onAccept={handleOpenScheduleModal}
+                  onReject={(id) => {
+                    void handleRejectDirectRequest(id);
+                  }}
+                />
+
+                <SentRequestsSection
+                  items={sentDirectRequests}
+                  emptyMessage="No sent direct requests yet."
+                />
+              </div>
+            ) : null}
+
+            {activeSection === "requests" ? (
+              <div className="grid grid-cols-1 gap-4 xl:h-full">
+                <RequestsOverviewSection
+                  requestsLoading={requestsLoading}
+                  requestsError={requestsError}
+                  openRequests={openRequests}
+                  deletingRequestId={deletingRequestId}
+                  onDeleteRequest={setPendingDeleteRequestId}
+                  dashLoading={dashLoading}
+                  submittedOffers={submittedOffers}
+                />
+              </div>
+            ) : null}
+
+            {activeSection === "activity" ? (
+              <ActivitySection
+                dashLoading={dashLoading}
+                transactions={transactions}
+                activityPreview={activityPreview}
+              />
+            ) : null}
+          </div>
+        </div>
       </main>
 
       {/* -- Token transfer toast -- */}

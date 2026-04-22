@@ -82,8 +82,17 @@ export function subscribeToNotifications(
   user_id: string,
   callback: (notification: unknown) => void
 ) {
-  return supabase
-    .channel(`notifications:${user_id}`)
+  const topic = `notifications:${user_id}`;
+
+  supabase
+    .getChannels()
+    .filter((channel) => channel.topic === topic)
+    .forEach((channel) => {
+      void supabase.removeChannel(channel);
+    });
+
+  const channel = supabase
+    .channel(topic)
     .on(
       "postgres_changes",
       {
@@ -103,4 +112,6 @@ export function subscribeToNotifications(
         });
       }
     });
+
+  return channel;
 }

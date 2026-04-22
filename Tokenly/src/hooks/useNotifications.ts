@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import type { Notification, UseNotificationsResult } from "../types/notification";
+import { supabase } from "../lib/supabaseClient";
 import {
     getNotificationsByUser,
     getUnreadNotifications,
@@ -104,7 +105,7 @@ export default function useNotifications(): UseNotificationsResult {
         });
 
         return () => {
-            void channel.unsubscribe();
+            void supabase.removeChannel(channel);
         };
     }, []);
 

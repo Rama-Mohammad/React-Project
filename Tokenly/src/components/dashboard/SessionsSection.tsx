@@ -1,10 +1,11 @@
-import { Calendar, Check, Clock3, Coins, Timer, User } from "lucide-react";
+import { Check, Clock3, Coins, Timer, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import Avatar from "../common/Avatar";
 import Loader from "../common/Loader";
 import RatingStars from "../common/RatingStars";
 import type { DashboardSessionItem, SessionTabLabel } from "../../types/dashboard";
 import { sessionTabs, skillTone, statusTone } from "../../utils/dashboardUtils";
+import { DashboardEmptyState, DashboardGhostAction, DashboardPanel, DashboardPanelHeader } from "./ui";
 
 type SessionsSectionProps = {
   dashLoading: boolean;
@@ -24,31 +25,30 @@ export default function SessionsSection({
   onMarkComplete,
 }: SessionsSectionProps) {
   return (
-    <section className="relative mt-4 overflow-hidden rounded-3xl border border-indigo-200/70 bg-[linear-gradient(140deg,rgba(238,242,255,0.95)_0%,rgba(237,233,254,0.92)_45%,rgba(224,231,255,0.95)_100%)] p-4 shadow-[0_14px_34px_-26px_rgba(99,102,241,0.45)] sm:p-5">
-      <div className="pointer-events-none absolute -top-16 right-6 h-40 w-40 rounded-full bg-indigo-300/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-16 left-10 h-36 w-36 rounded-full bg-violet-300/20 blur-3xl" />
-
-      <div className="relative flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="rounded-xl bg-indigo-100 p-2 text-indigo-700">
-            <Calendar size={16} />
-          </div>
-          <h2 className="text-base font-semibold">Sessions</h2>
-        </div>
-        <Link to="/sessions" className="text-xs font-semibold text-indigo-700 hover:text-indigo-800">
-          View all
-        </Link>
+    <DashboardPanel className="relative flex h-full flex-col overflow-hidden">
+      <div>
+        <DashboardPanelHeader
+          title="Sessions"
+          subtitle="Upcoming, active, and completed work"
+          action={
+            <Link to="/sessions">
+              <DashboardGhostAction>View all</DashboardGhostAction>
+            </Link>
+          }
+        />
       </div>
 
-      <div className="relative mt-3 w-full overflow-x-auto">
-        <div className="inline-flex min-w-max rounded-2xl bg-white/75 p-1">
+      <div className="mt-4 w-full overflow-x-auto px-1">
+        <div className="inline-flex min-w-max rounded-2xl bg-slate-100 p-1">
           {sessionTabs.map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => onSessionTabChange(tab)}
               className={`mx-0.5 inline-flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs transition ${
-                activeSessionTab === tab ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                activeSessionTab === tab
+                  ? "bg-white text-slate-950 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
               }`}
             >
               {tab}
@@ -62,18 +62,18 @@ export default function SessionsSection({
         </div>
       </div>
 
-      <div className="relative mt-3 space-y-2.5">
+      <div className="mt-4 flex-1 space-y-3 overflow-y-auto px-1 pb-1">
         {dashLoading ? (
           <Loader className="py-10" />
         ) : previewSessions.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-500">
+          <DashboardEmptyState className="mx-1">
             No sessions in this tab yet.
-          </div>
+          </DashboardEmptyState>
         ) : (
           previewSessions.map((item) => (
             <article
               key={item.id}
-              className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3.5 transition hover:shadow-sm lg:flex-row lg:items-center lg:justify-between"
+              className="flex flex-col gap-3 rounded-[26px] border border-slate-200/90 bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] p-4 transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_-30px_rgba(15,23,42,0.35)] lg:flex-row lg:items-center lg:justify-between"
             >
               <div>
                 <div className="flex flex-wrap items-center gap-1.5 text-xs">
@@ -92,9 +92,9 @@ export default function SessionsSection({
                   </span>
                 </div>
 
-                <h3 className="mt-2 text-sm font-medium leading-tight text-slate-900">{item.topic}</h3>
+                <h3 className="mt-2 text-base font-semibold leading-tight text-slate-950">{item.topic}</h3>
 
-                <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
                   <span className="inline-flex items-center gap-1.5">
                     <Avatar
                       name={item.person}
@@ -119,7 +119,7 @@ export default function SessionsSection({
               </div>
 
               <div className="flex items-center gap-2 self-end lg:self-center">
-                <span className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-0.5 text-xs font-semibold text-indigo-700">
+                <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
                   <Coins size={12} />
                   {item.credits > 0 ? `+${item.credits}` : item.credits === 0 ? "0" : item.credits}
                 </span>
@@ -127,12 +127,12 @@ export default function SessionsSection({
                   <button
                     type="button"
                     onClick={() => onMarkComplete(item.id)}
-                    className="rounded-lg bg-slate-900 px-3 py-1 text-xs font-semibold text-white transition hover:bg-slate-800"
+                    className="rounded-xl bg-slate-950 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
                   >
                     {item.action}
                   </button>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-violet-700">
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
                     <Check size={12} />
                     Done
                   </span>
@@ -142,6 +142,6 @@ export default function SessionsSection({
           ))
         )}
       </div>
-    </section>
+    </DashboardPanel>
   );
 }

@@ -1,9 +1,16 @@
-import { Check, ChevronDown, Coins, Compass, MessageCircle, Plus, Send, Star } from "lucide-react";
+import {
+  Check,
+  Coins,
+  MessageCircle,
+  Send,
+  Sparkles,
+  Star,
+} from "lucide-react";
 import { Link } from "react-router-dom";
-import RatingStars from "../common/RatingStars";
 import type { DashboardStats } from "../../types/dashboard";
 
 type HeaderSectionProps = {
+  className?: string;
   profileImageUrl?: string | null;
   fullName?: string | null;
   initials: string;
@@ -11,17 +18,45 @@ type HeaderSectionProps = {
   displayedAvgRating?: number;
   reviewCount: number;
   creditBalance: number;
-  showCreditDetails: boolean;
-  onToggleCreditDetails: () => void;
-  available?: number;
-  spent?: number;
-  received?: number;
-  total?: number;
-  availablePct?: number;
+  available: number;
+  spent: number;
+  received: number;
+  total: number;
+  availablePct: number;
   stats: DashboardStats | null;
 };
 
+function OverviewStat({
+  icon,
+  label,
+  value,
+  sublabel,
+  iconClass = "",
+  cardClass = "",
+  className = "",
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  sublabel: string;
+  iconClass?: string;
+  cardClass?: string;
+  className?: string;
+}) {
+  return (
+    <div className={["rounded-[28px] border border-slate-100 bg-white px-5 py-4", cardClass, className].join(" ")}>
+      <div className={["mb-3 inline-flex rounded-2xl p-2.5", iconClass].join(" ")}>
+        {icon}
+      </div>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">{label}</p>
+      <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{value}</p>
+      <p className="mt-1 text-sm text-slate-500">{sublabel}</p>
+    </div>
+  );
+}
+
 export default function HeaderSection({
+  className = "",
   profileImageUrl,
   fullName,
   initials,
@@ -29,8 +64,6 @@ export default function HeaderSection({
   displayedAvgRating,
   reviewCount,
   creditBalance,
-  showCreditDetails,
-  onToggleCreditDetails,
   available,
   spent,
   received,
@@ -38,195 +71,146 @@ export default function HeaderSection({
   availablePct,
   stats,
 }: HeaderSectionProps) {
+  const name = fullName?.trim() || "Your dashboard";
+  const completedSessions = stats?.completedSessions ?? 0;
+  const activeRequests = stats?.activeRequests ?? 0;
+  const offersSubmitted = stats?.offersSubmitted ?? 0;
+  const tokenTracked = spent + received + available;
+
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-slate-200/70 bg-transparent p-5 shadow-none sm:p-6">
-      <div className="pointer-events-none absolute -right-20 -top-24 h-52 w-52 rounded-full bg-indigo-300/30 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 left-1/3 h-52 w-52 rounded-full bg-violet-300/20 blur-3xl" />
-
-      <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex items-start gap-4">
-          <div className="h-14 w-14 rounded-2xl bg-[linear-gradient(145deg,#bae6fd_0%,#a7f3d0_100%)] p-0.5">
-            {profileImageUrl ? (
-              <img
-                src={profileImageUrl}
-                alt={fullName ?? "Profile"}
-                className="h-full w-full rounded-2xl object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white text-sm font-semibold text-slate-700">
-                {dashLoading ? "" : initials}
-              </div>
-            )}
-          </div>
-
-          <div>
-            <p className="text-sm text-slate-500">Welcome back</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-              {dashLoading ? "" : fullName}
-            </h1>
-            <div className="mt-3 flex flex-wrap items-center gap-2.5">
-              {!dashLoading && (
-                <>
-                  <RatingStars value={displayedAvgRating ?? 0} />
-                  <span className="text-sm text-slate-500">
-                    {reviewCount > 0 ? `${displayedAvgRating?.toFixed(1)} rating` : "No reviews yet"}
-                  </span>
-                </>
+    <section className={["w-full", className].join(" ")}>
+      <div className="overflow-hidden">
+        <div className="p-5 sm:p-6">
+          <div className="flex flex-col gap-5 border-b border-slate-100 pb-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex min-w-0 items-center gap-4">
+              {profileImageUrl ? (
+                <img
+                  src={profileImageUrl}
+                  alt={name}
+                  className="h-16 w-16 rounded-full border-4 border-white object-cover shadow-sm"
+                />
+              ) : (
+                <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-[linear-gradient(135deg,#6d7cff_0%,#8aa8ff_100%)] text-lg font-semibold text-white shadow-sm">
+                  {initials}
+                </div>
               )}
-            </div>
-          </div>
-        </div>
 
-        <div className="relative flex gap-2.5 pt-1">
-          <Link
-            to="/explore"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-          >
-            <Compass size={17} />
-            Explore
-          </Link>
-          <Link
-            to="/request/new"
-            className="inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-4 py-2 text-sm font-semibold text-white shadow-md shadow-indigo-900/20 transition hover:brightness-105"
-          >
-            <Plus size={17} />
-            Post Request
-          </Link>
-        </div>
-      </div>
-
-      <div className="relative mt-5 grid grid-cols-1 items-start gap-3 xl:grid-cols-[1.8fr_1fr_1fr_1fr_1fr]">
-        <article
-          className="rounded-2xl border border-indigo-300/80 bg-transparent p-4"
-          data-received={received ?? 0}
-        >
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="rounded-2xl bg-indigo-100 p-3 text-indigo-700">
-                <Coins size={20} />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500">Token Balance</p>
-                <p className="text-2xl font-semibold leading-none">
-                  {dashLoading ? (
-                    <span className="inline-block h-8 w-16 animate-pulse rounded-lg bg-slate-200" />
-                  ) : (
-                    <>
-                      {creditBalance} <span className="text-lg font-normal text-slate-500">tokens</span>
-                    </>
-                  )}
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-indigo-400">Dashboard</p>
+                <h2 className="truncate text-3xl font-semibold tracking-tight text-slate-950">
+                  {dashLoading ? "Loading dashboard..." : name}
+                </h2>
+                <p className="mt-1 max-w-2xl text-sm text-slate-500">
+                  Keep track of your sessions, requests, offers, and token movement in one streamlined space.
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onToggleCreditDetails}
-              className="inline-flex items-center gap-2 text-sm text-slate-500"
-            >
-              {showCreditDetails ? "Hide" : "Details"}
-              <ChevronDown
-                size={16}
-                className={showCreditDetails ? "rotate-180 transition" : "transition"}
-              />
-            </button>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                to="/explore"
+                className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50/80 px-4 py-2.5 text-sm font-medium text-indigo-700 transition hover:border-indigo-200 hover:bg-indigo-100/80"
+              >
+                <Sparkles size={16} />
+                Explore
+              </Link>
+              <Link
+                to="/request/new"
+                className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#4f46e5_0%,#7c3aed_100%)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_16px_32px_-20px_rgba(124,58,237,0.45)] transition hover:brightness-105"
+              >
+                <span className="text-base leading-none">+</span>
+                Post Request
+              </Link>
+            </div>
           </div>
 
-          <div className="mt-5 flex items-center justify-between text-sm text-slate-500">
-            <span>Available vs Spent</span>
-            <span>{total} total tracked</span>
-          </div>
-
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200/80">
-            <div
-              className="h-full bg-[linear-gradient(90deg,#93c5fd_0%,#93c5fd_58%,#c4b5fd_58%,#c4b5fd_100%)]"
-              style={{ width: `${availablePct ?? 0}%` }}
-            />
-          </div>
-
-          <div className="mt-3 flex flex-wrap items-center gap-6 text-sm">
-            <span className="inline-flex items-center gap-2 text-slate-600">
-              <span className="h-2.5 w-2.5 rounded-full bg-blue-300" />
-              Available <strong className="text-slate-900">{dashLoading ? "—" : available}</strong>
-            </span>
-            <span className="inline-flex items-center gap-2 text-slate-600">
-              <span className="h-2.5 w-2.5 rounded-full bg-violet-300" />
-              Spent <strong className="text-slate-900">{dashLoading ? "—" : spent}</strong>
-            </span>
-          </div>
-
-          {showCreditDetails ? (
-            <>
-              <div className="my-4 h-px bg-indigo-200/70" />
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <article className="rounded-2xl border border-indigo-200/70 bg-indigo-100/45 px-4 py-3">
-                  <p className="text-sm font-semibold text-indigo-700">As Helper</p>
-                  <p className="mt-1 text-4xl font-semibold leading-none text-indigo-700">
-                    {stats?.totalHelpGiven ?? ""}
-                  </p>
-                  <p className="mt-1 text-sm text-indigo-700">sessions completed</p>
-                </article>
-                <article className="rounded-2xl border border-sky-200/70 bg-sky-100/45 px-4 py-3">
-                  <p className="text-sm font-semibold text-sky-700">As Requester</p>
-                  <p className="mt-1 text-4xl font-semibold leading-none text-sky-700">
-                    {stats?.totalHelpReceived ?? ""}
-                  </p>
-                  <p className="mt-1 text-sm text-sky-700">sessions received</p>
-                </article>
-              </div>
-              <div className="mt-3 flex items-center justify-between rounded-2xl border border-indigo-200/70 bg-indigo-50/80 px-4 py-3">
-                <p className="text-sm font-semibold text-slate-700">Average Rating as Helper</p>
-                <div className="flex items-center gap-1.5 text-slate-700">
-                  <RatingStars value={displayedAvgRating ?? 0} />
-                  <span className="text-lg font-semibold leading-none">
-                    {displayedAvgRating?.toFixed(1)}
-                  </span>
+          <div className="mt-5 grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1.35fr)_repeat(4,minmax(0,0.7fr))]">
+            <div className="rounded-[30px] border border-[#dfe5ff] bg-[linear-gradient(135deg,#ffffff_0%,#f4f7ff_42%,#eef4ff_100%)] px-5 py-4 shadow-[0_18px_44px_-34px_rgba(99,102,241,0.26)]">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="rounded-2xl bg-[linear-gradient(135deg,#eef2ff_0%,#dbeafe_100%)] p-2.5 text-indigo-600">
+                    <Coins size={16} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-slate-500">Token Balance</p>
+                    <p className="mt-1 text-4xl font-semibold tracking-tight text-slate-950">
+                      {creditBalance}
+                      <span className="ml-1 text-lg font-medium text-slate-500">tokens</span>
+                    </p>
+                  </div>
+                </div>
+                <div className="rounded-full bg-white/80 px-3 py-1.5 text-xs font-semibold text-indigo-500 ring-1 ring-indigo-100">
+                  {tokenTracked} tracked
                 </div>
               </div>
-            </>
-          ) : null}
-        </article>
 
-        <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-center sm:text-left">
-          <div className="mx-auto w-fit rounded-2xl bg-sky-100 p-3 text-sky-700 sm:mx-0">
-            <Check size={20} />
-          </div>
-          <p className="mt-4 text-2xl font-semibold">{dashLoading ? "" : stats?.completedSessions}</p>
-          Sessions Completed
-          <p className="mt-2 text-sm text-slate-500">
-            {!dashLoading && stats
-              ? `${stats.totalHelpGiven} as helper · ${stats.totalHelpReceived} as requester`
-              : ""}
-          </p>
-        </article>
+              <div className="mt-5">
+                <div className="mb-2 flex items-center justify-between text-xs font-medium text-slate-400">
+                  <span>Available vs Spent</span>
+                  <span>{availablePct}% available</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-indigo-100/70">
+                  <div
+                    className="h-full rounded-full bg-[linear-gradient(90deg,#6366f1_0%,#60a5fa_52%,#8b5cf6_100%)]"
+                    style={{ width: `${Math.max(0, Math.min(100, availablePct))}%` }}
+                  />
+                </div>
+              </div>
 
-        <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-center sm:text-left">
-          <div className="mx-auto w-fit rounded-2xl bg-violet-100 p-3 text-violet-700 sm:mx-0">
-            <MessageCircle size={20} />
-          </div>
-          <p className="mt-4 text-2xl font-semibold">{dashLoading ? "" : stats?.activeRequests}</p>
-          <p className="text-sm text-slate-700">Requests Posted</p>
-          <p className="mt-2 text-sm text-slate-500">{!dashLoading && stats ? "Total help requests" : ""}</p>
-        </article>
+              <div className="mt-5 flex flex-wrap items-center gap-5 text-sm">
+                <div>
+                  <p className="text-slate-400">Available</p>
+                  <p className="font-semibold text-slate-900">{available}</p>
+                </div>
+                <div>
+                  <p className="text-slate-400">Spent</p>
+                  <p className="font-semibold text-slate-900">{spent}</p>
+                </div>
+                <div>
+                  <p className="text-slate-400">Earned</p>
+                  <p className="font-semibold text-slate-900">{received}</p>
+                </div>
+                <div>
+                  <p className="text-slate-400">Pool</p>
+                  <p className="font-semibold text-slate-900">{total}</p>
+                </div>
+              </div>
+            </div>
 
-        <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-center sm:text-left">
-          <div className="mx-auto w-fit rounded-2xl bg-indigo-100 p-3 text-indigo-700 sm:mx-0">
-            <Send size={20} />
+            <OverviewStat
+              icon={<Check size={16} />}
+              label="Sessions Completed"
+              value={String(completedSessions)}
+              sublabel={`${stats?.totalHelpGiven ?? 0} as helper`}
+              iconClass="bg-emerald-50 text-emerald-600"
+              cardClass="border-emerald-100 bg-[linear-gradient(180deg,#ffffff_0%,#f2fbf7_100%)]"
+            />
+            <OverviewStat
+              icon={<MessageCircle size={16} />}
+              label="Requests Posted"
+              value={String(activeRequests)}
+              sublabel="Total help requests"
+              iconClass="bg-violet-50 text-violet-600"
+              cardClass="border-violet-100 bg-[linear-gradient(180deg,#ffffff_0%,#f7f3ff_100%)]"
+            />
+            <OverviewStat
+              icon={<Send size={16} />}
+              label="Offers Submitted"
+              value={String(offersSubmitted)}
+              sublabel={`${stats?.offersAccepted ?? 0} total accepted`}
+              iconClass="bg-sky-50 text-sky-600"
+              cardClass="border-sky-100 bg-[linear-gradient(180deg,#ffffff_0%,#f2f8ff_100%)]"
+            />
+            <OverviewStat
+              icon={<Star size={16} />}
+              label="Avg. Rating"
+              value={displayedAvgRating != null ? displayedAvgRating.toFixed(1) : "--"}
+              sublabel={`From ${reviewCount} reviews`}
+              iconClass="bg-amber-50 text-amber-500"
+              cardClass="border-amber-100 bg-[linear-gradient(180deg,#ffffff_0%,#fff8ed_100%)]"
+            />
           </div>
-          <p className="mt-4 text-2xl font-semibold">{dashLoading ? "" : stats?.offersSubmitted}</p>
-          <p className="text-sm text-slate-700">Offers Submitted</p>
-          <p className="mt-2 text-sm text-slate-500">{dashLoading ? "" : stats?.offersSubmitted}</p>
-        </article>
-
-        <article className="rounded-2xl border border-slate-300/80 bg-transparent p-4 text-center sm:text-left">
-          <div className="mx-auto w-fit rounded-2xl bg-amber-100 p-3 text-amber-700 sm:mx-0">
-            <Star size={20} />
-          </div>
-          <p className="mt-4 text-2xl font-semibold">{dashLoading ? "" : displayedAvgRating?.toFixed(1)}</p>
-          <p className="text-sm text-slate-700">Avg. Rating</p>
-          <p className="mt-2 text-sm text-slate-500">
-            {!dashLoading && stats ? `From ${reviewCount} ${reviewCount === 1 ? "review" : "reviews"}` : ""}
-          </p>
-        </article>
+        </div>
       </div>
     </section>
   );
