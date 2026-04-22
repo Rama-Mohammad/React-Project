@@ -36,7 +36,7 @@ const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, o
   const progress = items.length > 0 ? (completedCount / items.length) * 100 : 0;
 
   return (
-    <div className="rounded-xl border border-indigo-200/70 bg-indigo-50/35 p-4">
+    <div className="flex h-full min-h-0 flex-col rounded-xl border border-indigo-200/70 bg-indigo-50/35 p-4">
       <div className="mb-4">
         <h3 className="mb-2 font-semibold text-slate-900">Session Agenda</h3>
         <div className="h-2 w-full rounded-full bg-indigo-100">
@@ -50,7 +50,7 @@ const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, o
         </p>
       </div>
 
-      <div className="mb-4 space-y-2">
+      <div className="mb-4 min-h-0 flex-1 overflow-y-auto space-y-2 pr-1">
         {items.length === 0 ? (
           <p className="py-4 text-center text-sm text-slate-400">No agenda items yet</p>
         ) : (

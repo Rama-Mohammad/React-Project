@@ -536,7 +536,7 @@ const SessionLivePage: React.FC = () => {
             />
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-indigo-200/70 bg-white/75 shadow-[0_12px_28px_-22px_rgba(99,102,241,0.5)] backdrop-blur">
+          <div className="flex h-[500px] min-h-0 flex-col overflow-hidden rounded-xl border border-indigo-200/70 bg-white/75 shadow-[0_12px_28px_-22px_rgba(99,102,241,0.5)] backdrop-blur">
             <div className="flex border-b border-indigo-200/70 bg-indigo-50/60 p-1">
               <button
                 onClick={() => setActiveTab("agenda")}
@@ -560,7 +560,7 @@ const SessionLivePage: React.FC = () => {
               </button>
             </div>
 
-            <div className="max-h-80 overflow-y-auto p-4">
+            <div className="min-h-0 flex-1 overflow-y-auto p-4">
               {activeTab === "agenda" ? (
                 <Checklist
                   items={checklistItems}

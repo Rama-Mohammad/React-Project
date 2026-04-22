@@ -26,7 +26,7 @@ const FileManager: React.FC<FileManagerProps> = ({ onFileUpload, files, onDownlo
   };
 
   return (
-    <div className="rounded-xl border border-indigo-200/70 bg-indigo-50/35 p-4">
+    <div className="flex h-full min-h-0 flex-col rounded-xl border border-indigo-200/70 bg-indigo-50/35 p-4">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-semibold text-slate-900">Files</h3>
         <label className="cursor-pointer">
@@ -42,7 +42,7 @@ const FileManager: React.FC<FileManagerProps> = ({ onFileUpload, files, onDownlo
       {files.length === 0 ? (
         <div className="py-8 text-center text-sm text-slate-400">No files shared yet</div>
       ) : (
-        <div className="space-y-2">
+        <div className="min-h-0 flex-1 overflow-y-auto space-y-2 pr-1">
           {files.map((file) => (
             <div
               key={file.id}
