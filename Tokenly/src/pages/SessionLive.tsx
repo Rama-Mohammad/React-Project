@@ -17,7 +17,6 @@ import { supabase } from "../lib/supabaseClient";
 import { uploadSessionFile, deleteSessionFile } from "../services/storageService";
 import { createReview, hasUserReviewedSession } from "../services/reviewService";
 
-
 type TabType = "agenda" | "files";
 
 const defaultChecklistItems: ChecklistItem[] = [
@@ -148,10 +147,8 @@ const SessionLivePage: React.FC = () => {
       setSessionStatus("loading");
       setSessionError("");
 
-      const [{ data: userData, error: userError }, { data, error: fetchSessionError }] =
+      const [{ data: userData, error: userError }, { data: sessionData, error: fetchSessionError }] =
         await Promise.all([getCurrentUser(), getSessionById(sessionId)]);
-      const session = data as any; // temporary fix
-      setSessionData(session);
 
       if (!isMounted) return;
 
@@ -184,7 +181,7 @@ const SessionLivePage: React.FC = () => {
       );
       setOtherParticipantId(isHelper ? sessionData.requester_id : sessionData.helper_id);
       setIsInitiator(initiatorId === userData.user.id);
-      if (session?.status === "upcoming") {
+      if (sessionData.status === "upcoming") {
         await updateSessionStatus(sessionId, "active");
       }
       setSessionStatus("ready");
@@ -286,7 +283,6 @@ const SessionLivePage: React.FC = () => {
           filter: `session_id=eq.${sessionId}`,
         },
         (payload) => {
-          console.log("FILE EVENT:", payload);
           if (payload.eventType === "INSERT") {
             const f = payload.new;
 
@@ -294,13 +290,12 @@ const SessionLivePage: React.FC = () => {
               ...prev,
               {
                 id: f.id,
-                name: f.file_name,
-                size: f.file_size_bytes,
-                type: f.file_type ?? "file",
+                name: f.name,
+                size: f.size,
+                type: f.type,
                 uploadedBy: f.uploader_id,
                 uploadedAt: new Date(f.created_at),
-                url: f.file_url,
-                path: f.path,
+                url: f.url,
               },
             ]);
           }
@@ -391,19 +386,19 @@ const SessionLivePage: React.FC = () => {
       return;
     }
 
-    // setFiles((prev) => [
-    //   ...prev,
-    //   {
-    //     id: inserted.id,
-    //     name: inserted.file_name,
-    //     size: inserted.file_size_bytes,
-    //     type: inserted.file_type,
-    //     uploadedBy: currentUserName,
-    //     uploadedAt: new Date(inserted.created_at),
-    //     url: inserted.file_url,
-    //     path: inserted.path,
-    //   }
-    // ]);
+    setFiles((prev) => [
+      ...prev,
+      {
+        id: inserted.id,
+        name: inserted.file_name,
+        size: inserted.file_size_bytes,
+        type: inserted.file_type,
+        uploadedBy: currentUserName,
+        uploadedAt: new Date(inserted.created_at),
+        url: inserted.file_url,
+        path: inserted.path,
+      }
+    ]);
 
   };
 
