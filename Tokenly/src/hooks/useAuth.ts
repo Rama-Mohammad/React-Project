@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import type { AuthUser, AuthSession, UseAuthResult } from "../types/auth";
-import type { SupabaseAuthSession } from "../services/authService";
+﻿import { useEffect, useRef, useState } from "react";
+import type { AuthUser, AuthSession, SupabaseAuthSession, UseAuthResult } from "../types/auth";
 import {
     getCurrentSession,
     signInWithIdentifier,
@@ -57,7 +56,6 @@ export default function useAuth(): UseAuthResult {
     const recoveryFlowRef = useRef(false);
 
     useEffect(() => {
-        // Capture hash IMMEDIATELY — Supabase clears it after processing
         const initialHash = window.location.hash;
         const isRecoveryFlow = initialHash.includes("type=recovery");
         recoveryFlowRef.current = isRecoveryFlow;
@@ -162,7 +160,6 @@ export default function useAuth(): UseAuthResult {
     async function deleteAccount(userId: string) {
         setError(""); setSuccessMessage("");
         const { error } = await deleteUserAccount(userId);
-        console.log("deleteUserAccount error:", error);
         if (error) { setError(error.message); return false; }
         await signOutUser();
         setUser(null);
@@ -186,3 +183,4 @@ export default function useAuth(): UseAuthResult {
         deleteAccount,
     };
 }
+

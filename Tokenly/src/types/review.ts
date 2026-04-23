@@ -1,4 +1,4 @@
-export type Review = {
+﻿export type Review = {
   id: string;
   session_id: string;
   reviewer_id: string;
@@ -27,3 +27,4 @@ export type UseReviewsResult = {
   fetchReviewBySession: (session_id: string, reviewer_id: string) => Promise<void>;
   checkHasReviewed: (session_id: string, reviewer_id: string) => Promise<void>;
 };
+

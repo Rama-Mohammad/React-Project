@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Clock3, Coins, Sparkles, Star, CheckCircle2 } from "lucide-react";
 import Avatar from "../components/common/Avatar";
@@ -46,7 +46,6 @@ export default function HelpOfferBooking() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Booking form state
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -54,7 +53,6 @@ export default function HelpOfferBooking() {
   const [currentBalance, setCurrentBalance] = useState<number | null>(null);
   const [showTokenOptionsModal, setShowTokenOptionsModal] = useState(false);
 
-  // Load current user
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {
       setCurrentUserId(data.user?.id ?? null);
@@ -85,7 +83,6 @@ export default function HelpOfferBooking() {
     };
   }, [currentUserId]);
 
-  // Load offer + helper profile in parallel
   useEffect(() => {
     if (!offerId) { setError("Offer not found."); setLoading(false); return; }
     let mounted = true;
@@ -100,13 +97,11 @@ export default function HelpOfferBooking() {
       };
       setOffer(offerData);
 
-      // Extract skill names from the nested join
       const skillNames = (offerData.skills ?? [])
         .map((s: { skill?: { name?: string } | null }) => s?.skill?.name)
         .filter(Boolean) as string[];
       setOfferSkillNames(skillNames);
 
-      // Now fetch the helper's public profile
       const helperResult = await getPublicHelperProfileCore(offerData.helper_id);
       if (!mounted) return;
 
@@ -126,9 +121,7 @@ export default function HelpOfferBooking() {
 
   const canBook = useMemo(() => {
     if (!currentUserId || !offer) return false;
-    // Cannot book your own offer
     if (currentUserId === offer.helper_id) return false;
-    // Cannot book a non-open offer
     if (offer.status !== "open") return false;
     return true;
   }, [currentUserId, offer]);
@@ -195,7 +188,6 @@ export default function HelpOfferBooking() {
       </div>
 
       <main className="relative z-10 mx-auto max-w-4xl px-4 py-6 sm:px-5 lg:py-8">
-        {/* Back */}
         <Link
           to="/explore?tab=offers"
           className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900"
@@ -205,9 +197,7 @@ export default function HelpOfferBooking() {
         </Link>
 
         <div className="mt-4 grid gap-5 lg:grid-cols-[1fr_360px]">
-          {/* Left: offer details + helper info */}
           <div className="space-y-5">
-            {/* Offer details card */}
             <section className="rounded-3xl border border-white/55 bg-white/80 p-5 shadow-sm backdrop-blur-xl md:p-6">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">
@@ -258,7 +248,6 @@ export default function HelpOfferBooking() {
               </div>
             </section>
 
-            {/* Helper profile snapshot */}
             {helperProfile ? (
               <section className="rounded-3xl border border-white/55 bg-white/80 p-5 shadow-sm backdrop-blur-xl md:p-6">
                 <h2 className="mb-4 text-base font-semibold text-slate-900">About the Helper</h2>
@@ -280,7 +269,7 @@ export default function HelpOfferBooking() {
                       {helperProfile.avg_rating ? (
                         <span className="inline-flex items-center gap-1">
                           <Star size={11} className="text-amber-400" />
-                          {Number(helperProfile.avg_rating).toFixed(1)} · {helperReviews.length} reviews
+                          {Number(helperProfile.avg_rating).toFixed(1)} {"\u00B7"} {helperReviews.length} reviews
                         </span>
                       ) : null}
                       {memberSince ? <span>Joined {memberSince}</span> : null}
@@ -292,7 +281,6 @@ export default function HelpOfferBooking() {
                   <p className="mt-4 text-sm leading-7 text-slate-600">{helperProfile.bio}</p>
                 ) : null}
 
-                {/* Helper's skills */}
                 {helperSkills.length > 0 ? (
                   <div className="mt-4">
                     <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Skills</p>
@@ -313,12 +301,11 @@ export default function HelpOfferBooking() {
                   to={`/helpers/${offer.helper_id}`}
                   className="mt-4 inline-flex text-xs font-semibold text-indigo-600 hover:text-indigo-800"
                 >
-                  View full profile →
+                  View full profile {"\u2192"}
                 </Link>
               </section>
             ) : null}
 
-            {/* Recent reviews */}
             {helperReviews.length > 0 ? (
               <section className="rounded-3xl border border-white/55 bg-white/80 p-5 shadow-sm backdrop-blur-xl md:p-6">
                 <h2 className="mb-4 text-base font-semibold text-slate-900">Recent Reviews</h2>
@@ -363,7 +350,6 @@ export default function HelpOfferBooking() {
             ) : null}
           </div>
 
-          {/* Right: booking form */}
           <aside>
             <div className="sticky top-20 rounded-3xl border border-white/55 bg-white/80 p-5 shadow-sm backdrop-blur-xl">
               {submitted ? (
@@ -387,7 +373,7 @@ export default function HelpOfferBooking() {
                   <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-3">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-slate-600">Duration</span>
-                      <span className="font-semibold text-slate-900">{offer.duration_minutes ?? "—"} min</span>
+                      <span className="font-semibold text-slate-900">{offer.duration_minutes ?? "\u2014"} min</span>
                     </div>
                     <div className="mt-2 flex items-center justify-between text-sm">
                       <span className="text-slate-600">Credits</span>
@@ -487,3 +473,4 @@ export default function HelpOfferBooking() {
     </div>
   );
 }
+

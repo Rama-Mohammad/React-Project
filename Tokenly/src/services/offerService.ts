@@ -1,9 +1,15 @@
-import type { PostgrestError, Session, User } from "@supabase/supabase-js";
+﻿import type { PostgrestError } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabaseClient";
-import type { OfferStatus } from "../types/offer";
-import type { Offer } from "../types/offer";
+import type {
+  HelpOfferAppointmentRow,
+  Offer,
+  OfferAppointmentRow,
+  OfferForHelperRow,
+  OfferForRequestRow,
+  OfferStatus,
+} from "../types/offer";
 import type { Request } from "../types/request";
-import { getSessionsAuthDebugContext, logSessionsQuery } from "./sessionDebug";
+import { ensureSessionForBooking } from "./sessionService";
 import { createNotification } from "./notificationService";
 export function extractAvailabilityFromOfferDescription(description?: string | null) {
   if (!description) {
@@ -48,20 +54,12 @@ type CreateOfferResult = {
 };
 
 function logOfferInsertDebug(
-  label: string,
-  details: {
-    session: Session | null;
-    user: User | null;
-    payload: CreateOfferPayload | null;
-    error?: PostgrestError | Error | null;
-  }
+  _label: string,
+  _details: unknown
 ) {
-  console.log(`[offers.createOffer] ${label}`, {
-    session: details.session,
-    user: details.user,
-    payload: details.payload,
-    error: details.error ?? null,
-  });
+  void _label;
+  void _details;
+  return;
 }
 
 export async function createOffer(
@@ -162,91 +160,6 @@ export async function createOffer(
 
   return { data: data as Offer, error: null };
 }
-
-export type OfferForRequestRow = {
-  id: string;
-  request_id: string;
-  helper_id: string;
-  message: string | null;
-  availability: string | null;
-  status: OfferStatus;
-  created_at: string;
-  helper: {
-    id: string;
-    full_name: string | null;
-    username: string | null;
-    avg_rating: number | null;
-    profile_image_url: string | null;
-  } | null;
-};
-
-export type OfferForHelperRow = {
-  id: string;
-  request_id: string;
-  helper_id: string;
-  message: string | null;
-  availability: string | null;
-  status: OfferStatus;
-  created_at: string;
-  request: {
-    id: string;
-    title: string;
-    category: string | null;
-    status: string;
-    urgency: string | null;
-    credit_cost: number | null;
-    duration_minutes: number | null;
-  } | null;
-};
-
-export type OfferAppointmentRow = {
-  id: string;
-  request_id: string;
-  helper_id: string;
-  message: string | null;
-  availability: string | null;
-  status: OfferStatus;
-  created_at: string;
-  request: {
-    id: string;
-    requester_id: string;
-    title: string;
-    description: string;
-    category: string | null;
-    urgency: string | null;
-    credit_cost: number | null;
-    duration_minutes: number | null;
-    status: string;
-  } | null;
-  helper: {
-    id: string;
-    full_name: string | null;
-    username: string | null;
-    avg_rating: number | null;
-    profile_image_url: string | null;
-  } | null;
-};
-
-export type HelpOfferAppointmentRow = {
-  id: string;
-  helper_id: string;
-  title: string;
-  description: string | null;
-  category: string | null;
-  urgency: string | null;
-  duration_minutes: number | null;
-  credit_cost: number | null;
-  status: string;
-  created_at: string;
-  helper: {
-    id: string;
-    full_name: string | null;
-    username: string | null;
-    avg_rating: number | null;
-    profile_image_url: string | null;
-  } | null;
-};
-
 
 export async function getOffersForRequest(requestId: string) {
   const result = await supabase
@@ -353,11 +266,47 @@ export async function acceptOffer(
     return { data: null, error: offerFetchError };
   }
 
-  const { data: requestRecord } = await supabase
+  if (offer.request_id !== request.id) {
+    return { data: null, error: new Error("This offer does not belong to this request.") };
+  }
+
+  if (offer.status !== "pending") {
+    return { data: null, error: new Error("This offer is no longer pending.") };
+  }
+
+  const { data: requestRecord, error: requestRecordError } = await supabase
     .from("requests")
-    .select("id, title")
+    .select("id, title, status")
     .eq("id", request.id)
     .maybeSingle();
+
+  if (requestRecordError) {
+    return { data: null, error: requestRecordError };
+  }
+
+  if (!requestRecord) {
+    return { data: null, error: new Error("Request not found.") };
+  }
+
+  if (requestRecord.status !== "open") {
+    return { data: null, error: new Error("This request already has an accepted offer.") };
+  }
+
+  const { data: existingAcceptedOffer, error: existingAcceptedOfferError } = await supabase
+    .from("offers")
+    .select("id")
+    .eq("request_id", request.id)
+    .neq("id", offerId)
+    .eq("status", "accepted")
+    .maybeSingle();
+
+  if (existingAcceptedOfferError) {
+    return { data: null, error: existingAcceptedOfferError };
+  }
+
+  if (existingAcceptedOffer) {
+    return { data: null, error: new Error("This request already has an accepted offer.") };
+  }
 
   const { data: rejectedPendingOffers } = await supabase
     .from("offers")
@@ -366,13 +315,20 @@ export async function acceptOffer(
     .neq("id", offerId)
     .eq("status", "pending");
 
-  const { error: acceptError } = await supabase
+  const { data: acceptedOffer, error: acceptError } = await supabase
     .from("offers")
     .update({ status: "accepted" })
-    .eq("id", offerId);
+    .eq("id", offerId)
+    .eq("status", "pending")
+    .select("id")
+    .maybeSingle();
 
   if (acceptError) {
     return { data: null, error: acceptError };
+  }
+
+  if (!acceptedOffer) {
+    return { data: null, error: new Error("This offer is no longer pending.") };
   }
 
   const { error: rejectOthersError } = await supabase
@@ -386,102 +342,17 @@ export async function acceptOffer(
     return { data: null, error: rejectOthersError };
   }
 
-  const sessionsDebug = await getSessionsAuthDebugContext();
-  const existingSessionPayload = { offerId };
-  logSessionsQuery("acceptOffer existing session lookup start", {
-    session: sessionsDebug.session,
-    user: sessionsDebug.user,
-    payload: existingSessionPayload,
-    error: sessionsDebug.authError,
+  const { data: sessionData, error: sessionError } = await ensureSessionForBooking({
+    request_id: request.id,
+    offer_id: offer.id,
+    helper_id: offer.helper_id,
+    requester_id: request.requester_id,
+    scheduled_at: scheduledAt,
+    duration_minutes: request.duration_minutes,
   });
 
-  if (sessionsDebug.authError) {
-    return { data: null, error: sessionsDebug.authError };
-  }
-
-  const { data: existingSession, error: existingSessionError } = await supabase
-    .from("sessions")
-    .select("id")
-    .eq("offer_id", offerId)
-    .maybeSingle();
-
-  logSessionsQuery("acceptOffer existing session lookup result", {
-    session: sessionsDebug.session,
-    user: sessionsDebug.user,
-    payload: existingSessionPayload,
-    error: existingSessionError,
-  });
-
-  if (existingSessionError) {
-    return { data: null, error: existingSessionError };
-  }
-
-  let sessionData = existingSession;
-  if (!sessionData?.id) {
-    const sessionInsertPayload = {
-      request_id: request.id,
-      offer_id: offer.id,
-      helper_id: offer.helper_id,
-      requester_id: request.requester_id,
-      scheduled_at: scheduledAt,
-      duration_minutes: request.duration_minutes,
-      status: "upcoming",
-    };
-
-    logSessionsQuery("acceptOffer create session insert start", {
-      session: sessionsDebug.session,
-      user: sessionsDebug.user,
-      payload: sessionInsertPayload,
-    });
-
-    const { data: createdSession, error: createSessionError } = await supabase
-      .from("sessions")
-      .insert(sessionInsertPayload)
-      .select()
-      .single();
-
-    if (createSessionError || !createdSession) {
-      return { data: null, error: createSessionError };
-    }
-
-    logSessionsQuery("acceptOffer create session insert result", {
-      session: sessionsDebug.session,
-      user: sessionsDebug.user,
-      payload: sessionInsertPayload,
-      error: createSessionError,
-    });
-
-    if (createSessionError) {
-      return { data: null, error: createSessionError };
-    }
-
-    sessionData = { id: createdSession.id };
-  } else if (scheduledAt) {
-    const updatePayload = { sessionId: sessionData.id, scheduled_at: scheduledAt };
-
-    logSessionsQuery("acceptOffer update session start", {
-      session: sessionsDebug.session,
-      user: sessionsDebug.user,
-      payload: updatePayload,
-    });
-
-    const { error: updateSessionError } = await supabase
-      .from("sessions")
-      .update({ scheduled_at: scheduledAt })
-      .eq("id", sessionData.id);
-
-    logSessionsQuery("acceptOffer update session result", {
-      session: sessionsDebug.session,
-      user: sessionsDebug.user,
-      payload: updatePayload,
-      error: updateSessionError,
-    });
-
-    if (updateSessionError) {
-      return { data: null, error: updateSessionError };
-    }
-
-    sessionData = { id: sessionData.id };
+  if (sessionError) {
+    return { data: null, error: sessionError };
   }
 
   const { error: requestUpdateError } = await supabase
@@ -682,7 +553,6 @@ export async function getHelpOfferAppointmentDetails(helpOfferId: string) {
   };
 }
 
-/** @deprecated Use getHelpOfferAppointmentDetails instead */
 export const getIndependentOfferAppointmentDetails = getHelpOfferAppointmentDetails;
 
 export async function getOffersByRequest(request_id: string) {
@@ -723,3 +593,4 @@ export async function updateOfferStatus(id: string, status: OfferStatus) {
 export async function deleteOffer(id: string) {
   return await supabase.from("offers").delete().eq("id", id);
 }
+

@@ -1,4 +1,4 @@
-
+﻿
 const sections = [
   {
     title: "Using Tokenly Responsibly",
@@ -61,4 +61,5 @@ export default function TermsOfService() {
     </div>
   );
 }
+
 

@@ -1,10 +1,7 @@
-import { supabase } from "../lib/supabaseClient";
+﻿import { supabase } from "../lib/supabaseClient";
 import { getSessionsAuthDebugContext, logSessionsQuery } from "./sessionDebug";
 
 
-// -------------------------
-// PROFILE
-// -------------------------
 export async function getDashboardProfile(user_id: string) {
   return await supabase
     .from("profiles")
@@ -14,9 +11,6 @@ export async function getDashboardProfile(user_id: string) {
 }
 
 
-// -------------------------
-// STATS (OPTIMIZED - NO HEAVY DATA FETCH)
-// -------------------------
 export async function getDashboardStats(user_id: string) {
   const { session, user, authError } = await getSessionsAuthDebugContext();
 
@@ -37,6 +31,7 @@ export async function getDashboardStats(user_id: string) {
       offersSubmitted: 0,
       offersAccepted: 0,
       reviewCount: 0,
+      averageRating: 0,
     };
   }
 
@@ -49,6 +44,7 @@ export async function getDashboardStats(user_id: string) {
     offersSubmitted,
     offersAccepted,
     reviewsCount,
+    reviewsAverageData,
   ] = await Promise.all([
     supabase
       .from("sessions")
@@ -94,7 +90,22 @@ export async function getDashboardStats(user_id: string) {
       .from("reviews")
       .select("id", { count: "exact", head: true })
       .eq("reviewee_id", user_id),
+
+    supabase
+      .from("reviews")
+      .select("rating")
+      .eq("reviewee_id", user_id),
   ]);
+
+  const averageRating =
+    reviewsAverageData.data && reviewsAverageData.data.length > 0
+      ? Number(
+          (
+            reviewsAverageData.data.reduce((sum, review) => sum + Number(review.rating ?? 0), 0) /
+            reviewsAverageData.data.length
+          ).toFixed(1)
+        )
+      : 0;
 
   return {
     completedSessions: completedSessions.count ?? 0,
@@ -105,6 +116,7 @@ export async function getDashboardStats(user_id: string) {
     offersSubmitted: offersSubmitted.count ?? 0,
     offersAccepted: offersAccepted.count ?? 0,
     reviewCount: reviewsCount.count ?? 0,
+    averageRating,
   };
 }
 export async function getDashboardSessions(user_id: string) {
@@ -114,6 +126,8 @@ export async function getDashboardSessions(user_id: string) {
       id,
       status,
       scheduled_at,
+      completed_at,
+      created_at,
       duration_minutes,
       helper_id,
       requester_id,
@@ -140,13 +154,10 @@ export async function getDashboardSessions(user_id: string) {
       requester:profiles!sessions_requester_id_fkey(id, full_name, profile_image_url)
     `)
     .or(`helper_id.eq.${user_id},requester_id.eq.${user_id}`)
-    .order("scheduled_at", { ascending: true, nullsFirst: false })
-    .limit(20);
+    .order("scheduled_at", { ascending: true, nullsFirst: false });
 }
 
 
-// -------------------------
-// SESSION DETAILS (NO "*")
 
 export async function getSessionDetails(session_id: string) {
   return await supabase
@@ -177,9 +188,6 @@ export async function getSessionDetails(session_id: string) {
 }
 
 
-// -------------------------
-// DASHBOARD DATA BATCH (SAFE)
-// -------------------------
 export async function getDashboardData(user_id: string) {
   const results = await Promise.allSettled([
     getDashboardProfile(user_id),
@@ -197,9 +205,6 @@ export async function getDashboardData(user_id: string) {
 }
 
 
-// -------------------------
-// OFFERS
-// -------------------------
 export async function getDashboardOffers(user_id: string) {
   return await supabase
     .from("offers")
@@ -215,9 +220,6 @@ export async function getDashboardOffers(user_id: string) {
 }
 
 
-// -------------------------
-// DIRECT REQUESTS (RECEIVED)
-// -------------------------
 export async function getDashboardDirectRequests(helper_id: string) {
   return await supabase
     .from("direct_requests")
@@ -244,7 +246,6 @@ export async function getDashboardDirectRequests(helper_id: string) {
 }
 
 
-// DIRECT REQUESTS (SENT)
 
 export async function getDashboardSentDirectRequests(requester_id: string) {
   return await supabase
@@ -271,7 +272,6 @@ export async function getDashboardSentDirectRequests(requester_id: string) {
     .limit(10);
 }
 
-// HELP OFFER REQUESTS
 export async function getDashboardHelpOfferRequests(helper_id: string) {
   return await supabase
     .from("help_offer_requests")
@@ -299,3 +299,4 @@ export async function getDashboardHelpOfferRequests(helper_id: string) {
     .order("created_at", { ascending: false })
     .limit(10);
 }
+

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import {
   BriefcaseBusiness,
   CalendarDays,
@@ -258,3 +258,4 @@ export default function Navbar() {
     </header>
   );
 }
+

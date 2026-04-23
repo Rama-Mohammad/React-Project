@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabaseClient";
+﻿import { supabase } from "../lib/supabaseClient";
 
 const SESSION_FILES_BUCKET = "session-files";
 const PROFILES_BUCKET = "profile-pics";
@@ -9,10 +9,11 @@ export async function uploadSessionFile(
   uploader_id: string,
   file: File
 ) {
-  const path = `${session_id}/${uploader_id}/${Date.now()}_${file.name}`;
+  const safeName = file.name.replace(/[^\w.-]+/g, "_");
+  const path = `${session_id}/${uploader_id}/${Date.now()}_${safeName}`;
   const { data, error } = await supabase.storage
     .from(SESSION_FILES_BUCKET)
-    .upload(path, file);
+    .upload(path, file, { contentType: file.type || undefined });
 
   if (error) return { data: null, error };
 
@@ -30,7 +31,6 @@ export async function deleteSessionFile(path: string) {
   return await supabase.storage.from(SESSION_FILES_BUCKET).remove([path]);
 }
 
-//avatar/profile pic
 export async function uploadAvatar(user_id: string, file: File) {
   const ext = file.name.split(".").pop();
   const path = `${user_id}/avatar.${ext}`;
@@ -57,7 +57,6 @@ export async function deleteAvatar(user_id: string, ext: string) {
     .remove([`${user_id}/avatar.${ext}`]);
 }
 
-//for the cover pic
 const COVERS_BUCKET = "covers";
 
 export async function uploadCover(user_id: string, file: File) {
@@ -85,3 +84,4 @@ export async function deleteCover(user_id: string, ext: string) {
     .from(COVERS_BUCKET)
     .remove([`${user_id}/cover.${ext}`]);
 }
+

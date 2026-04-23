@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabaseClient";
+﻿import { supabase } from "../lib/supabaseClient";
 
 export const getChecklistItems = async (sessionId: string) => {
   const { data, error } = await supabase
@@ -53,3 +53,4 @@ export const deleteChecklistItem = async (id: string) => {
 
   if (error) throw error;
 };
+

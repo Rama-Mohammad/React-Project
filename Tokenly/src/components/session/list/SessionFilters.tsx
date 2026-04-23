@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import type { SessionFiltersProps } from '../../../types/session';
 
 const SessionFilters: React.FC<SessionFiltersProps> = ({ activeFilter, onFilterChange, counts }) => {
@@ -32,4 +32,5 @@ const SessionFilters: React.FC<SessionFiltersProps> = ({ activeFilter, onFilterC
 };
 
 export default SessionFilters;
+
 

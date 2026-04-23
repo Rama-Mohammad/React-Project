@@ -1,4 +1,4 @@
-import { Activity, Coins } from "lucide-react";
+﻿import { Activity, Coins } from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -10,7 +10,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { DashboardEmptyState, DashboardGhostAction, DashboardPanel, DashboardPanelHeader } from "./ui";
 
 type TokenFlowPoint = {
   label: string;
@@ -28,7 +27,102 @@ type WeeklyActivityPoint = {
 type AnalyticsSectionProps = {
   tokenFlowData: TokenFlowPoint[];
   weeklyActivityData: WeeklyActivityPoint[];
+  sessionSummary?: {
+    completed: number;
+    upcoming: number;
+  };
 };
+
+function joinClasses(...classes: Array<string | undefined | false>) {
+  return classes.filter(Boolean).join(" ");
+}
+
+function DashboardPanel({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={joinClasses(
+        "rounded-[32px] border border-white/80 bg-white/84 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.26)] backdrop-blur-xl",
+        className
+      )}
+    >
+      {children}
+    </section>
+  );
+}
+
+function DashboardPanelHeader({
+  title,
+  subtitle,
+  action,
+  badge,
+  icon,
+}: {
+  title: string;
+  subtitle?: string;
+  action?: React.ReactNode;
+  badge?: React.ReactNode;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-slate-100 p-5">
+      <div className="flex min-w-0 items-center gap-3">
+        {icon ? <div className="shrink-0">{icon}</div> : null}
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-lg font-semibold text-slate-950">{title}</h3>
+            {badge}
+          </div>
+          {subtitle ? <p className="mt-0.5 text-xs text-slate-500">{subtitle}</p> : null}
+        </div>
+      </div>
+      {action ? <div className="shrink-0">{action}</div> : null}
+    </div>
+  );
+}
+
+function DashboardEmptyState({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={joinClasses(
+        "rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 text-sm text-slate-600",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+function DashboardGhostAction({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={joinClasses(
+        "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
 
 function ChartTooltip({
   active,
@@ -62,9 +156,12 @@ function ChartTooltip({
 export default function AnalyticsSection({
   tokenFlowData,
   weeklyActivityData,
+  sessionSummary,
 }: AnalyticsSectionProps) {
+  const hasWeeklySessionData = weeklyActivityData.some((point) => point.completed > 0 || point.upcoming > 0);
+
   return (
-    <section className="grid grid-cols-1 gap-4 xl:h-full xl:grid-cols-2">
+    <section className="grid grid-cols-1 gap-4 xl:h-[30rem] xl:max-h-[30rem] xl:grid-cols-2">
       <DashboardPanel className="flex h-full flex-col overflow-hidden">
         <DashboardPanelHeader
           title="Token Activity"
@@ -74,7 +171,7 @@ export default function AnalyticsSection({
               <Coins size={16} />
             </div>
           }
-          action={<DashboardGhostAction>Last {tokenFlowData.length} points</DashboardGhostAction>}
+          action={<DashboardGhostAction>Last 7 days</DashboardGhostAction>}
         />
         <div className="min-h-[20rem] flex-1 p-5">
           {tokenFlowData.length === 0 ? (
@@ -129,9 +226,16 @@ export default function AnalyticsSection({
               <Activity size={16} />
             </div>
           }
+          action={
+            sessionSummary ? (
+              <DashboardGhostAction>
+                {sessionSummary.completed} completed {"\u00B7"} {sessionSummary.upcoming} upcoming
+              </DashboardGhostAction>
+            ) : undefined
+          }
         />
         <div className="min-h-[20rem] flex-1 p-5">
-          {weeklyActivityData.length === 0 ? (
+          {!hasWeeklySessionData ? (
             <DashboardEmptyState className="h-full">No weekly activity data yet.</DashboardEmptyState>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
@@ -150,3 +254,4 @@ export default function AnalyticsSection({
     </section>
   );
 }
+

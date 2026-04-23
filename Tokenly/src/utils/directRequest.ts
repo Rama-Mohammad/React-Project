@@ -1,13 +1,8 @@
+import type { DirectRequestMeta } from "../types/directRequest";
+
 const DIRECT_HELPER_PREFIX = "[[DIRECT_HELPER:";
 const DIRECT_HELPER_NAME_PREFIX = "[[DIRECT_HELPER_NAME:";
 const MARKER_SUFFIX = "]]";
-
-export type DirectRequestMeta = {
-  isDirectRequest: boolean;
-  directHelperId?: string;
-  directHelperName?: string;
-  cleanDescription: string;
-};
 
 function extractMarkerValue(line: string, prefix: string) {
   if (!line.startsWith(prefix) || !line.endsWith(MARKER_SUFFIX)) return null;

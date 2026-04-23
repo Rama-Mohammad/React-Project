@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabaseClient";
+﻿import { supabase } from "../lib/supabaseClient";
 
 export async function getPortfolioByUser(user_id: string) {
   return await supabase
@@ -46,3 +46,4 @@ export async function updatePortfolioItem(
 export async function deletePortfolioItem(id: string) {
   return await supabase.from("portfolio_items").delete().eq("id", id);
 }
+

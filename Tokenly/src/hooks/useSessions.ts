@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import type { SessionStartInput, SessionStatus, UseSessionsResult } from "../types/session";
 import { supabase } from "../lib/supabaseClient";
 import type { Session } from "../types/session";
@@ -76,7 +76,6 @@ export default function useSessions(): UseSessionsResult {
             return false;
         }
 
-        // Store the created session so callers can navigate to it
         if (created) setSession(created as unknown as Session);
         setLoading(false);
         return true;
@@ -146,3 +145,4 @@ export default function useSessions(): UseSessionsResult {
         fetchCompletedSessionsCount,
     };
 }
+

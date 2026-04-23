@@ -14,9 +14,8 @@ import Loader from "../components/common/Loader";
 import {
   mapRequestToExploreItem,
   mapSkillToExploreItem,
-  type SkillWithRelations,
 } from "../utils/exploreMappers";
-import type { ExploreTab, RequestItem, HelperItem, SkillItem, HelpOfferItem, Urgency, SkillLevel } from "../types/explore";
+import type { ExploreTab, RequestItem, HelperItem, SkillItem, HelpOfferItem, Urgency, SkillLevel, SkillWithRelations } from "../types/explore";
 import useRequests from "../hooks/useRequest";
 import { getAllSkills } from "../services/skillService";
 import { getExploreHelpers } from "../services/helperExploreService";
@@ -75,7 +74,6 @@ function toRelativeAge(dateValue?: string | null): string {
   return `${days}d ago`;
 }
 
-// A helper is considered online if their last_seen is within the last 15 minutes
 function isOnline(lastSeen?: string | null): boolean {
   if (!lastSeen) return false;
   return Date.now() - new Date(lastSeen).getTime() < 15 * 60 * 1000;
@@ -159,7 +157,6 @@ export default function Explore() {
     return new URLSearchParams(location.search).get("category")?.trim() ?? "";
   }, [location.search]);
 
-  // Sync tab from URL param (e.g. /explore?tab=helpers)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const requestedTab = params.get("tab");
@@ -180,7 +177,6 @@ export default function Explore() {
     return params.get("modal") === "how-it-works";
   }, [location.search]);
 
-  // Smooth scroll to tabs bar when navigated via hash
   useEffect(() => {
     if (location.hash !== "#explore-tabs-bar") return;
     if (!tabsBarRef.current) return;
@@ -192,7 +188,6 @@ export default function Explore() {
     return () => window.clearTimeout(id);
   }, [location.hash]);
 
-  // Reset requests pagination when search, filters, or tab change
   useEffect(() => {
     setRequestsPage(0);
   }, [activeTab, duration, search, selectedCategory, sortBy, urgency]);
@@ -201,7 +196,6 @@ export default function Explore() {
     setHelpersPage(0);
   }, [activeTab, rating, search, selectedHelperCategories, sortBy]);
 
-  // Requests tab: fetch the full open request list, then paginate filtered results locally
   useEffect(() => {
     if (activeTab !== "requests") return;
 
@@ -217,7 +211,6 @@ export default function Explore() {
     return () => {
       mounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   useEffect(() => {
@@ -234,12 +227,10 @@ export default function Explore() {
     });
   }, [liveOpenRequests]);
 
-  // Reset skills pagination when search, filters, or tab change
   useEffect(() => {
     setSkillsPage(0);
   }, [activeTab, level, search, selectedCategory, sortBy]);
 
-  // Skills tab: fetch the full list, then paginate filtered results locally
   useEffect(() => {
     if (activeTab !== "skills") return;
 
@@ -270,8 +261,6 @@ export default function Explore() {
     };
   }, [activeTab]);
 
-  // Helpers tab: fetch only profiles that have skills or open help_offers
-  // online status is derived from last_seen (< 15 min = online)
   useEffect(() => {
     if (activeTab !== "helpers") return;
 
@@ -304,13 +293,10 @@ export default function Explore() {
     };
   }, [activeTab]);
 
-  // Reset offers pagination when search, filters, or tab change
   useEffect(() => {
     setOffersPage(0);
   }, [activeTab, search, selectedCategory, sortBy]);
 
-  // Offers tab: fetch open help_offers only (Flow 2 — helper-initiated)
-  // This replaces the old broken fetch that mixed `offers` + `help_offers` together
   useEffect(() => {
     if (activeTab !== "offers") return;
 
@@ -330,7 +316,6 @@ export default function Explore() {
         return;
       }
 
-      // Map raw DB rows to HelpOfferItem for the UI
       const mapped: HelpOfferItem[] = ((data ?? []) as Array<Record<string, unknown>>).map((row) => {
         const helperRaw = row.helper as {
           id?: string | null;
@@ -341,7 +326,6 @@ export default function Explore() {
         } | null;
         const helper = Array.isArray(helperRaw) ? helperRaw[0] : helperRaw;
 
-        // Extract skill names from the nested help_offer_skills join
         const skillsRaw = row.skills as Array<{ skill?: { name?: string } | null }> | null;
         const skillNames = (skillsRaw ?? [])
           .map((s) => s?.skill?.name)
@@ -531,8 +515,6 @@ export default function Explore() {
     [filteredSkills, safeSkillsPage]
   );
 
-  // Offers tab filtering: searches title, helper name, category, description, skills
-  // Sorting: Newest (default), Oldest, Highest Tokens
   const filteredOffers: HelpOfferItem[] = useMemo(() => {
     let data = [...liveOffers];
 
@@ -554,7 +536,6 @@ export default function Explore() {
     } else if (sortBy === "Highest Tokens") {
       data.sort((a, b) => b.credits - a.credits);
     }
-    // Default is Newest — already sorted by created_at desc from the service
 
     return data;
   }, [liveOffers, search, selectedCategory, sortBy]);
@@ -597,7 +578,6 @@ export default function Explore() {
     [liveSkills]
   );
 
-  // Offer categories come from help_offers.category — not from the old mixed mess
   const offerCategoryOptions = useMemo(
     () => buildDynamicOptions(liveOffers.map((item) => item.category), "General"),
     [liveOffers]
@@ -647,7 +627,6 @@ export default function Explore() {
           ? skillCategoryOptions
           : offerCategoryOptions;
 
-  // Reset category filter when tab changes and current selection no longer applies
   useEffect(() => {
     if (activeTab === "helpers") {
       setSelectedHelperCategories((current) =>
@@ -980,7 +959,6 @@ export default function Explore() {
             </div>
           </div>
 
-          {/* -- Requests -- */}
           {activeTab === "requests" && requestsLoading && requestsPage === 0 ? (
             <Loader className="mt-5 py-16" />
           ) : activeTab === "requests" && requestsError ? (
@@ -1013,7 +991,6 @@ export default function Explore() {
             </>
           ) : null}
 
-          {/* -- Helpers -- */}
           {activeTab === "helpers" && helpersLoading ? (
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6">
               <Loader inline label="Loading helpers..." />
@@ -1048,7 +1025,6 @@ export default function Explore() {
             </>
           ) : null}
 
-          {/* -- Skills -- */}
           {activeTab === "skills" && skillsLoading && skillsPage === 0 ? (
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6">
               <Loader inline label="Loading skills..." />
@@ -1082,11 +1058,6 @@ export default function Explore() {
               {renderPagination(skillsPage, skillsTotalPages, setSkillsPage, skillsLoading)}
             </>
           ) : null}
-
-          {/* -- Offers tab (Flow 2) --
-               Shows help_offers posted by helpers advertising availability.
-               A user browses these and clicks "Book" to submit a help_offer_request.
-               This is NOT the `offers` table — those are private responses to requests. */}
           {activeTab === "offers" && offersLoading && offersPage === 0 ? (
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6">
               <Loader inline label="Loading offers..." />
@@ -1104,7 +1075,6 @@ export default function Explore() {
                     className="explore-fade-in-up flex h-full flex-col rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur"
                     style={getEnterStyle(index)}
                   >
-                    {/* Header: category + urgency badge */}
                     <div className="flex items-start justify-between gap-2">
                       <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">
                         {item.category}
@@ -1123,11 +1093,9 @@ export default function Explore() {
                       ) : null}
                     </div>
 
-                    {/* Title + description */}
                     <h3 className="mt-3 text-base font-semibold text-slate-900">{item.title}</h3>
                     <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-600">{item.description}</p>
 
-                    {/* Skill tags */}
                     {item.skillNames.length > 0 ? (
                       <div className="mt-3 flex flex-wrap gap-1.5">
                         {item.skillNames.slice(0, 4).map((skill) => (
@@ -1141,7 +1109,6 @@ export default function Explore() {
                       </div>
                     ) : null}
 
-                    {/* Footer: duration + credits + posted age */}
                     <div className="mt-auto pt-4 flex items-center justify-between gap-2 text-xs text-slate-500">
                       <div className="flex items-center gap-3">
                         {item.durationMinutes ? (
@@ -1152,7 +1119,6 @@ export default function Explore() {
                       <span>{item.postedAgo}</span>
                     </div>
 
-                    {/* Helper info + Book button */}
                     <div className="mt-3 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
                       <div className="flex items-center gap-2">
                         <Avatar
@@ -1165,11 +1131,10 @@ export default function Explore() {
                         <div>
                           <p className="text-xs font-semibold text-slate-900">{item.helperName}</p>
                           {item.helperRating > 0 ? (
-                            <p className="text-xs text-slate-500">⭐ {item.helperRating.toFixed(1)}</p>
+                            <p className="text-xs text-slate-500">{"\u2B50"} {item.helperRating.toFixed(1)}</p>
                           ) : null}
                         </div>
                       </div>
-                      {/* Links to the help offer detail page — user can submit a help_offer_request from there */}
                       <Link
                         to={isAuthenticated ? `/offers/${item.id}?source=help_offer` : "/auth?mode=signin"}
                         state={!isAuthenticated ? authRedirectState : undefined}
@@ -1210,3 +1175,5 @@ export default function Explore() {
     </div>
   );
 }
+
+

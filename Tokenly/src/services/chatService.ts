@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabaseClient";
+﻿import { supabase } from "../lib/supabaseClient";
 import type { Message } from "../types/session";
 
 export const getMessages = async (sessionId: string): Promise<Message[]> => {
@@ -26,3 +26,4 @@ export const sendMessage = async (
 
   if (error) throw error;
 };
+

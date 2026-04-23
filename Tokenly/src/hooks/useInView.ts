@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import type { UseInViewResult } from "../types/common";
 
 const useInView = (): UseInViewResult => {
@@ -19,3 +19,4 @@ const useInView = (): UseInViewResult => {
 };
 
 export default useInView;
+

@@ -1,4 +1,4 @@
-import { Search, SlidersHorizontal } from "lucide-react";
+﻿import { Search, SlidersHorizontal } from "lucide-react";
 import { useEffect } from "react";
 import ThemedSelect from "../common/ThemedSelect";
 import type { ExploreTab } from "../../types/explore";
@@ -61,4 +61,5 @@ export default function SearchBar({
     </div>
   );
 }
+
 

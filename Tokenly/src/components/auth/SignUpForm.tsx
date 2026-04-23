@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Loader from "../common/Loader";
 import type { SignUpFormProps } from "../../types/auth";
@@ -111,7 +111,7 @@ export default function SignUpForm({
       const email = await getEmailByUsername(username.toLowerCase());
       setUsernameTaken(!!email);
       setUsernameChecking(false);
-    }, 500); // wait 500ms after user stops typing
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [username]);
@@ -373,4 +373,6 @@ export default function SignUpForm({
     </div>
   );
 }
+
+
 

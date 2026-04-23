@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import Loader from "../common/Loader";
 
 function validatePassword(password: string): string | null {
@@ -199,3 +199,4 @@ export default function NewPasswordForm({
         </div>
     );
 }
+

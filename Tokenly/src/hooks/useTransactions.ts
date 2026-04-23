@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useCallback, useState } from "react";
 import type { CreditSummary, Transaction, TransactionInput, UseTransactionsResult } from "../types/transaction";
 import {
     getTransactionsByUser,
@@ -13,7 +13,7 @@ export default function useTransactions(): UseTransactionsResult {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    async function fetchTransactionsByUser(user_id: string) {
+    const fetchTransactionsByUser = useCallback(async (user_id: string) => {
         setLoading(true);
         setError("");
 
@@ -27,9 +27,9 @@ export default function useTransactions(): UseTransactionsResult {
 
         setTransactions(data ?? []);
         setLoading(false);
-    }
+    }, []);
 
-    async function fetchTransactionsBySession(session_id: string) {
+    const fetchTransactionsBySession = useCallback(async (session_id: string) => {
         setLoading(true);
         setError("");
 
@@ -43,9 +43,9 @@ export default function useTransactions(): UseTransactionsResult {
 
         setTransactions(data ?? []);
         setLoading(false);
-    }
+    }, []);
 
-    async function fetchCreditSummary(user_id: string) {
+    const fetchCreditSummary = useCallback(async (user_id: string) => {
         setLoading(true);
         setError("");
 
@@ -59,9 +59,9 @@ export default function useTransactions(): UseTransactionsResult {
 
         setSummary(data);
         setLoading(false);
-    }
+    }, []);
 
-    async function addTransaction(data: TransactionInput) {
+    const addTransaction = useCallback(async (data: TransactionInput) => {
         setLoading(true);
         setError("");
 
@@ -75,7 +75,7 @@ export default function useTransactions(): UseTransactionsResult {
 
         setLoading(false);
         return true;
-    }
+    }, []);
 
     return {
         transactions,
@@ -88,3 +88,4 @@ export default function useTransactions(): UseTransactionsResult {
         addTransaction,
     };
 }
+

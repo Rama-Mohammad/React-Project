@@ -1,4 +1,4 @@
-export type NotificationType =
+﻿export type NotificationType =
   | "offer_received"
   | "offer_accepted"
   | "offer_rejected"
@@ -8,15 +8,13 @@ export type NotificationType =
   | "credits_earned"
   | "credits_spent"
   | "request_expired"
-  // Flow 2 — help_offer events
-  | "help_offer_request_received"   // helper gets this when someone requests their help_offer
-  | "help_offer_request_accepted"   // requester gets this when helper accepts
-  | "help_offer_request_rejected"   // requester gets this when helper rejects
-  // Flow 3 — direct_request events
-  | "direct_request_received"       // helper gets this when someone sends them a direct request
-  | "direct_request_accepted"       // requester gets this when helper accepts
-  | "direct_request_rejected"       // requester gets this when helper rejects
-  | "chat_message_received";         // user gets this when they receive a new chat message
+  | "help_offer_request_received"
+  | "help_offer_request_accepted"
+  | "help_offer_request_rejected"
+  | "direct_request_received"
+  | "direct_request_accepted"
+  | "direct_request_rejected"
+  | "chat_message_received";
   
 
 export type Notification = {
@@ -43,3 +41,5 @@ export type UseNotificationsResult = {
   removeNotification: (id: string) => Promise<boolean>;
   subscribeToLive: (user_id: string) => () => void;
 };
+
+

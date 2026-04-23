@@ -1,7 +1,4 @@
-import type { PostgrestError, Session, User } from "@supabase/supabase-js";
-import { supabase } from "../lib/supabaseClient";
-
-export type SessionsQueryError = PostgrestError | Error | null;
+﻿import { supabase } from "../lib/supabaseClient";
 
 export async function getSessionsAuthDebugContext() {
   const [{ data: sessionData, error: sessionError }, { data: userData, error: userError }] = await Promise.all([
@@ -16,19 +13,9 @@ export async function getSessionsAuthDebugContext() {
   };
 }
 
-export function logSessionsQuery(
-  label: string,
-  details: {
-    session: Session | null;
-    user: User | null;
-    payload?: unknown;
-    error?: SessionsQueryError;
-  }
-) {
-  console.log(`[sessions] ${label}`, {
-    session: details.session,
-    user: details.user,
-    payload: details.payload ?? null,
-    error: details.error ?? null,
-  });
+export function logSessionsQuery(_label: string, _details: unknown) {
+  void _label;
+  void _details;
+  return;
 }
+

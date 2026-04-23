@@ -2,7 +2,7 @@
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Loader from "../components/common/Loader";
 import useAuth from "../hooks/useAuth";
-import type { AuthRedirectState } from "../hooks/useAuthRedirect";
+import type { AuthRedirectState } from "../types/auth";
 import NewPasswordForm from "../components/auth/NewPasswordForm";
 import OnboardingForm from "../components/auth/OnBoardingForm";
 import type { OnboardingData } from "../types/onboardingdata"
@@ -249,7 +249,6 @@ export default function AuthPage() {
         );
     }
 
-    //show the onboarding form 
     if (showOnboarding) {
         return (
             <div className="relative h-dvh w-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex items-center justify-center p-4">
@@ -295,7 +294,6 @@ export default function AuthPage() {
         );
     }
 
-    //the main auth forms (signin/signup/reset)
     return (
         <div className="relative h-dvh w-screen overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] flex items-center justify-center p-2 sm:p-3 lg:p-4">
             <div className="pointer-events-none absolute inset-0">
@@ -377,3 +375,4 @@ export default function AuthPage() {
         </div>
     );
 }
+

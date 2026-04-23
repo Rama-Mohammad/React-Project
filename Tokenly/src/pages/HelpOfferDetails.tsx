@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Clock3, Coins, Sparkles, MessageCircle, CheckCircle2, XCircle, Star } from "lucide-react";
 import Avatar from "../components/common/Avatar";
@@ -49,14 +49,12 @@ export default function HelpOfferDetails() {
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [actionError, setActionError] = useState("");
 
-  // Load current user
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {
       setCurrentUserId(data.user?.id ?? null);
     });
   }, []);
 
-  // Load the help_offer
   useEffect(() => {
     if (!offerId) { setError("Offer not found."); setLoading(false); return; }
     let mounted = true;
@@ -72,7 +70,6 @@ export default function HelpOfferDetails() {
     return () => { mounted = false; };
   }, [offerId]);
 
-  // Load incoming help_offer_requests for this offer
   useEffect(() => {
     if (!offerId) return;
     let mounted = true;
@@ -88,7 +85,6 @@ export default function HelpOfferDetails() {
     return () => { mounted = false; };
   }, [offerId]);
 
-  // Guard: only the helper who owns this offer can view this page
   useEffect(() => {
     if (!offer || !currentUserId) return;
     if (offer.helper_id !== currentUserId) {
@@ -101,7 +97,6 @@ export default function HelpOfferDetails() {
     setActionError("");
     const { error } = await acceptHelpOfferRequest(requestId);
     if (error) { setActionError(error.message); setActionLoadingId(null); return; }
-    // Update local state: mark accepted, reject others
     setRequests((prev) =>
       prev.map((r) =>
         r.id === requestId
@@ -153,7 +148,6 @@ export default function HelpOfferDetails() {
       </div>
 
       <main className="relative z-10 mx-auto max-w-3xl px-4 py-6 sm:px-5 lg:py-8">
-        {/* Back */}
         <Link
           to="/my-offers"
           className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900"
@@ -162,7 +156,6 @@ export default function HelpOfferDetails() {
           My Offers
         </Link>
 
-        {/* Offer card */}
         <section className="mt-4 rounded-3xl border border-white/55 bg-white/80 p-5 shadow-sm backdrop-blur-xl md:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -209,7 +202,6 @@ export default function HelpOfferDetails() {
           </p>
         </section>
 
-        {/* Incoming requests */}
         <section className="mt-6">
           <h2 className="mb-3 text-lg font-semibold text-slate-900">
             Incoming Requests
@@ -230,7 +222,6 @@ export default function HelpOfferDetails() {
               </div>
             ) : (
             <div className="space-y-3">
-              {/* Pending first */}
               {pendingRequests.map((req) => {
                 const requester = Array.isArray(req.requester) ? req.requester[0] : req.requester;
                 const name = requester?.full_name ?? requester?.username ?? "User";
@@ -295,7 +286,6 @@ export default function HelpOfferDetails() {
                 );
               })}
 
-              {/* Resolved (accepted/rejected) */}
               {resolvedRequests.map((req) => {
                 const requester = Array.isArray(req.requester) ? req.requester[0] : req.requester;
                 const name = requester?.full_name ?? requester?.username ?? "User";
@@ -335,3 +325,4 @@ export default function HelpOfferDetails() {
     </div>
   );
 }
+

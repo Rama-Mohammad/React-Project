@@ -1,4 +1,4 @@
-export type HelpOfferStatus = "open" | "closed" | "accepted";
+﻿export type HelpOfferStatus = "open" | "closed" | "accepted";
 
 export type HelpOffer = {
   id: string;
@@ -74,3 +74,4 @@ export type UseHelpOfferRequestsResult = {
   rejectRequest: (id: string) => Promise<boolean>;
   withdrawRequest: (id: string) => Promise<boolean>;
 };
+

@@ -1,8 +1,7 @@
-import { Coins, MessageCircle, Trash2 } from "lucide-react";
+﻿import { Coins, MessageCircle, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Loader from "../common/Loader";
 import type { DashboardOfferItem, DashboardRequestItem } from "../../types/dashboard";
-import { DashboardEmptyState, DashboardGhostAction, DashboardPanel, DashboardPanelHeader } from "./ui";
 
 type RequestsOverviewSectionProps = {
   requestsLoading: boolean;
@@ -13,6 +12,91 @@ type RequestsOverviewSectionProps = {
   dashLoading: boolean;
   submittedOffers: DashboardOfferItem[];
 };
+
+function joinClasses(...classes: Array<string | undefined | false>) {
+  return classes.filter(Boolean).join(" ");
+}
+
+function DashboardPanel({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={joinClasses(
+        "rounded-[32px] border border-white/80 bg-white/84 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.26)] backdrop-blur-xl",
+        className
+      )}
+    >
+      {children}
+    </section>
+  );
+}
+
+function DashboardPanelHeader({
+  title,
+  subtitle,
+  action,
+}: {
+  title: string;
+  subtitle?: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-slate-100 p-5">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-lg font-semibold text-slate-950">{title}</h3>
+          </div>
+          {subtitle ? <p className="mt-0.5 text-xs text-slate-500">{subtitle}</p> : null}
+        </div>
+      </div>
+      {action ? <div className="shrink-0">{action}</div> : null}
+    </div>
+  );
+}
+
+function DashboardEmptyState({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={joinClasses(
+        "rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 text-sm text-slate-600",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+function DashboardGhostAction({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={joinClasses(
+        "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
 
 function SectionShell({
   title,
@@ -26,7 +110,7 @@ function SectionShell({
   children: React.ReactNode;
 }) {
   return (
-    <DashboardPanel className="flex h-full flex-col">
+    <DashboardPanel className="flex h-full min-h-0 flex-col">
       <DashboardPanelHeader title={title} subtitle={subtitle} action={action} />
       <div className="flex-1 space-y-3 overflow-y-auto p-5">{children}</div>
     </DashboardPanel>
@@ -43,7 +127,7 @@ export default function RequestsOverviewSection({
   submittedOffers,
 }: RequestsOverviewSectionProps) {
   return (
-    <section className="grid grid-cols-1 gap-4 xl:h-full xl:grid-cols-2">
+    <section className="grid grid-cols-1 gap-4 xl:h-[30rem] xl:max-h-[30rem] xl:min-h-0 xl:grid-cols-2">
       <SectionShell
         title="Open Requests"
         subtitle="Requests you are still waiting to match"
@@ -148,3 +232,4 @@ export default function RequestsOverviewSection({
     </section>
   );
 }
+

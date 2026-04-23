@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowLeft, Paperclip } from "lucide-react";
+﻿import { AlertTriangle, ArrowLeft, Paperclip } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import ThemedSelect from "../components/common/ThemedSelect";
@@ -121,4 +121,5 @@ export default function ReportIssue() {
     </div>
   );
 }
+
 

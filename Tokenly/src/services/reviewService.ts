@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabaseClient";
+﻿import { supabase } from "../lib/supabaseClient";
 
 export async function createReview(data: {
   session_id: string;
@@ -43,3 +43,4 @@ export async function hasUserReviewedSession(
     .single();
   return !!data;
 }
+

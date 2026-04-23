@@ -1,4 +1,4 @@
-import FeatureCard from "../home/FeatureCard";
+﻿import FeatureCard from "../home/FeatureCard";
 import { faCoins, faPlay, faUsers, faLightbulb, faStar } from "@fortawesome/free-solid-svg-icons";
 
 const FeaturesSection = () => {
@@ -72,3 +72,4 @@ const FeaturesSection = () => {
 };
 
 export default FeaturesSection;
+

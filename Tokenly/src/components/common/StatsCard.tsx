@@ -1,4 +1,4 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+﻿import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import type { CountUpProps, StatCardProps } from "../../types/common";
 import useInView from "../../hooks/useInView";
@@ -54,4 +54,5 @@ const StatCard = ({ icon, number, label }: StatCardProps) => {
 };
 
 export default StatCard;
+
 

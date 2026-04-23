@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+﻿import { useCallback, useState } from "react";
 import type { Notification, UseNotificationsResult } from "../types/notification";
 import { supabase } from "../lib/supabaseClient";
 import {
@@ -122,3 +122,4 @@ export default function useNotifications(): UseNotificationsResult {
         subscribeToLive,
     };
 }
+

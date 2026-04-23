@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { PenLine, Trash2 } from "lucide-react";
 import type { ProfileSkillCardProps } from "../../types/profile";
 
@@ -51,3 +51,4 @@ const SkillCard: React.FC<ProfileSkillCardProps> = ({ skill, onDelete, onEdit })
 };
 
 export default SkillCard;
+

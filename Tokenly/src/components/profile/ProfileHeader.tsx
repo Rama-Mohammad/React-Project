@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+﻿import React, { useRef, useState } from "react";
 import {
   CalendarDays,
   Check,
@@ -43,7 +43,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
     try {
       await copyProfileLink();
     } catch {
-      // no-op if clipboard is unavailable
     } finally {
       shareInFlightRef.current = false;
     }
@@ -73,7 +72,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
           : "";
 
       if (errorName !== "AbortError") {
-        // no-op if share/clipboard is unavailable
       }
     } finally {
       shareInFlightRef.current = false;
@@ -277,4 +275,5 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
 };
 
 export default ProfileHeader;
+
 

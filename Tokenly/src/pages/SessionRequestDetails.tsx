@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { getSessionById } from "../services/sessionService";
 
@@ -82,4 +82,5 @@ export default function SessionRequestDetails() {
     </div>
   );
 }
+
 

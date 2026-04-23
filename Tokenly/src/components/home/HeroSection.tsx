@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+﻿import { X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import RatingStars from "../common/RatingStars";
@@ -101,7 +101,6 @@ const HeroSection = () => {
 
 <div className="mt-8 flex items-center gap-2 text-slate-500 sm:flex sm:items-center">
   
-{/* MOBILE VERSION */}
 <div className="mt-8 flex flex-col items-start gap-1 text-slate-500 sm:hidden">
   <div className="flex items-center gap-2">
     <span className="font-medium text-slate-700">4.9</span>
@@ -113,7 +112,6 @@ const HeroSection = () => {
   </span>
 </div>
 
-{/* DESKTOP VERSION */}
 <div className="hidden sm:flex items-center gap-2">
   <RatingStars value={4.9} sizeClassName="text-xl" />
   <span className="font-medium text-slate-700">4.9</span>
@@ -193,3 +191,4 @@ const HeroSection = () => {
 };
 
 export default HeroSection;
+

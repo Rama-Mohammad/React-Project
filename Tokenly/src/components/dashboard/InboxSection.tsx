@@ -1,9 +1,8 @@
-import Avatar from "../common/Avatar";
+﻿import Avatar from "../common/Avatar";
 import type {
   DashboardDirectRequestItem,
   DashboardHelpOfferRequestItem,
 } from "../../types/dashboard";
-import { DashboardEmptyState, DashboardPanel, DashboardPanelHeader } from "./ui";
 
 type InboxItem = DashboardDirectRequestItem | DashboardHelpOfferRequestItem;
 
@@ -17,6 +16,69 @@ type InboxSectionProps = {
   onAccept: (id: string) => void;
   onReject: (id: string) => void;
 };
+
+function joinClasses(...classes: Array<string | undefined | false>) {
+  return classes.filter(Boolean).join(" ");
+}
+
+function DashboardPanel({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={joinClasses(
+        "rounded-[32px] border border-white/80 bg-white/84 shadow-[0_22px_60px_-38px_rgba(15,23,42,0.26)] backdrop-blur-xl",
+        className
+      )}
+    >
+      {children}
+    </section>
+  );
+}
+
+function DashboardPanelHeader({
+  title,
+  badge,
+}: {
+  title: string;
+  badge?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-slate-100 p-5">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-lg font-semibold text-slate-950">{title}</h3>
+            {badge}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DashboardEmptyState({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={joinClasses(
+        "rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 text-sm text-slate-600",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
 
 export default function InboxSection({
   title,
@@ -46,7 +108,7 @@ export default function InboxSection({
         };
 
   return (
-    <DashboardPanel className={`flex h-full flex-col ${theme.sectionBorder}`}>
+    <DashboardPanel className={`flex h-full min-h-0 flex-col xl:h-[30rem] xl:max-h-[30rem] ${theme.sectionBorder}`}>
       <DashboardPanelHeader
         title={title}
         badge={
@@ -77,9 +139,9 @@ export default function InboxSection({
                     <p className="text-base font-semibold leading-tight text-slate-950">{item.title}</p>
                     <p className="mt-1 text-sm text-slate-500">
                       From {item.personName}
-                      {item.duration ? ` • ${item.duration} min` : ""}
-                      {item.credits ? ` • ${item.credits} credits` : ""}
-                      {" • "}
+                      {item.duration ? ` \u2022 ${item.duration} min` : ""}
+                      {item.credits ? ` \u2022 ${item.credits} credits` : ""}
+                      {" \u2022 "}
                       {item.age}
                     </p>
                     {item.message ? (
@@ -114,3 +176,4 @@ export default function InboxSection({
     </DashboardPanel>
   );
 }
+

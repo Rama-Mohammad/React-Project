@@ -1,12 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import useAuth from "./useAuth";
-
-type AuthMode = "signin" | "signup" | "reset" | "newpassword";
-
-export type AuthRedirectState = {
-  from: string;
-};
+import type { AuthMode, AuthRedirectState } from "../types/auth";
 
 export function buildAuthPath(mode: AuthMode = "signin") {
   return `/auth?mode=${mode}`;

@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabaseClient";
+﻿import { supabase } from "../lib/supabaseClient";
 
 const PROFILE_IDENTIFIER_CACHE = new Map<string, { id: string; username?: string | null }>();
 
@@ -79,10 +79,6 @@ export async function getEmailByUsername(username: string): Promise<string | nul
   if (error || !data) return null;
   return data.email;
 }
-
-/**
-uploads a profile picture to the `profile-pics` bucket and returns the public URL.
-path: profile-pics/{userId}/{timestamp}.{ext}**/
 
 export async function uploadProfilePicture(
   userId: string,
@@ -218,3 +214,5 @@ export async function resolvePublicProfileIdentifier(identifier: string) {
     error: fallbackLookup.error ?? primaryLookup.error,
   };
 }
+
+

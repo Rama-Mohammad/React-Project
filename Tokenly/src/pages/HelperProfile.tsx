@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { MapPin, Calendar, Star, Clock3, Coins, Sparkles, Globe } from "lucide-react";
 import Avatar from "../components/common/Avatar";
@@ -55,7 +55,6 @@ export default function HelperProfile() {
   const [error, setError] = useState("");
   const { authRedirectState } = useAuthRedirect();
 
-  // Load current user to determine if viewing own profile
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {
       setCurrentUserId(data.user?.id ?? null);
@@ -143,7 +142,6 @@ export default function HelperProfile() {
       </div>
 
       <main className="relative z-10 mx-auto max-w-4xl px-4 py-6 sm:px-5 lg:py-8">
-        {/* Profile header */}
         <section className="rounded-3xl border border-white/55 bg-white/80 p-5 shadow-sm backdrop-blur-xl md:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-4">
@@ -175,17 +173,15 @@ export default function HelperProfile() {
                   {avgRating ? (
                     <span className="inline-flex items-center gap-1">
                       <Star size={11} className="text-amber-400" />
-                      {avgRating} · {reviews.length} reviews
+                      {avgRating} {"\u00B7"} {reviews.length} reviews
                     </span>
                   ) : null}
                 </div>
               </div>
             </div>
 
-            {/* CTA — only if not viewing own profile and signed in */}
             {!isOwnProfile ? (
               <div className="flex flex-col gap-2 sm:items-end">
-                {/* Flow 3: send a direct request to this specific helper */}
                 <Link
                   to={currentUserId ? `/helpers/${profile.id}/request` : "/auth?mode=signin"}
                   state={!currentUserId ? authRedirectState : undefined}
@@ -218,9 +214,7 @@ export default function HelperProfile() {
         </section>
 
         <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_340px]">
-          {/* Left: skills + reviews */}
           <div className="space-y-5">
-            {/* Skills */}
             {skills.length > 0 ? (
               <section className="rounded-3xl border border-white/55 bg-white/80 p-5 shadow-sm backdrop-blur-xl md:p-6">
                 <h2 className="mb-4 text-base font-semibold text-slate-900">
@@ -249,7 +243,6 @@ export default function HelperProfile() {
               </section>
             ) : null}
 
-            {/* Reviews */}
             {reviews.length > 0 ? (
               <section className="rounded-3xl border border-white/55 bg-white/80 p-5 shadow-sm backdrop-blur-xl md:p-6">
                 <h2 className="mb-4 text-base font-semibold text-slate-900">
@@ -297,7 +290,6 @@ export default function HelperProfile() {
             ) : null}
           </div>
 
-          {/* Right: open help_offers */}
           <div>
             {helpOffers.length > 0 ? (
               <section className="rounded-3xl border border-white/55 bg-white/80 p-5 shadow-sm backdrop-blur-xl md:p-6">
@@ -334,7 +326,6 @@ export default function HelperProfile() {
                         </span>
                       </div>
 
-                      {/* Link to the public booking page — Flow 2 entry point */}
                       <Link
                         to={currentUserId ? `/offers/${offer.id}` : "/auth?mode=signin"}
                         state={!currentUserId ? authRedirectState : undefined}
@@ -356,7 +347,7 @@ export default function HelperProfile() {
                     state={!currentUserId ? authRedirectState : undefined}
                     className="mt-3 inline-flex text-xs font-semibold text-indigo-600 hover:text-indigo-800"
                   >
-                    Request them directly →
+                    Request them directly {"\u2192"}
                   </Link>
                 ) : null}
               </section>
@@ -367,3 +358,4 @@ export default function HelperProfile() {
     </div>
   );
 }
+

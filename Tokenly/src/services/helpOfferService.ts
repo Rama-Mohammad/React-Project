@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabaseClient";
+﻿import { supabase } from "../lib/supabaseClient";
 import type {
   HelpOfferInput,
   HelpOfferUpdateInput,
@@ -7,12 +7,9 @@ import type {
 } from "../types/helpOffer";
 import { createNotification } from "./notificationService";
 import { getProfileCreditBalance } from "./profileService";
-import { ensureSessionForBooking } from "./sessionService";
+import { ensureSessionForBooking, validateSessionScheduleAvailability } from "./sessionService";
 
-// ─── HELP OFFERS ────────────────────────────────────────────────────────────
 
-// Used by the Offers tab in Explore — fetches all open help_offers with helper
-// profile and linked skill names
 export async function getOpenHelpOffers(opts?: { page?: number; pageSize?: number }) {
   let query = supabase
     .from("help_offers")
@@ -50,7 +47,6 @@ export async function getOpenHelpOffers(opts?: { page?: number; pageSize?: numbe
   return await query;
 }
 
-// Used by a helper's own profile/dashboard to see their posted offers
 export async function getHelpOffersByHelper(helper_id: string) {
   return await supabase
     .from("help_offers")
@@ -126,10 +122,7 @@ export async function deleteHelpOffer(id: string) {
     .eq("id", id);
 }
 
-// ─── HELP OFFER REQUESTS ─────────────────────────────────────────────────────
 
-// Fetch all requests that came in for a specific help_offer
-// Used by the helper to see who wants their offer
 export async function getRequestsForHelpOffer(help_offer_id: string) {
   return await supabase
     .from("help_offer_requests")
@@ -152,7 +145,6 @@ export async function getRequestsForHelpOffer(help_offer_id: string) {
     .order("created_at", { ascending: false });
 }
 
-// Fetch all help_offer_requests a user has sent (from their side)
 export async function getHelpOfferRequestsByUser(requester_id: string) {
   return await supabase
     .from("help_offer_requests")
@@ -181,8 +173,6 @@ export async function getHelpOfferRequestsByUser(requester_id: string) {
     .order("created_at", { ascending: false });
 }
 
-// User submits a request to a helper's help_offer
-// This replaces the old hack in OfferAppointment that created fake requests+offers
 export async function submitHelpOfferRequest(data: HelpOfferRequestInput) {
   const { data: helpOfferForValidation, error: helpOfferError } = await supabase
     .from("help_offers")
@@ -220,7 +210,6 @@ export async function submitHelpOfferRequest(data: HelpOfferRequestInput) {
 
   if (error || !created) return { data: null, error };
 
-  // Notify the helper that someone wants their offer
   if (helpOfferForValidation.helper_id) {
     await createNotification({
       user_id: helpOfferForValidation.helper_id,
@@ -235,12 +224,10 @@ export async function submitHelpOfferRequest(data: HelpOfferRequestInput) {
   return { data: created as HelpOfferRequest, error: null };
 }
 
-// Helper accepts a help_offer_request → creates a session via help_offer_request_id
 export async function acceptHelpOfferRequest(
   helpOfferRequestId: string,
   scheduledAt?: string
 ) {
-  // 1. Fetch the request + linked help_offer for all context we need
   const { data: hor, error: fetchError } = await supabase
     .from("help_offer_requests")
     .select(`
@@ -263,7 +250,16 @@ export async function acceptHelpOfferRequest(
   const helpOffer = Array.isArray(hor.help_offer) ? hor.help_offer[0] : hor.help_offer;
   if (!helpOffer) return { data: null, error: new Error("Help offer not found") };
 
-  // 2. Mark the request as accepted
+  const selectedScheduledAt = scheduledAt ?? (helpOffer as any).proposed_at ?? null;
+  const availabilityResult = await validateSessionScheduleAvailability({
+    helper_id: helpOffer.helper_id,
+    requester_id: hor.requester_id,
+    duration_minutes: helpOffer.duration_minutes,
+    scheduled_at: selectedScheduledAt,
+  });
+
+  if (availabilityResult.error) return { data: null, error: availabilityResult.error };
+
   const { error: acceptError } = await supabase
     .from("help_offer_requests")
     .update({ status: "accepted" })
@@ -271,7 +267,6 @@ export async function acceptHelpOfferRequest(
 
   if (acceptError) return { data: null, error: acceptError };
 
-  // 3. Reject any other pending requests on the same help_offer
   await supabase
     .from("help_offer_requests")
     .update({ status: "rejected" })
@@ -279,24 +274,21 @@ export async function acceptHelpOfferRequest(
     .neq("id", helpOfferRequestId)
     .eq("status", "pending");
 
-  // 4. Close the help_offer so it stops appearing in Explore
   await supabase
     .from("help_offers")
     .update({ status: "accepted" })
     .eq("id", hor.help_offer_id);
 
-  // 5. Create or refresh the session — store help_offer_request_id (Flow 2)
   const { data: session, error: sessionError } = await ensureSessionForBooking({
     helper_id: helpOffer.helper_id,
     requester_id: hor.requester_id,
     help_offer_request_id: helpOfferRequestId,
     duration_minutes: helpOffer.duration_minutes,
-    scheduled_at: scheduledAt ?? (helpOffer as any).proposed_at ?? null,
+    scheduled_at: selectedScheduledAt,
   });
 
   if (sessionError) return { data: null, error: sessionError };
 
-  // 6. Notify the requester
   await createNotification({
     user_id: hor.requester_id,
     type: "help_offer_request_accepted",
@@ -349,3 +341,4 @@ export async function withdrawHelpOfferRequest(helpOfferRequestId: string) {
     .delete()
     .eq("id", helpOfferRequestId);
 }
+

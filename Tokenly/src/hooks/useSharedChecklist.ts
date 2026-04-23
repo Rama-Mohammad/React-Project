@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import type { ChecklistItem } from "../types/session";
 import {
@@ -36,9 +36,6 @@ export function useSharedChecklist({
     itemsRef.current = items;
   }, [items]);
 
-  // ----------------------------
-  // INIT + SYNC
-  // ----------------------------
   useEffect(() => {
     if (!enabled || !sessionId || !userId) return;
 
@@ -115,9 +112,6 @@ export function useSharedChecklist({
     };
   }, [enabled, sessionId, userId]);
 
-  // ----------------------------
-  // ACTIONS (DB + SYNC)
-  // ----------------------------
 
   const syncLocal = async (nextItems: ChecklistItem[]) => {
     const updatedAt = Date.now();
@@ -141,7 +135,6 @@ export function useSharedChecklist({
     });
   };
 
-  // ADD
   const addItem = async (text: string) => {
     const newItem = await addChecklistItem(sessionId, text);
 
@@ -149,7 +142,6 @@ export function useSharedChecklist({
     await syncLocal(nextItems);
   };
 
-  // TOGGLE
   const toggleItem = async (itemId: string) => {
     const item = itemsRef.current.find((i) => i.id === itemId);
     if (!item) return;
@@ -165,7 +157,6 @@ export function useSharedChecklist({
     await syncLocal(nextItems);
   };
 
-  // EDIT
   const editItem = async (id: string, text: string) => {
     const updated = await updateChecklistItem(id, { text });
 
@@ -176,7 +167,6 @@ export function useSharedChecklist({
     await syncLocal(nextItems);
   };
 
-  // DELETE
   const removeItem = async (id: string) => {
     await deleteChecklistItem(id);
 
@@ -192,3 +182,4 @@ export function useSharedChecklist({
     removeItem,
   };
 }
+

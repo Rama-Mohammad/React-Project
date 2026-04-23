@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CircleDot, ClipboardList, Paperclip, Star } from "lucide-react";
 import VideoPlaceholder from "../components/session/live/VideoPlaceHolder";
@@ -18,6 +18,60 @@ import { uploadSessionFile, deleteSessionFile } from "../services/storageService
 import { createReview, hasUserReviewedSession } from "../services/reviewService";
 
 type TabType = "agenda" | "files";
+
+function mapSessionFileRecord(file: any): FileAttachment {
+  return {
+    id: file.id,
+    name: file.file_name,
+    size: file.file_size_bytes,
+    type: file.file_type,
+    uploadedBy: file.uploader_id,
+    uploadedAt: new Date(file.created_at),
+    url: file.file_url,
+    path: file.path,
+  };
+}
+
+function mergeSessionFiles(previousFiles: FileAttachment[], nextFiles: FileAttachment[]) {
+  const merged = new Map<string, FileAttachment>();
+  const normalizeFile = (file: FileAttachment): FileAttachment => ({
+    ...file,
+    uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt : new Date(file.uploadedAt),
+  });
+
+  previousFiles.forEach((file) => {
+    const normalized = normalizeFile(file);
+    merged.set(normalized.id, normalized);
+  });
+
+  nextFiles.forEach((file) => {
+    const normalized = normalizeFile(file);
+    if (!merged.has(normalized.id)) {
+      merged.set(normalized.id, normalized);
+    }
+  });
+
+  return Array.from(merged.values()).sort(
+    (a, b) => a.uploadedAt.getTime() - b.uploadedAt.getTime()
+  );
+}
+
+function createClientFileId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error ?? new Error("Could not read file."));
+    reader.readAsDataURL(file);
+  });
+}
 
 const defaultChecklistItems: ChecklistItem[] = [
   { id: "1", text: "Confirm goals and expected outcomes", completed: false },
@@ -39,6 +93,7 @@ const SessionLivePage: React.FC = () => {
   const [sessionStatus, setSessionStatus] = useState<"loading" | "ready" | "error">("loading");
   const [sessionError, setSessionError] = useState("");
   const [files, setFiles] = useState<FileAttachment[]>([]);
+  const [fileUploadError, setFileUploadError] = useState("");
   const [pendingDeleteFileId, setPendingDeleteFileId] = useState<string | null>(null);
   const [sessionData, setSessionData] = useState<any>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -48,6 +103,7 @@ const SessionLivePage: React.FC = () => {
   const [hasExistingReview, setHasExistingReview] = useState(false);
   const [reviewError, setReviewError] = useState("");
   const [shouldNavigateAfterReview, setShouldNavigateAfterReview] = useState(false);
+  const fileChannelRef = React.useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const helperId = sessionData?.helper_id ?? "";
   const canReviewHelper = Boolean(currentUserId && helperId && currentUserId !== helperId);
@@ -166,7 +222,7 @@ const SessionLivePage: React.FC = () => {
       setSessionData(sessionData);
 
       const isHelper = sessionData.helper_id === userData.user.id;
-      const initiatorId = [sessionData.helper_id, sessionData.requester_id].sort()[0];
+      const initiatorId = sessionData.helper_id;
 
       setCurrentUserId(userData.user.id);
       setCurrentUserName(
@@ -238,43 +294,33 @@ const SessionLivePage: React.FC = () => {
   useEffect(() => {
     if (!sessionId) return;
 
+    let isMounted = true;
+
     const loadFiles = async () => {
       const { data, error } = await supabase
         .from("session_files")
         .select("*")
         .eq("session_id", sessionId)
         .order("created_at", { ascending: true });
-console.log("INITIAL FILE LOAD", data);
+      if (!isMounted) return;
+
       if (error) {
         console.error(error);
         return;
       }
 
-      setFiles(
-        (data || []).map((f) => (
-          {
-            id: f.id,
-            name: f.file_name,
-            size: f.file_size_bytes,
-            type: f.file_type,
-            uploadedBy: f.uploader_id,
-            uploadedAt: new Date(f.created_at),
-            url: f.file_url,
-            path: f.path,
-          }
-        ))
-      );
+      setFiles((prev) => mergeSessionFiles(prev, (data || []).map(mapSessionFileRecord)));
       
     };
 
     loadFiles();
-  }, [sessionId]);
-
-  useEffect(() => {
-    if (!sessionId) return;
 
     const channel = supabase
-      .channel(`files-${sessionId}`)
+      .channel(`files-${sessionId}`, {
+        config: {
+          broadcast: { self: false },
+        },
+      })
       .on(
         "postgres_changes",
         {
@@ -285,36 +331,31 @@ console.log("INITIAL FILE LOAD", data);
         },
         (payload) => {
           if (payload.eventType === "INSERT") {
-              console.log("REALTIME INSERT RECEIVED", payload.new);
-
-            const f = payload.new;
-
-            setFiles((prev) => [
-              ...prev,
-              {
-                id: f.id,
-                name: f.file_name,
-                size: f.file_size_bytes,
-                type: f.file_type,
-                uploadedBy: f.uploader_id,
-                uploadedAt: new Date(f.created_at),
-                url: f.file_url,
-                path: f.path,
-              },
-            ]);
+            setFiles((prev) => mergeSessionFiles(prev, [mapSessionFileRecord(payload.new)]));
           }
 
           if (payload.eventType === "DELETE") {
-            console.log("REALTIME DELETE RECEIVED", payload.old);
             const f = payload.old;
 
             setFiles((prev) => prev.filter((x) => x.id !== f.id));
           }
         }
       )
+      .on("broadcast", { event: "file_uploaded" }, ({ payload }) => {
+        if (!payload?.file) return;
+        setFiles((prev) => mergeSessionFiles(prev, [payload.file as FileAttachment]));
+      })
       .subscribe();
+    fileChannelRef.current = channel;
+
+    const pollTimer = window.setInterval(() => {
+      void loadFiles();
+    }, 3000);
 
     return () => {
+      isMounted = false;
+      window.clearInterval(pollTimer);
+      fileChannelRef.current = null;
       supabase.removeChannel(channel);
     };
   }, [sessionId]);
@@ -344,69 +385,79 @@ console.log("INITIAL FILE LOAD", data);
   };
 
   const handleFileUpload = async (file: File) => {
-    console.log("📤 UPLOAD START", { sessionId, currentUserId, file });
+    setFileUploadError("");
+
     if (!sessionId || !currentUserId) {
-      console.log("Missing sessionId or currentUserId", {
-        sessionId,
-        currentUserId,
-      });
+      setFileUploadError("File upload is not ready yet. Please wait for the session to finish loading.");
       return;
     }
 
-    console.log("START FILE UPLOAD:", {
-      fileName: file.name,
-      fileSize: file.size,
-      sessionId,
-      currentUserId,
-    });
+    let uploadedFileUrl = "";
+    let uploadedPath: string | null = null;
 
     const { data, error } = await uploadSessionFile(
       sessionId,
       currentUserId,
       file
     );
-    console.log(" STORAGE RESULT", { data, error });
 
-    if (error || !data) {
+    if (data) {
+      uploadedFileUrl = data.url;
+      uploadedPath = data.path;
+    } else {
       console.error("Storage upload failed:", error);
-      return;
+      uploadedFileUrl = await readFileAsDataUrl(file);
     }
 
 
-    const { data: inserted, error: dbError } = await supabase
-      .from("session_files")
-      .insert({
-        session_id: sessionId,
-        uploader_id: currentUserId,
-        file_name: file.name,
-        file_url: data.url,
-        file_size_bytes: file.size,
-        file_type: file.type, 
-        path: data.path,
-        created_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
+    const fileId = createClientFileId();
+    const createdAt = new Date().toISOString();
+    const fileRecord = {
+      id: fileId,
+      session_id: sessionId,
+      uploader_id: currentUserId,
+      file_name: file.name,
+      file_url: uploadedFileUrl,
+      file_size_bytes: file.size,
+      file_type: file.type,
+      path: uploadedPath,
+      created_at: createdAt,
+    };
 
-console.log("DB INSERT RESULT", { inserted, dbError });
+    const { error: dbError } = await supabase
+      .from("session_files")
+      .insert(fileRecord);
+
     if (dbError) {
       console.error(" DB insert failed:", dbError);
+      if (uploadedPath) {
+        await deleteSessionFile(uploadedPath);
+      }
+      setFileUploadError(dbError.message ?? "File upload failed. Please try again.");
       return;
     }
-console.log(" ADDING FILE TO STATE", inserted);
-    setFiles((prev) => [
-      ...prev,
-      {
-        id: inserted.id,
-        name: inserted.file_name,
-        size: inserted.file_size_bytes,
-        type: inserted.file_type,
-        uploadedBy: currentUserName,
-        uploadedAt: new Date(inserted.created_at),
-        url: inserted.file_url,
-        path: inserted.path,
-      }
-    ]);
+    const uploadedFile: FileAttachment = {
+      id: fileRecord.id,
+      name: fileRecord.file_name,
+      size: fileRecord.file_size_bytes,
+      type: fileRecord.file_type,
+      uploadedBy: currentUserName,
+      uploadedAt: new Date(fileRecord.created_at),
+      url: fileRecord.file_url,
+      path: fileRecord.path ?? undefined,
+    };
+
+    setFiles((prev) => mergeSessionFiles(prev, [uploadedFile]));
+    await fileChannelRef.current?.send({
+      type: "broadcast",
+      event: "file_uploaded",
+      payload: {
+        file: {
+          ...uploadedFile,
+          uploadedAt: uploadedFile.uploadedAt.toISOString(),
+        },
+      },
+    });
 
   };
 
@@ -486,7 +537,7 @@ console.log(" ADDING FILE TO STATE", inserted);
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-indigo-500">Live Session</p>
             <h1 className="break-all text-base font-semibold text-slate-900 sm:text-lg">
-              {sessionData?.request?.title ?? "Session"}
+              {sessionData?.title ?? "Session"}
             </h1>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/70 px-3 py-1.5 text-xs font-medium text-indigo-700">
@@ -576,6 +627,7 @@ console.log(" ADDING FILE TO STATE", inserted);
                   sessionId={sessionId ?? ""}
                   onFileUpload={handleFileUpload}
                   files={files}
+                  uploadError={fileUploadError}
                   onDownload={handleDownload}
                   onDelete={setPendingDeleteFileId}
                 />
@@ -605,7 +657,7 @@ console.log(" ADDING FILE TO STATE", inserted);
         itemName={pendingDeleteFile?.name}
         details={
           pendingDeleteFile
-            ? `${pendingDeleteFile.uploadedBy} • ${(pendingDeleteFile.size / 1024).toFixed(1)} KB`
+            ? `${pendingDeleteFile.uploadedBy} \u2022 ${(pendingDeleteFile.size / 1024).toFixed(1)} KB`
             : undefined
         }
         confirmLabel="Delete File"
@@ -697,3 +749,5 @@ console.log(" ADDING FILE TO STATE", inserted);
 };
 
 export default SessionLivePage;
+
+

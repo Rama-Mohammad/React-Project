@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import useAuthRedirect from "../../hooks/useAuthRedirect";
 
 export default function Footer() {
@@ -93,3 +93,4 @@ export default function Footer() {
     </footer>
   );
 }
+

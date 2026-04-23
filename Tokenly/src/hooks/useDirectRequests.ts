@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import type {
     DirectRequest,
     DirectRequestInput,
@@ -13,16 +13,12 @@ import {
     cancelDirectRequest,
 } from "../services/directRequestService";
 
-// Used by both sides of a direct request:
-// - Requester: send a request to a specific helper from the Helpers tab
-// - Helper: view incoming direct requests and accept/reject them
 
 export default function useDirectRequests(): UseDirectRequestsResult {
     const [directRequests, setDirectRequests] = useState<DirectRequest[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    // Requester fetches all requests they've sent
     async function fetchSentRequests(requester_id: string) {
         setLoading(true);
         setError("");
@@ -39,7 +35,6 @@ export default function useDirectRequests(): UseDirectRequestsResult {
         setLoading(false);
     }
 
-    // Helper fetches all requests they've received
     async function fetchReceivedRequests(helper_id: string) {
         setLoading(true);
         setError("");
@@ -56,8 +51,6 @@ export default function useDirectRequests(): UseDirectRequestsResult {
         setLoading(false);
     }
 
-    // Requester sends a private session request to a specific helper
-    // Called from the HelperCard or helper profile page
     async function sendDirectRequestFn(data: DirectRequestInput): Promise<DirectRequest | null> {
         setLoading(true);
         setError("");
@@ -75,7 +68,6 @@ export default function useDirectRequests(): UseDirectRequestsResult {
         return created;
     }
 
-    // Helper accepts → session is created internally in the service (Flow 3)
     async function acceptDirectRequestFn(id: string, scheduledAt?: string): Promise<boolean> {
         setLoading(true);
         setError("");
@@ -95,7 +87,6 @@ export default function useDirectRequests(): UseDirectRequestsResult {
         return true;
     }
 
-    // Helper rejects the direct request
     async function rejectDirectRequestFn(id: string): Promise<boolean> {
         setLoading(true);
         setError("");
@@ -115,7 +106,6 @@ export default function useDirectRequests(): UseDirectRequestsResult {
         return true;
     }
 
-    // Requester cancels their own pending direct request
     async function cancelDirectRequestFn(id: string): Promise<boolean> {
         setLoading(true);
         setError("");
@@ -147,3 +137,4 @@ export default function useDirectRequests(): UseDirectRequestsResult {
         cancelDirectRequest: cancelDirectRequestFn,
     };
 }
+

@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabaseClient";
+﻿import { supabase } from "../lib/supabaseClient";
 import type { RequestStatus, Urgency } from "../types/request";
 
 export async function createRequest(data: {
@@ -142,3 +142,4 @@ export async function deleteRequest(id: string, requesterId?: string) {
 
   return await query;
 }
+

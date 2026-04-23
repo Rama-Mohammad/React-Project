@@ -1,11 +1,4 @@
-import type { Transaction } from ".";
-
-export interface ActivityFeedProps {
-  transactions: Transaction[];
-  onViewAll: () => void;
-}
-
-export interface CreditBalanceCardProps {
+﻿export interface CreditBalanceCardProps {
   balance: number;
   onViewHistory: () => void;
 }
@@ -27,6 +20,7 @@ export type DashboardStats = {
   offersSubmitted: number;
   offersAccepted: number;
   reviewCount: number;
+  averageRating: number;
 };
 
 export type SessionTabLabel = "All" | "Upcoming" | "Active" | "Completed";
@@ -87,3 +81,4 @@ export type DashboardHelpOfferRequestItem = {
   duration: number | null;
   age: string;
 };
+

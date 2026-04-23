@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabaseClient";
+﻿import { supabase } from "../lib/supabaseClient";
 import type { SkillLevel, SkillCategory } from "../types/skill";
 
 export async function getAllSkills(opts?: { page?: number; pageSize?: number }) {
@@ -77,3 +77,4 @@ export async function incrementSkillSessionCount(id: string) {
 export async function deleteSkill(id: string) {
   return await supabase.from("skills").delete().eq("id", id);
 }
+

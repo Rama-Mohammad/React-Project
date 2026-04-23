@@ -1,4 +1,4 @@
-export type SessionStatus = "upcoming" | "active" | "completed" | "cancelled";
+﻿export type SessionStatus = "upcoming" | "active" | "completed" | "cancelled";
 export type ReactionType = 'like' | 'love' | 'laugh' | 'wow';
 
 
@@ -32,6 +32,7 @@ export interface Session {
   createdAt?: Date;
   updatedAt?: Date;
   requestId?: string;
+  linkPath?: string;
 }
 
 export interface Message {
@@ -101,6 +102,7 @@ export interface FileManagerProps {
   sessionId: string;
   onFileUpload: (file: File) => void;
   files: FileAttachment[];
+  uploadError?: string;
   onDownload: (fileId: string) => void;
   onDelete: (fileId: string) => void;
 }
@@ -158,3 +160,4 @@ export type UseSessionsResult = {
   completedCount: number;
   fetchCompletedSessionsCount: (user_id: string) => Promise<void>;
 };
+

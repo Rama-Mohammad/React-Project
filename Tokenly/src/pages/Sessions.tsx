@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Calendar,
@@ -26,7 +26,7 @@ type SortBy = "newest" | "oldest";
 
 const SessionsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [_searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [activeFilter, setActiveFilter] = useState<SessionFilter>("all");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [creditsBalance, setCreditsBalance] = useState(0);
@@ -38,6 +38,15 @@ const SessionsPage: React.FC = () => {
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [sortBy, setSortBy] = useState<SortBy>("newest");
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const requestedFilter = searchParams.get("filter");
+    const validFilters: SessionFilter[] = ["all", "upcoming", "active", "completed"];
+
+    if (requestedFilter && validFilters.includes(requestedFilter as SessionFilter)) {
+      setActiveFilter(requestedFilter as SessionFilter);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -89,7 +98,11 @@ const SessionsPage: React.FC = () => {
           console.warn("Missing request for session", s.id);
         }
 
-        const title = s.request?.title ?? "Session";
+        const title =
+          s.request?.title ??
+          helpOfferValue?.title ??
+          directRequestValue?.title ??
+          "Session";
 
         const category =
           s.request?.category ??
@@ -103,11 +116,27 @@ const SessionsPage: React.FC = () => {
           directRequestValue?.credit_cost ??
           0;
 
-        const requestId = s.request?.id || s.request_id || undefined;
+        let requestId: string | undefined;
+        let linkPath: string = '';
+
+        if (s.request) {
+          requestId = s.request.id;
+          linkPath = `/requests/${s.request.id}`;
+        } else if (helpOfferValue) {
+          requestId = helpOfferValue.id;
+          linkPath = `/offers/${helpOfferValue.id}`;
+        } else if (directRequestValue) {
+          requestId = directRequestValue.id;
+          linkPath = `/requests/${directRequestValue.id}`;
+        } else if (s.request_id) {
+          requestId = s.request_id;
+          linkPath = `/requests/${s.request_id}`;
+        }
 
         return {
           id: s.id,
           requestId,
+          linkPath,
           title,
           category,
           status: s.status,
@@ -240,7 +269,7 @@ const SessionsPage: React.FC = () => {
     return "bg-slate-100 text-slate-600";
   };
 
-  const handleViewRequest = (requestId: string) => navigate(`/requests/${requestId}`);
+  const handleViewRequest = (linkPath: string) => navigate(linkPath);
   const handleJoin = (sessionId: string) => navigate(`/session/${sessionId}`);
 
   const handleMarkComplete = (sessionId: string) => {
@@ -536,11 +565,16 @@ const SessionsPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
-                            onClick={() => session.requestId && handleViewRequest(session.requestId)}
-                            disabled={!session.requestId}
-                            className="rounded-lg border border-indigo-300/90 bg-transparent px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-50/70 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400 disabled:hover:bg-transparent"
+                            onClick={() => {
+                              if (session.linkPath) {
+                                handleViewRequest(session.linkPath);
+                              } else {
+                                setActionError("No details available for this session.");
+                              }
+                            }}
+                            className="rounded-lg border border-indigo-300/90 bg-transparent px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-50/70"
                           >
-                            View Request
+                            View Details
                           </button>
 
                           {session.status === "upcoming" ? (
@@ -634,6 +668,7 @@ const SessionsPage: React.FC = () => {
 };
 
 export default SessionsPage;
+
 
 
 

@@ -1,4 +1,4 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+﻿import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileAlt, faUsers, faComments, faCoins } from "@fortawesome/free-solid-svg-icons";
 import type { StepCardProps } from "../../types/home";
 
@@ -30,4 +30,5 @@ const StepCard = ({ step, title, description }: StepCardProps) => {
 };
 
 export default StepCard;
+
 

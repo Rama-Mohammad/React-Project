@@ -1,9 +1,9 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Check, Coins } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import AnalyticsSection from "../components/dashboard/AnalyticsSection";
-import DashboardSidebar from "../components/dashboard/DashboardSidebar";
+import DashboardSidebar, { DashboardTopBar } from "../components/dashboard/DashboardSidebar";
 import type { DashboardSectionId } from "../components/dashboard/DashboardSidebar";
-import DashboardTopBar from "../components/dashboard/DashboardTopBar";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import ActivitySection from "../components/dashboard/ActivitySection";
 import HeaderSection from "../components/dashboard/HeaderSection";
@@ -24,9 +24,11 @@ import type {
   SessionTabLabel,
 } from "../types/dashboard";
 import { acceptDirectRequest, rejectDirectRequest } from "../services/directRequestService";
-import { acceptHelpOfferRequest, rejectHelpOfferRequest } from "../services/helpOfferService";
+import { subscribeToTransactionsByUser } from "../services/transactionService";
+import { mapTransactionFeedItem } from "../utils/transactionActivityFeed";
 
 export default function Dashboard() {
+  const [searchParams] = useSearchParams();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<DashboardSectionId>("overview");
   const [activeSessionTab, setActiveSessionTab] = useState<SessionTabLabel>("All");
@@ -43,9 +45,6 @@ export default function Dashboard() {
   const [directRequestActionId, setDirectRequestActionId] = useState<string | null>(null);
   const [pendingScheduleId, setPendingScheduleId] = useState<string | null>(null);
   const [scheduledAtInput, setScheduledAtInput] = useState<string>("");
-  const [pendingScheduleHelpOfferId, setPendingScheduleHelpOfferId] = useState<string | null>(null);
-  const [helpOfferScheduledAtInput, setHelpOfferScheduledAtInput] = useState<string>("");
-  const [helpOfferRequestActionId, setHelpOfferRequestActionId] = useState<string | null>(null);
 
   const {
     profile,
@@ -60,10 +59,13 @@ export default function Dashboard() {
     rawOffers,
     rawIncomingDirectRequests,
     rawSentDirectRequests,
-    rawHelpOfferRequests,
-    mapHelpOfferRequests,
   } = useDashboard();
-  const { transactions, fetchTransactionsByUser } = useTransactions();
+  const {
+    transactions,
+    loading: transactionsLoading,
+    error: transactionsError,
+    fetchTransactionsByUser,
+  } = useTransactions();
 
   const submittedOffers = useMemo(
     () => (currentUserId ? mapOffers() : []),
@@ -73,11 +75,6 @@ export default function Dashboard() {
   const incomingDirectRequests = useMemo(
     () => (currentUserId ? mapIncomingDirectRequests() : []),
     [rawIncomingDirectRequests, currentUserId]
-  );
-
-  const incomingHelpOfferRequests = useMemo(
-    () => (currentUserId ? mapHelpOfferRequests() : []),
-    [rawHelpOfferRequests, currentUserId]
   );
 
   const sentDirectRequests = useMemo(
@@ -90,15 +87,31 @@ export default function Dashboard() {
     [rawSessions]
   );
 
+  const getSessionCreditCost = (session: any) => {
+    const helpOfferRequestValue = Array.isArray(session?.help_offer_request)
+      ? session.help_offer_request[0] ?? null
+      : session?.help_offer_request ?? null;
+    const helpOfferValue = Array.isArray(helpOfferRequestValue?.help_offer)
+      ? helpOfferRequestValue.help_offer[0] ?? null
+      : helpOfferRequestValue?.help_offer ?? null;
+    const directRequestValue = Array.isArray(session?.direct_request)
+      ? session.direct_request[0] ?? null
+      : session?.direct_request ?? null;
+
+    return Number(
+      session?.request?.credit_cost ??
+        helpOfferValue?.credit_cost ??
+        directRequestValue?.credit_cost ??
+        0
+    );
+  };
+
   const spent = useMemo(() => {
     if (!currentUserId) return 0;
 
     return completedSessions
       .filter((session) => session?.requester_id === currentUserId)
-      .reduce((sum, session) => {
-        const creditCost = Number(session?.request?.credit_cost ?? 0);
-        return sum + creditCost;
-      }, 0);
+      .reduce((sum, session) => sum + getSessionCreditCost(session), 0);
   }, [completedSessions, currentUserId]);
 
   const received = useMemo(() => {
@@ -106,10 +119,7 @@ export default function Dashboard() {
 
     return completedSessions
       .filter((session) => session?.helper_id === currentUserId)
-      .reduce((sum, session) => {
-        const creditCost = Number(session?.request?.credit_cost ?? 0);
-        return sum + creditCost;
-      }, 0);
+      .reduce((sum, session) => sum + getSessionCreditCost(session), 0);
   }, [completedSessions, currentUserId]);
 
   const sessionTabCounts = useMemo(
@@ -132,38 +142,79 @@ export default function Dashboard() {
   const previewSessions = useMemo(() => visibleSessions.slice(0, 3), [visibleSessions]);
 
   const activityPreview = useMemo(
-    () => transactions.slice(0, 3),
+    () => transactions.map(mapTransactionFeedItem).slice(0, 3),
     [transactions]
   );
 
   const tokenFlowData = useMemo(() => {
-    return transactions
-      .slice(0, 7)
-      .reverse()
-      .map((item, index) => {
-        const createdAt = item.created_at ? new Date(item.created_at) : null;
-        const label = createdAt && !Number.isNaN(createdAt.getTime())
-          ? createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-          : `Point ${index + 1}`;
-        const isEarned = item.type === "earn" || item.type === "bonus";
-        const amount = Math.abs(Number(item.amount ?? 0));
+    if (transactions.length === 0) return [];
 
-        return {
-          label,
-          earned: isEarned ? amount : 0,
-          spent: item.type === "spend" ? amount : 0,
-          net: isEarned ? amount : -amount,
-        };
-      });
+    const formatter = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
+    const today = new Date();
+    const days = Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(today);
+      date.setHours(0, 0, 0, 0);
+      date.setDate(today.getDate() - (6 - index));
+      const key = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0"),
+      ].join("-");
+
+      return {
+        key,
+        label: formatter.format(date),
+        earned: 0,
+        spent: 0,
+        net: 0,
+      };
+    });
+
+    const dayMap = new Map(days.map((day) => [day.key, day]));
+
+    transactions.forEach((item) => {
+      if (!item.created_at) return;
+
+      const date = new Date(item.created_at);
+      if (Number.isNaN(date.getTime())) return;
+
+      const key = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0"),
+      ].join("-");
+      const day = dayMap.get(key);
+      if (!day) return;
+
+      const amount = Math.abs(Number(item.amount ?? 0));
+      if (!Number.isFinite(amount)) return;
+
+      if (item.type === "earn" || item.type === "bonus") {
+        day.earned += amount;
+        day.net += amount;
+      }
+
+      if (item.type === "spend") {
+        day.spent += amount;
+        day.net -= amount;
+      }
+    });
+
+    return days;
   }, [transactions]);
 
   const weeklyActivityData = useMemo(() => {
     const formatter = new Intl.DateTimeFormat("en-US", { weekday: "short" });
+    const toLocalDateKey = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
     const today = new Date();
     const days = Array.from({ length: 7 }, (_, index) => {
-      const date = new Date(today);
-      date.setDate(today.getDate() - (6 - index));
-      const key = date.toISOString().slice(0, 10);
+      const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (6 - index));
+      const key = toLocalDateKey(date);
       return {
         key,
         label: formatter.format(date),
@@ -175,18 +226,23 @@ export default function Dashboard() {
     const dayMap = new Map(days.map((day) => [day.key, day]));
 
     rawSessions.forEach((session) => {
-      const sourceDate = session?.scheduled_at ?? session?.created_at;
+      const status = String(session?.status ?? "");
+      const sourceDate =
+        status === "completed"
+          ? session?.completed_at ?? session?.scheduled_at ?? session?.created_at
+          : session?.scheduled_at ?? session?.created_at;
+
       if (!sourceDate) return;
 
       const date = new Date(sourceDate);
       if (Number.isNaN(date.getTime())) return;
 
-      const key = date.toISOString().slice(0, 10);
+      const key = toLocalDateKey(date);
       const day = dayMap.get(key);
       if (!day) return;
 
-      if (session?.status === "completed") day.completed += 1;
-      if (session?.status === "upcoming" || session?.status === "active") day.upcoming += 1;
+      if (status === "completed") day.completed += 1;
+      if (status === "upcoming") day.upcoming += 1;
     });
 
     return days;
@@ -200,39 +256,33 @@ export default function Dashboard() {
   const handleConfirmAcceptDirectRequest = async () => {
     if (!pendingScheduleId || !scheduledAtInput) return;
     const id = pendingScheduleId;
+    setSessionActionError("");
     setPendingScheduleId(null);
     setDirectRequestActionId(id);
-    await acceptDirectRequest(id, new Date(scheduledAtInput).toISOString());
-    if (currentUserId) void fetchDashboard(currentUserId);
+    const { error } = await acceptDirectRequest(id, new Date(scheduledAtInput).toISOString());
+    if (error) {
+      setSessionActionError(error.message ?? "Could not schedule this session.");
+      setDirectRequestActionId(null);
+      return;
+    }
+    if (currentUserId) {
+      await Promise.all([
+        fetchDashboard(currentUserId),
+        fetchTransactionsByUser(currentUserId),
+      ]);
+    }
     setDirectRequestActionId(null);
-  };
-
-  const handleOpenScheduleHelpOfferModal = (id: string) => {
-    setHelpOfferScheduledAtInput("");
-    setPendingScheduleHelpOfferId(id);
-  };
-
-  const handleConfirmAcceptHelpOfferRequest = async () => {
-    if (!pendingScheduleHelpOfferId || !helpOfferScheduledAtInput) return;
-    const id = pendingScheduleHelpOfferId;
-    setPendingScheduleHelpOfferId(null);
-    setHelpOfferRequestActionId(id);
-    await acceptHelpOfferRequest(id, new Date(helpOfferScheduledAtInput).toISOString());
-    if (currentUserId) void fetchDashboard(currentUserId);
-    setHelpOfferRequestActionId(null);
-  };
-
-  const handleRejectHelpOfferRequest = async (id: string) => {
-    setHelpOfferRequestActionId(id);
-    await rejectHelpOfferRequest(id);
-    if (currentUserId) void fetchDashboard(currentUserId);
-    setHelpOfferRequestActionId(null);
   };
 
   const handleRejectDirectRequest = async (id: string) => {
     setDirectRequestActionId(id);
     await rejectDirectRequest(id);
-    if (currentUserId) void fetchDashboard(currentUserId);
+    if (currentUserId) {
+      await Promise.all([
+        fetchDashboard(currentUserId),
+        fetchTransactionsByUser(currentUserId),
+      ]);
+    }
     setDirectRequestActionId(null);
   };
 
@@ -265,11 +315,8 @@ export default function Dashboard() {
       const userId = authData.user.id;
       setCurrentUserId(userId);
 
-      // 🔥 FIX: prevent unnecessary parallel variable waste
-      await Promise.all([
-        fetchDashboard(userId),
-        fetchTransactionsByUser(userId),
-      ]);
+      void fetchDashboard(userId);
+      void fetchTransactionsByUser(userId);
 
       if (!mounted) return;
 
@@ -286,7 +333,6 @@ export default function Dashboard() {
 
       const ownRequests = (data ?? []).filter((item) => item.status === "open");
 
-      // 🔥 FIX: avoid recalculating requestIds if empty
       if (ownRequests.length === 0) {
         setOpenRequests([]);
         setRequestsLoading(false);
@@ -337,10 +383,38 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
+    const requestedSection = searchParams.get("section");
+    const validSections: DashboardSectionId[] = [
+      "overview",
+      "analytics",
+      "sessions",
+      "inbox",
+      "requests",
+      "activity",
+    ];
+
+    if (requestedSection && validSections.includes(requestedSection as DashboardSectionId)) {
+      setActiveSection(requestedSection as DashboardSectionId);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     if (currentUserId) {
       setSessions(mapSessions(currentUserId));
     }
   }, [currentUserId, rawSessions]);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    const channel = subscribeToTransactionsByUser(currentUserId, () => {
+      void fetchTransactionsByUser(currentUserId);
+    });
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [currentUserId, fetchTransactionsByUser]);
 
   const handleMarkComplete = async (id: string) => {
     setSessionActionError("");
@@ -424,9 +498,9 @@ export default function Dashboard() {
   const initials = getInitials(profile?.full_name);
   const creditBalance = profile?.credit_balance ?? 0;
   const available = creditBalance;
-  const total = available + spent;
+  const total = creditBalance + spent;
   const availablePct = total > 0 ? Math.round((available / total) * 100) : 0;
-  const avgRating = profile?.avg_rating ?? 0;
+  const avgRating = stats?.averageRating ?? 0;
   const reviewCount = stats?.reviewCount ?? 0;
   const displayedAvgRating = !dashLoading ? avgRating : undefined;
   const handleSidebarSectionSelect = (sectionId: DashboardSectionId) => {
@@ -434,12 +508,10 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="relative min-h-full overflow-hidden bg-transparent text-slate-900">
-      <main className="relative mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
+    <div className="relative min-h-full overflow-x-hidden overflow-y-visible bg-transparent text-slate-900">
+      <main className="relative mx-auto w-full max-w-400 px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-5 xl:grid-cols-[17.5rem_minmax(0,1fr)]">
           <DashboardSidebar
-            mobileOpen={mobileNavOpen}
-            onClose={() => setMobileNavOpen(false)}
             activeSection={activeSection}
             onSectionSelect={handleSidebarSectionSelect}
             stretchOnDesktop
@@ -447,94 +519,100 @@ export default function Dashboard() {
 
           <div className="min-w-0">
             <DashboardTopBar
-              onOpenMobileNav={() => setMobileNavOpen(true)}
+              mobileOpen={mobileNavOpen}
+              onToggleMobileNav={() => setMobileNavOpen((open) => !open)}
+              onCloseMobileNav={() => setMobileNavOpen(false)}
+              activeSection={activeSection}
+              onSectionSelect={handleSidebarSectionSelect}
             />
 
-            {activeSection === "overview" ? (
-              <HeaderSection
-                className="xl:h-full"
-                profileImageUrl={profile?.profile_image_url}
-                fullName={fullName}
-                initials={initials}
-                dashLoading={dashLoading}
-                displayedAvgRating={displayedAvgRating}
-                reviewCount={reviewCount}
-                creditBalance={creditBalance}
-                available={available}
-                spent={spent}
-                received={received}
-                total={total}
-                availablePct={availablePct}
-                stats={stats}
-              />
-            ) : null}
+              {activeSection === "overview" ? (
+                <HeaderSection
+                  className="xl:h-[30rem] xl:max-h-[30rem]"
+                  profileImageUrl={profile?.profile_image_url}
+                  fullName={fullName}
+                  initials={initials}
+                  displayedAvgRating={displayedAvgRating}
+                  reviewCount={reviewCount}
+                  creditBalance={creditBalance}
+                  available={available}
+                  spent={spent}
+                  received={received}
+                  total={total}
+                  availablePct={availablePct}
+                  stats={stats}
+                />
+              ) : null}
 
-            {activeSection === "analytics" ? (
-              <AnalyticsSection
-                tokenFlowData={tokenFlowData}
-                weeklyActivityData={weeklyActivityData}
-              />
-            ) : null}
-
-            {activeSection === "sessions" ? (
-              <SessionsSection
-                dashLoading={dashLoading}
-                activeSessionTab={activeSessionTab}
-                onSessionTabChange={setActiveSessionTab}
-                sessionTabCounts={sessionTabCounts}
-                previewSessions={previewSessions}
-                onMarkComplete={setPendingCompleteId}
-              />
-            ) : null}
-
-            {activeSection === "inbox" ? (
-              <div className="grid grid-cols-1 gap-4 xl:h-full xl:grid-cols-2">
-                <InboxSection
-                  title="Direct Requests"
-                  count={incomingDirectRequests.length}
-                  items={incomingDirectRequests}
-                  emptyMessage="No direct requests yet."
-                  accent="indigo"
-                  actionLoadingId={directRequestActionId}
-                  onAccept={handleOpenScheduleModal}
-                  onReject={(id) => {
-                    void handleRejectDirectRequest(id);
+              {activeSection === "analytics" ? (
+                <AnalyticsSection
+                  tokenFlowData={tokenFlowData}
+                  weeklyActivityData={weeklyActivityData}
+                  sessionSummary={{
+                    completed: stats?.completedSessions ?? 0,
+                    upcoming: stats?.upcomingSessions ?? 0,
                   }}
                 />
+              ) : null}
 
-                <SentRequestsSection
-                  items={sentDirectRequests}
-                  emptyMessage="No sent direct requests yet."
-                />
-              </div>
-            ) : null}
-
-            {activeSection === "requests" ? (
-              <div className="grid grid-cols-1 gap-4 xl:h-full">
-                <RequestsOverviewSection
-                  requestsLoading={requestsLoading}
-                  requestsError={requestsError}
-                  openRequests={openRequests}
-                  deletingRequestId={deletingRequestId}
-                  onDeleteRequest={setPendingDeleteRequestId}
+              {activeSection === "sessions" ? (
+                <SessionsSection
                   dashLoading={dashLoading}
-                  submittedOffers={submittedOffers}
+                  activeSessionTab={activeSessionTab}
+                  onSessionTabChange={setActiveSessionTab}
+                  sessionTabCounts={sessionTabCounts}
+                  previewSessions={previewSessions}
+                  onMarkComplete={setPendingCompleteId}
                 />
-              </div>
-            ) : null}
+              ) : null}
 
-            {activeSection === "activity" ? (
-              <ActivitySection
-                dashLoading={dashLoading}
-                transactions={transactions}
-                activityPreview={activityPreview}
-              />
-            ) : null}
+              {activeSection === "inbox" ? (
+                <div className="grid grid-cols-1 gap-4 xl:h-[30rem] xl:max-h-[30rem] xl:grid-cols-2">
+                  <InboxSection
+                    title="Direct Requests"
+                    count={incomingDirectRequests.length}
+                    items={incomingDirectRequests}
+                    emptyMessage="No direct requests yet."
+                    accent="indigo"
+                    actionLoadingId={directRequestActionId}
+                    onAccept={handleOpenScheduleModal}
+                    onReject={(id) => {
+                      void handleRejectDirectRequest(id);
+                    }}
+                  />
+
+                  <SentRequestsSection
+                    items={sentDirectRequests}
+                    emptyMessage="No sent direct requests yet."
+                  />
+                </div>
+              ) : null}
+
+              {activeSection === "requests" ? (
+                <div className="grid grid-cols-1 gap-4 xl:h-[30rem] xl:max-h-[30rem]">
+                  <RequestsOverviewSection
+                    requestsLoading={requestsLoading}
+                    requestsError={requestsError}
+                    openRequests={openRequests}
+                    deletingRequestId={deletingRequestId}
+                    onDeleteRequest={setPendingDeleteRequestId}
+                    dashLoading={dashLoading}
+                    submittedOffers={submittedOffers}
+                  />
+                </div>
+              ) : null}
+
+              {activeSection === "activity" ? (
+                <ActivitySection
+                  activityLoading={transactionsLoading}
+                  activityError={transactionsError}
+                  activityPreview={activityPreview}
+                />
+              ) : null}
           </div>
         </div>
       </main>
 
-      {/* -- Token transfer toast -- */}
       {transferToast ? (
         <div className="pointer-events-none fixed bottom-5 right-5 z-60">
           <div className="flex min-w-65 items-center gap-2.5 rounded-2xl border border-indigo-300 bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-4 py-3 text-white shadow-xl shadow-indigo-900/20">
@@ -559,7 +637,6 @@ export default function Dashboard() {
         </div>
       ) : null}
 
-      {/* -- Mark complete confirm modal -- */}
       {pendingSession ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <button
@@ -628,7 +705,6 @@ export default function Dashboard() {
         }}
       />
 
-      {/* -- Schedule Direct Request Modal -- */}
       {pendingScheduleId ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <button
@@ -670,47 +746,7 @@ export default function Dashboard() {
         </div>
       ) : null}
 
-      {/* -- Schedule Help Offer Request Modal -- */}
-      {pendingScheduleHelpOfferId ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <button
-            type="button"
-            className="absolute inset-0 bg-slate-900/35 backdrop-blur-sm"
-            onClick={() => setPendingScheduleHelpOfferId(null)}
-            aria-label="Close"
-          />
-          <div className="relative w-full max-w-md rounded-2xl border border-violet-100 bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-slate-900">Schedule Session</h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Pick a date and time to meet with the requester.
-            </p>
-            <input
-              type="datetime-local"
-              value={helpOfferScheduledAtInput}
-              min={new Date().toISOString().slice(0, 16)}
-              onChange={(e) => setHelpOfferScheduledAtInput(e.target.value)}
-              className="mt-4 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
-            />
-            <div className="mt-4 grid grid-cols-2 gap-2.5">
-              <button
-                type="button"
-                onClick={() => setPendingScheduleHelpOfferId(null)}
-                className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={!helpOfferScheduledAtInput}
-                onClick={() => void handleConfirmAcceptHelpOfferRequest()}
-                className="rounded-xl bg-[linear-gradient(135deg,#7c3aed_0%,#8b5cf6_100%)] px-3 py-2 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Confirm & Accept
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
+

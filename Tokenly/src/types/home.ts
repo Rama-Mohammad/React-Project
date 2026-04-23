@@ -1,4 +1,4 @@
-export type SkillName =
+﻿export type SkillName =
   | "Programming"
   | "Design"
   | "Math & Science"
@@ -32,3 +32,4 @@ export type TestimonialCardProps = {
   title: string;
   rating: number;
 };
+

@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import type { Skill, SkillInput, SkillUpdateInput, UseSkillsResult } from "../types/skill";
 import {
     getSkillsByUser,
@@ -92,3 +92,4 @@ export default function useSkills(): UseSkillsResult {
         removeSkill,
     };
 }
+

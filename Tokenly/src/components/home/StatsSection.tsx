@@ -1,4 +1,4 @@
-import StatCard from "../common/StatsCard";
+﻿import StatCard from "../common/StatsCard";
 import { faUsers, faPlay, faCoins, faLightbulb } from "@fortawesome/free-solid-svg-icons";
 
 const StatsSection = () => {
@@ -30,3 +30,4 @@ const StatsSection = () => {
 };
 
 export default StatsSection;
+

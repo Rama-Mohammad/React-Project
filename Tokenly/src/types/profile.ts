@@ -1,4 +1,4 @@
-export interface Profile {
+﻿export interface Profile {
   id: string;
   username: string;
   full_name?: string;
@@ -171,3 +171,16 @@ export type UseProfilesResult = {
   editProfile: (id: string, updates: EditProfileInput) => Promise<boolean>;
   search: (query: string) => Promise<void>;
 };
+
+export type PortfolioRow = {
+  id: string;
+  user_id: string;
+  title: string;
+  description?: string;
+  type: string;
+  url?: string;
+  tags: string[];
+  date?: string;
+  created_at: string;
+};
+

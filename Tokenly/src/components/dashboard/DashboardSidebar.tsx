@@ -1,4 +1,4 @@
-import {
+﻿import {
   Activity,
   BarChart3,
   BellRing,
@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   Menu,
   Sparkles,
-  X,
 } from "lucide-react";
 
 export type DashboardSectionId =
@@ -18,8 +17,6 @@ export type DashboardSectionId =
   | "activity";
 
 type DashboardSidebarProps = {
-  mobileOpen: boolean;
-  onClose: () => void;
   activeSection: DashboardSectionId;
   onSectionSelect: (sectionId: DashboardSectionId) => void;
   stretchOnDesktop?: boolean;
@@ -109,8 +106,6 @@ function SidebarContent({
 }
 
 export default function DashboardSidebar({
-  mobileOpen,
-  onClose,
   activeSection,
   onSectionSelect,
   stretchOnDesktop = false,
@@ -121,7 +116,7 @@ export default function DashboardSidebar({
         <div
           className={[
             "rounded-[34px] border border-[#e4e9ff] bg-[linear-gradient(180deg,#ffffff_0%,#f8faff_100%)] p-5 shadow-[0_24px_56px_-40px_rgba(99,102,241,0.18)]",
-            stretchOnDesktop ? "xl:h-full" : "",
+            stretchOnDesktop ? "xl:h-[30rem] xl:max-h-[30rem] xl:overflow-y-auto" : "",
           ].join(" ")}
         >
           <SidebarContent
@@ -130,35 +125,55 @@ export default function DashboardSidebar({
           />
         </div>
       </aside>
+    </>
+  );
+}
 
+export function DashboardTopBar({
+  mobileOpen,
+  onToggleMobileNav,
+  onCloseMobileNav,
+  activeSection,
+  onSectionSelect,
+}: {
+  mobileOpen: boolean;
+  onToggleMobileNav: () => void;
+  onCloseMobileNav: () => void;
+  activeSection: DashboardSectionId;
+  onSectionSelect: (sectionId: DashboardSectionId) => void;
+}) {
+  return (
+    <div className="relative z-[60] mb-5 flex justify-end xl:hidden">
       {mobileOpen ? (
-        <div className="fixed inset-0 z-50 xl:hidden">
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute inset-0 bg-slate-950/35 backdrop-blur-sm"
-            aria-label="Close dashboard navigation"
+        <button
+          type="button"
+          onClick={onCloseMobileNav}
+          className="fixed inset-0 z-40 bg-transparent xl:hidden"
+          aria-label="Close dashboard navigation"
+        />
+      ) : null}
+      <button
+        type="button"
+        onClick={onToggleMobileNav}
+        className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-indigo-100 bg-white text-slate-700 shadow-sm"
+        aria-label={mobileOpen ? "Close dashboard navigation" : "Open dashboard navigation"}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-current">
+          <path d="M4 7H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M4 12H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M4 17H14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </button>
+      {mobileOpen ? (
+        <div className="absolute right-0 top-full z-[70] mt-3 w-64 max-w-[calc(100vw-2rem)] origin-top-right overflow-hidden rounded-2xl border border-slate-200/90 bg-white/98 p-3 shadow-[0_28px_70px_-32px_rgba(15,23,42,0.42)] backdrop-blur-sm">
+          <SidebarContent
+            activeSection={activeSection}
+            onSectionSelect={onSectionSelect}
+            onNavigate={onCloseMobileNav}
           />
-          <div className="relative h-full w-[86vw] max-w-sm border-r border-indigo-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8faff_100%)] p-5 shadow-2xl">
-            <div className="mb-5 flex items-center justify-between">
-              <p className="text-sm font-semibold text-slate-950">Menu</p>
-              <button
-                type="button"
-                onClick={onClose}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <SidebarContent
-              activeSection={activeSection}
-              onSectionSelect={onSectionSelect}
-              onNavigate={onClose}
-            />
-          </div>
         </div>
       ) : null}
-    </>
+    </div>
   );
 }
 
@@ -178,3 +193,4 @@ export function DashboardSidebarToggle({
     </button>
   );
 }
+

@@ -1,4 +1,4 @@
-import {
+﻿import {
   Check,
   Coins,
   MessageCircle,
@@ -14,7 +14,6 @@ type HeaderSectionProps = {
   profileImageUrl?: string | null;
   fullName?: string | null;
   initials: string;
-  dashLoading: boolean;
   displayedAvgRating?: number;
   reviewCount: number;
   creditBalance: number;
@@ -48,7 +47,9 @@ function OverviewStat({
       <div className={["mb-3 inline-flex rounded-2xl p-2.5", iconClass].join(" ")}>
         {icon}
       </div>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">{label}</p>
+      <p className="min-h-[2.75rem] text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+        {label}
+      </p>
       <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{value}</p>
       <p className="mt-1 text-sm text-slate-500">{sublabel}</p>
     </div>
@@ -60,7 +61,6 @@ export default function HeaderSection({
   profileImageUrl,
   fullName,
   initials,
-  dashLoading,
   displayedAvgRating,
   reviewCount,
   creditBalance,
@@ -71,15 +71,14 @@ export default function HeaderSection({
   availablePct,
   stats,
 }: HeaderSectionProps) {
-  const name = fullName?.trim() || "Your dashboard";
+  const name = fullName?.trim() || "Dashboard";
   const completedSessions = stats?.completedSessions ?? 0;
   const activeRequests = stats?.activeRequests ?? 0;
   const offersSubmitted = stats?.offersSubmitted ?? 0;
-  const tokenTracked = spent + received + available;
 
   return (
-    <section className={["w-full", className].join(" ")}>
-      <div className="overflow-hidden">
+    <section className={["w-full overflow-hidden xl:flex xl:h-full xl:min-h-0 xl:flex-col", className].join(" ")}>
+      <div className="overflow-hidden xl:flex-1 xl:min-h-0 xl:overflow-y-auto">
         <div className="p-5 sm:p-6">
           <div className="flex flex-col gap-5 border-b border-slate-100 pb-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 items-center gap-4">
@@ -97,9 +96,7 @@ export default function HeaderSection({
 
               <div className="min-w-0">
                 <p className="text-sm font-medium text-indigo-400">Dashboard</p>
-                <h2 className="truncate text-3xl font-semibold tracking-tight text-slate-950">
-                  {dashLoading ? "Loading dashboard..." : name}
-                </h2>
+                <h2 className="truncate text-3xl font-semibold tracking-tight text-slate-950">{name}</h2>
                 <p className="mt-1 max-w-2xl text-sm text-slate-500">
                   Keep track of your sessions, requests, offers, and token movement in one streamlined space.
                 </p>
@@ -138,9 +135,6 @@ export default function HeaderSection({
                       <span className="ml-1 text-lg font-medium text-slate-500">tokens</span>
                     </p>
                   </div>
-                </div>
-                <div className="rounded-full bg-white/80 px-3 py-1.5 text-xs font-semibold text-indigo-500 ring-1 ring-indigo-100">
-                  {tokenTracked} tracked
                 </div>
               </div>
 
@@ -215,3 +209,4 @@ export default function HeaderSection({
     </section>
   );
 }
+

@@ -1,4 +1,4 @@
-import { ArrowLeft, Eye, Lock, Shield, ShieldAlert, UserX } from "lucide-react";
+﻿import { ArrowLeft, Eye, Lock, Shield, ShieldAlert, UserX } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const safetyItems = [
@@ -79,4 +79,5 @@ export default function AccountSafety() {
     </div>
   );
 }
+
 

@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabaseClient";
+﻿import { supabase } from "../lib/supabaseClient";
 import type { TransactionType } from "../types/transaction";
 
 export async function getTransactionsByUser(user_id: string) {
@@ -8,6 +8,44 @@ export async function getTransactionsByUser(user_id: string) {
     .eq("user_id", user_id)
     .order("created_at", { ascending: false })
     .limit(50);
+}
+
+export function subscribeToTransactionsByUser(
+  user_id: string,
+  callback: () => void
+) {
+  const topic = `credit-transactions:${user_id}`;
+
+  supabase
+    .getChannels()
+    .filter((channel) => channel.topic === topic)
+    .forEach((channel) => {
+      void supabase.removeChannel(channel);
+    });
+
+  const channel = supabase
+    .channel(topic)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "credit_transactions",
+        filter: `user_id=eq.${user_id}`,
+      },
+      () => callback()
+    )
+    .subscribe((status, error) => {
+      if (status === "CHANNEL_ERROR" || error) {
+        console.error("[credit_transactions] realtime subscribe failed", {
+          user_id,
+          status,
+          error,
+        });
+      }
+    });
+
+  return channel;
 }
 
 export async function getTransactionsBySession(session_id: string) {
@@ -61,10 +99,8 @@ export async function getUserCreditSummary(user_id: string) {
     .filter((t) => t.type === "spend")
     .reduce((sum, t) => sum + t.amount, 0);
 
-  // Older balances may exist without matching earn/bonus transactions.
-  // Reconcile the summary with the real profile balance so the dashboard
-  // does not show impossible states like balance 0 with no prior earnings.
   const earned = Math.max(trackedEarned, available + spent);
 
   return { data: { available, earned, spent, total: available }, error: null };
 }
+

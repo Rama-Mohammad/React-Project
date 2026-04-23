@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { getMessages } from "../services/chatService";
 import type { Message } from "../types/session";
@@ -39,10 +39,6 @@ export const useChat = ({
 
   useEffect(() => {
     if (!sessionId || !currentUserId) return;
-    console.log("SESSION DEBUG:", {
-  sessionId,
-  currentUserId,
-});
 
     let isMounted = true;
 
@@ -134,3 +130,4 @@ export const useChat = ({
     appendLocalMessage,
   };
 };
+

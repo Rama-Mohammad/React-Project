@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+﻿import { useCallback, useRef, useState } from "react";
 import {
   getPublicProfileBasic,
   getPublicProfileDetails,
@@ -49,17 +49,7 @@ export default function usePublicHelperProfile(): ProfileCore {
     if (!normalizedHelperId) return;
 
     const profileCacheKey = `${normalizedHelperId}:${options?.includePrivate ? "private" : "public"}`;
-    // const cachedProfile = profileCache.get(profileCacheKey);
 
-    // if (cachedProfile) {
-    //   setProfile(cachedProfile.profile);
-    //   setSkills(cachedProfile.skills);
-    //   setReviews(cachedProfile.reviews);
-    //   setLoading(false);
-    //   setDetailsLoading(false);
-    //   setError("");
-    //   return;
-    // }
 
     const cachedProfile = profileCache.get(profileCacheKey);
 
@@ -166,3 +156,4 @@ if (cachedProfile) {
     fetchOffers,
   };
 }
+

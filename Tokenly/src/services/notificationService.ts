@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabaseClient";
+﻿import { supabase } from "../lib/supabaseClient";
 import type { NotificationType } from "../types/notification";
 
 export async function getNotificationsByUser(user_id: string) {
@@ -63,11 +63,6 @@ export async function createNotification(data: {
       payload: data,
       error: result.error,
     });
-  } else {
-    console.log("[notifications] createNotification succeeded", {
-      user_id: data.user_id,
-      type: data.type,
-    });
   }
 
   return result;
@@ -115,3 +110,4 @@ export function subscribeToNotifications(
 
   return channel;
 }
+

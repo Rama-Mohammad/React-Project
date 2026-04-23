@@ -1,4 +1,4 @@
-import type { PortfolioItemData, ProfileSkill, ReviewItem } from "./profile";
+﻿import type { PortfolioItemData, ProfileSkill, ReviewItem } from "./profile";
 
 export type NeedBy = "flexible" | "soon" | "urgent";
 export type RequiredSection =
@@ -24,3 +24,4 @@ export type SessionsPageItem = {
 export type UiSkill = ProfileSkill;
 export type PortfolioEntry = PortfolioItemData;
 export type UiReview = ReviewItem;
+

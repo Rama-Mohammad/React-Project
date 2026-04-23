@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import RatingStars from "../common/RatingStars";
 import Avatar from "../common/Avatar";
 import type { ReviewCardProps } from "../../types/profile";
@@ -47,4 +47,5 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
 };
 
 export default ReviewCard;
+
 

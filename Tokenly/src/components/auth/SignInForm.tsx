@@ -1,12 +1,7 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import Loader from "../common/Loader";
 import type { SignInFormProps } from "../../types/auth";
 
-// function validateEmail(email: string): string | null {
-//   if (!email.trim()) return "Email is required";
-//   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Please enter a valid email address";
-//   return null;
-// }
 function validateIdentifier(identifier: string): string | null {
   if (!identifier.trim()) return "Email or username is required";
   return null;
@@ -191,4 +186,5 @@ export default function SignInForm({
     </div>
   );
 }
+
 

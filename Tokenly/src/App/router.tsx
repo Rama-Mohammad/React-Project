@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { createBrowserRouter, Outlet, useLocation } from "react-router-dom";
 import Layout from "../components/layout/Layout";
 import Explore from "../pages/Explore";
@@ -206,3 +206,4 @@ export const router = createBrowserRouter(
     basename: import.meta.env.BASE_URL,
   }
 );
+

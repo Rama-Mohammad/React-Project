@@ -1,4 +1,4 @@
-import { formatDistanceToNow as formatDistance, format as dateFnsFormat } from 'date-fns';
+﻿import { formatDistanceToNow as formatDistance, format as dateFnsFormat } from 'date-fns';
 
 export const formatDistanceToNow = (date: Date | string): string => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
@@ -27,3 +27,4 @@ export const isThisWeek = (date: Date | string): boolean => {
   const weekEnd = new Date(today.setDate(today.getDate() - today.getDay() + 6));
   return dateObj >= weekStart && dateObj <= weekEnd;
 };
+

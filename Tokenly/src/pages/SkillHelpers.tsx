@@ -1,17 +1,14 @@
-import { ArrowLeft, Code2, Search, Sparkles } from "lucide-react";
+﻿import { ArrowLeft, Code2, Search, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Loader from "../components/common/Loader";
 import ThemedSelect from "../components/common/ThemedSelect";
 import HelperCard from "../components/explore/HelperCard";
-import type { HelperItem, SkillItem } from "../types/explore";
+import type { HelperItem, SkillItem, SkillWithRelations } from "../types/explore";
 import { getExploreHelpers } from "../services/helperExploreService";
 import { mapProfileToHelperItem } from "../utils/helperExploreMapper";
 import { getAllSkills } from "../services/skillService";
-import {
-  mapSkillToExploreItem,
-  type SkillWithRelations,
-} from "../utils/exploreMappers";
+import { mapSkillToExploreItem } from "../utils/exploreMappers";
 
 const levelStyles: Record<string, string> = {
   Beginner: "bg-emerald-50 text-emerald-700",
@@ -29,7 +26,6 @@ export default function SkillHelpers() {
 
   const [search, setSearch] = useState("");
   const [minRating, setMinRating] = useState("Any");
-  const [onlineOnly, setOnlineOnly] = useState(true);
   const [sortBy, setSortBy] = useState("Top Rated");
 
   useEffect(() => {
@@ -115,10 +111,6 @@ export default function SkillHelpers() {
       data = data.filter((helper) => helper.rating >= threshold);
     }
 
-    if (onlineOnly) {
-      data = data.filter((helper) => helper.online);
-    }
-
     if (sortBy === "Top Rated") {
       data = data.sort((a, b) => b.rating - a.rating);
     } else if (sortBy === "Fastest Response") {
@@ -137,7 +129,7 @@ export default function SkillHelpers() {
     }
 
     return data;
-  }, [skill, helpers, search, minRating, onlineOnly, sortBy]);
+  }, [skill, helpers, search, minRating, sortBy]);
 
   if (!skill) {
     if (isLoadingSkill) {
@@ -168,13 +160,11 @@ export default function SkillHelpers() {
     );
   }
 
-  const onlineCount = matchedHelpers.filter((helper) => helper.online).length;
-
   return (
     <div className="relative min-h-full overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <div className="pointer-events-none absolute inset-0">
         <div className="explore-pulse absolute -left-28 top-24 h-64 w-64 rounded-full bg-indigo-200/25 blur-3xl" />
-        <div className="explore-float absolute right-[-7rem] top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
+        <div className="explore-float absolute -right-28 top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
       </div>
 
       <main className="relative z-10 mx-auto max-w-7xl px-4 py-6 sm:px-5 lg:px-6 lg:py-8">
@@ -192,7 +182,7 @@ export default function SkillHelpers() {
         <section className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl md:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-start gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 via-sky-100 to-purple-100 text-indigo-600">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-indigo-100 via-sky-100 to-purple-100 text-indigo-600">
                 <Code2 size={24} />
               </div>
               <div>
@@ -230,10 +220,6 @@ export default function SkillHelpers() {
           </div>
         </section>
 
-        <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-slate-600">
-          <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-          {onlineCount} helpers available right now
-        </p>
         {helpersLoadError ? (
           <p className="mt-2 text-sm font-medium text-rose-600">{helpersLoadError}</p>
         ) : null}
@@ -259,7 +245,7 @@ export default function SkillHelpers() {
               }))}
               ariaLabel="Helper sort"
               size="md"
-              className="min-w-[190px]"
+              className="min-w-47.5"
             />
           </div>
 
@@ -278,20 +264,6 @@ export default function SkillHelpers() {
                 {option}
               </button>
             ))}
-
-            <button
-              type="button"
-              onClick={() => setOnlineOnly((previous) => !previous)}
-              className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                onlineOnly
-                  ? "border border-emerald-300 bg-emerald-50 text-emerald-700"
-                  : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              <span className={`h-2 w-2 rounded-full ${onlineOnly ? "bg-emerald-500" : "bg-slate-300"}`} />
-              Online now
-            </button>
-
             <span className="ml-auto text-xs font-medium text-slate-500">{matchedHelpers.length} helpers</span>
           </div>
         </section>
@@ -305,7 +277,7 @@ export default function SkillHelpers() {
             ))}
           </section>
         ) : (
-          <section className="explore-fade-in-up relative z-10 mt-6 rounded-[1.5rem] border border-dashed border-white/40 bg-white/70 p-8 text-center shadow-sm backdrop-blur-xl">
+          <section className="explore-fade-in-up relative z-10 mt-6 rounded-3xl border border-dashed border-white/40 bg-white/70 p-8 text-center shadow-sm backdrop-blur-xl">
             <h3 className="text-xl font-bold text-slate-900">No helpers found</h3>
             <p className="mt-2 text-sm text-slate-500">
               Try relaxing filters or searching with another keyword.
@@ -315,7 +287,6 @@ export default function SkillHelpers() {
               onClick={() => {
                 setSearch("");
                 setMinRating("Any");
-                setOnlineOnly(false);
               }}
               className="mt-4 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
@@ -328,4 +299,5 @@ export default function SkillHelpers() {
     </div>
   );
 }
+
 
