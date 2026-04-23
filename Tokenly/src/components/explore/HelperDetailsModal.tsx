@@ -1,4 +1,5 @@
 ﻿import {
+  Coins,
   X,
   MessageCircle,
 } from "lucide-react";
@@ -85,6 +86,7 @@ export default function HelperDetailsModal({
             </div>
 
             <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-600">
+              <Coins size={14} />
               {item.creditsPerHour} /hr
             </div>
           </div>

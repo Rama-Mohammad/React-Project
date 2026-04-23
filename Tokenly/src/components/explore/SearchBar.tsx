@@ -35,17 +35,17 @@ export default function SearchBar({
   }, [activeTab, onSortChange, options, sortBy]);
 
   return (
-    <div className="explore-fade-in-up relative z-40 flex flex-col gap-2.5 lg:flex-row">
+    <div className="explore-fade-in-up relative z-40 flex flex-col gap-3 lg:flex-row">
       <div className="relative flex-1">
         <Search
-          size={17}
-          className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 transition-colors duration-300"
+          size={18}
+          className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-slate-400/90 transition-colors duration-300"
         />
         <input
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder={placeholderMap[activeTab]}
-          className="h-10 w-full rounded-xl border border-white/55 bg-white/85 pl-12 pr-4 text-sm text-slate-900 backdrop-blur outline-none transition duration-200 placeholder:text-slate-400 focus:border-indigo-200 focus:ring-2 focus:ring-indigo-100"
+          className="h-12 w-full rounded-[18px] border border-[#dfe6f5] bg-white/88 pl-12 pr-4 text-sm font-medium text-slate-900 shadow-[0_14px_32px_-30px_rgba(15,23,42,0.42)] outline-none transition duration-300 placeholder:text-slate-400/90 hover:border-indigo-100 focus:border-indigo-200 focus:bg-white focus:ring-4 focus:ring-indigo-100/70"
         />
       </div>
 
@@ -56,7 +56,7 @@ export default function SearchBar({
         ariaLabel="Explore sort"
         icon={<SlidersHorizontal size={14} />}
         size="sm"
-        className="min-w-[190px]"
+        className="min-w-[210px]"
       />
     </div>
   );

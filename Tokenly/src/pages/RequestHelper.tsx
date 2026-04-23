@@ -1,4 +1,5 @@
 ﻿import { CheckCircle2, Coins, Lightbulb, User } from "lucide-react";
+import { Eye } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Loader from "../components/common/Loader";
@@ -575,7 +576,7 @@ export default function RequestHelper() {
           <aside className="space-y-4 lg:sticky lg:top-20">
             <section className="explore-glass rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
               <h2 className="text-base font-semibold text-slate-900">Tokens to offer</h2>
-              <p className="mt-1 text-xs text-slate-500">You have {availableTokens} tokens available.</p>
+              <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-500">You have <Coins size={13} /> {availableTokens} tokens available.</p>
 
               <div className="mt-4 flex items-center justify-between gap-3">
                 <button
@@ -599,8 +600,8 @@ export default function RequestHelper() {
               </div>
 
               {helper.creditsPerHour > 0 && durationMinutes ? (
-                <p className="mt-3 text-xs text-slate-500">
-                  Suggested: ~{Math.round((helper.creditsPerHour / 60) * durationMinutes)} tokens for {durationMinutes} min
+                <p className="mt-3 inline-flex items-center gap-1 text-xs text-slate-500">
+                  Suggested: ~<Coins size={13} />{Math.round((helper.creditsPerHour / 60) * durationMinutes)} tokens for {durationMinutes} min
                 </p>
               ) : null}
             </section>
@@ -632,8 +633,9 @@ export default function RequestHelper() {
             {!isGenericRequestFlow && helperId ? (
               <Link
                 to={`/profile/${encodeURIComponent(helperId)}`}
-                className="block rounded-3xl border border-white/55 bg-white/80 p-4 text-center text-xs font-semibold text-indigo-600 backdrop-blur transition hover:bg-white"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-3xl border border-white/55 bg-white/80 p-4 text-center text-xs font-semibold text-indigo-600 backdrop-blur transition hover:bg-white"
               >
+                <Eye size={14} />
                 View {helper.name}'s full profile {"\u2192"}
               </Link>
             ) : null}

@@ -1,4 +1,5 @@
 ﻿import { Clock3, MessageSquareText, Sparkles } from "lucide-react";
+import { BriefcaseBusiness, Coins, Eye, FolderOpen, Send, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
@@ -152,9 +153,9 @@ export default function MyOffers() {
   return (
     <div className="relative min-h-full overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
       <main className="relative z-10 mx-auto max-w-5xl px-4 py-6 sm:px-5 lg:px-6 lg:py-7">
-        <section className="explore-glass rounded-3xl border border-white/50 bg-white/80 p-5 backdrop-blur-xl md:p-6">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">My Offers</h1>
-          <p className="mt-2 text-sm text-slate-600">
+        <section className="explore-glass rounded-[30px] border border-white/60 bg-white/84 p-6 shadow-[0_28px_70px_-42px_rgba(79,70,229,0.28)] backdrop-blur-xl md:p-7">
+          <h1 className="text-[1.9rem] font-bold tracking-tight text-slate-950">My Offers</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
             Track your independent offers and offers submitted on specific requests.
           </p>
 
@@ -167,11 +168,19 @@ export default function MyOffers() {
               {error}
             </div>
           ) : (
-            <div className="mt-5 space-y-6">
+            <div className="mt-6 space-y-7">
               <section>
-                <div className="mb-2 flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-slate-900">Independent Offers</h2>
-                  <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 shadow-sm">
+                      <BriefcaseBusiness size={18} />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-semibold text-slate-950">Independent Offers</h2>
+                      <p className="text-xs text-slate-400">Standalone offers you published for the marketplace.</p>
+                    </div>
+                  </div>
+                  <span className="rounded-full border border-indigo-100 bg-indigo-50/80 px-3 py-1 text-xs font-semibold text-indigo-700 shadow-sm">
                     {independentOffers.length}
                   </span>
                 </div>
@@ -185,32 +194,36 @@ export default function MyOffers() {
                     {independentOffers.map((offer) => (
                       <article
                         key={offer.id}
-                        className="rounded-2xl border border-slate-200/80 bg-white/90 p-4"
+                        className="rounded-2xl border border-slate-200/80 bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-100 hover:shadow-md"
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div>
-                            <p className="text-sm font-semibold text-slate-900">{offer.title}</p>
-                            <p className="mt-1 text-xs text-slate-600">
-                              {offer.category ?? "General"} - {new Date(offer.created_at).toLocaleDateString()}
+                            <p className="text-base font-semibold text-slate-950">{offer.title}</p>
+                            <p className="mt-1 text-xs font-medium text-slate-500">
+                              {offer.category ?? "General"} • {new Date(offer.created_at).toLocaleDateString()}
                             </p>
                           </div>
-                          <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">
+                          <span className="rounded-full border border-indigo-100 bg-indigo-50/85 px-3 py-1 text-xs font-semibold text-indigo-700">
                             {offer.status}
                           </span>
                         </div>
 
-                        <div className="mt-3 grid gap-2 text-sm text-slate-700">
-                          <p className="inline-flex items-start gap-2">
-                            <MessageSquareText size={15} className="mt-0.5 text-indigo-500" />
-                            <span>{offer.description || "No description provided."}</span>
+                        <div className="mt-3 grid gap-2.5 text-sm text-slate-700">
+                          <p className="inline-flex items-start gap-2.5 leading-6">
+                            <MessageSquareText size={15} className="mt-0.5 shrink-0 text-indigo-500" />
+                            <span className="text-slate-600">{offer.description || "No description provided."}</span>
                           </p>
-                          <p className="inline-flex items-start gap-2">
-                            <Clock3 size={15} className="mt-0.5 text-indigo-500" />
-                            <span>{offer.duration_minutes ?? 0} min - {offer.credit_cost ?? 0} tokens</span>
+                          <p className="inline-flex items-start gap-2.5 leading-6">
+                            <Clock3 size={15} className="mt-0.5 shrink-0 text-indigo-500" />
+                            <span className="inline-flex flex-wrap items-center gap-1">
+                              {offer.duration_minutes ?? 0} min -
+                              <Coins size={14} className="text-indigo-500" />
+                              {offer.credit_cost ?? 0} tokens
+                            </span>
                           </p>
-                          <p className="inline-flex items-start gap-2">
-                            <Sparkles size={15} className="mt-0.5 text-indigo-500" />
-                            <span>Urgency: {offer.urgency ?? "medium"}</span>
+                          <p className="inline-flex items-start gap-2.5 leading-6">
+                            <Sparkles size={15} className="mt-0.5 shrink-0 text-indigo-500" />
+                            <span className="text-slate-600">Urgency: {offer.urgency ?? "medium"}</span>
                           </p>
                         </div>
 
@@ -218,20 +231,22 @@ export default function MyOffers() {
                           <div className="flex gap-2">
                             <Link
                               to={`/my-offers/independent/${offer.id}`}
-                              className="inline-flex h-9 items-center rounded-xl border border-slate-300/70 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                              className="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-300/70 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:border-indigo-200 hover:bg-slate-50"
                             >
+                              <Eye size={15} />
                               View Offer
                             </Link>
                             <button
                               type="button"
                               onClick={() => setPendingDeleteIndependentOfferId(offer.id)}
                               disabled={deletingIndependentOfferId === offer.id}
-                              className={`inline-flex h-9 items-center rounded-xl border px-3 text-sm font-semibold transition ${
+                              className={`inline-flex h-9 items-center gap-2 rounded-xl border px-3 text-sm font-semibold shadow-sm transition-all duration-200 ${
                                 deletingIndependentOfferId === offer.id
                                   ? "cursor-not-allowed border-rose-200 bg-rose-100 text-rose-400"
                                   : "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
                               }`}
                             >
+                              {deletingIndependentOfferId !== offer.id ? <Trash2 size={15} /> : null}
                               {deletingIndependentOfferId === offer.id ? "Deleting..." : "Delete"}
                             </button>
                           </div>
@@ -243,9 +258,20 @@ export default function MyOffers() {
               </section>
 
               <section>
-                <div className="mb-2 flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-slate-900">Request-Based Offers</h2>
-                  <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 shadow-sm">
+                      <FolderOpen size={18} />
+                    </div>
+                    <div>
+                      <h2 className="inline-flex items-center gap-2 text-lg font-semibold text-slate-950">
+                        <Send size={16} className="text-violet-500" />
+                        Request-Based Offers
+                      </h2>
+                      <p className="text-xs text-slate-400">Offers you submitted to existing open requests.</p>
+                    </div>
+                  </div>
+                  <span className="rounded-full border border-violet-100 bg-violet-50/80 px-3 py-1 text-xs font-semibold text-violet-700 shadow-sm">
                     {requestOffers.length}
                   </span>
                 </div>
@@ -259,23 +285,23 @@ export default function MyOffers() {
                     {requestOffers.map((offer) => {
                       const statusClass =
                         offer.status === "accepted"
-                          ? "bg-emerald-50 text-emerald-700"
+                          ? "border border-emerald-100 bg-emerald-50 text-emerald-700"
                           : offer.status === "rejected"
-                            ? "bg-rose-50 text-rose-700"
-                            : "bg-amber-50 text-amber-700";
+                            ? "border border-rose-100 bg-rose-50 text-rose-700"
+                            : "border border-amber-100 bg-amber-50 text-amber-700";
 
                       return (
                         <article
                           key={offer.id}
-                          className="rounded-2xl border border-slate-200/80 bg-white/90 p-4"
+                          className="rounded-2xl border border-slate-200/80 bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-100 hover:shadow-md"
                         >
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div>
-                              <p className="text-sm font-semibold text-slate-900">
+                              <p className="text-base font-semibold text-slate-950">
                                 {offer.request?.title ?? "Unknown request"}
                               </p>
-                              <p className="mt-1 text-xs text-slate-600">
-                                {offer.request?.category ?? "General"} - {new Date(offer.created_at).toLocaleDateString()}
+                              <p className="mt-1 text-xs font-medium text-slate-500">
+                                {offer.request?.category ?? "General"} • {new Date(offer.created_at).toLocaleDateString()}
                               </p>
                             </div>
                             <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass}`}>
@@ -283,19 +309,21 @@ export default function MyOffers() {
                             </span>
                           </div>
 
-                          <div className="mt-3 grid gap-2 text-sm text-slate-700">
-                            <p className="inline-flex items-start gap-2">
-                              <MessageSquareText size={15} className="mt-0.5 text-indigo-500" />
-                              <span>{offer.message || "No message provided."}</span>
+                          <div className="mt-3 grid gap-2.5 text-sm text-slate-700">
+                            <p className="inline-flex items-start gap-2.5 leading-6">
+                              <MessageSquareText size={15} className="mt-0.5 shrink-0 text-indigo-500" />
+                              <span className="text-slate-600">{offer.message || "No message provided."}</span>
                             </p>
-                            <p className="inline-flex items-start gap-2">
-                              <Clock3 size={15} className="mt-0.5 text-indigo-500" />
-                              <span>{offer.availability || "Availability not provided."}</span>
+                            <p className="inline-flex items-start gap-2.5 leading-6">
+                              <Clock3 size={15} className="mt-0.5 shrink-0 text-indigo-500" />
+                              <span className="text-slate-600">{offer.availability || "Availability not provided."}</span>
                             </p>
-                            <p className="inline-flex items-start gap-2">
-                              <Sparkles size={15} className="mt-0.5 text-indigo-500" />
-                              <span>
-                                {offer.request?.duration_minutes ?? 0} min - {offer.request?.credit_cost ?? 0} tokens
+                            <p className="inline-flex items-start gap-2.5 leading-6">
+                              <Sparkles size={15} className="mt-0.5 shrink-0 text-indigo-500" />
+                              <span className="inline-flex flex-wrap items-center gap-1">
+                                {offer.request?.duration_minutes ?? 0} min -
+                                <Coins size={14} className="text-indigo-500" />
+                                {offer.request?.credit_cost ?? 0} tokens
                               </span>
                             </p>
                           </div>
@@ -304,20 +332,22 @@ export default function MyOffers() {
                             <div className="flex gap-2">
                               <Link
                                 to={`/requests/${offer.request_id}`}
-                              className="inline-flex h-9 items-center rounded-xl border border-slate-300/70 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                              className="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-300/70 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:border-indigo-200 hover:bg-slate-50"
                             >
+                              <Eye size={15} />
                               View Offer
                             </Link>
                             <button
                               type="button"
                                 onClick={() => setPendingDeleteRequestOfferId(offer.id)}
                                 disabled={deletingRequestOfferId === offer.id}
-                                className={`inline-flex h-9 items-center rounded-xl border px-3 text-sm font-semibold transition ${
+                                className={`inline-flex h-9 items-center gap-2 rounded-xl border px-3 text-sm font-semibold shadow-sm transition-all duration-200 ${
                                   deletingRequestOfferId === offer.id
                                     ? "cursor-not-allowed border-rose-200 bg-rose-100 text-rose-400"
                                     : "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
                                 }`}
                               >
+                                {deletingRequestOfferId !== offer.id ? <Trash2 size={15} /> : null}
                                 {deletingRequestOfferId === offer.id ? "Deleting..." : "Delete"}
                               </button>
                             </div>

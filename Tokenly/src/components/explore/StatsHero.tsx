@@ -1,4 +1,4 @@
-﻿import {
+import {
   ArrowRight,
   BadgeCheck,
   CalendarCheck,
@@ -13,47 +13,96 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { StatsHeroProps } from "../../types/explore";
 
+function Sparkline({
+  stroke,
+  fill,
+  points,
+}: {
+  stroke: string;
+  fill: string;
+  points: string;
+}) {
+  return (
+    <svg viewBox="0 0 120 38" className="mt-4 h-8 w-full" aria-hidden="true">
+      <defs>
+        <linearGradient id={fill} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor={stroke} stopOpacity="0.22" />
+          <stop offset="100%" stopColor={stroke} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={`M0 38 L${points} L120 38 Z`} fill={`url(#${fill})`} />
+      <path
+        d={`M${points}`}
+        fill="none"
+        stroke={stroke}
+        strokeWidth="2.25"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function StatCard({
   icon,
   value,
   label,
   iconWrapClass,
   iconClass,
+  sparkStroke,
+  sparkFillId,
+  sparkPoints,
 }: {
   icon: React.ReactNode;
   value: string | number;
   label: string;
   iconWrapClass: string;
   iconClass: string;
+  sparkStroke: string;
+  sparkFillId: string;
+  sparkPoints: string;
 }) {
   return (
-    <div className="explore-glass rounded-xl border border-white/60 bg-white/80 p-4 backdrop-blur transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
-      <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl mx-auto sm:mx-0 ${iconWrapClass}`}>
-        <div className={iconClass}>{icon}</div>
+    <div className="group explore-soft-card relative overflow-hidden rounded-[24px] border border-[#dfe6f5]/90 bg-white/95 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-indigo-100 hover:bg-white xl:min-h-[128px] xl:p-4">
+      <div className="absolute inset-x-0 top-0 h-12 bg-[linear-gradient(180deg,rgba(255,255,255,0.82)_0%,rgba(255,255,255,0)_100%)]" />
+      <div className={`relative inline-flex h-10 w-10 items-center justify-center rounded-[16px] ring-1 ring-white/80 ${iconWrapClass}`}>
+        <div className={`${iconClass} drop-shadow-[0_8px_22px_rgba(99,102,241,0.14)]`}>{icon}</div>
       </div>
-      <div className="text-2xl font-bold tracking-tight text-slate-950 text-center sm:text-left">
+      <div className="relative mt-3.5 text-[1.45rem] font-extrabold tracking-[-0.045em] text-slate-950 sm:text-[1.65rem] xl:text-[1.5rem]">
         {value}
       </div>
-      <div className="mt-1 text-sm text-slate-500 text-center sm:text-left">
+      <div className="relative mt-0.5 text-sm font-medium text-slate-500/90 xl:text-[13px]">
         {label}
       </div>
+      <Sparkline stroke={sparkStroke} fill={sparkFillId} points={sparkPoints} />
     </div>
   );
 }
 
 function Step({
   icon,
+  index,
   label,
+  accentClass,
+  badgeClass,
 }: {
   icon: React.ReactNode;
+  index: string;
   label: string;
+  accentClass: string;
+  badgeClass: string;
 }) {
   return (
-    <div className="explore-glass flex items-center justify-center gap-2 rounded-xl border border-white/50 bg-white/70 px-3 py-3 text-slate-700 transition duration-300 hover:-translate-y-0.5">
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white">
-        {icon}
+    <div className="relative flex h-full items-center justify-center lg:shrink-0 lg:justify-start">
+      <div className="relative shrink-0">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-[15px] ring-1 ring-white/75 shadow-[0_12px_30px_-24px_rgba(79,70,229,0.45)] ${accentClass}`}>
+          {icon}
+        </div>
+        <span className={`absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ring-2 ring-white/90 ${badgeClass}`}>
+          {index}
+        </span>
       </div>
-      <span className="text-sm font-medium">{label}</span>
+      <p className="ml-3 text-[14px] font-medium tracking-[-0.01em] text-slate-700/90">{label}</p>
     </div>
   );
 }
@@ -70,97 +119,165 @@ export default function StatsHero({ stats, openHowItWorks = false }: StatsHeroPr
   return (
     <>
       <section className="space-y-4">
-        <div className="explore-glass explore-fade-in-up overflow-hidden rounded-2xl border border-white/50 bg-white/75 px-5 py-5 backdrop-blur-xl md:px-6 md:py-6">
-          <div className="grid items-center gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-            <div>
-              <div className="explore-fade-in-up mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/60 bg-white/85 px-3 py-1.5 text-xs font-semibold text-slate-700">
-                <BadgeCheck size={14} />
-                Token-based peer assistance
+        <div className="relative overflow-hidden rounded-[32px] border border-white/80 bg-white/55 p-2 shadow-[0_26px_80px_-64px_rgba(79,70,229,0.35)] backdrop-blur-xl sm:p-2.5 lg:p-2.5 xl:flex-1">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-16 top-10 h-44 w-44 rounded-full bg-indigo-100/70 blur-3xl" />
+            <div className="absolute right-8 top-8 h-40 w-40 rounded-full bg-sky-100/55 blur-3xl" />
+            <div className="absolute bottom-0 left-[42%] h-32 w-32 rounded-full bg-violet-100/55 blur-3xl" />
+          </div>
+
+          <div className="relative grid items-start gap-3 xl:grid-cols-[1.26fr_0.74fr]">
+            <div className="explore-soft-card relative overflow-hidden rounded-[30px] border border-white/90 bg-[linear-gradient(145deg,rgba(255,255,255,0.98)_0%,rgba(245,247,255,0.96)_52%,rgba(249,246,255,0.96)_100%)] px-5 py-4 pb-6 sm:px-6 sm:py-4 sm:pb-6 lg:px-7 lg:py-5 lg:pb-7 xl:min-h-[252px]">
+              <div className="pointer-events-none absolute inset-0">
+                <div className="absolute -right-12 top-8 h-44 w-44 rounded-full bg-indigo-100/70 blur-3xl" />
+                <div className="absolute left-16 top-20 h-28 w-28 rounded-full bg-sky-100/60 blur-3xl" />
+                <div className="absolute bottom-10 right-10 h-28 w-40 rounded-full bg-violet-100/45 blur-3xl" />
+                <div className="absolute bottom-8 right-8 h-24 w-32 opacity-30 [background-image:radial-gradient(circle,#c7d2fe_1.1px,transparent_1.1px)] [background-size:12px_12px]" />
               </div>
 
-              <h1 className="explore-fade-in-up max-w-3xl text-3xl font-bold leading-tight tracking-tight text-slate-950 md:text-4xl">
-                Find Help,{" "}
-                <span className="bg-gradient-to-r from-indigo-400 via-sky-300 to-purple-300 bg-clip-text text-transparent">
-                  Offer Skills.
-                </span>
-                <br />
-                No money - just reciprocity.
-              </h1>
-
-              <p className="explore-fade-in-up mt-3.5 max-w-2xl text-sm leading-6 text-slate-600">
-                Earn tokens by helping others, then spend them to get help yourself.
-                Every session is time-bounded, skill-tagged, and designed to feel fair,
-                simple, and useful.
-              </p>
-
-              <div className="explore-fade-in-up mt-5 flex flex-wrap gap-2.5">
-                <Link
-                  to="/request/new"
-                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition duration-300 hover:bg-slate-50"
-                >
-                  <FileText size={17} />
-                  Post a Request
-                </Link>
-
-                <Link
-                  to="/create-offer"
-                  className="inline-flex items-center gap-2 rounded-lg border border-white/60 bg-white/85 px-4 py-2.5 text-sm font-semibold text-slate-700 transition duration-300 hover:bg-white"
-                >
-                  <Handshake size={17} />
-                  Create an Offer
-                </Link>
-              </div>
-
-              <div className="explore-fade-in-up mt-4 flex flex-wrap items-center gap-2.5 text-xs text-slate-500">
-                <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5">
-                  <Sparkles size={14} className="text-indigo-500" />
-                  Friendly peer learning
+              <div className="relative">
+                <div className="mb-3 inline-flex w-fit items-center gap-2 rounded-full border border-indigo-100/80 bg-white/90 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 shadow-[0_12px_30px_-26px_rgba(79,70,229,0.3)] sm:text-[11px]">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[linear-gradient(135deg,#e0e7ff_0%,#dbeafe_100%)] text-indigo-600">
+                    <BadgeCheck size={14} />
+                  </span>
+                  Token-based peer assistance
                 </div>
-                <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5">
-                  <Coins size={14} className="text-amber-500" />
-                  Token-based help
+
+                <h1 className="text-[1.95rem] font-extrabold leading-[1.02] tracking-[-0.06em] text-slate-950 sm:text-[2.25rem] lg:text-[2.55rem] xl:text-[2.35rem]">
+                  Find Help,
+                  <br />
+                  <span className="bg-[linear-gradient(90deg,#4f46e5_0%,#3b82f6_52%,#8b5cf6_100%)] bg-clip-text text-transparent">
+                    Offer Skills.
+                  </span>
+                  <br />
+                  No money, just reciprocity.
+                </h1>
+
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500/95 sm:text-[15px]">
+                  Earn tokens by helping others, then spend them to get help yourself. Every session is time-bounded,
+                  skill-tagged, and designed to feel fair, simple, and genuinely useful.
+                </p>
+
+                <div className="mt-4 flex flex-wrap gap-2.5">
+                  <Link
+                    to="/request/new"
+                    className="explore-soft-glow inline-flex min-h-10 items-center justify-center gap-2 rounded-[16px] bg-[linear-gradient(135deg,#4f46e5_0%,#6366f1_45%,#8b5cf6_100%)] px-4.5 text-sm font-semibold text-white transition duration-300 hover:-translate-y-0.5 hover:brightness-105"
+                  >
+                    <FileText size={18} />
+                    Post a Request
+                  </Link>
+
+                  <Link
+                    to="/create-offer"
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[16px] border border-[#dfe6f5] bg-white/92 px-4.5 text-sm font-semibold text-slate-800 shadow-[0_14px_32px_-28px_rgba(15,23,42,0.45)] transition duration-300 hover:-translate-y-0.5 hover:border-indigo-100 hover:bg-white"
+                  >
+                    <Handshake size={18} className="text-slate-600" />
+                    Create an Offer
+                  </Link>
+                </div>
+
+                <div className="mt-3.5 flex flex-wrap gap-2">
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/70 bg-white/82 px-3.5 py-1.5 text-xs text-slate-500 shadow-[0_10px_24px_-22px_rgba(15,23,42,0.35)] sm:text-sm">
+                    <Sparkles size={14} className="text-indigo-500" />
+                    Friendly peer learning
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/70 bg-white/82 px-3.5 py-1.5 text-xs text-slate-500 shadow-[0_10px_24px_-22px_rgba(15,23,42,0.35)] sm:text-sm">
+                    <Coins size={14} className="text-amber-500" />
+                    Token-based help
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/70 bg-white/82 px-3.5 py-1.5 text-xs text-slate-500 shadow-[0_10px_24px_-22px_rgba(15,23,42,0.35)] sm:text-sm">
+                    <Users size={14} className="text-sky-500" />
+                    Community-powered support
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-2 xl:content-start">
               <StatCard
-                icon={<FileText size={19} />}
+                icon={<FileText size={22} />}
                 value={stats.activeRequests}
                 label="Active Requests"
-                iconWrapClass="bg-indigo-100"
-                iconClass="text-indigo-500"
+                iconWrapClass="bg-[linear-gradient(135deg,#eef2ff_0%,#e0e7ff_100%)]"
+                iconClass="text-indigo-600"
+                sparkStroke="#6366f1"
+                sparkFillId="requestsSpark"
+                sparkPoints="0 28 C 14 24, 22 12, 34 16 S 58 30, 70 24 S 94 10, 120 15"
               />
               <StatCard
-                icon={<Users size={19} />}
+                icon={<Users size={22} />}
                 value={stats.helpersOnline}
                 label="Offers Available"
-                iconWrapClass="bg-sky-100"
-                iconClass="text-sky-500"
+                iconWrapClass="bg-[linear-gradient(135deg,#e0f2fe_0%,#dbeafe_100%)]"
+                iconClass="text-sky-600"
+                sparkStroke="#38bdf8"
+                sparkFillId="offersSpark"
+                sparkPoints="0 27 C 14 22, 24 14, 36 18 S 60 31, 74 22 S 95 11, 120 14"
               />
               <StatCard
-                icon={<CalendarCheck size={19} />}
+                icon={<CalendarCheck size={22} />}
                 value={stats.sessionsToday}
                 label="Sessions Today"
-                iconWrapClass="bg-purple-100"
-                iconClass="text-purple-500"
+                iconWrapClass="bg-[linear-gradient(135deg,#dcfce7_0%,#ecfccb_100%)]"
+                iconClass="text-emerald-600"
+                sparkStroke="#34d399"
+                sparkFillId="sessionsSpark"
+                sparkPoints="0 30 C 15 28, 22 18, 34 17 S 59 27, 74 20 S 95 6, 120 10"
               />
               <StatCard
-                icon={<Coins size={19} />}
+                icon={<Coins size={22} />}
                 value={stats.creditsExchanged}
                 label="Tokens Exchanged"
-                iconWrapClass="bg-amber-100"
-                iconClass="text-amber-500"
+                iconWrapClass="bg-[linear-gradient(135deg,#fef3c7_0%,#fde68a_100%)]"
+                iconClass="text-amber-600"
+                sparkStroke="#f59e0b"
+                sparkFillId="tokensSpark"
+                sparkPoints="0 29 C 14 26, 20 14, 34 16 S 57 24, 72 18 S 96 8, 120 12"
               />
             </div>
           </div>
         </div>
 
-        <div className="explore-fade-in-up grid gap-2.5 rounded-2xl border border-white/50 bg-white/60 p-2.5 backdrop-blur sm:grid-cols-2 lg:grid-cols-4">
-          <Step icon={<FileText size={16} />} label="1. Post a request" />
-          <Step icon={<Users size={16} />} label="2. Receive offers" />
-          <Step icon={<ArrowRight size={16} />} label="3. Complete session" />
-          <Step icon={<Coins size={16} />} label="4. Tokens transfer" />
+        <div className="rounded-[28px] border border-white/80 bg-white/70 px-5 py-3 shadow-[0_18px_50px_-42px_rgba(79,70,229,0.35)] backdrop-blur-xl sm:px-6 lg:px-6 lg:py-3">
+          <div className="grid gap-3 lg:flex lg:items-center">
+            <Step
+              index="01"
+              icon={<FileText size={20} className="text-indigo-600" />}
+              label="Post a request"
+              accentClass="bg-[linear-gradient(135deg,#ede9fe_0%,#e0e7ff_100%)]"
+              badgeClass="bg-indigo-600 text-white"
+            />
+            <div className="hidden h-full min-w-8 flex-1 items-center justify-center lg:flex">
+              <ArrowRight size={17} className="text-slate-300/80" />
+            </div>
+            <Step
+              index="02"
+              icon={<Users size={20} className="text-sky-600" />}
+              label="Receive offers"
+              accentClass="bg-[linear-gradient(135deg,#e0f2fe_0%,#dbeafe_100%)]"
+              badgeClass="bg-sky-500 text-white"
+            />
+            <div className="hidden h-full min-w-8 flex-1 items-center justify-center lg:flex">
+              <ArrowRight size={17} className="text-slate-300/80" />
+            </div>
+            <Step
+              index="03"
+              icon={<Handshake size={20} className="text-violet-600" />}
+              label="Complete a session"
+              accentClass="bg-[linear-gradient(135deg,#ede9fe_0%,#f5d0fe_100%)]"
+              badgeClass="bg-violet-500 text-white"
+            />
+            <div className="hidden h-full min-w-8 flex-1 items-center justify-center lg:flex">
+              <ArrowRight size={17} className="text-slate-300/80" />
+            </div>
+            <Step
+              index="04"
+              icon={<Coins size={20} className="text-amber-600" />}
+              label="Tokens transfer"
+              accentClass="bg-[linear-gradient(135deg,#fef3c7_0%,#fde68a_100%)]"
+              badgeClass="bg-amber-500 text-white"
+            />
+          </div>
         </div>
       </section>
 
@@ -236,5 +353,3 @@ export default function StatsHero({ stats, openHowItWorks = false }: StatsHeroPr
     </>
   );
 }
-
-

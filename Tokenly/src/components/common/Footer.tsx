@@ -1,32 +1,37 @@
-﻿import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { Building2, ChevronRight, Compass, Headphones, ShieldCheck } from "lucide-react";
 import useAuthRedirect from "../../hooks/useAuthRedirect";
 
 export default function Footer() {
   const { isAuthenticated, authRedirectState } = useAuthRedirect();
   const year = new Date().getFullYear();
   const iconHoverClass =
-    "inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white/70 transition duration-500 hover:-translate-y-1 hover:scale-110 hover:rotate-3 hover:border-indigo-300 hover:bg-[linear-gradient(135deg,#eef2ff_0%,#ede9fe_100%)] hover:text-indigo-600 hover:shadow-[0_12px_24px_-14px_rgba(99,102,241,0.85)]";
-  const titleHoverClass =
-    "text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 transition duration-300 hover:text-indigo-700";
+    "inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-slate-500 transition-all duration-200 hover:scale-105 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600";
+  const titleClass =
+    "inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-indigo-500";
   const linkHoverClass =
-    "group relative isolate block -mx-2 overflow-hidden rounded-lg px-2 py-1 transition duration-300 hover:translate-x-1 hover:bg-[linear-gradient(90deg,rgba(224,231,255,0.6)_0%,rgba(237,233,254,0.7)_100%)] hover:text-indigo-700 hover:shadow-[0_10px_20px_-14px_rgba(99,102,241,0.9)] before:absolute before:inset-y-0 before:-left-10 before:w-8 before:skew-x-12 before:bg-white/70 before:opacity-0 before:transition-all before:duration-500 hover:before:left-[120%] hover:before:opacity-100";
+    "group inline-flex items-center gap-1.5 text-slate-600 transition-colors duration-200 hover:text-indigo-600";
   const policyHoverClass =
-    "group relative isolate -mx-1.5 overflow-hidden rounded-md px-1.5 py-0.5 transition duration-300 hover:bg-[linear-gradient(90deg,rgba(224,231,255,0.6)_0%,rgba(237,233,254,0.7)_100%)] hover:text-indigo-700 before:absolute before:inset-y-0 before:-left-8 before:w-6 before:skew-x-12 before:bg-white/70 before:opacity-0 before:transition-all before:duration-500 hover:before:left-[115%] hover:before:opacity-100";
+    "transition-colors duration-200 hover:text-indigo-600";
   const gatedLink = (path: string) => (isAuthenticated ? path : "/auth");
+  const linkChevron = (
+    <ChevronRight size={12} className="opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+  );
 
   return (
-    <footer className="relative mt-10 border-t border-slate-300/70 bg-white/60 backdrop-blur-xl">
+    <footer className="relative mt-10 border-t border-gray-200/70 bg-white/70 backdrop-blur-xl">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.05)_0%,rgba(224,236,255,0.35)_100%)]" />
 
-      <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-5 lg:px-6">
-        <div className="grid gap-8 text-center md:text-left md:grid-cols-[1.5fr_0.75fr_0.75fr_0.75fr]">
+      <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-5 lg:px-6">
+        <div className="grid items-start gap-10 text-center md:text-left md:grid-cols-[1.5fr_0.75fr_0.75fr_0.75fr]">
           <div>
-            <p className="mt-4 max-w-md text-sm leading-6 text-slate-600">
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-gray-500">
               Connect, learn, and earn through real-time peer sessions.
               Exchange skills, gain experience, and grow together.
             </p>
 
-            <div className="mt-5 flex items-center justify-center md:justify-start gap-3 text-slate-600">
+            <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-gray-400">Follow us</p>
+            <div className="mt-3 flex items-center justify-center gap-3 md:justify-start">
               <a href="https://x.com" target="_blank" rel="noreferrer" aria-label="X" className={iconHoverClass}>
                 <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current">
                   <path d="M18.901 2.25h3.68l-8.041 9.19L24 21.75h-7.406l-5.8-7.584L4.151 21.75H.469l8.6-9.834L0 2.25h7.594l5.243 6.934L18.901 2.25Zm-1.291 17.296h2.04L6.486 4.347H4.297L17.61 19.546Z" />
@@ -46,46 +51,65 @@ export default function Footer() {
           </div>
 
           <div>
-            <Link to="/explore" className={titleHoverClass}>Explore</Link>
-            <div className="mt-3 space-y-2 text-sm text-slate-700 flex flex-col items-center md:items-start">
-              <Link to="/home" className={linkHoverClass}>Home</Link>
-              <Link to="/explore" className={linkHoverClass}>Explore</Link>
-              <Link to={gatedLink("/dashboard")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Dashboard</Link>
-              <Link to={gatedLink("/sessions")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Sessions</Link>
-              <Link to={gatedLink("/profile")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Profile</Link>
+            <p className={titleClass}>
+              <Compass size={14} />
+              Platform
+            </p>
+            <div className="mx-auto mt-2 h-px w-8 bg-indigo-500/70 md:mx-0" />
+            <div className="mt-4 flex flex-col items-center gap-2.5 text-sm md:items-start">
+              <Link to="/home" className={linkHoverClass}>Home{linkChevron}</Link>
+              <Link to="/explore" className={linkHoverClass}>Explore{linkChevron}</Link>
+              <Link to={gatedLink("/dashboard")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Dashboard{linkChevron}</Link>
+              <Link to={gatedLink("/sessions")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Sessions{linkChevron}</Link>
+              <Link to={gatedLink("/profile")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Profile{linkChevron}</Link>
             </div>
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Company</p>
-            <div className="mt-3 space-y-2 text-sm text-slate-700 flex flex-col items-center md:items-start">
-              <Link to={gatedLink("/explore")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Browse Requests</Link>
-              <Link to={gatedLink("/explore?tab=helpers#explore-tabs-bar")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Find Helpers</Link>
-              <Link to={gatedLink("/explore?tab=skills#explore-tabs-bar")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Explore Skills</Link>
-              <Link to={gatedLink("/sessions?status=active")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Live Sessions</Link>
-              <Link to={gatedLink("/helpers/h1/request")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Create Request</Link>
+            <p className={titleClass}>
+              <Building2 size={14} />
+              Services
+            </p>
+            <div className="mx-auto mt-2 h-px w-8 bg-indigo-500/70 md:mx-0" />
+            <div className="mt-4 flex flex-col items-center gap-2.5 text-sm md:items-start">
+              <Link to="/explore?tab=requests#explore-tabs-bar" className={linkHoverClass}>Browse Requests{linkChevron}</Link>
+              <Link to="/explore?tab=helpers#explore-tabs-bar" className={linkHoverClass}>Find Helpers{linkChevron}</Link>
+              <Link to="/explore?tab=skills#explore-tabs-bar" className={linkHoverClass}>Explore Skills{linkChevron}</Link>
+              <Link to={gatedLink("/sessions?filter=active")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Live Sessions{linkChevron}</Link>
+              <Link to={gatedLink("/request/new")} state={!isAuthenticated ? authRedirectState : undefined} className={linkHoverClass}>Create Request{linkChevron}</Link>
             </div>
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Support</p>
-            <div className="mt-3 space-y-2 text-sm text-slate-700 flex flex-col items-center md:items-start">
-              <Link to="/help" className={linkHoverClass}>Help Center</Link>
-              <Link to="/guidelines" className={linkHoverClass}>Community Guidelines</Link>
-              <Link to="/report" className={linkHoverClass}>Report an Issue</Link>
-              <Link to="/faqs" className={linkHoverClass}>FAQs</Link>
-              <Link to="/account-safety" className={linkHoverClass}>Account &amp; Safety</Link>
+            <p className={titleClass}>
+              <Headphones size={14} />
+              Support
+            </p>
+            <div className="mx-auto mt-2 h-px w-8 bg-indigo-500/70 md:mx-0" />
+            <div className="mt-4 flex flex-col items-center gap-2.5 text-sm md:items-start">
+              <Link to="/help" className={linkHoverClass}>Help Center{linkChevron}</Link>
+              <Link to="/guidelines" className={linkHoverClass}>Community Guidelines{linkChevron}</Link>
+              <Link to="/report" className={linkHoverClass}>Report an Issue{linkChevron}</Link>
+              <Link to="/faqs" className={linkHoverClass}>FAQs{linkChevron}</Link>
+              <Link to="/account-safety" className={linkHoverClass}>Account &amp; Safety{linkChevron}</Link>
             </div>
           </div>
         </div>
 
-        <div className="mt-8 border-t border-slate-300/70" />
+        <div className="mt-10 border-t border-gray-200/70" />
 
-        <div className="mt-4 flex flex-col items-center text-center gap-2 text-xs text-slate-500 md:flex-row md:items-center md:justify-between md:text-left">
-          <p>(c) {year} Tokenly. All rights reserved.</p>
-          <div className="flex items-center gap-4">
+        <div className="mt-6 flex flex-col items-center gap-3 text-center text-xs text-gray-500 md:flex-row md:items-center md:justify-between md:text-left">
+          <p className="inline-flex items-center gap-2">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-indigo-50 text-indigo-500">
+              <ShieldCheck size={15} strokeWidth={2.1} />
+            </span>
+            © {year} Tokenly. All rights reserved.
+          </p>
+          <div className="flex items-center gap-2">
             <Link to="/privacy" className={policyHoverClass}>Privacy Policy</Link>
+            <span className="text-gray-300">|</span>
             <Link to="/terms" className={policyHoverClass}>Terms of Service</Link>
+            <span className="text-gray-300">|</span>
             <Link to="/cookies" className={policyHoverClass}>Cookie Policy</Link>
           </div>
         </div>
@@ -93,4 +117,3 @@ export default function Footer() {
     </footer>
   );
 }
-

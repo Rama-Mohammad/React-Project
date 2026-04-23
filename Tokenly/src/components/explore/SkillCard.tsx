@@ -1,4 +1,4 @@
-﻿import { ArrowRight, Sparkles, Users } from "lucide-react";
+import { ArrowRight, Camera, Code2, Globe2, Palette, Sparkles, Tag, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import useAuthRedirect from "../../hooks/useAuthRedirect";
 import RatingStars from "../common/RatingStars";
@@ -11,20 +11,30 @@ const levelStyles: Record<string, string> = {
   Advanced: "bg-rose-50 text-rose-700",
 };
 
+function getCategoryIcon(label: string) {
+  const normalized = label.toLowerCase();
+
+  if (normalized.includes("design")) return <Palette size={14} />;
+  if (normalized.includes("programming") || normalized.includes("web") || normalized.includes("code")) return <Code2 size={14} />;
+  if (normalized.includes("photo")) return <Camera size={14} />;
+  if (normalized.includes("language")) return <Globe2 size={14} />;
+  return <Tag size={14} />;
+}
+
 export default function SkillCard({ item }: ExploreSkillCardProps) {
   const { isAuthenticated, authRedirectState } = useAuthRedirect();
   const ctaLink = isAuthenticated ? `/skills/${item.id}/helpers` : "/auth?mode=signin";
 
   return (
-    <article className="explore-glass flex h-full flex-col overflow-hidden rounded-xl border border-white/60 bg-white/85 backdrop-blur transition duration-300 hover:border-white/80 hover:shadow-md">
-      <div className="flex-1 p-4">
+    <article className="explore-soft-card flex h-full flex-col overflow-hidden rounded-[24px] border border-[#dfe6f5] bg-white/92 backdrop-blur transition duration-300 hover:-translate-y-0.5 hover:border-indigo-100 hover:bg-white">
+      <div className="flex-1 p-5">
         <div className="mb-4 flex items-start justify-between gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-100 via-sky-100 to-purple-100 text-indigo-500">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 via-sky-50 to-violet-50 text-indigo-500 ring-1 ring-white/80">
             <Sparkles size={18} />
           </div>
 
           <span
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-white/70 ${
               levelStyles[item.level] || "bg-slate-100 text-slate-700"
             }`}
           >
@@ -35,16 +45,17 @@ export default function SkillCard({ item }: ExploreSkillCardProps) {
         <h3 className="text-base font-semibold leading-snug tracking-tight text-slate-900">
           {item.name}
         </h3>
-        <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <p className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          {getCategoryIcon(item.category)}
           {item.category}
         </p>
 
-        <p className="mt-2.5 line-clamp-3 text-sm leading-6 text-slate-600">
+        <p className="mt-2.5 line-clamp-3 text-sm leading-6 text-slate-500">
           {item.description}
         </p>
       </div>
 
-      <div className="mt-auto border-t border-slate-100/90 p-4">
+      <div className="mt-auto border-t border-slate-100/90 bg-white/62 p-5">
         <div className="mb-4 flex items-center gap-4 text-xs text-slate-500">
           <span className="inline-flex items-center gap-1.5">
             <Users size={14} />
@@ -70,7 +81,7 @@ export default function SkillCard({ item }: ExploreSkillCardProps) {
               />
             ))}
           </div>
-          <span className="text-xs text-slate-500">Top helpers</span>
+          <span className="text-xs text-slate-400">Top helpers</span>
         </div>
 
         <Link
@@ -85,5 +96,3 @@ export default function SkillCard({ item }: ExploreSkillCardProps) {
     </article>
   );
 }
-
-

@@ -681,7 +681,10 @@ export default function RequestDetails() {
                 <h3 className="text-xl font-semibold text-slate-900">Can you help?</h3>
                 <p className="mt-2 text-base text-slate-600">
                   Submit an offer to help with this request. You'll earn{" "}
-                  <span className="font-semibold text-indigo-600">{request.credits} tokens</span>{" "}
+                  <span className="inline-flex items-center gap-1 font-semibold text-indigo-600">
+                    <Coins size={14} />
+                    {request.credits} tokens
+                  </span>{" "}
                   on completion.
                 </p>
 
@@ -745,7 +748,10 @@ export default function RequestDetails() {
                     <Coins size={15} className="text-indigo-400" />
                     Tokens earned
                   </span>
-                  <span className="font-semibold text-indigo-600">{request.credits} tokens</span>
+                  <span className="inline-flex items-center gap-1 font-semibold text-indigo-600">
+                    <Coins size={14} />
+                    {request.credits} tokens
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-slate-600">
                   <span className="inline-flex items-center gap-2">

@@ -376,7 +376,10 @@ export default function OfferAppointment() {
                       <div className="mt-2 space-y-2 text-sm text-slate-600">
                         <p>{category}</p>
                         <p>{duration} min</p>
-                        <p>{credits} tokens</p>
+                        <p className="inline-flex items-center gap-1.5">
+                          <Coins size={14} className="text-indigo-500" />
+                          {credits} tokens
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -464,7 +467,10 @@ export default function OfferAppointment() {
                       <Coins size={15} className="text-indigo-400" />
                       Tokens
                     </span>
-                    <span className="font-semibold text-indigo-700">{credits}</span>
+                    <span className="inline-flex items-center gap-1.5 font-semibold text-indigo-700">
+                      <Coins size={14} />
+                      {credits}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between text-slate-600">
                     <span className="inline-flex items-center gap-2">

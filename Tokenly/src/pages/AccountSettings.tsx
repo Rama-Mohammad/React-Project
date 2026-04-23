@@ -9,6 +9,7 @@ import {
   Settings2,
   ShieldAlert,
   ShieldCheck,
+  Trash2,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
@@ -195,6 +196,7 @@ export default function AccountSettings() {
                 onClick={() => setShowDeleteAccountModal(true)}
                 className="mt-5 inline-flex items-center gap-2 rounded-xl border border-rose-300 bg-white px-4 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 hover:border-rose-400"
               >
+                <Trash2 size={15} />
                 Delete Account
               </button>
             </div>

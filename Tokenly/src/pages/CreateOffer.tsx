@@ -1,4 +1,5 @@
 ﻿import { Sparkles } from "lucide-react";
+import { Coins } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Loader from "../components/common/Loader";
@@ -277,8 +278,10 @@ export default function CreateOffer() {
                   onChange={(event) => setCreditCost(Number(event.target.value))}
                   className="h-11 w-full rounded-2xl border border-slate-200/80 bg-white/92 px-4 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
                 />
-                <p className="mt-1 text-xs text-slate-500">
-                  Available balance: {currentBalance} tokens
+                <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-500">
+                  Available balance:
+                  <Coins size={13} />
+                  {currentBalance} tokens
                 </p>
                 {creditCost > currentBalance ? (
                   <p className="mt-1 text-xs font-medium text-rose-600">

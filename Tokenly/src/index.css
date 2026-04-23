@@ -95,6 +95,27 @@ button:disabled,
     0 10px 22px -20px rgba(15, 23, 42, 0.35);
 }
 
+.explore-soft-shell {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.75) inset,
+    0 18px 50px -34px rgba(90, 105, 160, 0.3),
+    0 36px 90px -72px rgba(76, 89, 140, 0.26);
+}
+
+.explore-soft-card {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 14px 36px -28px rgba(82, 94, 135, 0.24),
+    0 28px 70px -58px rgba(99, 102, 241, 0.2);
+}
+
+.explore-soft-glow {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 20px 50px -26px rgba(129, 140, 248, 0.34),
+    0 36px 90px -62px rgba(168, 85, 247, 0.26);
+}
+
 @keyframes auth-switch-left {
   from {
     opacity: 0;

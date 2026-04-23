@@ -1,9 +1,15 @@
 ﻿import type { ReactNode } from "react";
 import {
   BadgeCheck,
+  Camera,
   CheckCircle2,
+  Code2,
+  Coins,
+  Globe2,
+  Palette,
   ShieldCheck,
   Star,
+  Tag,
   Ticket,
   Zap,
 } from "lucide-react";
@@ -15,10 +21,10 @@ import type { HelperCardProps } from "../../types/explore";
 
 function BadgePill({ label }: { label: string }) {
   const styles: Record<string, string> = {
-    "Top Rated": "border border-amber-100 bg-amber-50 text-amber-700",
-    "Fast Responder": "border border-emerald-100 bg-emerald-50 text-emerald-700",
-    Expert: "border border-violet-100 bg-violet-50 text-violet-700",
-    "Verified Student": "border border-sky-100 bg-sky-50 text-sky-700",
+    "Top Rated": "border border-amber-100 bg-amber-50/90 text-amber-700",
+    "Fast Responder": "border border-emerald-100 bg-emerald-50/90 text-emerald-700",
+    Expert: "border border-violet-100 bg-violet-50/90 text-violet-700",
+    "Verified Student": "border border-sky-100 bg-sky-50/90 text-sky-700",
   };
 
   const icons: Record<string, ReactNode> = {
@@ -41,8 +47,18 @@ function BadgePill({ label }: { label: string }) {
 
 function tagClassName(isPurple = false) {
   return isPurple
-    ? "inline-flex h-8 items-center whitespace-nowrap rounded-full bg-violet-50 px-3.5 text-xs font-semibold text-violet-600"
-    : "inline-flex h-7 items-center whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600";
+    ? "inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full bg-violet-50/85 px-3.5 text-xs font-semibold text-violet-600"
+    : "inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full border border-[#e7ebf5] bg-white/70 px-3.5 text-xs font-medium text-slate-500";
+}
+
+function getCategoryIcon(label: string) {
+  const normalized = label.toLowerCase();
+
+  if (normalized.includes("design")) return <Palette size={14} />;
+  if (normalized.includes("programming") || normalized.includes("web") || normalized.includes("code")) return <Code2 size={14} />;
+  if (normalized.includes("photo")) return <Camera size={14} />;
+  if (normalized.includes("language")) return <Globe2 size={14} />;
+  return <Tag size={14} />;
 }
 
 interface HelperCardPropsWithCallback extends HelperCardProps {
@@ -59,9 +75,8 @@ export default function HelperCard({ item }: HelperCardPropsWithCallback) {
   const visibleCategories = item.categories.slice(0, 2);
 
   return (
-    <article className="relative w-full max-w-full sm:max-w-none mx-auto flex h-full min-h-[320px] sm:min-h-[372px] flex-col overflow-hidden rounded-2xl border border-slate-200 
-    bg-white shadow-[0_10px_24px_-22px_rgba(15,23,42,0.35)] transition duration-300 hover:z-20 hover:border-slate-300 hover:shadow-[0_16px_32px_-24px_rgba(15,23,42,0.42)]">
-      <div className="flex min-h-0 flex-1 flex-col p-3 sm:p-5 pb-2">
+    <article className="explore-soft-card relative mx-auto flex h-full min-h-[320px] w-full max-w-full flex-col overflow-hidden rounded-[28px] border border-[#dfe6f5] bg-white/94 transition duration-300 hover:z-20 hover:-translate-y-0.5 hover:border-indigo-100 hover:bg-white sm:max-w-none sm:min-h-[372px]">
+      <div className="flex min-h-0 flex-1 flex-col p-4 pb-2 sm:p-6">
         <div className="flex items-start gap-3 min-w-0">
           <div className="relative shrink-0">
             <Avatar
@@ -79,7 +94,7 @@ export default function HelperCard({ item }: HelperCardPropsWithCallback) {
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <h3 className="truncate text-[17px] font-semibold tracking-[-0.02em] text-slate-900">
+                <h3 className="truncate text-[17px] font-semibold tracking-[-0.02em] text-slate-950">
                   {item.name}
                 </h3>
                 <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
@@ -95,7 +110,7 @@ export default function HelperCard({ item }: HelperCardPropsWithCallback) {
               </div>
             </div>
 
-            <p className="mt-3 sm:mt-5 min-h-[44px] sm:min-h-[52px] line-clamp-2 text-sm sm:text-[15px] leading-6 sm:leading-7 text-slate-600">
+            <p className="mt-3 min-h-[44px] line-clamp-2 text-sm leading-7 text-slate-500 sm:mt-5 sm:min-h-[52px] sm:text-[15px]">
               {item.bio}
             </p>
 
@@ -111,6 +126,7 @@ export default function HelperCard({ item }: HelperCardPropsWithCallback) {
                   key={category}
                   className={tagClassName(true)}
                 >
+                  {getCategoryIcon(category)}
                   {category}
                 </span>
               ))}
@@ -121,13 +137,13 @@ export default function HelperCard({ item }: HelperCardPropsWithCallback) {
               className="mt-3"
               tagClassName={tagClassName()}
               overflowTagClassName={tagClassName(true)}
-              hiddenTagClassName="inline-flex whitespace-nowrap rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600"
+              hiddenTagClassName="inline-flex whitespace-nowrap rounded-full border border-[#e7ebf5] bg-white px-3 py-1.5 text-xs font-medium text-slate-500"
             />
           </div>
         </div>
       </div>
 
-      <div className="border-t border-slate-200 bg-white px-3 sm:px-5 py-3 sm:py-4">
+      <div className="border-t border-[#edf1f8] bg-white/72 px-4 py-4 sm:px-6">
         <div className="grid grid-cols-2 gap-3 sm:flex sm:items-center sm:gap-4">
           <div className="inline-flex items-center justify-center sm:justify-start gap-1.5 text-xs text-slate-500">
             <Ticket size={13} className="text-slate-400" />
@@ -141,16 +157,15 @@ export default function HelperCard({ item }: HelperCardPropsWithCallback) {
             <span className="font-semibold text-slate-800">{item.successRate}%</span>
           </div>
 
-          <div className="inline-flex items-center justify-center sm:justify-start sm:ml-auto h-9 items-center gap-1.5 rounded-full border
-           border-emerald-100 bg-emerald-50 px-4 text-sm font-medium text-emerald-700">
-            <Ticket size={14} className="text-emerald-600" />
+          <div className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50/90 px-4 text-sm font-medium text-emerald-700 sm:justify-start sm:ml-auto">
+            <Coins size={14} className="text-emerald-600" />
             {item.creditsPerHour} /hr
           </div>
 
           <Link
             to={ctaLink}
             state={!isAuthenticated ? authRedirectState : undefined}
-            className="inline-flex h-9 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition duration-200 hover:bg-slate-50 sm:ml-0"
+            className="inline-flex h-10 items-center justify-center rounded-2xl border border-[#dfe6f5] bg-white px-4 text-sm font-semibold text-slate-700 transition duration-300 hover:-translate-y-0.5 hover:border-indigo-100 hover:bg-slate-50 sm:ml-0"
           >
             Request
           </Link>

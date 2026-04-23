@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import { Camera, Code2, Coins, Flame, Gauge, Globe2, Leaf, Palette, Sparkles, Tag } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import CategoryTabs from "../components/explore/CategoryTabs";
 import FilterSideBar from "../components/explore/FilterSideBar";
@@ -32,6 +33,25 @@ function getEnterStyle(index: number): CSSProperties {
   return {
     "--enter-delay": `${Math.min(index, 10) * 60}ms`,
   } as CSSProperties;
+}
+
+function getCategoryIcon(label: string) {
+  const normalized = label.toLowerCase();
+
+  if (normalized.includes("design")) return <Palette size={14} />;
+  if (normalized.includes("programming") || normalized.includes("web") || normalized.includes("code")) return <Code2 size={14} />;
+  if (normalized.includes("photo")) return <Camera size={14} />;
+  if (normalized.includes("language")) return <Globe2 size={14} />;
+  if (normalized.includes("all")) return <Sparkles size={14} />;
+  return <Tag size={14} />;
+}
+
+function getUrgencyIcon(label: string) {
+  const normalized = label.toLowerCase();
+
+  if (normalized.includes("high")) return <Flame size={14} />;
+  if (normalized.includes("medium")) return <Gauge size={14} />;
+  return <Leaf size={14} />;
 }
 
 function buildPagination(currentPage: number, totalPages: number): Array<number | "ellipsis"> {
@@ -839,12 +859,12 @@ export default function Explore() {
     if (totalPages <= 1) return null;
 
     return (
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
         <button
           type="button"
           onClick={() => handlePaginationChange(currentPage - 1, onPageChange)}
           disabled={currentPage === 0 || isLoading}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-2xl border border-[#dbe3f3] bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Prev
         </button>
@@ -860,10 +880,10 @@ export default function Explore() {
               onClick={() => handlePaginationChange(item - 1, onPageChange)}
               disabled={isLoading}
               aria-current={item === currentPage + 1 ? "page" : undefined}
-              className={`min-w-10 rounded-lg border px-3 py-2 text-sm font-medium transition ${
+              className={`min-w-11 rounded-2xl border px-3.5 py-2.5 text-sm font-medium transition ${
                 item === currentPage + 1
-                  ? "border-indigo-500 bg-indigo-600 text-white"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  ? "border-indigo-500 bg-indigo-600 text-white shadow-[0_18px_34px_-24px_rgba(79,70,229,0.7)]"
+                  : "border-[#dbe3f3] bg-white text-slate-700 hover:bg-slate-50"
               } disabled:cursor-not-allowed disabled:opacity-50`}
             >
               {item}
@@ -874,7 +894,7 @@ export default function Explore() {
           type="button"
           onClick={() => handlePaginationChange(currentPage + 1, onPageChange)}
           disabled={currentPage >= totalPages - 1 || isLoading}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-2xl border border-[#dbe3f3] bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Next
         </button>
@@ -883,25 +903,25 @@ export default function Explore() {
   };
 
   return (
-    <div className="relative min-h-full overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
+    <div className="relative min-h-full overflow-hidden bg-[linear-gradient(180deg,#eef3ff_0%,#f6f8ff_48%,#faf7ff_100%)] text-slate-900">
       <div className="pointer-events-none absolute inset-0">
-        <div className="explore-pulse absolute -left-28 top-24 h-64 w-64 rounded-full bg-indigo-200/25 blur-3xl" />
-        <div className="explore-float absolute -right-28 top-40 h-72 w-72 rounded-full bg-sky-200/22 blur-3xl" />
-        <div className="explore-pulse absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-purple-200/20 blur-3xl" />
+        <div className="explore-pulse absolute -left-20 top-24 h-72 w-72 rounded-full bg-indigo-200/30 blur-3xl" />
+        <div className="explore-float absolute -right-24 top-28 h-80 w-80 rounded-full bg-sky-200/24 blur-3xl" />
+        <div className="explore-pulse absolute bottom-24 left-1/3 h-64 w-64 rounded-full bg-violet-200/18 blur-3xl" />
       </div>
 
-      <main className="relative z-10 mx-auto w-[90vw] px-2 py-6 sm:px-3 lg:px-4 lg:py-8">
-        <StatsHero
-          stats={dynamicStats}
-          defaultHelperId={defaultHelperId}
-          openHowItWorks={shouldOpenHowItWorks}
-        />
+      <main className="relative z-10 mx-auto w-[90vw] max-w-[1600px] px-2 py-6 sm:px-3 lg:px-4 lg:py-7">
+        <section className="xl:flex xl:flex-col xl:gap-0">
+          <StatsHero
+            stats={dynamicStats}
+            defaultHelperId={defaultHelperId}
+            openHowItWorks={shouldOpenHowItWorks}
+          />
 
-        <section className="mt-8">
           <div
             id="explore-tabs-bar"
             ref={tabsBarRef}
-            className="explore-fade-in-up mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between"
+            className="explore-fade-in-up mt-4 flex justify-center"
           >
             <CategoryTabs
               activeTab={activeTab}
@@ -909,17 +929,11 @@ export default function Explore() {
               counts={tabCounts}
               countsLoading={countsLoading}
             />
-
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 text-center lg:text-right">      
-                 {titleText}
-            </p>
           </div>
+        </section>
 
-          {activeTab === "requests" && !requestsLoading && !requestsError ? (
-            <p className="mb-4 text-xs text-slate-500 text-center sm:text-left">Live open requests: {liveOpenRequests.length}</p>
-          ) : null}
-
-          <div className="explore-glass explore-fade-in-up rounded-[1.25rem] border border-white/50 bg-white/70 p-4 backdrop-blur-xl md:p-5">
+        <section className="mt-3">
+          <div className="explore-fade-in-up rounded-[28px] border border-white/75 bg-white/45 p-3 shadow-[0_20px_60px_-52px_rgba(79,70,229,0.32)] backdrop-blur-xl sm:p-4">
             <SearchBar
               activeTab={activeTab}
               search={search}
@@ -928,7 +942,7 @@ export default function Explore() {
               onSortChange={setSortBy}
             />
 
-            <div className="mt-4">
+            <div className="mt-3">
               <FilterSideBar
                 activeTab={activeTab}
                 showMoreSkillFilters={showMoreSkillFilters}
@@ -962,14 +976,14 @@ export default function Explore() {
           {activeTab === "requests" && requestsLoading && requestsPage === 0 ? (
             <Loader className="mt-5 py-16" />
           ) : activeTab === "requests" && requestsError ? (
-            <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
+            <div className="mt-5 rounded-[28px] border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
               {requestsError}
             </div>
           ) : activeTab === "requests" ? (
             <>
-              <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {paginatedRequests.length === 0 ? (
-                  <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">
+                  <div className="col-span-full rounded-[28px] border border-dashed border-[#dbe3f3] bg-white/70 p-10 text-center">
                     <p className="text-sm text-slate-500">
                       {search.trim() ? "No results found" : "No requests match your filters."}
                     </p>
@@ -992,18 +1006,18 @@ export default function Explore() {
           ) : null}
 
           {activeTab === "helpers" && helpersLoading ? (
-            <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6">
+            <div className="mt-5 rounded-[28px] border border-[#dbe3f3] bg-white p-6">
               <Loader inline label="Loading helpers..." />
             </div>
           ) : activeTab === "helpers" && helpersError ? (
-            <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
+            <div className="mt-5 rounded-[28px] border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
               {helpersError}
             </div>
           ) : activeTab === "helpers" ? (
             <>
-              <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {paginatedHelpers.length === 0 ? (
-                  <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">
+                  <div className="col-span-full rounded-[28px] border border-dashed border-[#dbe3f3] bg-white/70 p-10 text-center">
                     <p className="text-sm text-slate-500">
                       {search.trim() ? "No results found" : "No helpers match your filters."}
                     </p>
@@ -1026,18 +1040,18 @@ export default function Explore() {
           ) : null}
 
           {activeTab === "skills" && skillsLoading && skillsPage === 0 ? (
-            <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6">
+            <div className="mt-5 rounded-[28px] border border-[#dbe3f3] bg-white p-6">
               <Loader inline label="Loading skills..." />
             </div>
           ) : activeTab === "skills" && skillsError ? (
-            <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
+            <div className="mt-5 rounded-[28px] border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
               {skillsError}
             </div>
           ) : activeTab === "skills" ? (
             <>
-              <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {paginatedSkills.length === 0 ? (
-                  <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">
+                  <div className="col-span-full rounded-[28px] border border-dashed border-[#dbe3f3] bg-white/70 p-10 text-center">
                     <p className="text-sm text-slate-500">
                       {search.trim() ? "No results found" : "No skills match your filters."}
                     </p>
@@ -1059,35 +1073,37 @@ export default function Explore() {
             </>
           ) : null}
           {activeTab === "offers" && offersLoading && offersPage === 0 ? (
-            <div className="mt-5 rounded-xl border border-slate-200 bg-white p-6">
+            <div className="mt-5 rounded-[28px] border border-[#dbe3f3] bg-white p-6">
               <Loader inline label="Loading offers..." />
             </div>
           ) : activeTab === "offers" && offersError ? (
-            <div className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
+            <div className="mt-5 rounded-[28px] border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
               {offersError}
             </div>
           ) : activeTab === "offers" ? (
             <>
-              <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {paginatedOffers.map((item, index) => (
                   <article
                     key={item.id}
-                    className="explore-fade-in-up flex h-full flex-col rounded-2xl border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur"
+                    className="explore-soft-card explore-fade-in-up flex h-full flex-col rounded-[28px] border border-[#dfe6f5] bg-white/94 p-5 transition duration-300 hover:-translate-y-0.5 hover:border-indigo-100"
                     style={getEnterStyle(index)}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50/85 px-2.5 py-1 text-xs font-semibold text-indigo-600">
+                        {getCategoryIcon(item.category)}
                         {item.category}
                       </span>
                       {item.urgency ? (
                         <span
-                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${item.urgency === "high"
+                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${item.urgency === "high"
                             ? "bg-rose-50 text-rose-600"
                             : item.urgency === "medium"
                               ? "bg-amber-50 text-amber-600"
                               : "bg-emerald-50 text-emerald-600"
                             }`}
                         >
+                          {getUrgencyIcon(item.urgency)}
                           {item.urgency.charAt(0).toUpperCase() + item.urgency.slice(1)} urgency
                         </span>
                       ) : null}
@@ -1101,8 +1117,9 @@ export default function Explore() {
                         {item.skillNames.slice(0, 4).map((skill) => (
                           <span
                             key={skill}
-                            className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs text-slate-600"
+                            className="inline-flex items-center gap-1 rounded-full border border-slate-200/80 bg-white/82 px-2 py-0.5 text-xs text-slate-500"
                           >
+                            {getCategoryIcon(skill)}
                             {skill}
                           </span>
                         ))}
@@ -1114,7 +1131,10 @@ export default function Explore() {
                         {item.durationMinutes ? (
                           <span>{item.durationMinutes} min</span>
                         ) : null}
-                        <span className="font-semibold text-indigo-600">{item.credits} credits</span>
+                        <span className="inline-flex items-center gap-1 font-semibold text-indigo-600">
+                          <Coins size={14} />
+                          {item.credits} credits
+                        </span>
                       </div>
                       <span>{item.postedAgo}</span>
                     </div>
@@ -1138,7 +1158,7 @@ export default function Explore() {
                       <Link
                         to={isAuthenticated ? `/offers/${item.id}?source=help_offer` : "/auth?mode=signin"}
                         state={!isAuthenticated ? authRedirectState : undefined}
-                        className="rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700"
+                        className="rounded-2xl bg-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-[0_14px_28px_-22px_rgba(79,70,229,0.7)] transition duration-300 hover:-translate-y-0.5 hover:bg-indigo-700"
                       >
                         Book
                       </Link>
@@ -1147,7 +1167,7 @@ export default function Explore() {
                 ))}
 
                 {paginatedOffers.length === 0 ? (
-                  <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white/60 p-8 text-center">
+                  <div className="col-span-full rounded-[28px] border border-dashed border-[#dbe3f3] bg-white/70 p-10 text-center">
                     <p className="text-sm text-slate-500">
                       {search.trim() ? "No results found" : "No open offers match your filters."}
                     </p>

@@ -1,4 +1,5 @@
 ﻿import React, { useState } from "react";
+import { Trash2 } from "lucide-react";
 import type { ChecklistProps } from "../../../types/session";
 
 const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, onEditItem, onRemoveItem, isEditable }) => {
@@ -105,8 +106,9 @@ const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, o
                     )}
                     <button
                       onClick={() => onRemoveItem?.(item.id)}
-                      className="text-xs text-red-600"
+                      className="inline-flex items-center gap-1 text-xs text-red-600"
                     >
+                      <Trash2 size={12} />
                       Delete
                     </button>
                   </div>

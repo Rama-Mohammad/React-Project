@@ -1,4 +1,5 @@
 ﻿import { Check, Clock3, Coins, Timer, User } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import Avatar from "../common/Avatar";
 import Loader from "../common/Loader";
@@ -116,7 +117,10 @@ export default function SessionsSection({
           subtitle="Upcoming, active, and completed work"
           action={
             <Link to="/sessions">
-              <DashboardGhostAction>View all</DashboardGhostAction>
+              <DashboardGhostAction>
+                <Eye size={13} />
+                View all
+              </DashboardGhostAction>
             </Link>
           }
         />

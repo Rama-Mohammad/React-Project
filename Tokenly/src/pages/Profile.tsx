@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
-import { Plus, Coins, Clock3, Sparkles } from "lucide-react";
+import { Plus, Coins, Clock3, MessageCircle, Sparkles } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import Loader from "../components/common/Loader";
@@ -472,11 +472,11 @@ const Profile: React.FC = () => {
         ) : liveProfile ? (
           <>
             <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1.7fr_1.3fr]">
-              <section className="explore-fade-in-up rounded-2xl border border-white/70 bg-white/80 px-5 py-4 backdrop-blur-sm">
-                <div className="flex items-center justify-between border-b border-slate-200/70 pb-3">
+              <section className="explore-fade-in-up rounded-3xl border border-white/80 bg-white/82 px-5 py-5 shadow-[0_18px_50px_-42px_rgba(79,70,229,0.35)] backdrop-blur-xl sm:px-6">
+                <div className="flex items-center justify-between border-b border-slate-200/60 pb-4">
                   <div>
-                    <h2 className="text-xl font-semibold text-slate-900">Offered Skills</h2>
-                    <p className="text-xs text-slate-500">{skills.length} skills listed</p>
+                    <h2 className="text-xl font-bold tracking-tight text-slate-950">Offered Skills</h2>
+                    <p className="mt-0.5 text-xs text-slate-400">{skills.length} skills listed</p>
                   </div>
                   {isOwner ? (
                     <button
@@ -485,14 +485,14 @@ const Profile: React.FC = () => {
                         setSelectedSkill(null);
                         setIsAddSkillModalOpen(true);
                       }}
-                      className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100"
+                      className="inline-flex items-center gap-2 rounded-xl border border-indigo-100 bg-white/90 px-3.5 py-2 text-sm font-semibold text-indigo-600 shadow-[0_12px_28px_-24px_rgba(79,70,229,0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:bg-indigo-50"
                     >
                       <Plus size={14} />
                       Add Skill
                     </button>
                   ) : null}
                 </div>
-                <div className="mt-3 grid gap-1 md:grid-cols-2">
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
                   {detailsLoading ? (
                     <Loader inline className="py-4 md:col-span-2" label="Loading skills..." />
                   ) : skills.length > 0 ? (
@@ -505,22 +505,34 @@ const Profile: React.FC = () => {
                       />
                     ))
                   ) : (
-                    <p className="py-4 text-center text-slate-500">
-                      {isOwner ? 'No skills added yet. Click "Add Skill" to get started.' : "No skills listed yet."}
-                    </p>
+                    <div className="rounded-2xl border border-dashed border-indigo-100 bg-indigo-50/35 p-8 text-center md:col-span-2">
+                      <Sparkles size={22} className="mx-auto text-indigo-300" />
+                      <p className="mt-3 text-sm font-semibold text-slate-700">
+                        {isOwner ? "No skills added yet." : "No skills listed yet."}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-slate-400">
+                        {isOwner ? 'Click "Add Skill" to get started.' : "Check back later for this user's skill list."}
+                      </p>
+                    </div>
                   )}
                 </div>
               </section>
 
-              <section className="explore-fade-in-up rounded-2xl border border-white/70 bg-white/80 px-5 py-4 backdrop-blur-sm">
+              <section className="explore-fade-in-up rounded-3xl border border-white/80 bg-white/82 px-5 py-5 shadow-[0_18px_50px_-42px_rgba(79,70,229,0.35)] backdrop-blur-xl sm:px-6">
                 <RatingsSummary reviews={reviews} embedded sortBy={reviewSortBy} onSortChange={setReviewSortBy} />
-                <div className="mt-4 space-y-3.5 border-t border-slate-200/70 pt-4">
+                <div className="mt-5 space-y-3.5 border-t border-slate-200/60 pt-5">
                   {detailsLoading ? (
                     <Loader inline className="py-4" label="Loading reviews..." />
                   ) : visibleReviews.length > 0 ? (
                     visibleReviews.map((review) => <ReviewCard key={review.id} review={review} />)
                   ) : (
-                    <p className="py-4 text-center text-slate-500">No reviews yet.</p>
+                    <div className="rounded-2xl border border-dashed border-violet-100 bg-violet-50/35 px-6 py-9 text-center">
+                      <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-white/80 text-violet-400 shadow-[0_14px_30px_-26px_rgba(79,70,229,0.45)]">
+                        <MessageCircle size={20} />
+                      </div>
+                      <p className="mt-3 text-sm font-semibold text-slate-700">No reviews yet.</p>
+                      <p className="mt-1 text-xs leading-5 text-slate-400">Be the first to review this user.</p>
+                    </div>
                   )}
                 </div>
                 {reviews.length > 3 ? (

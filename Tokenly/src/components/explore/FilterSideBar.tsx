@@ -1,4 +1,15 @@
-﻿import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import {
+  Camera,
+  Code2,
+  Flame,
+  Gauge,
+  Globe2,
+  Leaf,
+  Palette,
+  Sparkles,
+  Tag,
+} from "lucide-react";
 import type { FilterSideBarProps } from "../../types/explore";
 
 const HELPER_BASIC_FILTERS = [
@@ -13,24 +24,47 @@ const HELPER_BASIC_FILTERS = [
 function ChipButton({
   active,
   children,
+  icon,
   onClick,
 }: {
   active: boolean;
   children: ReactNode;
+  icon?: ReactNode;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${active
-          ? "border-slate-200 bg-white text-slate-900 shadow-sm"
-          : "border-white/40 bg-white/65 text-slate-600 hover:bg-white"
+      className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-semibold transition duration-300 ${active
+          ? "border-indigo-100 bg-white text-slate-900 shadow-[0_14px_30px_-26px_rgba(79,70,229,0.45)]"
+          : "border-[#e7ebf5] bg-white/55 text-slate-500 hover:border-indigo-100 hover:bg-white/90 hover:text-slate-700"
         }`}
     >
+      {icon}
       {children}
     </button>
   );
+}
+
+function getCategoryIcon(label: string) {
+  const normalized = label.toLowerCase();
+
+  if (normalized.includes("design")) return <Palette size={14} />;
+  if (normalized.includes("programming") || normalized.includes("web") || normalized.includes("code")) return <Code2 size={14} />;
+  if (normalized.includes("photo")) return <Camera size={14} />;
+  if (normalized.includes("language")) return <Globe2 size={14} />;
+  if (normalized.includes("all")) return <Sparkles size={14} />;
+  return <Tag size={14} />;
+}
+
+function getUrgencyIcon(label: string) {
+  const normalized = label.toLowerCase();
+
+  if (normalized.includes("high")) return <Flame size={14} />;
+  if (normalized.includes("medium")) return <Gauge size={14} />;
+  if (normalized.includes("low")) return <Leaf size={14} />;
+  return undefined;
 }
 
 export default function FilterSideBar({
@@ -94,8 +128,8 @@ export default function FilterSideBar({
     selectedHelperCategories.length > 0 || rating !== "Any rating";
 
   return (
-    <div className="explore-glass explore-fade-in-up rounded-[1.25rem] border border-white/50 bg-white/75 p-4 backdrop-blur-xl">
-      <div className="flex flex-col gap-3.5">
+    <div className="explore-fade-in-up rounded-[24px] border border-white/75 bg-white/58 p-3 shadow-[0_16px_42px_-38px_rgba(79,70,229,0.35)] backdrop-blur-xl sm:p-4">
+      <div className="flex flex-col gap-3">
         {activeTab === "requests" && (
           <div className="flex flex-col gap-3">
             <div className="flex flex-wrap justify-center sm:justify-start gap-1.5">
@@ -103,6 +137,7 @@ export default function FilterSideBar({
                 <ChipButton
                   key={item}
                   active={selectedCategory === item}
+                  icon={getCategoryIcon(item)}
                   onClick={() => onCategoryChange(item)}
                 >
                   {item}
@@ -116,6 +151,7 @@ export default function FilterSideBar({
                   <ChipButton
                     key={item}
                     active={urgency === item}
+                    icon={getUrgencyIcon(item)}
                     onClick={() => onUrgencyChange(item)}
                   >
                     {item}
@@ -136,7 +172,7 @@ export default function FilterSideBar({
                   type="button"
                   onClick={() => onResetRequestFilters?.()}
                   disabled={!hasActiveRequestFilters}
-                  className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:border-slate-100 disabled:bg-slate-50 disabled:text-slate-400"
+                  className="rounded-full border border-[#dfe6f5] bg-white/80 px-4 py-1.5 text-xs font-semibold text-slate-600 transition duration-300 hover:border-indigo-100 hover:bg-white disabled:cursor-not-allowed disabled:border-slate-100 disabled:bg-slate-50 disabled:text-slate-400"
                 >
                   Clear Filters
                 </button>
@@ -160,6 +196,7 @@ export default function FilterSideBar({
                       ? selectedHelperCategories.length === 0
                       : selectedHelperCategories.includes(item)
                   }
+                  icon={getCategoryIcon(item)}
                   onClick={() => onHelperCategoryToggle?.(item)}
                 >
                   {item}
@@ -170,7 +207,7 @@ export default function FilterSideBar({
                 <button
                   type="button"
                   onClick={() => setShowAllHelperFilters((current) => !current)}
-                  className="rounded-full border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-xs font-semibold text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100"
+                  className="rounded-full border border-indigo-100 bg-indigo-50/80 px-4 py-1.5 text-xs font-semibold text-indigo-600 transition duration-300 hover:border-indigo-200 hover:bg-indigo-50"
                 >
                   {showAllHelperFilters ? "View Less" : "View More"}
                 </button>
@@ -193,7 +230,7 @@ export default function FilterSideBar({
                   type="button"
                   onClick={() => onResetHelperFilters?.()}
                   disabled={!hasActiveHelperFilters}
-                  className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:border-slate-100 disabled:bg-slate-50 disabled:text-slate-400"
+                  className="rounded-full border border-[#dfe6f5] bg-white/80 px-4 py-1.5 text-xs font-semibold text-slate-600 transition duration-300 hover:border-indigo-100 hover:bg-white disabled:cursor-not-allowed disabled:border-slate-100 disabled:bg-slate-50 disabled:text-slate-400"
                 >
                   Clear Filters
                 </button>
@@ -213,6 +250,7 @@ export default function FilterSideBar({
                 <ChipButton
                   key={item}
                   active={selectedCategory === item}
+                  icon={getCategoryIcon(item)}
                   onClick={() => onCategoryChange(item)}
                 >
                   {item}
@@ -240,7 +278,7 @@ export default function FilterSideBar({
                   <button
                     type="button"
                     onClick={() => onToggleSkillFilters?.()}
-                    className="rounded-full border border-white/40 bg-white/65 px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-white"
+                    className="rounded-full border border-[#dfe6f5] bg-white/80 px-4 py-1.5 text-xs font-semibold text-slate-600 transition duration-300 hover:border-indigo-100 hover:bg-white"
                   >
                     {showMoreSkillFilters ? "Hide Filters" : "View Filters"}
                   </button>
@@ -261,6 +299,7 @@ export default function FilterSideBar({
                 <ChipButton
                   key={item}
                   active={selectedCategory === item}
+                  icon={getCategoryIcon(item)}
                   onClick={() => onCategoryChange(item)}
                 >
                   {item}
@@ -282,4 +321,3 @@ export default function FilterSideBar({
     </div>
   );
 }
-

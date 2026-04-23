@@ -32,10 +32,10 @@ const RatingsSummary: React.FC<RatingsSummaryProps> = ({
 
   const content = (
     <>
-      <div className="mb-4 flex items-center justify-between gap-4">
+      <div className="mb-5 flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900">Received Ratings</h2>
-          <p className="text-xs text-slate-500">{totalReviews} reviews</p>
+          <h2 className="text-xl font-bold tracking-tight text-slate-950">Received Ratings</h2>
+          <p className="mt-0.5 text-xs text-slate-400">{totalReviews} reviews</p>
         </div>
 
         <ThemedSelect
@@ -49,35 +49,35 @@ const RatingsSummary: React.FC<RatingsSummaryProps> = ({
           icon={<ArrowDownUp size={14} />}
           size="sm"
           align="right"
-          className="w-40"
+          className="w-40 rounded-xl border-slate-200 bg-white/90 shadow-[0_12px_28px_-24px_rgba(79,70,229,0.45)]"
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[0.75fr_1.25fr]">
-        <div className="text-center md:text-left">
-          <div className="text-5xl font-bold leading-none text-slate-900">{averageRating}</div>
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-[0.75fr_1.25fr]">
+        <div className="rounded-2xl border border-indigo-100/70 bg-indigo-50/30 p-4 text-center md:text-left">
+          <div className="text-5xl font-bold leading-none tracking-tight text-slate-950">{averageRating}</div>
           <div className="mt-2 flex justify-center md:justify-start">
             <RatingStars value={roundedAverage} />
           </div>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1.5 text-xs text-slate-400">
             {totalReviews} {totalReviews === 1 ? "rating" : "ratings"}
           </p>
         </div>
 
-        <div className="space-y-2 border-l border-slate-200/70 pl-4">
+        <div className="space-y-2.5 border-l border-slate-200/60 pl-4">
           {[5, 4, 3, 2, 1]
             .map((stars) => ({ count: ratingDistribution[stars - 1], stars }))
             .map(({ count, stars }) => {
               const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
               return (
                 <div key={stars} className="flex items-center gap-2 text-xs">
-                  <div className="flex w-14 items-center justify-end font-medium text-slate-600">
+                  <div className="flex w-14 items-center justify-end font-medium text-slate-500">
                     {stars} {stars === 1 ? "star" : "stars"}
                   </div>
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200/90">
-                    <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-yellow-500" style={{ width: `${percentage}%` }} />
+                  <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200/60">
+                    <div className="h-full rounded-full bg-gradient-to-r from-amber-300 to-amber-400" style={{ width: `${percentage}%` }} />
                   </div>
-                  <span className="w-5 text-right text-slate-500">{count}</span>
+                  <span className="w-5 text-right text-slate-400">{count}</span>
                 </div>
               );
             })}

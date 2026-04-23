@@ -1,4 +1,5 @@
 ﻿import Avatar from "../common/Avatar";
+import { Coins } from "lucide-react";
 import type { DashboardDirectRequestItem } from "../../types/dashboard";
 
 type SentRequestsSectionProps = {
@@ -137,7 +138,15 @@ export default function SentRequestsSection({
                       <p className="mt-1 text-sm text-slate-500">
                         Sent to {item.personName}
                         {item.duration ? ` \u2022 ${item.duration} min` : ""}
-                        {item.credits ? ` \u2022 ${item.credits} credits` : ""}
+                        {item.credits ? (
+                          <>
+                            {" \u2022 "}
+                            <span className="inline-flex items-center gap-1">
+                              <Coins size={13} />
+                              {item.credits} credits
+                            </span>
+                          </>
+                        ) : null}
                         {" \u2022 "}
                         {item.age}
                       </p>

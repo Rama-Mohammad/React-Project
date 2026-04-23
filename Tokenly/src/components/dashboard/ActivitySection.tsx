@@ -1,4 +1,5 @@
 ﻿import { Coins } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { TransactionActivityFeedItem } from "../../types/transactionActivity";
 import { getTransactionAppearance } from "../../utils/transactionActivityFeed";
@@ -114,7 +115,10 @@ export default function ActivitySection({
           action={
             activityPreview.length > 0 ? (
               <Link to="/activity">
-                <DashboardGhostAction>View more</DashboardGhostAction>
+                <DashboardGhostAction>
+                  <Eye size={13} />
+                  View more
+                </DashboardGhostAction>
               </Link>
             ) : null
           }

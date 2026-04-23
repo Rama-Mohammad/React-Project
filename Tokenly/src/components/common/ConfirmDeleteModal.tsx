@@ -69,11 +69,12 @@ export default function ConfirmDeleteModal({
               }
             }}
             disabled={loading}
-            className={`rounded-xl px-3 py-2 text-sm font-semibold text-white transition ${loading
+            className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-white transition ${loading
                 ? "cursor-not-allowed bg-rose-300"
                 : "bg-[linear-gradient(135deg,#e11d48_0%,#f43f5e_100%)] hover:brightness-105"
               }`}
           >
+            {!loading ? <Trash2 size={14} /> : null}
             {loading ? "Deleting..." : confirmLabel}
           </button>
         </div>

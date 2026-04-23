@@ -1,11 +1,12 @@
 ﻿import React, { useRef, useState } from "react";
 import {
+  BriefcaseBusiness,
   CalendarDays,
   Check,
+  CheckCircle2,
   Copy,
   Download,
   Globe,
-  GraduationCap,
   MapPin,
   MessageSquareMore,
   NotebookTabs,
@@ -99,12 +100,13 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
     <section className="mb-6 border-b border-slate-200/60 pb-6">
       <div className="relative h-40 overflow-hidden rounded-2xl">
         {user.coverImage ? <img src={user.coverImage} alt="Cover" className="h-full w-full object-cover" /> : null}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
       </div>
 
-      <div className="relative mt-4 flex flex-col gap-4">
+      <div className="relative mt-4 flex flex-col gap-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex items-end gap-3">
-            <div className="-mt-12 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-linear-to-br from-indigo-500 to-sky-500 text-xl font-bold text-white shadow-sm">
+          <div className="flex items-end gap-4">
+            <div className="-mt-12 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-linear-to-br from-indigo-500 to-sky-500 text-xl font-bold text-white shadow-md ring-2 ring-white">
               {user.profileImageUrl ? (
                 <img src={user.profileImageUrl} alt={user.name} className="h-full w-full object-cover" />
               ) : (
@@ -115,7 +117,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
 
             <div className="pb-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">{user.name}</h1>
+                <h1 className="text-[1.7rem] font-bold tracking-tight text-slate-950 md:text-[2rem]">{user.name}</h1>
+                {user.name ? <CheckCircle2 size={18} className="text-indigo-500" /> : null}
                 {user.rating ? (
                   <div className="ml-1 flex items-center gap-1">
                     <RatingStars value={user.rating} />
@@ -130,7 +133,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
             <button
               type="button"
               onClick={handleShareProfile}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white/85 text-slate-600 transition hover:border-sky-200 hover:text-sky-600"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white/85 text-slate-600 transition-all duration-200 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600"
               aria-label="Share profile"
               title={copied ? "Link copied" : "Share profile"}
             >
@@ -139,7 +142,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
             <button
               type="button"
               onClick={() => setIsQrOpen(true)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white/85 text-slate-600 transition hover:border-sky-200 hover:text-sky-600"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white/85 text-slate-600 transition-all duration-200 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600"
               aria-label="Show profile QR code"
               title="Show profile QR code"
             >
@@ -150,7 +153,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
               <button
                 type="button"
                 onClick={onEdit}
-                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white/90 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-indigo-200 hover:text-indigo-600"
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white/90 px-3 py-1.5 text-sm font-medium text-slate-700 transition-all duration-200 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600"
               >
                 <PencilLine size={14} />
                 Edit Profile
@@ -159,13 +162,13 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-600">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
           <span className="inline-flex items-center gap-1.5">
             <MapPin size={14} className="text-slate-400" />
             {user.location}
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <GraduationCap size={14} className="text-slate-400" />
+            <BriefcaseBusiness size={14} className="text-slate-400" />
             {user.title}
           </span>
           <span className="inline-flex items-center gap-1.5">
@@ -177,7 +180,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
               href={websiteUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-sky-700 transition hover:text-sky-800"
+              className="inline-flex items-center gap-1.5 text-gray-500 transition-colors duration-200 hover:text-indigo-600"
             >
               <Globe size={14} className="text-slate-400" />
               {user.website}
@@ -185,24 +188,30 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEdit, isOwner }) 
           ) : null}
         </div>
 
-        <p className="max-w-4xl text-sm leading-7 text-slate-700 md:text-base">{user.bio}</p>
+        <p className="max-w-2xl text-sm leading-relaxed text-gray-600 md:text-base">{user.bio}</p>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="flex items-center gap-2 rounded-lg bg-white/55 px-3 py-2 text-sm text-slate-600">
-            <NotebookTabs size={15} className="text-indigo-500" />
-            <span className="text-lg font-bold text-slate-900">
+          <div className="flex items-center gap-3 rounded-lg bg-white/60 px-4 py-3 text-sm text-gray-500 transition-all duration-200 hover:shadow-md">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-500">
+              <NotebookTabs size={15} />
+            </span>
+            <span className="text-xl font-bold text-slate-950">
               {user.stats.totalSessions === 0 && !user.name ? "" : user.stats.totalSessions}
             </span>
             {user.stats.totalSessions === 1 ? "Session" : "Sessions"}
           </div>
-          <div className="flex items-center gap-2 rounded-lg bg-white/55 px-3 py-2 text-sm text-slate-600">
-            <Sparkles size={15} className="text-indigo-500" />
-            <span className="text-lg font-bold text-slate-900">{user.stats.creditsEarned === 0 && !user.name ? "" : user.stats.creditsEarned}</span>
+          <div className="flex items-center gap-3 rounded-lg bg-white/60 px-4 py-3 text-sm text-gray-500 transition-all duration-200 hover:shadow-md">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 text-violet-500">
+              <Sparkles size={15} />
+            </span>
+            <span className="text-xl font-bold text-slate-950">{user.stats.creditsEarned === 0 && !user.name ? "" : user.stats.creditsEarned}</span>
             {isOwner ? "Tokens" : "Skills"}
           </div>
-          <div className="flex items-center gap-2 rounded-lg bg-white/55 px-3 py-2 text-sm text-slate-600">
-            <MessageSquareMore size={15} className="text-indigo-500" />
-            <span className="text-lg font-bold text-slate-900">{user.stats.skillsTaught === 0 && !user.name ? "" : user.stats.skillsTaught}</span>
+          <div className="flex items-center gap-3 rounded-lg bg-white/60 px-4 py-3 text-sm text-gray-500 transition-all duration-200 hover:shadow-md">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-sky-50 text-sky-500">
+              <MessageSquareMore size={15} />
+            </span>
+            <span className="text-xl font-bold text-slate-950">{user.stats.skillsTaught === 0 && !user.name ? "" : user.stats.skillsTaught}</span>
             Reviews
           </div>
         </div>

@@ -1,4 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from "react";
+import { Eye } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Clock3, Coins, Sparkles, Star, CheckCircle2 } from "lucide-react";
 import Avatar from "../components/common/Avatar";
@@ -299,8 +300,9 @@ export default function HelpOfferBooking() {
 
                 <Link
                   to={`/helpers/${offer.helper_id}`}
-                  className="mt-4 inline-flex text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+                  className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800"
                 >
+                  <Eye size={13} />
                   View full profile {"\u2192"}
                 </Link>
               </section>
@@ -377,7 +379,10 @@ export default function HelpOfferBooking() {
                     </div>
                     <div className="mt-2 flex items-center justify-between text-sm">
                       <span className="text-slate-600">Credits</span>
-                      <span className="font-semibold text-indigo-600">{offer.credit_cost} credits</span>
+                      <span className="inline-flex items-center gap-1 font-semibold text-indigo-600">
+                        <Coins size={14} />
+                        {offer.credit_cost} credits
+                      </span>
                     </div>
                   </div>
 
@@ -445,7 +450,7 @@ export default function HelpOfferBooking() {
           <div className="relative w-full max-w-md rounded-3xl border border-rose-200 bg-white p-6 shadow-xl">
             <h3 className="text-lg font-semibold text-slate-900">Not enough tokens</h3>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              You need {offer.credit_cost} tokens to book this offer, but you only have {currentBalance ?? 0}.
+              You need <span className="inline-flex items-center gap-1 font-semibold text-slate-800"><Coins size={14} />{offer.credit_cost} tokens</span> to book this offer, but you only have {currentBalance ?? 0}.
             </p>
             <div className="mt-5 grid gap-3">
               <button

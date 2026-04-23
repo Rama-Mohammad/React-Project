@@ -1,19 +1,27 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
+  Activity,
   Calendar,
   Check,
   CheckCheck,
+  CheckCircle2,
   Circle,
   Clock3,
   Coins,
+  Code2,
+  Eye,
+  HandHelping,
   ListFilter,
   Search,
+  Tag,
   Video,
+  Wallet,
 } from "lucide-react";
 import ThemedSelect from "../components/common/ThemedSelect";
 import Avatar from "../components/common/Avatar";
 import Loader from "../components/common/Loader";
+import RatingStars from "../components/common/RatingStars";
 import type { Session } from "../types/session";
 import { getSessionsByUser, updateSessionStatus } from "../services/sessionService";
 import { getCurrentUser } from "../services/authService";
@@ -269,6 +277,26 @@ const SessionsPage: React.FC = () => {
     return "bg-slate-100 text-slate-600";
   };
 
+  const categoryIcon = (category: string) => {
+    const normalized = category.toLowerCase();
+    if (
+      normalized.includes("programming") ||
+      normalized.includes("development") ||
+      normalized.includes("database") ||
+      normalized.includes("algorithms") ||
+      normalized.includes("system design")
+    ) {
+      return <Code2 size={14} />;
+    }
+    return <Tag size={14} />;
+  };
+
+  const statusIcon = (status: Session["status"]) => {
+    if (status === "upcoming") return <Clock3 size={14} />;
+    if (status === "active") return <Activity size={14} />;
+    return <CheckCircle2 size={14} />;
+  };
+
   const handleViewRequest = (linkPath: string) => navigate(linkPath);
   const handleJoin = (sessionId: string) => navigate(`/session/${sessionId}`);
 
@@ -351,7 +379,7 @@ const SessionsPage: React.FC = () => {
               <div className="rounded-2xl bg-violet-100/80 px-4 py-3">
                 <div className="flex items-center gap-3">
                   <span className="rounded-xl bg-white p-2.5 text-violet-600">
-                    <Video size={20} />
+                    <Activity size={20} />
                   </span>
                   <div>
                     <p className="text-2xl font-semibold text-violet-700">{loading ? "" : counts.active}</p>
@@ -363,7 +391,7 @@ const SessionsPage: React.FC = () => {
               <div className="rounded-2xl bg-slate-200/80 px-4 py-3">
                 <div className="flex items-center gap-3">
                   <span className="rounded-xl bg-white p-2.5 text-slate-500">
-                    <CheckCheck size={20} />
+                    <CheckCircle2 size={20} />
                   </span>
                   <div>
                     <p className="text-2xl font-semibold text-slate-700">{loading ? "" : counts.completed}</p>
@@ -375,7 +403,7 @@ const SessionsPage: React.FC = () => {
               <div className="rounded-2xl bg-indigo-100/80 px-4 py-3">
                 <div className="flex items-center gap-3">
                   <span className="rounded-xl bg-white p-2.5 text-indigo-600">
-                    <Coins size={20} />
+                    <Wallet size={20} />
                   </span>
                   <div>
                     <p className="text-2xl font-semibold text-indigo-700">{loading ? "" : counts.earned}</p>
@@ -481,11 +509,12 @@ const SessionsPage: React.FC = () => {
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${categoryChipClass(session.category)}`}>
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${categoryChipClass(session.category)}`}>
+                          {categoryIcon(session.category)}
                           {session.category}
                         </span>
                         <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${statusChipClass(session.status)}`}>
-                          <Circle size={7} fill="currentColor" />
+                          {statusIcon(session.status)}
                           {session.status === "active"
                             ? "Active Now"
                             : session.status === "completed"
@@ -493,11 +522,12 @@ const SessionsPage: React.FC = () => {
                               : "Upcoming"}
                         </span>
                         <span
-                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${session.role === "helping"
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${session.role === "helping"
                             ? "bg-violet-100 text-violet-700"
                             : "bg-indigo-100 text-indigo-700"
                             }`}
                         >
+                          <HandHelping size={14} />
                           {session.role === "helping" ? "Helping" : "Receiving Help"}
                         </span>
                       </div>
@@ -554,7 +584,7 @@ const SessionsPage: React.FC = () => {
                           <Circle size={14} className="text-slate-300" />
                           {isCompleted && rating > 0 ? (
                             <>
-                              <span className="text-amber-500">{"?".repeat(rating)}{"?".repeat(5 - rating)}</span>
+                              <RatingStars value={rating} />
                               <span>{sessionNote(session)}</span>
                             </>
                           ) : (
@@ -572,8 +602,9 @@ const SessionsPage: React.FC = () => {
                                 setActionError("No details available for this session.");
                               }
                             }}
-                            className="rounded-lg border border-indigo-300/90 bg-transparent px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-50/70"
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-300/90 bg-transparent px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-50/70"
                           >
+                            <Eye size={14} />
                             View Details
                           </button>
 

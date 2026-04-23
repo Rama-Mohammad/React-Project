@@ -1,4 +1,5 @@
 ﻿import Avatar from "../common/Avatar";
+import { Coins } from "lucide-react";
 import type {
   DashboardDirectRequestItem,
   DashboardHelpOfferRequestItem,
@@ -140,7 +141,15 @@ export default function InboxSection({
                     <p className="mt-1 text-sm text-slate-500">
                       From {item.personName}
                       {item.duration ? ` \u2022 ${item.duration} min` : ""}
-                      {item.credits ? ` \u2022 ${item.credits} credits` : ""}
+                      {item.credits ? (
+                        <>
+                          {" \u2022 "}
+                          <span className="inline-flex items-center gap-1">
+                            <Coins size={13} />
+                            {item.credits} credits
+                          </span>
+                        </>
+                      ) : null}
                       {" \u2022 "}
                       {item.age}
                     </p>

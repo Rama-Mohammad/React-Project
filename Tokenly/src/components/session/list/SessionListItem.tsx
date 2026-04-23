@@ -5,6 +5,8 @@ import Loader from '../../common/Loader';
 import {
   faCalendarAlt,
   faClock,
+  faCoins,
+  faEye,
   faExclamationCircle,
   faPen,
   faLightbulb,
@@ -60,7 +62,8 @@ const SessionListItem: React.FC<SessionListItemProps> = ({
             <FontAwesomeIcon icon={faPen} />
             Helping
           </div>
-          <div className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">
+          <div className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+            <FontAwesomeIcon icon={faCoins} />
             +{session.credits}
           </div>
         </div>
@@ -72,7 +75,8 @@ const SessionListItem: React.FC<SessionListItemProps> = ({
             <FontAwesomeIcon icon={faLightbulb} />
             Receiving Help
           </div>
-          <div className="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs">
+          <div className="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs flex items-center gap-1">
+            <FontAwesomeIcon icon={faCoins} />
             {session.credits}
           </div>
         </div>
@@ -199,8 +203,9 @@ const handleConfirm = async () => {
             <>
               <button
                 onClick={handleViewRequestClick}
-                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50"
               >
+                <FontAwesomeIcon icon={faEye} />
                 View Request
               </button>
               <button
