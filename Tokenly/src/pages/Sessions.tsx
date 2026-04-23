@@ -10,7 +10,6 @@ import {
   Clock3,
   Coins,
   Code2,
-  Eye,
   HandHelping,
   ListFilter,
   Search,
@@ -297,7 +296,6 @@ const SessionsPage: React.FC = () => {
     return <CheckCircle2 size={14} />;
   };
 
-  const handleViewRequest = (linkPath: string) => navigate(linkPath);
   const handleJoin = (sessionId: string) => navigate(`/session/${sessionId}`);
 
   const handleMarkComplete = (sessionId: string) => {
@@ -593,21 +591,6 @@ const SessionsPage: React.FC = () => {
                         </p>
 
                         <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (session.linkPath) {
-                                handleViewRequest(session.linkPath);
-                              } else {
-                                setActionError("No details available for this session.");
-                              }
-                            }}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-300/90 bg-transparent px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-50/70"
-                          >
-                            <Eye size={14} />
-                            View Details
-                          </button>
-
                           {session.status === "upcoming" ? (
                             <button
                               type="button"
