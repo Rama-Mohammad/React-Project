@@ -215,12 +215,12 @@ export default function SessionsSection({
                   >
                     {item.action}
                   </button>
-                ) : (
+                ) : item.status === "Completed" ? (
                   <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
                     <Check size={12} />
                     Done
                   </span>
-                )}
+                ) : null}
               </div>
             </article>
           ))

@@ -27,6 +27,10 @@ type WeeklyActivityPoint = {
 type AnalyticsSectionProps = {
   tokenFlowData: TokenFlowPoint[];
   weeklyActivityData: WeeklyActivityPoint[];
+  sessionSummary?: {
+    completed: number;
+    upcoming: number;
+  };
 };
 
 function joinClasses(...classes: Array<string | undefined | false>) {
@@ -152,7 +156,10 @@ function ChartTooltip({
 export default function AnalyticsSection({
   tokenFlowData,
   weeklyActivityData,
+  sessionSummary,
 }: AnalyticsSectionProps) {
+  const hasWeeklySessionData = weeklyActivityData.some((point) => point.completed > 0 || point.upcoming > 0);
+
   return (
     <section className="grid grid-cols-1 gap-4 xl:h-[30rem] xl:max-h-[30rem] xl:grid-cols-2">
       <DashboardPanel className="flex h-full flex-col overflow-hidden">
@@ -219,9 +226,16 @@ export default function AnalyticsSection({
               <Activity size={16} />
             </div>
           }
+          action={
+            sessionSummary ? (
+              <DashboardGhostAction>
+                {sessionSummary.completed} completed · {sessionSummary.upcoming} upcoming
+              </DashboardGhostAction>
+            ) : undefined
+          }
         />
         <div className="min-h-[20rem] flex-1 p-5">
-          {weeklyActivityData.length === 0 ? (
+          {!hasWeeklySessionData ? (
             <DashboardEmptyState className="h-full">No weekly activity data yet.</DashboardEmptyState>
           ) : (
             <ResponsiveContainer width="100%" height="100%">

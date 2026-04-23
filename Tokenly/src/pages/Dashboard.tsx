@@ -216,11 +216,16 @@ export default function Dashboard() {
 
   const weeklyActivityData = useMemo(() => {
     const formatter = new Intl.DateTimeFormat("en-US", { weekday: "short" });
+    const toLocalDateKey = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
     const today = new Date();
     const days = Array.from({ length: 7 }, (_, index) => {
-      const date = new Date(today);
-      date.setDate(today.getDate() - (6 - index));
-      const key = date.toISOString().slice(0, 10);
+      const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (6 - index));
+      const key = toLocalDateKey(date);
       return {
         key,
         label: formatter.format(date),
@@ -232,18 +237,23 @@ export default function Dashboard() {
     const dayMap = new Map(days.map((day) => [day.key, day]));
 
     rawSessions.forEach((session) => {
-      const sourceDate = session?.scheduled_at ?? session?.created_at;
+      const status = String(session?.status ?? "");
+      const sourceDate =
+        status === "completed"
+          ? session?.completed_at ?? session?.scheduled_at ?? session?.created_at
+          : session?.scheduled_at ?? session?.created_at;
+
       if (!sourceDate) return;
 
       const date = new Date(sourceDate);
       if (Number.isNaN(date.getTime())) return;
 
-      const key = date.toISOString().slice(0, 10);
+      const key = toLocalDateKey(date);
       const day = dayMap.get(key);
       if (!day) return;
 
-      if (session?.status === "completed") day.completed += 1;
-      if (session?.status === "upcoming" || session?.status === "active") day.upcoming += 1;
+      if (status === "completed") day.completed += 1;
+      if (status === "upcoming") day.upcoming += 1;
     });
 
     return days;
@@ -589,6 +599,10 @@ export default function Dashboard() {
                 <AnalyticsSection
                   tokenFlowData={tokenFlowData}
                   weeklyActivityData={weeklyActivityData}
+                  sessionSummary={{
+                    completed: stats?.completedSessions ?? 0,
+                    upcoming: stats?.upcomingSessions ?? 0,
+                  }}
                 />
               ) : null}
 

@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabaseClient";
 import type { OfferStatus } from "../types/offer";
 import type { Offer } from "../types/offer";
 import type { Request } from "../types/request";
-import { getSessionsAuthDebugContext, logSessionsQuery } from "./sessionDebug";
+import { ensureSessionForBooking } from "./sessionService";
 import { createNotification } from "./notificationService";
 export function extractAvailabilityFromOfferDescription(description?: string | null) {
   if (!description) {
@@ -353,11 +353,47 @@ export async function acceptOffer(
     return { data: null, error: offerFetchError };
   }
 
-  const { data: requestRecord } = await supabase
+  if (offer.request_id !== request.id) {
+    return { data: null, error: new Error("This offer does not belong to this request.") };
+  }
+
+  if (offer.status !== "pending") {
+    return { data: null, error: new Error("This offer is no longer pending.") };
+  }
+
+  const { data: requestRecord, error: requestRecordError } = await supabase
     .from("requests")
-    .select("id, title")
+    .select("id, title, status")
     .eq("id", request.id)
     .maybeSingle();
+
+  if (requestRecordError) {
+    return { data: null, error: requestRecordError };
+  }
+
+  if (!requestRecord) {
+    return { data: null, error: new Error("Request not found.") };
+  }
+
+  if (requestRecord.status !== "open") {
+    return { data: null, error: new Error("This request already has an accepted offer.") };
+  }
+
+  const { data: existingAcceptedOffer, error: existingAcceptedOfferError } = await supabase
+    .from("offers")
+    .select("id")
+    .eq("request_id", request.id)
+    .neq("id", offerId)
+    .eq("status", "accepted")
+    .maybeSingle();
+
+  if (existingAcceptedOfferError) {
+    return { data: null, error: existingAcceptedOfferError };
+  }
+
+  if (existingAcceptedOffer) {
+    return { data: null, error: new Error("This request already has an accepted offer.") };
+  }
 
   const { data: rejectedPendingOffers } = await supabase
     .from("offers")
@@ -366,13 +402,20 @@ export async function acceptOffer(
     .neq("id", offerId)
     .eq("status", "pending");
 
-  const { error: acceptError } = await supabase
+  const { data: acceptedOffer, error: acceptError } = await supabase
     .from("offers")
     .update({ status: "accepted" })
-    .eq("id", offerId);
+    .eq("id", offerId)
+    .eq("status", "pending")
+    .select("id")
+    .maybeSingle();
 
   if (acceptError) {
     return { data: null, error: acceptError };
+  }
+
+  if (!acceptedOffer) {
+    return { data: null, error: new Error("This offer is no longer pending.") };
   }
 
   const { error: rejectOthersError } = await supabase
@@ -386,102 +429,17 @@ export async function acceptOffer(
     return { data: null, error: rejectOthersError };
   }
 
-  const sessionsDebug = await getSessionsAuthDebugContext();
-  const existingSessionPayload = { offerId };
-  logSessionsQuery("acceptOffer existing session lookup start", {
-    session: sessionsDebug.session,
-    user: sessionsDebug.user,
-    payload: existingSessionPayload,
-    error: sessionsDebug.authError,
+  const { data: sessionData, error: sessionError } = await ensureSessionForBooking({
+    request_id: request.id,
+    offer_id: offer.id,
+    helper_id: offer.helper_id,
+    requester_id: request.requester_id,
+    scheduled_at: scheduledAt,
+    duration_minutes: request.duration_minutes,
   });
 
-  if (sessionsDebug.authError) {
-    return { data: null, error: sessionsDebug.authError };
-  }
-
-  const { data: existingSession, error: existingSessionError } = await supabase
-    .from("sessions")
-    .select("id")
-    .eq("offer_id", offerId)
-    .maybeSingle();
-
-  logSessionsQuery("acceptOffer existing session lookup result", {
-    session: sessionsDebug.session,
-    user: sessionsDebug.user,
-    payload: existingSessionPayload,
-    error: existingSessionError,
-  });
-
-  if (existingSessionError) {
-    return { data: null, error: existingSessionError };
-  }
-
-  let sessionData = existingSession;
-  if (!sessionData?.id) {
-    const sessionInsertPayload = {
-      request_id: request.id,
-      offer_id: offer.id,
-      helper_id: offer.helper_id,
-      requester_id: request.requester_id,
-      scheduled_at: scheduledAt,
-      duration_minutes: request.duration_minutes,
-      status: "upcoming",
-    };
-
-    logSessionsQuery("acceptOffer create session insert start", {
-      session: sessionsDebug.session,
-      user: sessionsDebug.user,
-      payload: sessionInsertPayload,
-    });
-
-    const { data: createdSession, error: createSessionError } = await supabase
-      .from("sessions")
-      .insert(sessionInsertPayload)
-      .select()
-      .single();
-
-    if (createSessionError || !createdSession) {
-      return { data: null, error: createSessionError };
-    }
-
-    logSessionsQuery("acceptOffer create session insert result", {
-      session: sessionsDebug.session,
-      user: sessionsDebug.user,
-      payload: sessionInsertPayload,
-      error: createSessionError,
-    });
-
-    if (createSessionError) {
-      return { data: null, error: createSessionError };
-    }
-
-    sessionData = { id: createdSession.id };
-  } else if (scheduledAt) {
-    const updatePayload = { sessionId: sessionData.id, scheduled_at: scheduledAt };
-
-    logSessionsQuery("acceptOffer update session start", {
-      session: sessionsDebug.session,
-      user: sessionsDebug.user,
-      payload: updatePayload,
-    });
-
-    const { error: updateSessionError } = await supabase
-      .from("sessions")
-      .update({ scheduled_at: scheduledAt })
-      .eq("id", sessionData.id);
-
-    logSessionsQuery("acceptOffer update session result", {
-      session: sessionsDebug.session,
-      user: sessionsDebug.user,
-      payload: updatePayload,
-      error: updateSessionError,
-    });
-
-    if (updateSessionError) {
-      return { data: null, error: updateSessionError };
-    }
-
-    sessionData = { id: sessionData.id };
+  if (sessionError) {
+    return { data: null, error: sessionError };
   }
 
   const { error: requestUpdateError } = await supabase

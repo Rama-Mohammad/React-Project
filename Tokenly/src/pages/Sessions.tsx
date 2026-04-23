@@ -98,7 +98,11 @@ const SessionsPage: React.FC = () => {
           console.warn("Missing request for session", s.id);
         }
 
-        const title = s.request?.title ?? "Session";
+        const title =
+          s.request?.title ??
+          helpOfferValue?.title ??
+          directRequestValue?.title ??
+          "Session";
 
         const category =
           s.request?.category ??

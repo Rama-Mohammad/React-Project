@@ -132,6 +132,8 @@ export async function getDashboardSessions(user_id: string) {
       id,
       status,
       scheduled_at,
+      completed_at,
+      created_at,
       duration_minutes,
       helper_id,
       requester_id,
@@ -158,8 +160,7 @@ export async function getDashboardSessions(user_id: string) {
       requester:profiles!sessions_requester_id_fkey(id, full_name, profile_image_url)
     `)
     .or(`helper_id.eq.${user_id},requester_id.eq.${user_id}`)
-    .order("scheduled_at", { ascending: true, nullsFirst: false })
-    .limit(20);
+    .order("scheduled_at", { ascending: true, nullsFirst: false });
 }
 
 

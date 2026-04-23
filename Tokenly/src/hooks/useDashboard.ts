@@ -165,9 +165,15 @@ export default function useDashboard() {
           console.warn("Missing request for session", s.id);
         }
 
+        const topic =
+          s.request?.title ??
+          helpOfferValue?.title ??
+          directRequestValue?.title ??
+          "Session";
+
         return {
           id: s.id,
-          topic: s.request?.title ?? "Session",
+          topic,
           skill: s.request?.category ?? helpOfferValue?.category ?? directRequestValue?.category ?? "General",
           status: uiStatus,
           role: (isHelper ? "Helping" : "Receiving help") as DashboardSessionItem["role"],

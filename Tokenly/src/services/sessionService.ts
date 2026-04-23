@@ -91,14 +91,30 @@ export async function validateSessionScheduleAvailability(
   return { error: null };
 }
 
-function normalizeSessionRecord<T extends { id?: string; request?: { title?: string | null } | null }>(session: T): T & { title: string } {
+function getNestedRelationValue<T>(value: T | T[] | null | undefined): T | null {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
+}
+
+function normalizeSessionRecord<
+  T extends {
+    id?: string;
+    request?: { title?: string | null } | null;
+    help_offer_request?: { help_offer?: { title?: string | null } | Array<{ title?: string | null }> | null } | Array<{ help_offer?: { title?: string | null } | Array<{ title?: string | null }> | null }> | null;
+    direct_request?: { title?: string | null } | Array<{ title?: string | null }> | null;
+  }
+>(session: T): T & { title: string } {
   if (!session.request) {
     console.warn("Missing request for session", session.id);
   }
 
+  const helpOfferRequest = getNestedRelationValue(session.help_offer_request);
+  const helpOffer = getNestedRelationValue(helpOfferRequest?.help_offer);
+  const directRequest = getNestedRelationValue(session.direct_request);
+
   return {
     ...session,
-    title: session.request?.title ?? "Session",
+    title: session.request?.title ?? helpOffer?.title ?? directRequest?.title ?? "Session",
   };
 }
 
