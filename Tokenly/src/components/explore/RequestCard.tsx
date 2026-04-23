@@ -64,25 +64,25 @@ export default function RequestCard({ item }: RequestCardProps) {
   const ctaLink = isAuthenticated ? `/requests/${item.id}` : "/auth?mode=signin";
 
   return (
-    <article className="explore-soft-card flex h-full flex-col overflow-hidden rounded-[28px] border border-[#dfe6f5] bg-white/94 transition duration-300 hover:-translate-y-0.5 hover:border-indigo-100 hover:bg-white">
-      <div className="flex-1 p-5">
-        <div className="mb-4 flex items-start justify-between gap-3">
+    <article className="explore-soft-card min-w-0 flex h-full flex-col overflow-hidden rounded-[28px] border border-[#dfe6f5] bg-white/94 transition duration-300 hover:-translate-y-0.5 hover:border-indigo-100 hover:bg-white">
+      <div className="flex-1 p-4 sm:p-5">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-2.5 sm:gap-3">
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold ring-1 ring-white/70 ${
+            className={`inline-flex max-w-full items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-white/70 sm:px-3.5 ${
               categoryColors[item.category] || "bg-slate-100 text-slate-700"
             }`}
           >
             {getCategoryIcon(item.category)}
-            {item.category}
+            <span className="truncate">{item.category}</span>
           </span>
 
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold ring-1 ring-white/70 ${
+            className={`inline-flex max-w-full items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-white/70 sm:px-3.5 ${
               urgencyColors[item.urgency]
             }`}
           >
             {getUrgencyIcon(item.urgency)}
-            {item.urgency} urgency
+            <span className="truncate">{item.urgency} urgency</span>
           </span>
         </div>
 
@@ -107,7 +107,7 @@ export default function RequestCard({ item }: RequestCardProps) {
         </div>
       </div>
 
-      <div className="mt-auto border-t border-[#edf1f8] bg-white/62 p-5">
+      <div className="mt-auto border-t border-[#edf1f8] bg-white/62 p-4 sm:p-5">
         <div className="mb-4 flex flex-wrap items-center gap-4 text-xs text-slate-500">
           <span className="inline-flex items-center gap-1.5">
             <Clock3 size={14} />
@@ -122,38 +122,42 @@ export default function RequestCard({ item }: RequestCardProps) {
           <span className="ml-auto">{item.postedAgo}</span>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Avatar
-            name={item.author.name}
-            imageUrl={item.author.profileImageUrl}
-            className="h-10 w-10 rounded-full"
-            imageClassName="rounded-full"
-            fallbackClassName={`${item.author.avatarBg} text-xs font-bold text-slate-800`}
-          />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex min-w-0 items-center gap-3">
+            <Avatar
+              name={item.author.name}
+              imageUrl={item.author.profileImageUrl}
+              className="h-10 w-10 rounded-full"
+              imageClassName="rounded-full"
+              fallbackClassName={`${item.author.avatarBg} text-xs font-bold text-slate-800`}
+            />
 
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-semibold text-slate-800">
-              {item.author.name}
-            </div>
-            <div className="mt-0.5 inline-flex items-center gap-1 text-xs text-slate-500">
-              <RatingStars value={item.author.rating ?? 0} />
-              {item.author.rating?.toFixed(1)}
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-semibold text-slate-800">
+                {item.author.name}
+              </div>
+              <div className="mt-0.5 inline-flex items-center gap-1 text-xs text-slate-500">
+                <RatingStars value={item.author.rating ?? 0} />
+                {item.author.rating?.toFixed(1)}
+              </div>
             </div>
           </div>
 
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-100 bg-indigo-50/80 px-3.5 py-2 text-sm font-semibold text-indigo-600">
-            <Coins size={14} />
-            {item.credits}
-          </div>
+          <div className="flex flex-wrap items-center gap-2 sm:ml-auto sm:flex-nowrap">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-100 bg-indigo-50/80 px-3.5 py-2 text-sm font-semibold text-indigo-600">
+              <Coins size={14} />
+              {item.credits}
+            </div>
 
-          <Link
-            to={ctaLink}
-            state={!isAuthenticated ? authRedirectState : undefined}
-            className="inline-flex items-center gap-2 rounded-2xl border border-[#dfe6f5] bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition duration-300 hover:-translate-y-0.5 hover:border-indigo-100 hover:bg-slate-50"
-          >
-            <Eye size={15} />
-            View
-          </Link>
+            <Link
+              to={ctaLink}
+              state={!isAuthenticated ? authRedirectState : undefined}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#dfe6f5] bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition duration-300 hover:-translate-y-0.5 hover:border-indigo-100 hover:bg-slate-50"
+            >
+              <Eye size={15} />
+              View
+            </Link>
+          </div>
         </div>
       </div>
     </article>
