@@ -1,4 +1,4 @@
-import { BookOpen, FileText, Send, Users } from "lucide-react";
+﻿import { BookOpen, FileText, Send, Users } from "lucide-react";
 import type { CategoryTabsProps } from "../../types/explore";
 
 export default function CategoryTabs({
@@ -70,4 +70,5 @@ export default function CategoryTabs({
     </div>
   );
 }
+
 

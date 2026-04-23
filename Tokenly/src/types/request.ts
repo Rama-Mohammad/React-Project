@@ -1,4 +1,4 @@
-export type RequestStatus = 'open' | 'accepted' | 'completed' | 'cancelled';
+﻿export type RequestStatus = 'open' | 'accepted' | 'completed' | 'cancelled';
 export type Urgency = 'low' | 'medium' | 'high';
 
 export type Request = {
@@ -45,3 +45,4 @@ export type UseRequestsResult = {
   changeRequestStatus: (id: string, status: RequestStatus) => Promise<boolean>;
   removeRequest: (id: string) => Promise<boolean>;
 };
+

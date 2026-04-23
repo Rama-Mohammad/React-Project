@@ -1,6 +1,4 @@
-import type { Transaction } from ".";
-
-export interface CreditBalanceCardProps {
+﻿export interface CreditBalanceCardProps {
   balance: number;
   onViewHistory: () => void;
 }
@@ -83,3 +81,4 @@ export type DashboardHelpOfferRequestItem = {
   duration: number | null;
   age: string;
 };
+

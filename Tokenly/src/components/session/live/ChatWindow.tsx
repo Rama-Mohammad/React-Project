@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+﻿import React, { useEffect, useRef, useState } from "react";
 import MessageBubble from "./MessageBubble";
 import type { ChatWindowProps } from "../../../types/session";
 
@@ -53,7 +53,6 @@ const handleSend = () => {
 
   return (
     <div className="flex h-[500px] flex-col rounded-xl border border-indigo-200/70 bg-white/75 backdrop-blur">
-      {/* Header */}
 <div className="flex items-center justify-between border-b border-indigo-200/70 bg-indigo-50/60 p-3">
   <div>
     <h3 className="font-semibold text-slate-900">Chat</h3>
@@ -65,7 +64,6 @@ const handleSend = () => {
 </div>
       
 
-      {/* Messages */}
       <div
         ref={messagesContainerRef}
         onScroll={handleScroll}
@@ -87,7 +85,6 @@ const handleSend = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <div className="border-t border-indigo-200/70 p-3">
         <div className="flex gap-2">
           <textarea
@@ -115,3 +112,4 @@ const handleSend = () => {
 };
 
 export default React.memo(ChatWindow);
+

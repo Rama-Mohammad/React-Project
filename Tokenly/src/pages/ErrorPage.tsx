@@ -1,4 +1,4 @@
-import { AlertTriangle, Home, RefreshCcw } from "lucide-react";
+﻿import { AlertTriangle, Home, RefreshCcw } from "lucide-react";
 import { isRouteErrorResponse, Link, useRouteError } from "react-router-dom";
 import Footer from "../components/common/Footer";
 import Navbar from "../components/common/Navbar";
@@ -81,3 +81,4 @@ export default function ErrorPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { ArrowLeft, Coins, FileText, PlayCircle, Rocket, UserCheck } from "lucide-react";
+﻿import { ArrowLeft, Coins, FileText, PlayCircle, Rocket, UserCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const helpSections = [
@@ -85,4 +85,5 @@ export default function Help() {
     </div>
   );
 }
+
 

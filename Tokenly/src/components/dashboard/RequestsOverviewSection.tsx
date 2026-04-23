@@ -1,4 +1,4 @@
-import { Coins, MessageCircle, Trash2 } from "lucide-react";
+﻿import { Coins, MessageCircle, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Loader from "../common/Loader";
 import type { DashboardOfferItem, DashboardRequestItem } from "../../types/dashboard";
@@ -232,3 +232,4 @@ export default function RequestsOverviewSection({
     </section>
   );
 }
+

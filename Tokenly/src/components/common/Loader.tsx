@@ -1,4 +1,4 @@
-import tokenlyLogo from "../../assets/favicon_tokenly.svg";
+﻿import tokenlyLogo from "../../assets/favicon_tokenly.svg";
 
 type LoaderProps = {
   label?: string;
@@ -45,3 +45,4 @@ export default function Loader({
 
   return <div className="py-8">{content}</div>;
 }
+

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import type { ChecklistProps } from "../../../types/session";
 
 const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, onEditItem, onRemoveItem, isEditable }) => {
@@ -141,4 +141,5 @@ const Checklist: React.FC<ChecklistProps> = ({ items, onToggleItem, onAddItem, o
 };
 
 export default Checklist;
+
 

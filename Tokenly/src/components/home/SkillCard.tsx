@@ -1,4 +1,4 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+﻿import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { Link } from "react-router-dom";
 import {
@@ -66,4 +66,5 @@ const SkillCard = ({ name, count, to }: HomeSkillCardProps) => {
 };
 
 export default SkillCard;
+
 

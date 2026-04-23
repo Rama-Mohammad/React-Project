@@ -1,4 +1,4 @@
-import { CalendarDays, Clock3, Coins, Sparkles } from "lucide-react";
+﻿import { CalendarDays, Clock3, Coins, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Loader from "../components/common/Loader";
@@ -9,9 +9,8 @@ import {
   extractAvailabilityFromOfferDescription,
   getIndependentOfferAppointmentDetails,
   getOfferAppointmentDetails,
-  type HelpOfferAppointmentRow,
-  type OfferAppointmentRow,
 } from "../services/offerService";
+import type { HelpOfferAppointmentRow, OfferAppointmentRow } from "../types/offer";
 import { getProfileCreditBalance } from "../services/profileService";
 import { createRequest } from "../services/requestService";
 
@@ -483,6 +482,7 @@ export default function OfferAppointment() {
     </div>
   );
 }
+
 
 
 

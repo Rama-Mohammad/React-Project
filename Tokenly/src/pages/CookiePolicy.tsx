@@ -1,4 +1,4 @@
-
+﻿
 const sections = [
   {
     title: "What Cookies Are",
@@ -61,4 +61,5 @@ export default function CookiePolicy() {
     </div>
   );
 }
+
 

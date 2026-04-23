@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CircleDot, ClipboardList, Paperclip, Star } from "lucide-react";
 import VideoPlaceholder from "../components/session/live/VideoPlaceHolder";
@@ -18,6 +18,37 @@ import { uploadSessionFile, deleteSessionFile } from "../services/storageService
 import { createReview, hasUserReviewedSession } from "../services/reviewService";
 
 type TabType = "agenda" | "files";
+
+function mapSessionFileRecord(file: any): FileAttachment {
+  return {
+    id: file.id,
+    name: file.file_name,
+    size: file.file_size_bytes,
+    type: file.file_type,
+    uploadedBy: file.uploader_id,
+    uploadedAt: new Date(file.created_at),
+    url: file.file_url,
+    path: file.path,
+  };
+}
+
+function mergeSessionFiles(previousFiles: FileAttachment[], nextFiles: FileAttachment[]) {
+  const merged = new Map<string, FileAttachment>();
+
+  previousFiles.forEach((file) => {
+    merged.set(file.id, file);
+  });
+
+  nextFiles.forEach((file) => {
+    if (!merged.has(file.id)) {
+      merged.set(file.id, file);
+    }
+  });
+
+  return Array.from(merged.values()).sort(
+    (a, b) => a.uploadedAt.getTime() - b.uploadedAt.getTime()
+  );
+}
 
 const defaultChecklistItems: ChecklistItem[] = [
   { id: "1", text: "Confirm goals and expected outcomes", completed: false },
@@ -48,6 +79,7 @@ const SessionLivePage: React.FC = () => {
   const [hasExistingReview, setHasExistingReview] = useState(false);
   const [reviewError, setReviewError] = useState("");
   const [shouldNavigateAfterReview, setShouldNavigateAfterReview] = useState(false);
+  const fileChannelRef = React.useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const helperId = sessionData?.helper_id ?? "";
   const canReviewHelper = Boolean(currentUserId && helperId && currentUserId !== helperId);
@@ -166,7 +198,7 @@ const SessionLivePage: React.FC = () => {
       setSessionData(sessionData);
 
       const isHelper = sessionData.helper_id === userData.user.id;
-      const initiatorId = sessionData.helper_id; // Helper initiates the call
+      const initiatorId = sessionData.helper_id;
 
       setCurrentUserId(userData.user.id);
       setCurrentUserName(
@@ -244,26 +276,12 @@ const SessionLivePage: React.FC = () => {
         .select("*")
         .eq("session_id", sessionId)
         .order("created_at", { ascending: true });
-console.log("INITIAL FILE LOAD", data);
       if (error) {
         console.error(error);
         return;
       }
 
-      setFiles(
-        (data || []).map((f) => (
-          {
-            id: f.id,
-            name: f.file_name,
-            size: f.file_size_bytes,
-            type: f.file_type,
-            uploadedBy: f.uploader_id,
-            uploadedAt: new Date(f.created_at),
-            url: f.file_url,
-            path: f.path,
-          }
-        ))
-      );
+      setFiles((prev) => mergeSessionFiles(prev, (data || []).map(mapSessionFileRecord)));
       
     };
 
@@ -274,7 +292,11 @@ console.log("INITIAL FILE LOAD", data);
     if (!sessionId) return;
 
     const channel = supabase
-      .channel(`files-${sessionId}`)
+      .channel(`files-${sessionId}`, {
+        config: {
+          broadcast: { self: false },
+        },
+      })
       .on(
         "postgres_changes",
         {
@@ -285,36 +307,25 @@ console.log("INITIAL FILE LOAD", data);
         },
         (payload) => {
           if (payload.eventType === "INSERT") {
-              console.log("REALTIME INSERT RECEIVED", payload.new);
-
-            const f = payload.new;
-
-            setFiles((prev) => [
-              ...prev,
-              {
-                id: f.id,
-                name: f.file_name,
-                size: f.file_size_bytes,
-                type: f.file_type,
-                uploadedBy: f.uploader_id,
-                uploadedAt: new Date(f.created_at),
-                url: f.file_url,
-                path: f.path,
-              },
-            ]);
+            setFiles((prev) => mergeSessionFiles(prev, [mapSessionFileRecord(payload.new)]));
           }
 
           if (payload.eventType === "DELETE") {
-            console.log("REALTIME DELETE RECEIVED", payload.old);
             const f = payload.old;
 
             setFiles((prev) => prev.filter((x) => x.id !== f.id));
           }
         }
       )
+      .on("broadcast", { event: "file_uploaded" }, ({ payload }) => {
+        if (!payload?.file) return;
+        setFiles((prev) => mergeSessionFiles(prev, [payload.file as FileAttachment]));
+      })
       .subscribe();
+    fileChannelRef.current = channel;
 
     return () => {
+      fileChannelRef.current = null;
       supabase.removeChannel(channel);
     };
   }, [sessionId]);
@@ -344,29 +355,15 @@ console.log("INITIAL FILE LOAD", data);
   };
 
   const handleFileUpload = async (file: File) => {
-    console.log("📤 UPLOAD START", { sessionId, currentUserId, file });
     if (!sessionId || !currentUserId) {
-      console.log("Missing sessionId or currentUserId", {
-        sessionId,
-        currentUserId,
-      });
       return;
     }
-
-    console.log("START FILE UPLOAD:", {
-      fileName: file.name,
-      fileSize: file.size,
-      sessionId,
-      currentUserId,
-    });
 
     const { data, error } = await uploadSessionFile(
       sessionId,
       currentUserId,
       file
     );
-    console.log(" STORAGE RESULT", { data, error });
-
     if (error || !data) {
       console.error("Storage upload failed:", error);
       return;
@@ -388,25 +385,29 @@ console.log("INITIAL FILE LOAD", data);
       .select()
       .single();
 
-console.log("DB INSERT RESULT", { inserted, dbError });
     if (dbError) {
       console.error(" DB insert failed:", dbError);
       return;
     }
-console.log(" ADDING FILE TO STATE", inserted);
-    setFiles((prev) => [
-      ...prev,
-      {
-        id: inserted.id,
-        name: inserted.file_name,
-        size: inserted.file_size_bytes,
-        type: inserted.file_type,
-        uploadedBy: currentUserName,
-        uploadedAt: new Date(inserted.created_at),
-        url: inserted.file_url,
-        path: inserted.path,
-      }
-    ]);
+    const uploadedFile: FileAttachment = {
+      id: inserted.id,
+      name: inserted.file_name,
+      size: inserted.file_size_bytes,
+      type: inserted.file_type,
+      uploadedBy: currentUserName,
+      uploadedAt: new Date(inserted.created_at),
+      url: inserted.file_url,
+      path: inserted.path,
+    };
+
+    setFiles((prev) => mergeSessionFiles(prev, [uploadedFile]));
+    await fileChannelRef.current?.send({
+      type: "broadcast",
+      event: "file_uploaded",
+      payload: {
+        file: uploadedFile,
+      },
+    });
 
   };
 
@@ -605,7 +606,7 @@ console.log(" ADDING FILE TO STATE", inserted);
         itemName={pendingDeleteFile?.name}
         details={
           pendingDeleteFile
-            ? `${pendingDeleteFile.uploadedBy} • ${(pendingDeleteFile.size / 1024).toFixed(1)} KB`
+            ? `${pendingDeleteFile.uploadedBy} \u2022 ${(pendingDeleteFile.size / 1024).toFixed(1)} KB`
             : undefined
         }
         confirmLabel="Delete File"
@@ -697,3 +698,5 @@ console.log(" ADDING FILE TO STATE", inserted);
 };
 
 export default SessionLivePage;
+
+

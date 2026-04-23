@@ -1,4 +1,4 @@
-export type SessionStatus = "upcoming" | "active" | "completed" | "cancelled";
+﻿export type SessionStatus = "upcoming" | "active" | "completed" | "cancelled";
 export type ReactionType = 'like' | 'love' | 'laugh' | 'wow';
 
 
@@ -159,3 +159,4 @@ export type UseSessionsResult = {
   completedCount: number;
   fetchCompletedSessionsCount: (user_id: string) => Promise<void>;
 };
+

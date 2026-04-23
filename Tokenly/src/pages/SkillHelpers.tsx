@@ -1,17 +1,14 @@
-import { ArrowLeft, Code2, Search, Sparkles } from "lucide-react";
+﻿import { ArrowLeft, Code2, Search, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Loader from "../components/common/Loader";
 import ThemedSelect from "../components/common/ThemedSelect";
 import HelperCard from "../components/explore/HelperCard";
-import type { HelperItem, SkillItem } from "../types/explore";
+import type { HelperItem, SkillItem, SkillWithRelations } from "../types/explore";
 import { getExploreHelpers } from "../services/helperExploreService";
 import { mapProfileToHelperItem } from "../utils/helperExploreMapper";
 import { getAllSkills } from "../services/skillService";
-import {
-  mapSkillToExploreItem,
-  type SkillWithRelations,
-} from "../utils/exploreMappers";
+import { mapSkillToExploreItem } from "../utils/exploreMappers";
 
 const levelStyles: Record<string, string> = {
   Beginner: "bg-emerald-50 text-emerald-700",
@@ -29,7 +26,6 @@ export default function SkillHelpers() {
 
   const [search, setSearch] = useState("");
   const [minRating, setMinRating] = useState("Any");
-  const [onlineOnly, setOnlineOnly] = useState(true);
   const [sortBy, setSortBy] = useState("Top Rated");
 
   useEffect(() => {
@@ -115,10 +111,6 @@ export default function SkillHelpers() {
       data = data.filter((helper) => helper.rating >= threshold);
     }
 
-    if (onlineOnly) {
-      data = data.filter((helper) => helper.online);
-    }
-
     if (sortBy === "Top Rated") {
       data = data.sort((a, b) => b.rating - a.rating);
     } else if (sortBy === "Fastest Response") {
@@ -137,7 +129,7 @@ export default function SkillHelpers() {
     }
 
     return data;
-  }, [skill, helpers, search, minRating, onlineOnly, sortBy]);
+  }, [skill, helpers, search, minRating, sortBy]);
 
   if (!skill) {
     if (isLoadingSkill) {
@@ -167,8 +159,6 @@ export default function SkillHelpers() {
       </div>
     );
   }
-
-  const onlineCount = matchedHelpers.filter((helper) => helper.online).length;
 
   return (
     <div className="relative min-h-full overflow-hidden bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
@@ -230,10 +220,6 @@ export default function SkillHelpers() {
           </div>
         </section>
 
-        <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-slate-600">
-          <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-          {onlineCount} helpers available right now
-        </p>
         {helpersLoadError ? (
           <p className="mt-2 text-sm font-medium text-rose-600">{helpersLoadError}</p>
         ) : null}
@@ -278,20 +264,6 @@ export default function SkillHelpers() {
                 {option}
               </button>
             ))}
-
-            <button
-              type="button"
-              onClick={() => setOnlineOnly((previous) => !previous)}
-              className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                onlineOnly
-                  ? "border border-emerald-300 bg-emerald-50 text-emerald-700"
-                  : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              <span className={`h-2 w-2 rounded-full ${onlineOnly ? "bg-emerald-500" : "bg-slate-300"}`} />
-              Online now
-            </button>
-
             <span className="ml-auto text-xs font-medium text-slate-500">{matchedHelpers.length} helpers</span>
           </div>
         </section>
@@ -315,7 +287,6 @@ export default function SkillHelpers() {
               onClick={() => {
                 setSearch("");
                 setMinRating("Any");
-                setOnlineOnly(false);
               }}
               className="mt-4 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
@@ -328,4 +299,5 @@ export default function SkillHelpers() {
     </div>
   );
 }
+
 

@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabaseClient";
+﻿import { supabase } from "../lib/supabaseClient";
 import type { TransactionType } from "../types/transaction";
 
 export async function getTransactionsByUser(user_id: string) {
@@ -99,10 +99,8 @@ export async function getUserCreditSummary(user_id: string) {
     .filter((t) => t.type === "spend")
     .reduce((sum, t) => sum + t.amount, 0);
 
-  // Older balances may exist without matching earn/bonus transactions.
-  // Reconcile the summary with the real profile balance so the dashboard
-  // does not show impossible states like balance 0 with no prior earnings.
   const earned = Math.max(trackedEarned, available + spent);
 
   return { data: { available, earned, spent, total: available }, error: null };
 }
+

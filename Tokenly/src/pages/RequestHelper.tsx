@@ -1,7 +1,4 @@
-//IMPORTANT NOTE:
-// Route: /helpers/:helperId/request  →  Flow 3 (direct request to specific helper)
-// Route: /request/new                →  Flow 1 (public request, open to all helpers)
-import { CheckCircle2, Coins, Lightbulb, User } from "lucide-react";
+﻿import { CheckCircle2, Coins, Lightbulb, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Loader from "../components/common/Loader";
@@ -23,7 +20,6 @@ export default function RequestHelper() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Helper info — loaded when helperId is present (Flow 3)
   const [helper, setHelper] = useState<{
     creditsPerHour: number;
     name: string;
@@ -32,7 +28,6 @@ export default function RequestHelper() {
   const [isLoadingHelper, setIsLoadingHelper] = useState(true);
   const [helperLoadError, setHelperLoadError] = useState("");
 
-  // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -56,11 +51,8 @@ export default function RequestHelper() {
   });
 
 
-  // isGenericRequestFlow = no specific helper targeted → public request
-  // isDirectFlow = specific helper targeted → direct_request
   const isGenericRequestFlow = !helperId;
 
-  // Pre-fill from URL params (used when coming from an offer card)
   useEffect(() => {
     const offerTitle = searchParams.get("offerTitle");
     const offerCategory = searchParams.get("offerCategory");
@@ -73,10 +65,8 @@ export default function RequestHelper() {
     if (offerCredits) setCreditsToOffer(Number(offerCredits) || 6);
   }, [searchParams]);
 
-  // Load helper info when helperId is present
   useEffect(() => {
     if (!helperId) {
-      // Generic request flow — no helper to load, just skip loading state
       setHelper({ creditsPerHour: 6, name: "", username: null });
       setIsLoadingHelper(false);
       return;
@@ -87,7 +77,6 @@ export default function RequestHelper() {
     setHelperLoadError("");
 
     void (async () => {
-      // Fetch helper profile + their help_offers for creditsPerHour estimate
       const [profileRes, offersRes] = await Promise.all([
         supabase
           .from("profiles")
@@ -134,7 +123,6 @@ export default function RequestHelper() {
     return () => { mounted = false; };
   }, [helperId]);
 
-  // Auto-dismiss success/error messages
   useEffect(() => {
     if (!submitMessage) return;
     const id = window.setTimeout(() => setSubmitMessage(""), 3000);
@@ -202,7 +190,6 @@ export default function RequestHelper() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    // Validation
     if (!title.trim()) { setSectionError("title"); return; }
     if (selectedSkills.length === 0) { setSectionError("skills"); return; }
     if (!description.trim()) { setSectionError("description"); return; }
@@ -224,7 +211,6 @@ export default function RequestHelper() {
       const userId = authData.user.id;
       const urgency = needBy === "urgent" ? "high" : needBy === "soon" ? "medium" : "low";
 
-      // ── Flow 3: Direct request to a specific helper ─────────────────────
       if (helperId && !isGenericRequestFlow) {
         if (userId === helperId) {
           setSubmitError("You cannot send a direct request to yourself.");
@@ -256,7 +242,6 @@ export default function RequestHelper() {
         return;
       }
 
-      // ── Flow 1: Generic public request ────────────────────────────────────
       const { data: createdRequest, error: createError } = await createRequest({
         requester_id: userId,
         title: title.trim(),
@@ -273,7 +258,6 @@ export default function RequestHelper() {
         return;
       }
 
-      // Link skills to the request
       if (selectedSkills.length > 0) {
         const { data: matchedSkills } = await supabase
           .from("skills")
@@ -288,7 +272,6 @@ export default function RequestHelper() {
           }));
           const { error: linkError } = await supabase.from("request_skills").insert(links);
           if (linkError) {
-            // Non-fatal — request was created, skills just didn't link
             console.warn("request_skills linking failed:", linkError.message);
           }
         }
@@ -357,7 +340,6 @@ export default function RequestHelper() {
             Back
           </button>
 
-          {/* "Sending to {helperName}" banner — only shown on direct request flow */}
           {!isGenericRequestFlow && helper.name ? (
             <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
               <User size={12} />
@@ -378,7 +360,6 @@ export default function RequestHelper() {
                   : `Send a private session request directly to ${helper.name}. They'll see it on their dashboard and can accept or decline.`}
               </p>
 
-              {/* Title */}
               <div
                 ref={(el) => { sectionRefs.current.title = el; }}
                 className="mt-5"
@@ -401,7 +382,6 @@ export default function RequestHelper() {
                 ) : null}
               </div>
 
-              {/* Skills */}
               <div
                 ref={(el) => { sectionRefs.current.skills = el; }}
                 className="mt-5"
@@ -482,7 +462,6 @@ export default function RequestHelper() {
                 ) : null}
               </div>
 
-              {/* Description */}
               <div
                 ref={(el) => { sectionRefs.current.description = el; }}
                 className="mt-5"
@@ -511,7 +490,6 @@ export default function RequestHelper() {
                 ) : null}
               </div>
 
-              {/* Duration */}
               <div
                 ref={(el) => { sectionRefs.current.duration = el; }}
                 className="mt-5"
@@ -540,7 +518,6 @@ export default function RequestHelper() {
                 ) : null}
               </div>
 
-              {/* Urgency */}
               <div
                 ref={(el) => { sectionRefs.current.urgency = el; }}
                 className="mt-5"
@@ -569,7 +546,6 @@ export default function RequestHelper() {
                 ) : null}
               </div>
 
-              {/* Feedback messages */}
               {submitMessage ? (
                 <div className="mt-4 flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
                   <CheckCircle2 size={16} />
@@ -596,9 +572,7 @@ export default function RequestHelper() {
             </section>
           </form>
 
-          {/* Right sidebar */}
           <aside className="space-y-4 lg:sticky lg:top-20">
-            {/* Tokens picker */}
             <section className="explore-glass rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
               <h2 className="text-base font-semibold text-slate-900">Tokens to offer</h2>
               <p className="mt-1 text-xs text-slate-500">You have {availableTokens} tokens available.</p>
@@ -609,7 +583,7 @@ export default function RequestHelper() {
                   onClick={() => setCreditsToOffer((c) => Math.max(0, c - 1))}
                   className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50"
                 >
-                  −
+                  {"\u2212"}
                 </button>
                 <div className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 py-2 text-lg font-bold text-indigo-700">
                   <Coins size={18} />
@@ -631,7 +605,6 @@ export default function RequestHelper() {
               ) : null}
             </section>
 
-            {/* Tips */}
             <section className="explore-glass rounded-3xl border border-white/55 bg-white/80 p-5 backdrop-blur-xl">
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
                 <Lightbulb size={15} className="text-amber-500" />
@@ -640,29 +613,28 @@ export default function RequestHelper() {
               <ul className="mt-3 space-y-2 text-xs leading-5 text-slate-600">
                 {isGenericRequestFlow ? (
                   <>
-                    <li>• Be specific about what you've already tried</li>
-                    <li>• Mention the desired outcome, not just the problem</li>
-                    <li>• Higher tokens attract more experienced helpers</li>
-                    <li>• Shorter sessions fill up faster</li>
+                    <li>{"\u2022"} Be specific about what you've already tried</li>
+                    <li>{"\u2022"} Mention the desired outcome, not just the problem</li>
+                    <li>{"\u2022"} Higher tokens attract more experienced helpers</li>
+                    <li>{"\u2022"} Shorter sessions fill up faster</li>
                   </>
                 ) : (
                   <>
-                    <li>• Include context about why you're choosing this helper specifically</li>
-                    <li>• Mention your availability so they can plan</li>
-                    <li>• Keep it concise — helpers receive many requests</li>
-                    <li>• The helper will accept or decline from their dashboard</li>
+                    <li>{"\u2022"} Include context about why you're choosing this helper specifically</li>
+                    <li>{"\u2022"} Mention your availability so they can plan</li>
+                    <li>{"\u2022"} Keep it concise {"\u2014"} helpers receive many requests</li>
+                    <li>{"\u2022"} The helper will accept or decline from their dashboard</li>
                   </>
                 )}
               </ul>
             </section>
 
-            {/* Link back to helper profile */}
             {!isGenericRequestFlow && helperId ? (
               <Link
                 to={`/profile/${encodeURIComponent(helperId)}`}
                 className="block rounded-3xl border border-white/55 bg-white/80 p-4 text-center text-xs font-semibold text-indigo-600 backdrop-blur transition hover:bg-white"
               >
-                View {helper.name}'s full profile →
+                View {helper.name}'s full profile {"\u2192"}
               </Link>
             ) : null}
           </aside>
@@ -671,3 +643,4 @@ export default function RequestHelper() {
     </div>
   );
 }
+

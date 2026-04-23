@@ -1,4 +1,4 @@
-export type ExploreTab = "requests" | "helpers" | "skills" | "offers";
+﻿export type ExploreTab = "requests" | "helpers" | "skills" | "offers";
 
 export type Urgency = "High" | "Medium" | "Low";
 export type SkillLevel = "Beginner" | "Intermediate" | "Advanced";
@@ -13,6 +13,7 @@ export interface PersonSummary {
 
 export interface RequestItem {
   id: string;
+  status?: string;
   category: string;
   urgency: Urgency;
   title: string;
@@ -82,9 +83,6 @@ export interface HelpOfferItem {
   skillNames: string[]; 
 }
 
-// Kept for backwards compat in components that still reference OfferItem
-// Remove this once all consumers are migrated to HelpOfferItem
-/** @deprecated Use HelpOfferItem instead */
 export type OfferItem = HelpOfferItem;
 
 export interface ExploreStats {
@@ -168,3 +166,63 @@ export interface StatsHeroProps {
   defaultHelperId?: string;
   openHowItWorks?: boolean;
 }
+
+export type ExploreProfileRow = {
+  id: string;
+  full_name: string | null;
+  username: string | null;
+  avg_rating: number | null;
+  title: string | null;
+  bio: string | null;
+  profile_image_url: string | null;
+  last_seen: string | null;
+};
+
+export type ExploreSkillRow = {
+  id: string;
+  user_id: string;
+  name: string;
+  category: string;
+  level: string;
+  sessions_count: number;
+};
+
+export type ExploreSessionRow = {
+  id: string;
+  helper_id: string;
+  status: string;
+};
+
+export type ExploreHelpOfferRow = {
+  id: string;
+  helper_id: string;
+  category: string | null;
+  credit_cost: number | null;
+  duration_minutes: number | null;
+  status: string;
+};
+
+export type SkillWithRelations = {
+  id: string;
+  name: string;
+  category?: string | null;
+  level: string;
+  description?: string | null;
+  sessions_count?: number | null;
+  user_id: string;
+  profile?:
+    | {
+        full_name?: string | null;
+        username?: string | null;
+        avg_rating?: number | null;
+        profile_image_url?: string | null;
+      }
+    | Array<{
+        full_name?: string | null;
+        username?: string | null;
+        avg_rating?: number | null;
+        profile_image_url?: string | null;
+      }>
+    | null;
+};
+

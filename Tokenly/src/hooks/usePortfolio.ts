@@ -1,22 +1,11 @@
-import { useCallback, useRef, useState } from "react";
+﻿import { useCallback, useRef, useState } from "react";
 import {
   getPortfolioByUser,
   createPortfolioItem,
   updatePortfolioItem,
   deletePortfolioItem,
 } from "../services/portfolioService";
-
-export type PortfolioRow = {
-  id: string;
-  user_id: string;
-  title: string;
-  description?: string;
-  type: string;
-  url?: string;
-  tags: string[];
-  date?: string;
-  created_at: string;
-};
+import type { PortfolioRow } from "../types/profile";
 
 type PortfolioState = {
   items: PortfolioRow[];
@@ -166,3 +155,4 @@ export default function usePortfolio() {
     remove,
   };
 }
+

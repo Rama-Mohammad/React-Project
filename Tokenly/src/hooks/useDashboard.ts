@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import {
   getDashboardDirectRequests,
   getDashboardOffers,
@@ -47,7 +47,6 @@ function writeDashboardCache(value: DashboardCacheState) {
   try {
     window.localStorage.setItem(DASHBOARD_CACHE_KEY, JSON.stringify(value));
   } catch {
-    // Ignore cache write failures and keep live data flowing.
   }
 }
 
@@ -331,3 +330,4 @@ function toRelativeAge(dateValue?: string | null) {
   const days = Math.floor(hours / 24);
   return `${days}d ago`;
 }
+

@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react";
+﻿import { Trash2 } from "lucide-react";
 
 type ConfirmDeleteModalProps = {
   isOpen: boolean;
@@ -61,15 +61,11 @@ export default function ConfirmDeleteModal({
           <button
             type="button"
             onClick={async () => {
-              console.log("🗑️ DELETE CLICKED");
-
               try {
                 await onConfirm();
-                console.log("✅ DELETE SUCCESS");
-
-                onCancel(); // ✅ CLOSE MODAL HERE
+                onCancel();
               } catch (err) {
-                console.error("❌ DELETE FAILED:", err);
+                console.error("Delete failed:", err);
               }
             }}
             disabled={loading}
@@ -85,3 +81,4 @@ export default function ConfirmDeleteModal({
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+﻿import { useEffect, useState, type ReactNode } from "react";
 import type { FilterSideBarProps } from "../../types/explore";
 
 const HELPER_BASIC_FILTERS = [
@@ -51,8 +51,6 @@ export default function FilterSideBar({
   onResetRequestFilters,
   rating,
   onRatingChange,
-  onlineOnly,
-  onOnlineOnlyChange,
   level,
   onLevelChange,
   selectedHelperCategories = [],
@@ -284,3 +282,4 @@ export default function FilterSideBar({
     </div>
   );
 }
+

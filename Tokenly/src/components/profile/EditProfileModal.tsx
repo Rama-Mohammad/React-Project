@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import { Camera, ImagePlus, Trash2 } from 'lucide-react';
@@ -22,7 +22,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
-  // Keep form in sync when user prop changes (modal re-opens)
   useEffect(() => {
     if (isOpen) {
       setFormData(user);
@@ -46,7 +45,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     const file = e.target.files?.[0];
     if (!file || !userId) return;
 
-    // Show local preview immediately
     setAvatarPreview(URL.createObjectURL(file));
 
     setUploading(true);
@@ -115,7 +113,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Resolve what to show: local preview → existing URL → nothing
   const displayAvatar = avatarPreview || formData.profileImageUrl || '';
   const displayCover = coverPreview || formData.coverImage || '';
   const initials = formData.name
@@ -134,7 +131,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
-          {/* Header */}
           <div className="sticky top-0 bg-white z-10 p-6 border-b border-gray-200 flex justify-between items-center">
             <h2 className="text-2xl font-bold text-gray-900">Edit Profile</h2>
             <button
@@ -147,7 +143,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            {/* ========== COVER IMAGE ========== */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Cover Image
@@ -161,7 +156,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   />
                 ) : null}
 
-                {/* Overlay buttons */}
                 <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition hover:bg-black/30 hover:opacity-100">
                   <button
                     type="button"
@@ -193,7 +187,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               </div>
             </div>
 
-            {/* ========== PROFILE PICTURE ========== */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Profile Picture
@@ -212,7 +205,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                     )}
                   </div>
 
-                  {/* Camera badge */}
                   <button
                     type="button"
                     onClick={() => avatarInputRef.current?.click()}
@@ -255,7 +247,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               </div>
             </div>
 
-            {/* Uploading indicator */}
             {uploading ? (
               <div className="flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-2 text-sm text-indigo-700">
                 <Loader size={14} inline className="gap-0" />
@@ -356,3 +347,4 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 };
 
 export default EditProfileModal;
+

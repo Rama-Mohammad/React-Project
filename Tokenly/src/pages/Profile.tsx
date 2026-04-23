@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import { Plus, Coins, Clock3, Sparkles } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
@@ -709,7 +709,7 @@ const Profile: React.FC = () => {
             title="Delete this skill?"
             message="This skill will be removed from your profile."
             itemName={pendingSkill?.name}
-            details={pendingSkill ? `${pendingSkill.level} · ${pendingSkill.category}` : undefined}
+            details={pendingSkill ? `${pendingSkill.level} \u00B7 ${pendingSkill.category}` : undefined}
             confirmLabel="Delete Skill"
             onCancel={() => setPendingSkillDeleteId(null)}
             onConfirm={() => (pendingSkill ? handleDeleteSkill(pendingSkill.id) : Promise.resolve())}
@@ -720,7 +720,7 @@ const Profile: React.FC = () => {
             title="Delete this portfolio item?"
             message="This portfolio entry will be removed from your profile."
             itemName={pendingPortfolioItem?.title}
-            details={pendingPortfolioItem ? `${pendingPortfolioItem.type} · ${pendingPortfolioItem.date}` : undefined}
+            details={pendingPortfolioItem ? `${pendingPortfolioItem.type} \u00B7 ${pendingPortfolioItem.date}` : undefined}
             confirmLabel="Delete Item"
             onCancel={() => setPendingPortfolioDeleteId(null)}
             onConfirm={handleConfirmDeletePortfolio}
@@ -732,3 +732,4 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
+

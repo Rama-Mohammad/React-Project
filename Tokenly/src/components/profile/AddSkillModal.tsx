@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { Sparkles, X } from "lucide-react";
 import ThemedSelect from "../common/ThemedSelect";
 import type { AddSkillModalProps, ProfileSkill } from "../../types/profile";
@@ -161,3 +161,4 @@ const AddSkillModal: React.FC<AddSkillModalProps> = ({
 };
 
 export default AddSkillModal;
+

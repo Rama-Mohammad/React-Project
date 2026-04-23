@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { ArrowDownUp } from "lucide-react";
 import ThemedSelect from "../common/ThemedSelect";
 import RatingStars from "../common/RatingStars";
@@ -94,4 +94,5 @@ const RatingsSummary: React.FC<RatingsSummaryProps> = ({
 };
 
 export default RatingsSummary;
+
 

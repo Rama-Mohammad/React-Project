@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import useNotifications from "../../hooks/useNotifications";
 import NotificationDropdown from "./NotificationDropdown";
 
@@ -52,7 +52,6 @@ export default function NotificationBell({ userId }: { userId: string }) {
     void fetchNotifications(userId);
   }, [open, userId, fetchNotifications]);
 
-  // 👇 CLOSE ON OUTSIDE CLICK
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -101,3 +100,4 @@ export default function NotificationBell({ userId }: { userId: string }) {
     </div>
   );
 }
+

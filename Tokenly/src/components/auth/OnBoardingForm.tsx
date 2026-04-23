@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+﻿import { useRef, useState } from "react";
 import { Camera, MapPin, BookOpen, User, ArrowRight } from "lucide-react";
 import Loader from "../common/Loader";
 import type { OnboardingData } from "../../types/onboardingdata";
@@ -50,7 +50,6 @@ export default function OnboardingForm({
 
   return (
     <div className="w-full max-w-md mx-auto flex flex-col gap-6">
-      {/* Header */}
       <div className="text-center">
         <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-purple-50 border border-purple-100 mb-3">
           <User className="w-5 h-5 text-purple-600" />
@@ -59,12 +58,11 @@ export default function OnboardingForm({
           Welcome, {firstName}! 
         </h1>
         <p className="text-slate-500 text-sm mt-1.5">
-          Let's set up your profile — you can always edit this later
+          Let's set up your profile {"\u2014"} you can always edit this later
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-        {/* Avatar upload */}
         <div className="flex flex-col items-center gap-2">
           <button
             type="button"
@@ -85,7 +83,6 @@ export default function OnboardingForm({
                 </span>
               </span>
             )}
-            {/* Camera overlay */}
             <span className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
               <Camera className="w-5 h-5 text-white" />
             </span>
@@ -106,7 +103,6 @@ export default function OnboardingForm({
           />
         </div>
 
-        {/* Bio */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-slate-700">
             Bio
@@ -119,7 +115,7 @@ export default function OnboardingForm({
                 if (e.target.value.length <= BIO_MAX) setBio(e.target.value);
               }}
               rows={3}
-              placeholder="Tell others a little about yourself…"
+              placeholder="Tell others a little about yourself\u2026"
               className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-100 transition-all"
             />
             <span
@@ -132,7 +128,6 @@ export default function OnboardingForm({
           </div>
         </div>
 
-        {/* Institution */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-slate-700">
             Institution / Place of Study
@@ -150,7 +145,6 @@ export default function OnboardingForm({
           </div>
         </div>
 
-        {/* Location */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-slate-700">
             Location
@@ -168,14 +162,12 @@ export default function OnboardingForm({
           </div>
         </div>
 
-        {/* Error */}
         {error && (
           <p className="rounded-xl bg-rose-50 border border-rose-100 px-4 py-3 text-sm text-rose-600">
             {error}
           </p>
         )}
 
-        {/* Actions */}
         <div className="flex flex-col gap-2.5 pt-1">
           <button
             type="submit"
@@ -204,3 +196,4 @@ export default function OnboardingForm({
     </div>
   );
 }
+

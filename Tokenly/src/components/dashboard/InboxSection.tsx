@@ -1,4 +1,4 @@
-import Avatar from "../common/Avatar";
+﻿import Avatar from "../common/Avatar";
 import type {
   DashboardDirectRequestItem,
   DashboardHelpOfferRequestItem,
@@ -139,9 +139,9 @@ export default function InboxSection({
                     <p className="text-base font-semibold leading-tight text-slate-950">{item.title}</p>
                     <p className="mt-1 text-sm text-slate-500">
                       From {item.personName}
-                      {item.duration ? ` • ${item.duration} min` : ""}
-                      {item.credits ? ` • ${item.credits} credits` : ""}
-                      {" • "}
+                      {item.duration ? ` \u2022 ${item.duration} min` : ""}
+                      {item.credits ? ` \u2022 ${item.credits} credits` : ""}
+                      {" \u2022 "}
                       {item.age}
                     </p>
                     {item.message ? (
@@ -176,3 +176,4 @@ export default function InboxSection({
     </DashboardPanel>
   );
 }
+

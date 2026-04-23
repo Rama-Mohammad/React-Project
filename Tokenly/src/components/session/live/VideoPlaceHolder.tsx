@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { LogIn, Mic, MicOff, MonitorUp, Video, VideoOff, Wifi, WifiOff } from "lucide-react";
 import type { VideoPlaceholderProps } from "../../../types/session";
 
@@ -53,7 +53,6 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
     if (stream) {
       const tryPlay = () => {
         void video.play().catch(() => {
-          // Mobile browsers can delay autoplay until the media element is ready.
         });
       };
 
@@ -94,7 +93,6 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
 <div className="relative flex w-full h-[100vh] sm:h-auto sm:aspect-video overflow-hidden rounded-none sm:rounded-2xl ...">    
  <div className="absolute top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2">
 
-        {/* LEFT */}
         <div className="flex items-center gap-2">
           <span className={`rounded-full px-3 py-1 text-xs font-semibold text-white ${statusTone[connectionStatus]}`}>
             {statusLabel[connectionStatus]}
@@ -105,7 +103,6 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
           </span>
         </div>
 
-        {/* RIGHT */}
         <div className="flex items-center gap-2">
           <div className="rounded-full bg-slate-900/70 px-3 py-1 text-xs text-slate-200">
             {isScreenSharing ? "Sharing screen" : "Camera view"}
@@ -250,3 +247,4 @@ const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({
 };
 
 export default VideoPlaceholder;
+

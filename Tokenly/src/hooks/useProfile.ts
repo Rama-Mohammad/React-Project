@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+﻿import { useCallback, useState } from "react";
 import type { EditProfileInput, Profile, UseProfilesResult } from "../types/profile";
 import {
     getProfileById,
@@ -92,3 +92,4 @@ export default function useProfiles(): UseProfilesResult {
         search,
     };
 }
+

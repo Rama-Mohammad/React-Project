@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import type { FileManagerProps } from "../../../types/session";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload, faFile, faTrash, faUpload } from "@fortawesome/free-solid-svg-icons";
@@ -78,4 +78,5 @@ const FileManager: React.FC<FileManagerProps> = ({ onFileUpload, files, onDownlo
 };
 
 export default FileManager;
+
 

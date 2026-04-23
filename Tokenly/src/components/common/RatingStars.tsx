@@ -1,4 +1,4 @@
-import type { RatingStarsProps } from "../../types/common";
+﻿import type { RatingStarsProps } from "../../types/common";
 
 export default function RatingStars({
   value,
@@ -15,10 +15,11 @@ export default function RatingStars({
           key={n}
           className={`${sizeClassName} leading-none ${n <= rounded ? filledClassName : emptyClassName}`}
         >
-          ★
+          {"\u2605"}
         </span>
       ))}
     </span>
   );
 }
+
 

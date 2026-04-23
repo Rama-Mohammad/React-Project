@@ -1,4 +1,4 @@
-import { Coins } from "lucide-react";
+﻿import { Coins } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { TransactionActivityFeedItem } from "../../types/transactionActivity";
 import { getTransactionAppearance } from "../../utils/transactionActivityFeed";
@@ -164,3 +164,4 @@ export default function ActivitySection({
     </DashboardPanel>
   );
 }
+

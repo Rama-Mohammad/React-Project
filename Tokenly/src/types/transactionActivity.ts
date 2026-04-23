@@ -1,4 +1,4 @@
-export type TransactionActivityRow = {
+﻿export type TransactionActivityRow = {
   id: string;
   user_id: string;
   session_id?: string | null;
@@ -19,3 +19,4 @@ export type TransactionActivityFeedItem = TransactionActivityRow & {
   tokenBadgeLabel: string;
   tokenBadgeToneClass: string;
 };
+

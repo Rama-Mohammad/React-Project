@@ -1,10 +1,10 @@
-import type { HelperItem } from "../types/explore";
 import type {
   ExploreHelpOfferRow,
   ExploreProfileRow,
   ExploreSessionRow,
   ExploreSkillRow,
-} from "../services/helperExploreService";
+  HelperItem,
+} from "../types/explore";
 
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);

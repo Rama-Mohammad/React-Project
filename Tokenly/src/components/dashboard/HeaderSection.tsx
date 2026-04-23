@@ -1,4 +1,4 @@
-import {
+﻿import {
   Check,
   Coins,
   MessageCircle,
@@ -14,7 +14,6 @@ type HeaderSectionProps = {
   profileImageUrl?: string | null;
   fullName?: string | null;
   initials: string;
-  dashLoading: boolean;
   displayedAvgRating?: number;
   reviewCount: number;
   creditBalance: number;
@@ -62,7 +61,6 @@ export default function HeaderSection({
   profileImageUrl,
   fullName,
   initials,
-  dashLoading,
   displayedAvgRating,
   reviewCount,
   creditBalance,
@@ -211,3 +209,4 @@ export default function HeaderSection({
     </section>
   );
 }
+

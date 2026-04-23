@@ -1,4 +1,4 @@
-
+﻿
 import HeroSection from "../components/home/HeroSection";
 import StatsSection from "../components/home/StatsSection";
 import StepsSection from "../components/home/StepsSection";
@@ -23,6 +23,7 @@ const Home = () => {
 };
 
 export default Home;
+
 
 
 

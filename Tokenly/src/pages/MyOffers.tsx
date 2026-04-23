@@ -1,10 +1,11 @@
-import { Clock3, MessageSquareText, Sparkles } from "lucide-react";
+﻿import { Clock3, MessageSquareText, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ConfirmDeleteModal from "../components/common/ConfirmDeleteModal";
 import Loader from "../components/common/Loader";
 import { supabase } from "../lib/supabaseClient";
-import { getOffersForHelper, type OfferForHelperRow } from "../services/offerService";
+import { getOffersForHelper } from "../services/offerService";
+import type { OfferForHelperRow } from "../types/offer";
 
 type IndependentOfferRow = {
   id: string;
@@ -362,6 +363,7 @@ export default function MyOffers() {
     </div>
   );
 }
+
 
 
 

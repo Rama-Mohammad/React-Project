@@ -1,4 +1,4 @@
-import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+﻿import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import type { ButtonHTMLAttributes, PropsWithChildren, ReactNode, RefObject } from "react";
 
 export interface BadgeProps extends PropsWithChildren {
@@ -39,3 +39,4 @@ export type StatCardProps = {
 };
 
 export type UseInViewResult = [RefObject<HTMLDivElement | null>, boolean];
+

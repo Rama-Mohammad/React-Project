@@ -1,4 +1,4 @@
-import { Check, Clock3, Coins, Timer, User } from "lucide-react";
+﻿import { Check, Clock3, Coins, Timer, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import Avatar from "../common/Avatar";
 import Loader from "../common/Loader";
@@ -229,3 +229,4 @@ export default function SessionsSection({
     </DashboardPanel>
   );
 }
+

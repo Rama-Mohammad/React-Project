@@ -1,4 +1,4 @@
-const STORAGE_PUBLIC_PREFIX =
+﻿const STORAGE_PUBLIC_PREFIX =
   "https://cggkruccjfhgxhqkjamk.supabase.co/storage/v1/object/public/";
 const STORAGE_RENDER_PREFIX =
   "https://cggkruccjfhgxhqkjamk.supabase.co/storage/v1/render/image/public/";
@@ -26,3 +26,4 @@ export function getSupabaseTransformedImageUrl(
 
   return url.toString();
 }
+

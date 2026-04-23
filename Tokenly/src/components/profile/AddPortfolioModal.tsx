@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { Sparkles, X } from "lucide-react";
 import ThemedSelect from "../common/ThemedSelect";
 import type { AddPortfolioModalProps, PortfolioForm } from "../../types/profile";
@@ -175,4 +175,5 @@ const AddPortfolioModal: React.FC<AddPortfolioModalProps> = ({
 };
 
 export default AddPortfolioModal;
+
 

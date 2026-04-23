@@ -1,4 +1,4 @@
-import NotificationItem from "./NotificationItem";
+﻿import NotificationItem from "./NotificationItem";
 import type { Notification } from "../../types/notification";
 
 export default function NotificationDropdown({
@@ -32,7 +32,7 @@ export default function NotificationDropdown({
             className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 transition hover:border-slate-300 hover:text-slate-700"
             aria-label="Close notifications"
           >
-            <span className="text-lg leading-none">×</span>
+            <span className="text-lg leading-none">Ã—</span>
           </button>
         </div>
       </div>
@@ -64,3 +64,4 @@ export default function NotificationDropdown({
     </div>
   );
 }
+

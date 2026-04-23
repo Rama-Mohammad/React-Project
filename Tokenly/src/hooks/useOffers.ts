@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import type { Offer, OfferStatus, UseOffersResult } from "../types/offer";
 import {
     createOffer,
@@ -113,3 +113,4 @@ export default function useOffers(): UseOffersResult {
         removeOffer,
     };
 }
+

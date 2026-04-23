@@ -1,4 +1,4 @@
-import StepCard from "../home/StepCard";
+﻿import StepCard from "../home/StepCard";
 
 const StepsSection = () => {
   return (
@@ -48,3 +48,4 @@ const StepsSection = () => {
 };
 
 export default StepsSection;
+

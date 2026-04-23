@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Coins } from "lucide-react";
 import { Link } from "react-router-dom";
 import useTransactions from "../hooks/useTransactions";
@@ -149,3 +149,4 @@ export default function Activity() {
     </div>
   );
 }
+

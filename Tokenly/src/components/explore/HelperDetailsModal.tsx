@@ -1,4 +1,4 @@
-import {
+﻿import {
   X,
   MessageCircle,
 } from "lucide-react";
@@ -27,7 +27,6 @@ export default function HelperDetailsModal({
     ? `/helpers/${item.id}/request`
     : "/auth?mode=signin";
 
-  // Lock background scroll
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -47,12 +46,10 @@ export default function HelperDetailsModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md p-6"
       onClick={onClose}
     >
-      {/* Modal */}
       <div
         className="relative w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-3xl border border-white/30 bg-gradient-to-br from-slate-50 via-white to-indigo-50 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute right-4 top-4 rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
@@ -61,7 +58,6 @@ export default function HelperDetailsModal({
         </button>
 
         <div className="p-8">
-          {/* Header */}
           <div className="flex items-start gap-4 mb-6">
             <Avatar
               name={item.name}
@@ -93,12 +89,10 @@ export default function HelperDetailsModal({
             </div>
           </div>
 
-          {/* Bio */}
           <div className="mb-5 rounded-xl border border-white/50 bg-white/70 p-4">
             <p className="text-sm leading-6 text-slate-700">{item.bio}</p>
           </div>
 
-          {/* Stats */}
           <div className="mb-5 grid grid-cols-3 gap-4 rounded-xl border border-white/50 bg-white/70 p-4">
             <div className="text-center">
               <p className="text-xl font-bold">{item.sessions}</p>
@@ -116,7 +110,6 @@ export default function HelperDetailsModal({
             </div>
           </div>
 
-          {/* Skills */}
           <div className="mb-6 flex flex-wrap gap-2">
             {item.skills.map((skill) => (
               <span
@@ -128,7 +121,6 @@ export default function HelperDetailsModal({
             ))}
           </div>
 
-          {/* CTA */}
         <Link
           to={ctaLink}
           state={!isAuthenticated ? authRedirectState : undefined}
@@ -142,3 +134,4 @@ export default function HelperDetailsModal({
     </div>
   );
 }
+

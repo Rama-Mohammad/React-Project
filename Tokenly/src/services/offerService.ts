@@ -1,7 +1,13 @@
-import type { PostgrestError, Session, User } from "@supabase/supabase-js";
+﻿import type { PostgrestError } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabaseClient";
-import type { OfferStatus } from "../types/offer";
-import type { Offer } from "../types/offer";
+import type {
+  HelpOfferAppointmentRow,
+  Offer,
+  OfferAppointmentRow,
+  OfferForHelperRow,
+  OfferForRequestRow,
+  OfferStatus,
+} from "../types/offer";
 import type { Request } from "../types/request";
 import { ensureSessionForBooking } from "./sessionService";
 import { createNotification } from "./notificationService";
@@ -48,20 +54,12 @@ type CreateOfferResult = {
 };
 
 function logOfferInsertDebug(
-  label: string,
-  details: {
-    session: Session | null;
-    user: User | null;
-    payload: CreateOfferPayload | null;
-    error?: PostgrestError | Error | null;
-  }
+  _label: string,
+  _details: unknown
 ) {
-  console.log(`[offers.createOffer] ${label}`, {
-    session: details.session,
-    user: details.user,
-    payload: details.payload,
-    error: details.error ?? null,
-  });
+  void _label;
+  void _details;
+  return;
 }
 
 export async function createOffer(
@@ -162,91 +160,6 @@ export async function createOffer(
 
   return { data: data as Offer, error: null };
 }
-
-export type OfferForRequestRow = {
-  id: string;
-  request_id: string;
-  helper_id: string;
-  message: string | null;
-  availability: string | null;
-  status: OfferStatus;
-  created_at: string;
-  helper: {
-    id: string;
-    full_name: string | null;
-    username: string | null;
-    avg_rating: number | null;
-    profile_image_url: string | null;
-  } | null;
-};
-
-export type OfferForHelperRow = {
-  id: string;
-  request_id: string;
-  helper_id: string;
-  message: string | null;
-  availability: string | null;
-  status: OfferStatus;
-  created_at: string;
-  request: {
-    id: string;
-    title: string;
-    category: string | null;
-    status: string;
-    urgency: string | null;
-    credit_cost: number | null;
-    duration_minutes: number | null;
-  } | null;
-};
-
-export type OfferAppointmentRow = {
-  id: string;
-  request_id: string;
-  helper_id: string;
-  message: string | null;
-  availability: string | null;
-  status: OfferStatus;
-  created_at: string;
-  request: {
-    id: string;
-    requester_id: string;
-    title: string;
-    description: string;
-    category: string | null;
-    urgency: string | null;
-    credit_cost: number | null;
-    duration_minutes: number | null;
-    status: string;
-  } | null;
-  helper: {
-    id: string;
-    full_name: string | null;
-    username: string | null;
-    avg_rating: number | null;
-    profile_image_url: string | null;
-  } | null;
-};
-
-export type HelpOfferAppointmentRow = {
-  id: string;
-  helper_id: string;
-  title: string;
-  description: string | null;
-  category: string | null;
-  urgency: string | null;
-  duration_minutes: number | null;
-  credit_cost: number | null;
-  status: string;
-  created_at: string;
-  helper: {
-    id: string;
-    full_name: string | null;
-    username: string | null;
-    avg_rating: number | null;
-    profile_image_url: string | null;
-  } | null;
-};
-
 
 export async function getOffersForRequest(requestId: string) {
   const result = await supabase
@@ -640,7 +553,6 @@ export async function getHelpOfferAppointmentDetails(helpOfferId: string) {
   };
 }
 
-/** @deprecated Use getHelpOfferAppointmentDetails instead */
 export const getIndependentOfferAppointmentDetails = getHelpOfferAppointmentDetails;
 
 export async function getOffersByRequest(request_id: string) {
@@ -681,3 +593,4 @@ export async function updateOfferStatus(id: string, status: OfferStatus) {
 export async function deleteOffer(id: string) {
   return await supabase.from("offers").delete().eq("id", id);
 }
+

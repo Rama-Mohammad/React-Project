@@ -1,4 +1,4 @@
-import {
+﻿import {
   HandCoins,
   Send,
   Sparkles,
@@ -159,3 +159,4 @@ export function getTransactionAppearance(type?: string | null): TransactionActiv
     }
   );
 }
+

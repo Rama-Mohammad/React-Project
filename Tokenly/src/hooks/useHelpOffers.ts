@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import type {
     HelpOffer,
     HelpOfferInput,
@@ -61,7 +61,6 @@ export function useHelpOffers(): UseHelpOffersResult {
         setLoading(false);
     }
 
-    // Used by the Explore offers tab — fetches all open help_offers publicly
     async function fetchOpenHelpOffers() {
         setLoading(true);
         setError("");
@@ -147,16 +146,12 @@ export function useHelpOffers(): UseHelpOffersResult {
     };
 }
 
-//  HELP OFFER REQUESTS HOOK
-// Used by requesters to send/manage their requests to a helper's offer,
-// and by helpers to see incoming requests and accept/reject them
 
 export function useHelpOfferRequests(): UseHelpOfferRequestsResult {
     const [requests, setRequests] = useState<HelpOfferRequest[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    // Helper uses this to see all requests on one of their posted offers
     async function fetchRequestsForOffer(help_offer_id: string) {
         setLoading(true);
         setError("");
@@ -173,7 +168,6 @@ export function useHelpOfferRequests(): UseHelpOfferRequestsResult {
         setLoading(false);
     }
 
-    // Requester uses this to see all their sent requests
     async function fetchRequestsByUser(requester_id: string) {
         setLoading(true);
         setError("");
@@ -190,7 +184,6 @@ export function useHelpOfferRequests(): UseHelpOfferRequestsResult {
         setLoading(false);
     }
 
-    // Requester submits interest in a helper's open help_offer
     async function submitRequest(data: HelpOfferRequestInput): Promise<HelpOfferRequest | null> {
         setLoading(true);
         setError("");
@@ -208,7 +201,6 @@ export function useHelpOfferRequests(): UseHelpOfferRequestsResult {
         return created;
     }
 
-    // Helper accepts a request → session is created internally in the service
     async function acceptRequest(id: string, scheduledAt?: string): Promise<boolean> {
         setLoading(true);
         setError("");
@@ -221,7 +213,6 @@ export function useHelpOfferRequests(): UseHelpOfferRequestsResult {
             return false;
         }
 
-        // Mark accepted in local state, reject all others on same offer
         setRequests((prev) =>
             prev.map((r) =>
                 r.id === id
@@ -235,7 +226,6 @@ export function useHelpOfferRequests(): UseHelpOfferRequestsResult {
         return true;
     }
 
-    // Helper rejects a specific request
     async function rejectRequest(id: string): Promise<boolean> {
         setLoading(true);
         setError("");
@@ -255,7 +245,6 @@ export function useHelpOfferRequests(): UseHelpOfferRequestsResult {
         return true;
     }
 
-    // Requester withdraws their own pending request
     async function withdrawRequest(id: string): Promise<boolean> {
         setLoading(true);
         setError("");
@@ -285,3 +274,4 @@ export function useHelpOfferRequests(): UseHelpOfferRequestsResult {
         withdrawRequest,
     };
 }
+

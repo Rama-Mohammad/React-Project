@@ -1,8 +1,7 @@
-import { supabase } from "../lib/supabaseClient";
+﻿import { supabase } from "../lib/supabaseClient";
 import { getSessionsAuthDebugContext, logSessionsQuery } from "./sessionDebug";
 import type { SessionStatus } from "../types/session";
 import { createNotification } from "./notificationService";
-// import { createTransaction } from "./transactionService";
 
 export type SessionInsertInput = {
   helper_id: string;
@@ -269,7 +268,6 @@ export async function getSessionById(id: string) {
       ? supabase
           .from("help_offer_requests")
           .select(`
-            *,
             help_offer:help_offers(*)
           `)
           .eq("id", baseSession.help_offer_request_id)
@@ -327,7 +325,6 @@ export async function getSessionsByUser(user_id: string) {
   const result = await supabase
     .from("sessions")
     .select(`
-      *,
       request:requests(id, title, category, credit_cost),
       help_offer_request:help_offer_requests!sessions_help_offer_request_id_fkey(
         id,
@@ -372,7 +369,6 @@ export async function getSessionsByStatus(user_id: string, status: SessionStatus
   const result = await supabase
     .from("sessions")
     .select(`
-      *,
       request:requests(
         id,
         title
@@ -525,3 +521,4 @@ export async function updateSessionStatus(id: string, status: SessionStatus) {
 
   return { data: null, error };
 }
+

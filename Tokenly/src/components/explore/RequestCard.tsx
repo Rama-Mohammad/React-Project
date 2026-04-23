@@ -1,4 +1,4 @@
-import { Clock3, MessageCircle } from "lucide-react";
+﻿import { Clock3, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import useAuthRedirect from "../../hooks/useAuthRedirect";
 import RatingStars from "../common/RatingStars";
@@ -121,4 +121,5 @@ export default function RequestCard({ item }: RequestCardProps) {
     </article>
   );
 }
+
 

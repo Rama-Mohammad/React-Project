@@ -1,4 +1,4 @@
-export type DirectRequestStatus = "pending" | "accepted" | "rejected" | "cancelled";
+﻿export type DirectRequestStatus = "pending" | "accepted" | "rejected" | "cancelled";
 
 export type DirectRequest = {
   id: string;
@@ -55,3 +55,11 @@ export type UseDirectRequestsResult = {
   rejectDirectRequest: (id: string) => Promise<boolean>;
   cancelDirectRequest: (id: string) => Promise<boolean>;
 };
+
+export type DirectRequestMeta = {
+  isDirectRequest: boolean;
+  directHelperId?: string;
+  directHelperName?: string;
+  cleanDescription: string;
+};
+

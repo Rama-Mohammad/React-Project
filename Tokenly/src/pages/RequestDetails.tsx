@@ -1,4 +1,4 @@
-import {
+﻿import {
   AlertTriangle,
   Clock3,
   Coins,
@@ -20,8 +20,8 @@ import {
   createOffer,
   getOffersForRequest,
   rejectOffer,
-  type OfferForRequestRow,
 } from "../services/offerService";
+import type { OfferForRequestRow } from "../types/offer";
 import {
   getProfileCompletedSessionsCount,
   getProfileCreditBalance,
@@ -167,7 +167,6 @@ export default function RequestDetails() {
     return <Loader className="py-14" />;
   }
 
-  // to handle errors
   if (!request) {
     return (
       <div className="min-h-full bg-[linear-gradient(135deg,#eaf4ff_0%,#e9ecff_50%,#f3e8ff_100%)] text-slate-900">
@@ -189,7 +188,12 @@ export default function RequestDetails() {
   }
 
   const authorSkills = request.tags.slice(0, 3);
-  const canSubmitOffer = offerMessage.trim().length > 0 && availability.trim().length > 0 && !isSubmittingOffer;
+  const canShowOfferForm = request.status === "open";
+  const canSubmitOffer =
+    canShowOfferForm &&
+    offerMessage.trim().length > 0 &&
+    availability.trim().length > 0 &&
+    !isSubmittingOffer;
   const canDeleteRequest = Boolean(currentUserId && requestOwnerId && currentUserId === requestOwnerId);
   const canManageOffers = canDeleteRequest;
 
@@ -672,57 +676,59 @@ export default function RequestDetails() {
           </div>
 
           <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
-            <div className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/78 p-5 backdrop-blur-xl">
-              <h3 className="text-xl font-semibold text-slate-900">Can you help?</h3>
-              <p className="mt-2 text-base text-slate-600">
-                Submit an offer to help with this request. You'll earn{" "}
-                <span className="font-semibold text-indigo-600">{request.credits} tokens</span>{" "}
-                on completion.
-              </p>
+            {canShowOfferForm ? (
+              <div className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/78 p-5 backdrop-blur-xl">
+                <h3 className="text-xl font-semibold text-slate-900">Can you help?</h3>
+                <p className="mt-2 text-base text-slate-600">
+                  Submit an offer to help with this request. You'll earn{" "}
+                  <span className="font-semibold text-indigo-600">{request.credits} tokens</span>{" "}
+                  on completion.
+                </p>
 
-              <label className="mt-4 block text-sm font-semibold text-slate-800">
-                Your message to the requester
-              </label>
-              <textarea
-                maxLength={500}
-                value={offerMessage}
-                onChange={(event) => setOfferMessage(event.target.value)}
-                placeholder="Explain why you're a good fit and how you'll approach this..."
-                className="mt-2 h-24 w-full resize-none rounded-2xl border border-slate-200/80 bg-white/92 p-3 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
-              />
-              <p className="mt-1 text-right text-xs text-slate-500">{offerMessage.length}/500</p>
+                <label className="mt-4 block text-sm font-semibold text-slate-800">
+                  Your message to the requester
+                </label>
+                <textarea
+                  maxLength={500}
+                  value={offerMessage}
+                  onChange={(event) => setOfferMessage(event.target.value)}
+                  placeholder="Explain why you're a good fit and how you'll approach this..."
+                  className="mt-2 h-24 w-full resize-none rounded-2xl border border-slate-200/80 bg-white/92 p-3 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                />
+                <p className="mt-1 text-right text-xs text-slate-500">{offerMessage.length}/500</p>
 
-              <label className="mt-3 block text-sm font-semibold text-slate-800">
-                Your availability
-              </label>
-              <input
-                type="datetime-local"
-                value={availability}
-                onChange={(event) => setAvailability(event.target.value)}
-                min={new Date().toISOString().slice(0, 16)}
-                className="mt-2 h-11 w-full rounded-2xl border border-slate-200/80 bg-white/92 px-4 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
-              />
+                <label className="mt-3 block text-sm font-semibold text-slate-800">
+                  Your availability
+                </label>
+                <input
+                  type="datetime-local"
+                  value={availability}
+                  onChange={(event) => setAvailability(event.target.value)}
+                  min={new Date().toISOString().slice(0, 16)}
+                  className="mt-2 h-11 w-full rounded-2xl border border-slate-200/80 bg-white/92 px-4 text-sm text-slate-800 outline-none transition focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                />
 
-              <button
-                type="button"
-                onClick={handleSubmitOffer}
-                disabled={!canSubmitOffer}
-                className={`mt-4 h-11 w-full rounded-xl text-sm font-semibold text-white transition ${
-                  canSubmitOffer
-                    ? "bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 hover:brightness-105"
-                    : "cursor-not-allowed bg-slate-300"
-                }`}
-              >
-                {isSubmittingOffer ? "Submitting..." : "Submit Offer"}
-              </button>
+                <button
+                  type="button"
+                  onClick={handleSubmitOffer}
+                  disabled={!canSubmitOffer}
+                  className={`mt-4 h-11 w-full rounded-xl text-sm font-semibold text-white transition ${
+                    canSubmitOffer
+                      ? "bg-gradient-to-r from-indigo-500 via-sky-500 to-indigo-500 hover:brightness-105"
+                      : "cursor-not-allowed bg-slate-300"
+                  }`}
+                >
+                  {isSubmittingOffer ? "Submitting..." : "Submit Offer"}
+                </button>
 
-              {offerError ? (
-                <p className="mt-2 text-sm font-medium text-rose-600">{offerError}</p>
-              ) : null}
-              {offerFeedback ? (
-                <p className="mt-2 text-sm font-medium text-emerald-600">{offerFeedback}</p>
-              ) : null}
-            </div>
+                {offerError ? (
+                  <p className="mt-2 text-sm font-medium text-rose-600">{offerError}</p>
+                ) : null}
+                {offerFeedback ? (
+                  <p className="mt-2 text-sm font-medium text-emerald-600">{offerFeedback}</p>
+                ) : null}
+              </div>
+            ) : null}
 
             <div className="explore-glass explore-fade-in-up rounded-3xl border border-white/55 bg-white/78 p-5 backdrop-blur-xl">
               <h3 className="text-lg font-semibold text-slate-900">Session Details</h3>
@@ -817,6 +823,7 @@ export default function RequestDetails() {
     </div>
   );
 }
+
 
 
 

@@ -1,4 +1,4 @@
-
+﻿
 const sections = [
   {
     title: "Information We Collect",
@@ -61,4 +61,5 @@ export default function PrivacyPolicy() {
     </div>
   );
 }
+
 

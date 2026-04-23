@@ -1,5 +1,4 @@
-// src/types/index.ts
-
+﻿
 
 
 
@@ -59,3 +58,4 @@ export interface Session {
   status: "scheduled" | "active" | "completed" | "cancelled";
   scheduledTime: Date | string;
 }
+

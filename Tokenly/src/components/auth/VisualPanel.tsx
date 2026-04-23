@@ -1,4 +1,4 @@
-import type { VisualPanelProps } from "../../types/auth";
+﻿import type { VisualPanelProps } from "../../types/auth";
 import tokelyGraphic from '../../assets/tokenly-graphic.svg';
 
 export default function VisualPanel({ mode }: VisualPanelProps) {
@@ -48,4 +48,5 @@ export default function VisualPanel({ mode }: VisualPanelProps) {
     </div>
   );
 }
+
 

@@ -24,7 +24,6 @@ import type {
   SessionTabLabel,
 } from "../types/dashboard";
 import { acceptDirectRequest, rejectDirectRequest } from "../services/directRequestService";
-import { acceptHelpOfferRequest, rejectHelpOfferRequest } from "../services/helpOfferService";
 import { subscribeToTransactionsByUser } from "../services/transactionService";
 import { mapTransactionFeedItem } from "../utils/transactionActivityFeed";
 
@@ -46,9 +45,6 @@ export default function Dashboard() {
   const [directRequestActionId, setDirectRequestActionId] = useState<string | null>(null);
   const [pendingScheduleId, setPendingScheduleId] = useState<string | null>(null);
   const [scheduledAtInput, setScheduledAtInput] = useState<string>("");
-  const [pendingScheduleHelpOfferId, setPendingScheduleHelpOfferId] = useState<string | null>(null);
-  const [helpOfferScheduledAtInput, setHelpOfferScheduledAtInput] = useState<string>("");
-  const [helpOfferRequestActionId, setHelpOfferRequestActionId] = useState<string | null>(null);
 
   const {
     profile,
@@ -63,8 +59,6 @@ export default function Dashboard() {
     rawOffers,
     rawIncomingDirectRequests,
     rawSentDirectRequests,
-    rawHelpOfferRequests,
-    mapHelpOfferRequests,
   } = useDashboard();
   const {
     transactions,
@@ -81,11 +75,6 @@ export default function Dashboard() {
   const incomingDirectRequests = useMemo(
     () => (currentUserId ? mapIncomingDirectRequests() : []),
     [rawIncomingDirectRequests, currentUserId]
-  );
-
-  const incomingHelpOfferRequests = useMemo(
-    () => (currentUserId ? mapHelpOfferRequests() : []),
-    [rawHelpOfferRequests, currentUserId]
   );
 
   const sentDirectRequests = useMemo(
@@ -285,44 +274,6 @@ export default function Dashboard() {
     setDirectRequestActionId(null);
   };
 
-  const handleOpenScheduleHelpOfferModal = (id: string) => {
-    setHelpOfferScheduledAtInput("");
-    setPendingScheduleHelpOfferId(id);
-  };
-
-  const handleConfirmAcceptHelpOfferRequest = async () => {
-    if (!pendingScheduleHelpOfferId || !helpOfferScheduledAtInput) return;
-    const id = pendingScheduleHelpOfferId;
-    setSessionActionError("");
-    setPendingScheduleHelpOfferId(null);
-    setHelpOfferRequestActionId(id);
-    const { error } = await acceptHelpOfferRequest(id, new Date(helpOfferScheduledAtInput).toISOString());
-    if (error) {
-      setSessionActionError(error.message ?? "Could not schedule this session.");
-      setHelpOfferRequestActionId(null);
-      return;
-    }
-    if (currentUserId) {
-      await Promise.all([
-        fetchDashboard(currentUserId),
-        fetchTransactionsByUser(currentUserId),
-      ]);
-    }
-    setHelpOfferRequestActionId(null);
-  };
-
-  const handleRejectHelpOfferRequest = async (id: string) => {
-    setHelpOfferRequestActionId(id);
-    await rejectHelpOfferRequest(id);
-    if (currentUserId) {
-      await Promise.all([
-        fetchDashboard(currentUserId),
-        fetchTransactionsByUser(currentUserId),
-      ]);
-    }
-    setHelpOfferRequestActionId(null);
-  };
-
   const handleRejectDirectRequest = async (id: string) => {
     setDirectRequestActionId(id);
     await rejectDirectRequest(id);
@@ -382,7 +333,6 @@ export default function Dashboard() {
 
       const ownRequests = (data ?? []).filter((item) => item.status === "open");
 
-      // 🔥 FIX: avoid recalculating requestIds if empty
       if (ownRequests.length === 0) {
         setOpenRequests([]);
         setRequestsLoading(false);
@@ -582,7 +532,6 @@ export default function Dashboard() {
                   profileImageUrl={profile?.profile_image_url}
                   fullName={fullName}
                   initials={initials}
-                  dashLoading={dashLoading}
                   displayedAvgRating={displayedAvgRating}
                   reviewCount={reviewCount}
                   creditBalance={creditBalance}
@@ -664,7 +613,6 @@ export default function Dashboard() {
         </div>
       </main>
 
-      {/* -- Token transfer toast -- */}
       {transferToast ? (
         <div className="pointer-events-none fixed bottom-5 right-5 z-60">
           <div className="flex min-w-65 items-center gap-2.5 rounded-2xl border border-indigo-300 bg-[linear-gradient(135deg,#6366f1_0%,#8b5cf6_100%)] px-4 py-3 text-white shadow-xl shadow-indigo-900/20">
@@ -689,7 +637,6 @@ export default function Dashboard() {
         </div>
       ) : null}
 
-      {/* -- Mark complete confirm modal -- */}
       {pendingSession ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <button
@@ -758,7 +705,6 @@ export default function Dashboard() {
         }}
       />
 
-      {/* -- Schedule Direct Request Modal -- */}
       {pendingScheduleId ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <button
@@ -800,47 +746,7 @@ export default function Dashboard() {
         </div>
       ) : null}
 
-      {/* -- Schedule Help Offer Request Modal -- */}
-      {pendingScheduleHelpOfferId ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <button
-            type="button"
-            className="absolute inset-0 bg-slate-900/35 backdrop-blur-sm"
-            onClick={() => setPendingScheduleHelpOfferId(null)}
-            aria-label="Close"
-          />
-          <div className="relative w-full max-w-md rounded-2xl border border-violet-100 bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-slate-900">Schedule Session</h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Pick a date and time to meet with the requester.
-            </p>
-            <input
-              type="datetime-local"
-              value={helpOfferScheduledAtInput}
-              min={new Date().toISOString().slice(0, 16)}
-              onChange={(e) => setHelpOfferScheduledAtInput(e.target.value)}
-              className="mt-4 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
-            />
-            <div className="mt-4 grid grid-cols-2 gap-2.5">
-              <button
-                type="button"
-                onClick={() => setPendingScheduleHelpOfferId(null)}
-                className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={!helpOfferScheduledAtInput}
-                onClick={() => void handleConfirmAcceptHelpOfferRequest()}
-                className="rounded-xl bg-[linear-gradient(135deg,#7c3aed_0%,#8b5cf6_100%)] px-3 py-2 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Confirm & Accept
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
+

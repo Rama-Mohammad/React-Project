@@ -1,10 +1,7 @@
-import { supabase } from "../lib/supabaseClient";
+﻿import { supabase } from "../lib/supabaseClient";
 import { getSessionsAuthDebugContext, logSessionsQuery } from "./sessionDebug";
 
 
-// -------------------------
-// PROFILE
-// -------------------------
 export async function getDashboardProfile(user_id: string) {
   return await supabase
     .from("profiles")
@@ -14,9 +11,6 @@ export async function getDashboardProfile(user_id: string) {
 }
 
 
-// -------------------------
-// STATS (OPTIMIZED - NO HEAVY DATA FETCH)
-// -------------------------
 export async function getDashboardStats(user_id: string) {
   const { session, user, authError } = await getSessionsAuthDebugContext();
 
@@ -164,8 +158,6 @@ export async function getDashboardSessions(user_id: string) {
 }
 
 
-// -------------------------
-// SESSION DETAILS (NO "*")
 
 export async function getSessionDetails(session_id: string) {
   return await supabase
@@ -196,9 +188,6 @@ export async function getSessionDetails(session_id: string) {
 }
 
 
-// -------------------------
-// DASHBOARD DATA BATCH (SAFE)
-// -------------------------
 export async function getDashboardData(user_id: string) {
   const results = await Promise.allSettled([
     getDashboardProfile(user_id),
@@ -216,9 +205,6 @@ export async function getDashboardData(user_id: string) {
 }
 
 
-// -------------------------
-// OFFERS
-// -------------------------
 export async function getDashboardOffers(user_id: string) {
   return await supabase
     .from("offers")
@@ -234,9 +220,6 @@ export async function getDashboardOffers(user_id: string) {
 }
 
 
-// -------------------------
-// DIRECT REQUESTS (RECEIVED)
-// -------------------------
 export async function getDashboardDirectRequests(helper_id: string) {
   return await supabase
     .from("direct_requests")
@@ -263,7 +246,6 @@ export async function getDashboardDirectRequests(helper_id: string) {
 }
 
 
-// DIRECT REQUESTS (SENT)
 
 export async function getDashboardSentDirectRequests(requester_id: string) {
   return await supabase
@@ -290,7 +272,6 @@ export async function getDashboardSentDirectRequests(requester_id: string) {
     .limit(10);
 }
 
-// HELP OFFER REQUESTS
 export async function getDashboardHelpOfferRequests(helper_id: string) {
   return await supabase
     .from("help_offer_requests")
@@ -318,3 +299,4 @@ export async function getDashboardHelpOfferRequests(helper_id: string) {
     .order("created_at", { ascending: false })
     .limit(10);
 }
+

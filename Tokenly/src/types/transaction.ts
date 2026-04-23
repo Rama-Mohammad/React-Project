@@ -1,4 +1,4 @@
-export type TransactionType = 'earn' | 'spend' | 'bonus';
+﻿export type TransactionType = 'earn' | 'spend' | 'bonus';
 
 export type Transaction = {
   id: string;
@@ -35,3 +35,4 @@ export type UseTransactionsResult = {
   fetchCreditSummary: (user_id: string) => Promise<void>;
   addTransaction: (data: TransactionInput) => Promise<boolean>;
 };
+

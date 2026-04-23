@@ -1,4 +1,4 @@
-import { ArrowLeft, BadgeCheck, Handshake, MessageCircle, ShieldAlert, Sparkles } from "lucide-react";
+﻿import { ArrowLeft, BadgeCheck, Handshake, MessageCircle, ShieldAlert, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const guidelineItems = [
@@ -85,4 +85,5 @@ export default function Guidelines() {
     </div>
   );
 }
+
 

@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { Message } from "../../../types/session";
 
 interface Props {
@@ -44,3 +44,4 @@ const MessageBubble: React.FC<Props> = ({ message, isOwn }) => {
 };
 
 export default MessageBubble;
+

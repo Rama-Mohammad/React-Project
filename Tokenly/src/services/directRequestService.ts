@@ -1,9 +1,8 @@
-import { supabase } from "../lib/supabaseClient";
+﻿import { supabase } from "../lib/supabaseClient";
 import type { DirectRequest, DirectRequestInput } from "../types/directRequest";
 import { createNotification } from "./notificationService";
 import { ensureSessionForBooking, validateSessionScheduleAvailability } from "./sessionService";
 
-// User sends a private session request to a specific helper
 export async function sendDirectRequest(data: DirectRequestInput) {
   const { data: created, error } = await supabase
     .from("direct_requests")
@@ -13,7 +12,6 @@ export async function sendDirectRequest(data: DirectRequestInput) {
 
   if (error || !created) return { data: null, error };
 
-  // Notify the helper
   await createNotification({
     user_id: data.helper_id,
     type: "direct_request_received",
@@ -26,7 +24,6 @@ export async function sendDirectRequest(data: DirectRequestInput) {
   return { data: created as DirectRequest, error: null };
 }
 
-// Fetch all direct requests a user has sent
 export async function getSentDirectRequests(requester_id: string) {
   return await supabase
     .from("direct_requests")
@@ -53,7 +50,6 @@ export async function getSentDirectRequests(requester_id: string) {
     .order("created_at", { ascending: false });
 }
 
-// Fetch all direct requests a helper has received
 export async function getReceivedDirectRequests(helper_id: string) {
   return await supabase
     .from("direct_requests")
@@ -80,7 +76,6 @@ export async function getReceivedDirectRequests(helper_id: string) {
     .order("created_at", { ascending: false });
 }
 
-// Helper accepts → session is created with direct_request_id (Flow 3)
 export async function acceptDirectRequest(
   directRequestId: string,
   scheduledAt?: string
@@ -102,7 +97,6 @@ export async function acceptDirectRequest(
 
   if (availabilityResult.error) return { data: null, error: availabilityResult.error };
 
-  // Mark as accepted
   const { error: acceptError } = await supabase
     .from("direct_requests")
     .update({ status: "accepted" })
@@ -110,7 +104,6 @@ export async function acceptDirectRequest(
 
   if (acceptError) return { data: null, error: acceptError };
 
-  // Create or refresh the session — store direct_request_id (Flow 3)
   const { data: session, error: sessionError } = await ensureSessionForBooking({
     helper_id: dr.helper_id,
     requester_id: dr.requester_id,
@@ -121,7 +114,6 @@ export async function acceptDirectRequest(
 
   if (sessionError) return { data: null, error: sessionError };
 
-  // Notify the requester
   await createNotification({
     user_id: dr.requester_id,
     type: "direct_request_accepted",
@@ -168,3 +160,4 @@ export async function cancelDirectRequest(directRequestId: string) {
     .update({ status: "cancelled" })
     .eq("id", directRequestId);
 }
+

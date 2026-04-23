@@ -1,4 +1,4 @@
-import {
+﻿import {
   ArrowRight,
   BadgeCheck,
   CalendarCheck,
@@ -236,4 +236,5 @@ export default function StatsHero({ stats, openHowItWorks = false }: StatsHeroPr
     </>
   );
 }
+
 

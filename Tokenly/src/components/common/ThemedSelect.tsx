@@ -1,4 +1,4 @@
-import { Check, ChevronDown } from "lucide-react";
+﻿import { Check, ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 export type ThemedSelectOption<T extends string = string> = {
@@ -150,3 +150,4 @@ export default function ThemedSelect<T extends string = string>({
     </div>
   );
 }
+

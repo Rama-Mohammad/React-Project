@@ -1,5 +1,5 @@
-import type { Request } from "../types/request";
-import type { RequestItem, SkillItem } from "../types/explore";
+﻿import type { Request } from "../types/request";
+import type { RequestItem, SkillItem, SkillWithRelations } from "../types/explore";
 
 type RequestWithRelations = Request & {
   requester?: {
@@ -67,6 +67,7 @@ export function mapRequestToExploreItem(request: RequestWithRelations): RequestI
 
   return {
     id: request.id,
+    status: request.status,
     category: request.category || "Other",
     urgency:
       request.urgency === "high"
@@ -91,30 +92,6 @@ export function mapRequestToExploreItem(request: RequestWithRelations): RequestI
     },
   };
 }
-
-export type SkillWithRelations = {
-  id: string;
-  name: string;
-  category?: string | null;
-  level: string;
-  description?: string | null;
-  sessions_count?: number | null;
-  user_id: string;
-  profile?:
-    | {
-        full_name?: string | null;
-        username?: string | null;
-      avg_rating?: number | null;
-      profile_image_url?: string | null;
-    }
-    | Array<{
-        full_name?: string | null;
-        username?: string | null;
-        avg_rating?: number | null;
-        profile_image_url?: string | null;
-      }>
-    | null;
-};
 
 function toExploreSkillLevel(level: string): SkillItem["level"] {
   if (level === "advanced") return "Advanced";
@@ -149,3 +126,4 @@ export function mapSkillToExploreItem(skill: SkillWithRelations): SkillItem {
     ],
   };
 }
+

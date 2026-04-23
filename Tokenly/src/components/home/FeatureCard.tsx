@@ -1,4 +1,4 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+﻿import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { useState } from "react";
 import { getSupabaseTransformedImageUrl } from "../../utils/supabaseImage";
@@ -89,3 +89,4 @@ const FeatureCard = ({
 };
 
 export default FeatureCard;
+

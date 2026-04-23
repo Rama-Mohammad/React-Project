@@ -1,48 +1,16 @@
 import { supabase } from "../lib/supabaseClient";
-// import { getSessionsAuthDebugContext, logSessionsQuery } from "./sessionDebug";
-
-export type ExploreProfileRow = {
-  id: string;
-  full_name: string | null;
-  username: string | null;
-  avg_rating: number | null;
-  title: string | null;
-  bio: string | null;
-  profile_image_url: string | null;
-  last_seen: string | null;
-};
-
-export type ExploreSkillRow = {
-  id: string;
-  user_id: string;
-  name: string;
-  category: string;
-  level: string;
-  sessions_count: number;
-};
-
-export type ExploreSessionRow = {
-  id: string;
-  helper_id: string;
-  status: string;
-};
-
-export type ExploreHelpOfferRow = {
-  id: string;
-  helper_id: string;
-  category: string | null;
-  credit_cost: number | null;
-  duration_minutes: number | null;
-  status: string;
-};
+import type {
+  ExploreHelpOfferRow,
+  ExploreProfileRow,
+  ExploreSessionRow,
+  ExploreSkillRow,
+} from "../types/explore";
 
 export async function getExploreHelpers() {
-  // Fetch IDs of profiles that have skills
   const { data: skillUserIds, error: skillIdsError } = await supabase
     .from("skills")
     .select("user_id");
 
-  // Fetch IDs of profiles that have open help_offers
   const { data: helpOfferUserIds, error: helpOfferIdsError } = await supabase
     .from("help_offers")
     .select("helper_id")
@@ -52,7 +20,6 @@ export async function getExploreHelpers() {
     return { data: null, error: skillIdsError ?? helpOfferIdsError };
   }
 
-  // Union the two sets of IDs
   const helperIdSet = new Set([
     ...(skillUserIds ?? []).map((r) => r.user_id),
     ...(helpOfferUserIds ?? []).map((r) => r.helper_id),

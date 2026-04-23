@@ -1,4 +1,4 @@
-import { ArrowRight, Sparkles, Users } from "lucide-react";
+﻿import { ArrowRight, Sparkles, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import useAuthRedirect from "../../hooks/useAuthRedirect";
 import RatingStars from "../common/RatingStars";
@@ -85,4 +85,5 @@ export default function SkillCard({ item }: ExploreSkillCardProps) {
     </article>
   );
 }
+
 

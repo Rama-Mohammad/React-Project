@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
 type ConnectionStatus = "idle" | "joining" | "waiting" | "connecting" | "connected" | "error";
@@ -151,7 +151,6 @@ export function useLiveSessionCall({
   };
 
   const sendSignal = async (payload: SignalPayload) => {
-  console.log("📤 SENDING SIGNAL:", payload);
   const channel = channelRef.current;
 
   if (!channel || !isSubscribedRef.current) return;
@@ -266,12 +265,6 @@ export function useLiveSessionCall({
           return;
         }
 
-        // if (state === "failed" || state === "disconnected") {
-        //   setConnectionStatus("error");
-        //   setErrorMessage(
-        //     "The call connection dropped. If this keeps happening across devices, add TURN credentials in .env."
-        //   );
-        // }
         if (state === "failed") {
   setConnectionStatus("error");
   setErrorMessage("Connection failed. Please try rejoining the call.");
@@ -279,14 +272,10 @@ export function useLiveSessionCall({
 }
 
 if (state === "disconnected") {
-  console.log("⚠️ ICE DISCONNECTED → attempting recovery");
-
   setConnectionStatus("connecting");
 
-  // try to recover instead of failing
   setTimeout(() => {
     if (peerRef.current && peerRef.current.restartIce) {
-      console.log("🔄 ICE restart triggered");
       peerRef.current.restartIce();
     }
   }, 1000);
@@ -300,8 +289,6 @@ peer.oniceconnectionstatechange = () => {
 
   if (!isMounted) return;
 
-  console.log("ICE STATE:", state);
-
   if (state === "connected" || state === "completed") {
     setConnectionStatus("connected");
     setErrorMessage("");
@@ -314,14 +301,12 @@ peer.oniceconnectionstatechange = () => {
   }
 
   if (state === "disconnected") {
-    // 🔥 IMPORTANT: treat as temporary or peer left
     setConnectionStatus("waiting");
     setErrorMessage("");
     return;
   }
 
   if (state === "failed") {
-    // ❌ DO NOT show error immediately
     setConnectionStatus("waiting");
     setErrorMessage("");
   }
@@ -468,17 +453,6 @@ peer.oniceconnectionstatechange = () => {
         return;
       }
 
-      // if (payload.type === "leave") {
-      //   remoteJoinedRef.current = false;
-      //   remoteSignalSeenRef.current = false;
-      //   remoteStreamRef.current = null;
-      //   if (isMounted) {
-      //     setParticipantCount(1);
-      //     setRemoteStream(null);
-      //     setConnectionStatus("waiting");
-      //   }
-      // }
-
       if (payload.type === "leave") {
   remoteJoinedRef.current = false;
   remoteSignalSeenRef.current = false;
@@ -536,7 +510,6 @@ peer.oniceconnectionstatechange = () => {
         channelRef.current = channel;
 
         channel.on("broadcast", { event: "signal" }, async ({ payload }) => {
-            console.log("📩 RECEIVED SIGNAL:", payload);
           try {
             await handleSignal(payload as SignalPayload);
           } catch (error) {
@@ -751,11 +724,9 @@ const leaveCall = async () => {
       event: "signal",
       payload: { type: "leave", from: userId },
     });
-  } catch {}
+  } catch {
+  }
 }
-
-    // peerRef.current?.close();
-    // peerRef.current = null;
 
     const peer = peerRef.current;
 
@@ -763,13 +734,15 @@ if (peer) {
   peer.getSenders().forEach(s => {
     try {
       s.track?.stop();
-    } catch {}
+    } catch {
+    }
   });
 
   peer.getReceivers().forEach(r => {
     try {
       r.track?.stop();
-    } catch {}
+    } catch {
+    }
   });
 
   peer.ontrack = null;
@@ -788,12 +761,10 @@ peerRef.current = null;
 
     isSubscribedRef.current = false;
 
-    // 4. Stop media tracks safely
     localStreamRef.current?.getTracks().forEach(t => t.stop());
     cameraStreamRef.current?.getTracks().forEach(t => t.stop());
     screenTrackRef.current?.stop();
 
-    // 5. Clear refs + state
     localStreamRef.current = null;
     cameraStreamRef.current = null;
     screenTrackRef.current = null;
@@ -856,3 +827,4 @@ peerRef.current = null;
     leaveCall,
   };
 }
+

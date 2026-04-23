@@ -1,7 +1,6 @@
-import type { AuthChangeEvent, AuthResponse, AuthTokenResponsePassword, Session, Subscription, User } from "@supabase/supabase-js";
+import type { AuthChangeEvent, AuthResponse, AuthTokenResponsePassword, Session, Subscription } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabaseClient";
 import { getEmailByUsername } from "./profileService";
-
 
 export function getCurrentUser() {
   return supabase.auth.getUser();
@@ -21,8 +20,6 @@ export function signUpWithEmail(
     password,
     options: {
       data: metadata ?? {},
-      // Keep a stable marker in the redirect URL so the app can reliably
-      // open onboarding after email confirmation.
       emailRedirectTo: `${window.location.origin}/auth?mode=signup&from=email-confirmation`,
     },
   });
@@ -37,7 +34,6 @@ export async function signInWithIdentifier(
   let email = identifier;
 
   if (!isEmail) {
-    // if it's not an emaik treat it as a userame and find its corresponding email
     const found = await getEmailByUsername(identifier.toLowerCase());
     if (!found) {
       return {
@@ -63,12 +59,6 @@ export function subscribeToAuthChanges(
   return supabase.auth.onAuthStateChange(callback);
 }
 
-// export function sendPasswordResetEmail(email: string) {
-//   return supabase.auth.resetPasswordForEmail(email, {
-//     redirectTo: `${window.location.origin}/reset-password`,
-//   });
-// }
-
 export function sendPasswordResetEmail(email: string) {
   return supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${window.location.origin}/reset-password`,
@@ -82,9 +72,6 @@ export function updatePassword(newPassword: string) {
 export function updateEmail(newEmail: string) {
   return supabase.auth.updateUser({ email: newEmail });
 }
-
-export type SupabaseAuthUser = User;
-export type SupabaseAuthSession = Session;
 
 export async function deleteUserAccount(userId: string) {
   const { error } = await supabase.rpc("delete_user_account", {

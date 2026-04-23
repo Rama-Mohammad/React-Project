@@ -1,4 +1,4 @@
-import { Activity, Coins } from "lucide-react";
+﻿import { Activity, Coins } from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -229,7 +229,7 @@ export default function AnalyticsSection({
           action={
             sessionSummary ? (
               <DashboardGhostAction>
-                {sessionSummary.completed} completed · {sessionSummary.upcoming} upcoming
+                {sessionSummary.completed} completed {"\u00B7"} {sessionSummary.upcoming} upcoming
               </DashboardGhostAction>
             ) : undefined
           }
@@ -254,3 +254,4 @@ export default function AnalyticsSection({
     </section>
   );
 }
+

@@ -1,4 +1,4 @@
-type AvatarProps = {
+﻿type AvatarProps = {
   name?: string | null;
   imageUrl?: string | null;
   className?: string;
@@ -46,3 +46,4 @@ export default function Avatar({
     </div>
   );
 }
+

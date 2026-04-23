@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+﻿import { useNavigate } from "react-router-dom";
 import type { Notification } from "../../types/notification";
 
 export default function NotificationItem({
@@ -101,3 +101,4 @@ export default function NotificationItem({
     </div>
   );
 }
+

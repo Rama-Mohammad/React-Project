@@ -1,4 +1,4 @@
-import type { DashboardSessionItem, SessionTabLabel } from "../types/dashboard";
+﻿import type { DashboardSessionItem, SessionTabLabel } from "../types/dashboard";
 
 export const sessionTabs: SessionTabLabel[] = ["All", "Upcoming", "Active", "Completed"];
 
@@ -44,3 +44,4 @@ export function getInitials(name: string | null | undefined) {
     .toUpperCase()
     .slice(0, 2);
 }
+

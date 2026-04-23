@@ -1,4 +1,4 @@
-export type SkillLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+﻿export type SkillLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 export type SkillCategory =
   | 'Programming'
   | 'Mathematics'
@@ -47,3 +47,4 @@ export type UseSkillsResult = {
   editSkill: (id: string, updates: SkillUpdateInput) => Promise<boolean>;
   removeSkill: (id: string) => Promise<boolean>;
 };
+

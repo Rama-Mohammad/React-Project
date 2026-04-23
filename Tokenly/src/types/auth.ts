@@ -1,3 +1,5 @@
+import type { Session, User } from "@supabase/supabase-js";
+
 export type AuthProvider = 'email';
 
 export type AuthUser = {
@@ -65,3 +67,10 @@ export type UseAuthResult = {
   changePassword: (newPassword: string) => Promise<boolean>;
   deleteAccount: (userId: string) => Promise<boolean>;
 };
+
+export type AuthRedirectState = {
+  from: string;
+};
+
+export type SupabaseAuthUser = User;
+export type SupabaseAuthSession = Session;
