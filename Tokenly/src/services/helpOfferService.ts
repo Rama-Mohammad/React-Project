@@ -282,6 +282,7 @@ export async function acceptHelpOfferRequest(
   const { data: session, error: sessionError } = await ensureSessionForBooking({
     helper_id: helpOffer.helper_id,
     requester_id: hor.requester_id,
+    offer_id: hor.help_offer_id,
     help_offer_request_id: helpOfferRequestId,
     duration_minutes: helpOffer.duration_minutes,
     scheduled_at: selectedScheduledAt,

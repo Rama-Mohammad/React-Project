@@ -344,6 +344,18 @@ export async function getSessionsByUser(user_id: string) {
   const result = await supabase
     .from("sessions")
     .select(`
+      id,
+      status,
+      scheduled_at,
+      completed_at,
+      created_at,
+      duration_minutes,
+      helper_id,
+      requester_id,
+      request_id,
+      offer_id,
+      help_offer_request_id,
+      direct_request_id,
       request:requests(id, title, category, credit_cost),
       help_offer_request:help_offer_requests!sessions_help_offer_request_id_fkey(
         id,
@@ -391,6 +403,18 @@ export async function getSessionsByStatus(user_id: string, status: SessionStatus
   const result = await supabase
     .from("sessions")
     .select(`
+      id,
+      status,
+      scheduled_at,
+      completed_at,
+      created_at,
+      duration_minutes,
+      helper_id,
+      requester_id,
+      request_id,
+      offer_id,
+      help_offer_request_id,
+      direct_request_id,
       request:requests(
         id,
         title
