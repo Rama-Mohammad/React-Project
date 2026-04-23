@@ -65,13 +65,11 @@ export interface FileAttachment {
   id: string;
   name: string;
   size: number; 
-  type: string; 
   url: string;
   uploadedBy: string;
   uploadedAt: Date;
   thumbnailUrl?: string;
   isImage?: boolean;
-  path?: string;
 }
 
 export interface VideoPlaceholderProps {
