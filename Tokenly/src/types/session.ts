@@ -102,6 +102,7 @@ export interface FileManagerProps {
   sessionId: string;
   onFileUpload: (file: File) => void;
   files: FileAttachment[];
+  uploadError?: string;
   onDownload: (fileId: string) => void;
   onDelete: (fileId: string) => void;
 }

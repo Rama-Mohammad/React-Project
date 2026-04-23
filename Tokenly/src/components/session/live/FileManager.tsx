@@ -3,7 +3,7 @@ import type { FileManagerProps } from "../../../types/session";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload, faFile, faTrash, faUpload } from "@fortawesome/free-solid-svg-icons";
 
-const FileManager: React.FC<FileManagerProps> = ({ onFileUpload, files, onDownload, onDelete }) => {
+const FileManager: React.FC<FileManagerProps> = ({ onFileUpload, files, uploadError, onDownload, onDelete }) => {
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,6 +38,12 @@ const FileManager: React.FC<FileManagerProps> = ({ onFileUpload, files, onDownlo
           </span>
         </label>
       </div>
+
+      {uploadError ? (
+        <div className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-600">
+          {uploadError}
+        </div>
+      ) : null}
 
       {files.length === 0 ? (
         <div className="py-8 text-center text-sm text-slate-400">No files shared yet</div>

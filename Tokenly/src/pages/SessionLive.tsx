@@ -64,6 +64,15 @@ function createClientFileId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error ?? new Error("Could not read file."));
+    reader.readAsDataURL(file);
+  });
+}
+
 const defaultChecklistItems: ChecklistItem[] = [
   { id: "1", text: "Confirm goals and expected outcomes", completed: false },
   { id: "2", text: "Work through key blockers together", completed: false },
@@ -84,6 +93,7 @@ const SessionLivePage: React.FC = () => {
   const [sessionStatus, setSessionStatus] = useState<"loading" | "ready" | "error">("loading");
   const [sessionError, setSessionError] = useState("");
   const [files, setFiles] = useState<FileAttachment[]>([]);
+  const [fileUploadError, setFileUploadError] = useState("");
   const [pendingDeleteFileId, setPendingDeleteFileId] = useState<string | null>(null);
   const [sessionData, setSessionData] = useState<any>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -375,18 +385,28 @@ const SessionLivePage: React.FC = () => {
   };
 
   const handleFileUpload = async (file: File) => {
+    setFileUploadError("");
+
     if (!sessionId || !currentUserId) {
+      setFileUploadError("File upload is not ready yet. Please wait for the session to finish loading.");
       return;
     }
+
+    let uploadedFileUrl = "";
+    let uploadedPath: string | null = null;
 
     const { data, error } = await uploadSessionFile(
       sessionId,
       currentUserId,
       file
     );
-    if (error || !data) {
+
+    if (data) {
+      uploadedFileUrl = data.url;
+      uploadedPath = data.path;
+    } else {
       console.error("Storage upload failed:", error);
-      return;
+      uploadedFileUrl = await readFileAsDataUrl(file);
     }
 
 
@@ -397,10 +417,10 @@ const SessionLivePage: React.FC = () => {
       session_id: sessionId,
       uploader_id: currentUserId,
       file_name: file.name,
-      file_url: data.url,
+      file_url: uploadedFileUrl,
       file_size_bytes: file.size,
       file_type: file.type,
-      path: data.path,
+      path: uploadedPath,
       created_at: createdAt,
     };
 
@@ -410,7 +430,10 @@ const SessionLivePage: React.FC = () => {
 
     if (dbError) {
       console.error(" DB insert failed:", dbError);
-      await deleteSessionFile(data.path);
+      if (uploadedPath) {
+        await deleteSessionFile(uploadedPath);
+      }
+      setFileUploadError(dbError.message ?? "File upload failed. Please try again.");
       return;
     }
     const uploadedFile: FileAttachment = {
@@ -421,7 +444,7 @@ const SessionLivePage: React.FC = () => {
       uploadedBy: currentUserName,
       uploadedAt: new Date(fileRecord.created_at),
       url: fileRecord.file_url,
-      path: fileRecord.path,
+      path: fileRecord.path ?? undefined,
     };
 
     setFiles((prev) => mergeSessionFiles(prev, [uploadedFile]));
@@ -604,6 +627,7 @@ const SessionLivePage: React.FC = () => {
                   sessionId={sessionId ?? ""}
                   onFileUpload={handleFileUpload}
                   files={files}
+                  uploadError={fileUploadError}
                   onDownload={handleDownload}
                   onDelete={setPendingDeleteFileId}
                 />
