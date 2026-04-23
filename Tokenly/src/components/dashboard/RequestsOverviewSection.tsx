@@ -110,7 +110,7 @@ function SectionShell({
   children: React.ReactNode;
 }) {
   return (
-    <DashboardPanel className="flex h-full flex-col">
+    <DashboardPanel className="flex h-full min-h-0 flex-col">
       <DashboardPanelHeader title={title} subtitle={subtitle} action={action} />
       <div className="flex-1 space-y-3 overflow-y-auto p-5">{children}</div>
     </DashboardPanel>
@@ -127,7 +127,7 @@ export default function RequestsOverviewSection({
   submittedOffers,
 }: RequestsOverviewSectionProps) {
   return (
-    <section className="grid grid-cols-1 gap-4 xl:h-full xl:grid-cols-2">
+    <section className="grid grid-cols-1 gap-4 xl:h-[30rem] xl:max-h-[30rem] xl:min-h-0 xl:grid-cols-2">
       <SectionShell
         title="Open Requests"
         subtitle="Requests you are still waiting to match"

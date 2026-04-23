@@ -7,7 +7,7 @@ import { createNotification } from "./notificationService";
 export type SessionInsertInput = {
   helper_id: string;
   requester_id: string;
-  scheduled_at?: string;
+  scheduled_at?: string | null;
   duration_minutes?: number;
   request_id?: string;
   offer_id?: string;
@@ -22,6 +22,73 @@ function getSessionRelationLookup(data: SessionInsertInput): { column: SessionRe
   if (data.help_offer_request_id) return { column: "help_offer_request_id", value: data.help_offer_request_id };
   if (data.direct_request_id) return { column: "direct_request_id", value: data.direct_request_id };
   return null;
+}
+
+function getSessionEndTime(start: Date, durationMinutes?: number | null) {
+  return new Date(start.getTime() + Math.max(1, Number(durationMinutes ?? 30)) * 60 * 1000);
+}
+
+function sessionsOverlap(
+  firstStart: Date,
+  firstDurationMinutes: number | null | undefined,
+  secondStart: Date,
+  secondDurationMinutes: number | null | undefined
+) {
+  const firstEnd = getSessionEndTime(firstStart, firstDurationMinutes);
+  const secondEnd = getSessionEndTime(secondStart, secondDurationMinutes);
+
+  return firstStart < secondEnd && secondStart < firstEnd;
+}
+
+export async function validateSessionScheduleAvailability(
+  data: Pick<SessionInsertInput, "helper_id" | "requester_id" | "scheduled_at" | "duration_minutes">,
+  excludeSessionId?: string
+) {
+  if (!data.scheduled_at) return { error: null };
+
+  const requestedStart = new Date(data.scheduled_at);
+  if (Number.isNaN(requestedStart.getTime())) {
+    return { error: new Error("Please choose a valid session date and time.") };
+  }
+
+  const { data: existingSessions, error } = await supabase
+    .from("sessions")
+    .select("id, helper_id, requester_id, scheduled_at, duration_minutes, status")
+    .or(
+      [
+        `helper_id.eq.${data.helper_id}`,
+        `requester_id.eq.${data.helper_id}`,
+        `helper_id.eq.${data.requester_id}`,
+        `requester_id.eq.${data.requester_id}`,
+      ].join(",")
+    )
+    .in("status", ["upcoming", "active"])
+    .not("scheduled_at", "is", null);
+
+  if (error) return { error };
+
+  const conflictingSession = (existingSessions ?? []).find((sessionRow) => {
+    if (excludeSessionId && sessionRow.id === excludeSessionId) return false;
+    if (!sessionRow.scheduled_at) return false;
+
+    const existingStart = new Date(sessionRow.scheduled_at);
+    if (Number.isNaN(existingStart.getTime())) return false;
+
+    return sessionsOverlap(
+      requestedStart,
+      data.duration_minutes,
+      existingStart,
+      sessionRow.duration_minutes
+    );
+  });
+
+  if (conflictingSession) {
+    return {
+      error: new Error("You already have a session scheduled during this time."),
+    };
+  }
+
+  return { error: null };
 }
 
 function normalizeSessionRecord<T extends { id?: string; request?: { title?: string | null } | null }>(session: T): T & { title: string } {
@@ -68,6 +135,9 @@ export async function ensureSessionForBooking(data: SessionInsertInput) {
   }
 
   if (existingLookup.data?.id) {
+    const availabilityResult = await validateSessionScheduleAvailability(data, existingLookup.data.id);
+    if (availabilityResult.error) return { data: null, error: availabilityResult.error };
+
     const updates: Record<string, unknown> = {
       helper_id: data.helper_id,
       requester_id: data.requester_id,
@@ -99,6 +169,9 @@ export async function ensureSessionForBooking(data: SessionInsertInput) {
     return updateResult;
   }
 
+  const availabilityResult = await validateSessionScheduleAvailability(data);
+  if (availabilityResult.error) return { data: null, error: availabilityResult.error };
+
   const createResult = await supabase
     .from("sessions")
     .insert(payload)
@@ -114,6 +187,9 @@ export async function createSession(data: SessionInsertInput) {
   const payload = { ...data, status: "upcoming" };
   logSessionsQuery("createSession insert start", { session, user, payload, error: authError });
   if (authError) return { data: null, error: authError };
+
+  const availabilityResult = await validateSessionScheduleAvailability(data);
+  if (availabilityResult.error) return { data: null, error: availabilityResult.error };
 
   const { data: created, error } = await supabase
     .from("sessions")

@@ -108,7 +108,7 @@ export default function InboxSection({
         };
 
   return (
-    <DashboardPanel className={`flex h-full flex-col ${theme.sectionBorder}`}>
+    <DashboardPanel className={`flex h-full min-h-0 flex-col xl:h-[30rem] xl:max-h-[30rem] ${theme.sectionBorder}`}>
       <DashboardPanelHeader
         title={title}
         badge={

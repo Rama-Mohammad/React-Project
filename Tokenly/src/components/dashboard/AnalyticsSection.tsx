@@ -154,7 +154,7 @@ export default function AnalyticsSection({
   weeklyActivityData,
 }: AnalyticsSectionProps) {
   return (
-    <section className="grid grid-cols-1 gap-4 xl:h-full xl:grid-cols-2">
+    <section className="grid grid-cols-1 gap-4 xl:h-[30rem] xl:max-h-[30rem] xl:grid-cols-2">
       <DashboardPanel className="flex h-full flex-col overflow-hidden">
         <DashboardPanelHeader
           title="Token Activity"
@@ -164,7 +164,7 @@ export default function AnalyticsSection({
               <Coins size={16} />
             </div>
           }
-          action={<DashboardGhostAction>Last {tokenFlowData.length} points</DashboardGhostAction>}
+          action={<DashboardGhostAction>Last 7 days</DashboardGhostAction>}
         />
         <div className="min-h-[20rem] flex-1 p-5">
           {tokenFlowData.length === 0 ? (

@@ -116,7 +116,7 @@ export default function DashboardSidebar({
         <div
           className={[
             "rounded-[34px] border border-[#e4e9ff] bg-[linear-gradient(180deg,#ffffff_0%,#f8faff_100%)] p-5 shadow-[0_24px_56px_-40px_rgba(99,102,241,0.18)]",
-            stretchOnDesktop ? "xl:h-full" : "",
+            stretchOnDesktop ? "xl:h-[30rem] xl:max-h-[30rem] xl:overflow-y-auto" : "",
           ].join(" ")}
         >
           <SidebarContent

@@ -102,7 +102,7 @@ export default function SentRequestsSection({
   emptyMessage = "No sent direct requests yet.",
 }: SentRequestsSectionProps) {
   return (
-    <DashboardPanel className="flex h-full flex-col">
+    <DashboardPanel className="flex h-full min-h-0 flex-col xl:h-[30rem] xl:max-h-[30rem]">
       <DashboardPanelHeader
         title="Sent Direct Requests"
         badge={

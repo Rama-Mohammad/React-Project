@@ -65,8 +65,8 @@ const RatingsSummary: React.FC<RatingsSummaryProps> = ({
         </div>
 
         <div className="space-y-2 border-l border-slate-200/70 pl-4">
-          {ratingDistribution
-            .map((count, i) => ({ count, stars: 5 - i }))
+          {[5, 4, 3, 2, 1]
+            .map((stars) => ({ count: ratingDistribution[stars - 1], stars }))
             .map(({ count, stars }) => {
               const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
               return (

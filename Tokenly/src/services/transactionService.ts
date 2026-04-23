@@ -10,6 +10,44 @@ export async function getTransactionsByUser(user_id: string) {
     .limit(50);
 }
 
+export function subscribeToTransactionsByUser(
+  user_id: string,
+  callback: () => void
+) {
+  const topic = `credit-transactions:${user_id}`;
+
+  supabase
+    .getChannels()
+    .filter((channel) => channel.topic === topic)
+    .forEach((channel) => {
+      void supabase.removeChannel(channel);
+    });
+
+  const channel = supabase
+    .channel(topic)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "credit_transactions",
+        filter: `user_id=eq.${user_id}`,
+      },
+      () => callback()
+    )
+    .subscribe((status, error) => {
+      if (status === "CHANNEL_ERROR" || error) {
+        console.error("[credit_transactions] realtime subscribe failed", {
+          user_id,
+          status,
+          error,
+        });
+      }
+    });
+
+  return channel;
+}
+
 export async function getTransactionsBySession(session_id: string) {
   return await supabase
     .from("credit_transactions")

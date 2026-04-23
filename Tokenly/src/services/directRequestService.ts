@@ -1,7 +1,7 @@
 import { supabase } from "../lib/supabaseClient";
 import type { DirectRequest, DirectRequestInput } from "../types/directRequest";
 import { createNotification } from "./notificationService";
-import { ensureSessionForBooking } from "./sessionService";
+import { ensureSessionForBooking, validateSessionScheduleAvailability } from "./sessionService";
 
 // User sends a private session request to a specific helper
 export async function sendDirectRequest(data: DirectRequestInput) {
@@ -92,6 +92,15 @@ export async function acceptDirectRequest(
     .single();
 
   if (fetchError || !dr) return { data: null, error: fetchError };
+
+  const availabilityResult = await validateSessionScheduleAvailability({
+    helper_id: dr.helper_id,
+    requester_id: dr.requester_id,
+    duration_minutes: dr.duration_minutes,
+    scheduled_at: scheduledAt,
+  });
+
+  if (availabilityResult.error) return { data: null, error: availabilityResult.error };
 
   // Mark as accepted
   const { error: acceptError } = await supabase

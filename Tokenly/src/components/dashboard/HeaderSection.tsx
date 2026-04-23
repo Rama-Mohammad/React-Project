@@ -77,11 +77,10 @@ export default function HeaderSection({
   const completedSessions = stats?.completedSessions ?? 0;
   const activeRequests = stats?.activeRequests ?? 0;
   const offersSubmitted = stats?.offersSubmitted ?? 0;
-  const tokenTracked = spent + received + available;
 
   return (
-    <section className={["w-full", className].join(" ")}>
-      <div className="overflow-hidden">
+    <section className={["w-full overflow-hidden xl:flex xl:h-full xl:min-h-0 xl:flex-col", className].join(" ")}>
+      <div className="overflow-hidden xl:flex-1 xl:min-h-0 xl:overflow-y-auto">
         <div className="p-5 sm:p-6">
           <div className="flex flex-col gap-5 border-b border-slate-100 pb-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 items-center gap-4">
@@ -138,9 +137,6 @@ export default function HeaderSection({
                       <span className="ml-1 text-lg font-medium text-slate-500">tokens</span>
                     </p>
                   </div>
-                </div>
-                <div className="rounded-full bg-white/80 px-3 py-1.5 text-xs font-semibold text-indigo-500 ring-1 ring-indigo-100">
-                  {tokenTracked} tracked
                 </div>
               </div>
 

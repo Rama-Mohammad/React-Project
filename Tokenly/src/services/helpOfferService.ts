@@ -7,7 +7,7 @@ import type {
 } from "../types/helpOffer";
 import { createNotification } from "./notificationService";
 import { getProfileCreditBalance } from "./profileService";
-import { ensureSessionForBooking } from "./sessionService";
+import { ensureSessionForBooking, validateSessionScheduleAvailability } from "./sessionService";
 
 // ─── HELP OFFERS ────────────────────────────────────────────────────────────
 
@@ -263,6 +263,16 @@ export async function acceptHelpOfferRequest(
   const helpOffer = Array.isArray(hor.help_offer) ? hor.help_offer[0] : hor.help_offer;
   if (!helpOffer) return { data: null, error: new Error("Help offer not found") };
 
+  const selectedScheduledAt = scheduledAt ?? (helpOffer as any).proposed_at ?? null;
+  const availabilityResult = await validateSessionScheduleAvailability({
+    helper_id: helpOffer.helper_id,
+    requester_id: hor.requester_id,
+    duration_minutes: helpOffer.duration_minutes,
+    scheduled_at: selectedScheduledAt,
+  });
+
+  if (availabilityResult.error) return { data: null, error: availabilityResult.error };
+
   // 2. Mark the request as accepted
   const { error: acceptError } = await supabase
     .from("help_offer_requests")
@@ -291,7 +301,7 @@ export async function acceptHelpOfferRequest(
     requester_id: hor.requester_id,
     help_offer_request_id: helpOfferRequestId,
     duration_minutes: helpOffer.duration_minutes,
-    scheduled_at: scheduledAt ?? (helpOffer as any).proposed_at ?? null,
+    scheduled_at: selectedScheduledAt,
   });
 
   if (sessionError) return { data: null, error: sessionError };

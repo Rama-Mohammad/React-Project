@@ -109,7 +109,7 @@ export default function SessionsSection({
   onMarkComplete,
 }: SessionsSectionProps) {
   return (
-    <DashboardPanel className="relative flex h-full flex-col overflow-hidden">
+    <DashboardPanel className="relative flex h-full min-h-0 flex-col overflow-hidden xl:h-[30rem] xl:max-h-[30rem]">
       <div>
         <DashboardPanelHeader
           title="Sessions"
