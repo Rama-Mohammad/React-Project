@@ -2,6 +2,7 @@
 import { getSessionsAuthDebugContext, logSessionsQuery } from "./sessionDebug";
 import type { SessionStatus } from "../types/session";
 import { createNotification } from "./notificationService";
+import { createTransaction } from "./transactionService";
 
 export type SessionInsertInput = {
   helper_id: string;
@@ -97,6 +98,119 @@ export async function validateSessionScheduleAvailability(
 function getNestedRelationValue<T>(value: T | T[] | null | undefined): T | null {
   if (Array.isArray(value)) return value[0] ?? null;
   return value ?? null;
+}
+
+async function getSessionCreditCost(sessionRow: {
+  request_id: string | null;
+  help_offer_request_id: string | null;
+  direct_request_id: string | null;
+}) {
+  if (sessionRow.request_id) {
+    const { data, error } = await supabase
+      .from("requests")
+      .select("credit_cost")
+      .eq("id", sessionRow.request_id)
+      .maybeSingle();
+
+    if (error) return { amount: 0, error };
+    return { amount: Number(data?.credit_cost ?? 0), error: null };
+  }
+
+  if (sessionRow.help_offer_request_id) {
+    const { data, error } = await supabase
+      .from("help_offer_requests")
+      .select(`
+        help_offer:help_offers(
+          credit_cost
+        )
+      `)
+      .eq("id", sessionRow.help_offer_request_id)
+      .maybeSingle();
+
+    if (error) return { amount: 0, error };
+
+    const helpOfferRequest = getNestedRelationValue<{
+      help_offer?: { credit_cost?: number | null } | Array<{ credit_cost?: number | null }> | null;
+    }>(
+      data as
+        | {
+            help_offer?: { credit_cost?: number | null } | Array<{ credit_cost?: number | null }> | null;
+          }
+        | Array<{
+            help_offer?: { credit_cost?: number | null } | Array<{ credit_cost?: number | null }> | null;
+          }>
+        | null
+        | undefined
+    );
+    const helpOffer = getNestedRelationValue(helpOfferRequest?.help_offer);
+
+    return { amount: Number(helpOffer?.credit_cost ?? 0), error: null };
+  }
+
+  if (sessionRow.direct_request_id) {
+    const { data, error } = await supabase
+      .from("direct_requests")
+      .select("credit_cost")
+      .eq("id", sessionRow.direct_request_id)
+      .maybeSingle();
+
+    if (error) return { amount: 0, error };
+    return { amount: Number(data?.credit_cost ?? 0), error: null };
+  }
+
+  return { amount: 0, error: null };
+}
+
+async function ensureHelperEarnedTokens(sessionRow: {
+  id: string;
+  helper_id: string;
+  request_id: string | null;
+  help_offer_request_id: string | null;
+  direct_request_id: string | null;
+}) {
+  const existingEarn = await supabase
+    .from("credit_transactions")
+    .select("id")
+    .eq("session_id", sessionRow.id)
+    .eq("user_id", sessionRow.helper_id)
+    .eq("type", "earn")
+    .maybeSingle();
+
+  if (existingEarn.error) return { error: existingEarn.error };
+  if (existingEarn.data?.id) return { error: null };
+
+  const { amount, error: amountError } = await getSessionCreditCost(sessionRow);
+  if (amountError) return { error: amountError };
+  if (amount <= 0) return { error: null };
+
+  const profileResult = await supabase
+    .from("profiles")
+    .select("credit_balance")
+    .eq("id", sessionRow.helper_id)
+    .single();
+
+  if (profileResult.error) return { error: profileResult.error };
+
+  const nextBalance = Number(profileResult.data?.credit_balance ?? 0) + amount;
+
+  const balanceUpdate = await supabase
+    .from("profiles")
+    .update({ credit_balance: nextBalance })
+    .eq("id", sessionRow.helper_id);
+
+  if (balanceUpdate.error) return { error: balanceUpdate.error };
+
+  const transactionResult = await createTransaction({
+    user_id: sessionRow.helper_id,
+    session_id: sessionRow.id,
+    amount,
+    type: "earn",
+    description: "Tokens earned from completed session.",
+  });
+
+  if (transactionResult.error) return { error: transactionResult.error };
+
+  return { error: null };
 }
 
 type SessionRecordForNormalization = {
@@ -475,6 +589,10 @@ export async function updateSessionStatus(id: string, status: SessionStatus) {
       direct_request_id: string | null;
     };
 
+    if (sessionRow.status === "completed") {
+      return { data: null, error: new Error("This session is already completed.") };
+    }
+
     if (user?.id !== sessionRow.helper_id) {
       return {
         data: null,
@@ -504,6 +622,11 @@ export async function updateSessionStatus(id: string, status: SessionStatus) {
           ? "The requester doesn't have enough tokens to pay for this session."
           : rawMsg;
       return { data: null, error: new Error(friendlyMsg) };
+    }
+
+    const earnedTokensResult = await ensureHelperEarnedTokens(sessionRow);
+    if (earnedTokensResult.error) {
+      return { data: null, error: earnedTokensResult.error };
     }
 
     await Promise.all([

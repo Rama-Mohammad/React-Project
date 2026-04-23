@@ -143,12 +143,12 @@ export function DashboardTopBar({
   onSectionSelect: (sectionId: DashboardSectionId) => void;
 }) {
   return (
-    <div className="relative z-[60] mb-5 flex justify-end xl:hidden">
+    <div className="relative z-10 mb-5 flex justify-end xl:hidden">
       {mobileOpen ? (
         <button
           type="button"
           onClick={onCloseMobileNav}
-          className="fixed inset-0 z-40 bg-transparent xl:hidden"
+          className="fixed inset-0 z-10 bg-transparent xl:hidden"
           aria-label="Close dashboard navigation"
         />
       ) : null}
@@ -165,7 +165,7 @@ export function DashboardTopBar({
         </svg>
       </button>
       {mobileOpen ? (
-        <div className="absolute right-0 top-full z-[70] mt-3 w-64 max-w-[calc(100vw-2rem)] origin-top-right overflow-hidden rounded-2xl border border-slate-200/90 bg-white/98 p-3 shadow-[0_28px_70px_-32px_rgba(15,23,42,0.42)] backdrop-blur-sm">
+        <div className="absolute right-0 top-full z-20 mt-3 w-64 max-w-[calc(100vw-2rem)] origin-top-right overflow-hidden rounded-2xl border border-slate-200/90 bg-white/98 p-3 shadow-[0_28px_70px_-32px_rgba(15,23,42,0.42)] backdrop-blur-sm">
           <SidebarContent
             activeSection={activeSection}
             onSectionSelect={onSectionSelect}
