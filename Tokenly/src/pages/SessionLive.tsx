@@ -24,11 +24,9 @@ function mapSessionFileRecord(file: any): FileAttachment {
     id: file.id,
     name: file.file_name,
     size: file.file_size_bytes,
-    type: "",
     uploadedBy: file.uploader_id,
     uploadedAt: new Date(file.created_at),
     url: file.file_url,
-    path: file.path,
   };
 }
 
@@ -299,7 +297,7 @@ const SessionLivePage: React.FC = () => {
     const loadFiles = async () => {
       const { data, error } = await supabase
         .from("session_files")
-        .select("*")
+        .select("id, session_id, uploader_id, file_name, file_url, file_size_bytes, created_at")
         .eq("session_id", sessionId)
         .order("created_at", { ascending: true });
       if (!isMounted) return;
@@ -371,9 +369,6 @@ const SessionLivePage: React.FC = () => {
 
     if (error) throw error;
 
-    if (file.path) {
-      await deleteSessionFile(file.path);
-    }
     setFiles((prev) => prev.filter((f) => f.id !== fileId));
   };
 
@@ -419,7 +414,6 @@ const SessionLivePage: React.FC = () => {
       file_name: file.name,
       file_url: uploadedFileUrl,
       file_size_bytes: file.size,
-      path: uploadedPath,
       created_at: createdAt,
     };
 
@@ -439,11 +433,9 @@ const SessionLivePage: React.FC = () => {
       id: fileRecord.id,
       name: fileRecord.file_name,
       size: fileRecord.file_size_bytes,
-      type: file.type,
       uploadedBy: currentUserName,
       uploadedAt: new Date(fileRecord.created_at),
       url: fileRecord.file_url,
-      path: fileRecord.path ?? undefined,
     };
 
     setFiles((prev) => mergeSessionFiles(prev, [uploadedFile]));
