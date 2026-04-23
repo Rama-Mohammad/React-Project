@@ -93,7 +93,7 @@ function Step({
   badgeClass: string;
 }) {
   return (
-    <div className="relative flex h-full items-center justify-center lg:shrink-0 lg:justify-start">
+    <div className="relative flex h-full w-full items-center justify-start lg:w-auto lg:shrink-0 lg:justify-start">
       <div className="relative shrink-0">
         <div className={`flex h-10 w-10 items-center justify-center rounded-[15px] ring-1 ring-white/75 shadow-[0_12px_30px_-24px_rgba(79,70,229,0.45)] ${accentClass}`}>
           {icon}
@@ -102,7 +102,7 @@ function Step({
           {index}
         </span>
       </div>
-      <p className="ml-3 text-[14px] font-medium tracking-[-0.01em] text-slate-700/90">{label}</p>
+      <p className="ml-3 flex-1 text-[14px] font-medium tracking-[-0.01em] text-slate-700/90">{label}</p>
     </div>
   );
 }
