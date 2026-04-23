@@ -24,58 +24,6 @@ export async function sendDirectRequest(data: DirectRequestInput) {
   return { data: created as DirectRequest, error: null };
 }
 
-export async function getSentDirectRequests(requester_id: string) {
-  return await supabase
-    .from("direct_requests")
-    .select(`
-      id,
-      requester_id,
-      helper_id,
-      title,
-      message,
-      category,
-      duration_minutes,
-      credit_cost,
-      status,
-      created_at,
-      helper:profiles!direct_requests_helper_id_fkey(
-        id,
-        full_name,
-        username,
-        profile_image_url,
-        avg_rating
-      )
-    `)
-    .eq("requester_id", requester_id)
-    .order("created_at", { ascending: false });
-}
-
-export async function getReceivedDirectRequests(helper_id: string) {
-  return await supabase
-    .from("direct_requests")
-    .select(`
-      id,
-      requester_id,
-      helper_id,
-      title,
-      message,
-      category,
-      duration_minutes,
-      credit_cost,
-      status,
-      created_at,
-      requester:profiles!direct_requests_requester_id_fkey(
-        id,
-        full_name,
-        username,
-        profile_image_url,
-        avg_rating
-      )
-    `)
-    .eq("helper_id", helper_id)
-    .order("created_at", { ascending: false });
-}
-
 export async function acceptDirectRequest(
   directRequestId: string,
   scheduledAt?: string
@@ -154,10 +102,4 @@ export async function rejectDirectRequest(directRequestId: string) {
   return { error };
 }
 
-export async function cancelDirectRequest(directRequestId: string) {
-  return await supabase
-    .from("direct_requests")
-    .update({ status: "cancelled" })
-    .eq("id", directRequestId);
-}
 
