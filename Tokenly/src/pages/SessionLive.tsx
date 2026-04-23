@@ -24,7 +24,7 @@ function mapSessionFileRecord(file: any): FileAttachment {
     id: file.id,
     name: file.file_name,
     size: file.file_size_bytes,
-    type: file.file_type ?? file.type ?? "",
+    type: "",
     uploadedBy: file.uploader_id,
     uploadedAt: new Date(file.created_at),
     url: file.file_url,
