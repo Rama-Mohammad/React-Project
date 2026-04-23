@@ -34,14 +34,20 @@ function mapSessionFileRecord(file: any): FileAttachment {
 
 function mergeSessionFiles(previousFiles: FileAttachment[], nextFiles: FileAttachment[]) {
   const merged = new Map<string, FileAttachment>();
+  const normalizeFile = (file: FileAttachment): FileAttachment => ({
+    ...file,
+    uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt : new Date(file.uploadedAt),
+  });
 
   previousFiles.forEach((file) => {
-    merged.set(file.id, file);
+    const normalized = normalizeFile(file);
+    merged.set(normalized.id, normalized);
   });
 
   nextFiles.forEach((file) => {
-    if (!merged.has(file.id)) {
-      merged.set(file.id, file);
+    const normalized = normalizeFile(file);
+    if (!merged.has(normalized.id)) {
+      merged.set(normalized.id, normalized);
     }
   });
 
@@ -270,12 +276,16 @@ const SessionLivePage: React.FC = () => {
   useEffect(() => {
     if (!sessionId) return;
 
+    let isMounted = true;
+
     const loadFiles = async () => {
       const { data, error } = await supabase
         .from("session_files")
         .select("*")
         .eq("session_id", sessionId)
         .order("created_at", { ascending: true });
+      if (!isMounted) return;
+
       if (error) {
         console.error(error);
         return;
@@ -286,10 +296,6 @@ const SessionLivePage: React.FC = () => {
     };
 
     loadFiles();
-  }, [sessionId]);
-
-  useEffect(() => {
-    if (!sessionId) return;
 
     const channel = supabase
       .channel(`files-${sessionId}`, {
@@ -324,7 +330,13 @@ const SessionLivePage: React.FC = () => {
       .subscribe();
     fileChannelRef.current = channel;
 
+    const pollTimer = window.setInterval(() => {
+      void loadFiles();
+    }, 3000);
+
     return () => {
+      isMounted = false;
+      window.clearInterval(pollTimer);
       fileChannelRef.current = null;
       supabase.removeChannel(channel);
     };
@@ -405,7 +417,10 @@ const SessionLivePage: React.FC = () => {
       type: "broadcast",
       event: "file_uploaded",
       payload: {
-        file: uploadedFile,
+        file: {
+          ...uploadedFile,
+          uploadedAt: uploadedFile.uploadedAt.toISOString(),
+        },
       },
     });
 
