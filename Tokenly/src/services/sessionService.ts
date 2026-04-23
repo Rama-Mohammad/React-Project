@@ -15,6 +15,10 @@ export type SessionInsertInput = {
 };
 
 type SessionRelationKey = "offer_id" | "help_offer_request_id" | "direct_request_id";
+type HelpOfferTitleRelation = {
+  help_offer?: { title?: string | null } | Array<{ title?: string | null }> | null;
+};
+type CompleteSessionRpcResult = { error?: string | null } | null;
 
 function getSessionRelationLookup(data: SessionInsertInput): { column: SessionRelationKey; value: string } | null {
   if (data.offer_id) return { column: "offer_id", value: data.offer_id };
@@ -94,6 +98,16 @@ function getNestedRelationValue<T>(value: T | T[] | null | undefined): T | null 
   if (Array.isArray(value)) return value[0] ?? null;
   return value ?? null;
 }
+
+type SessionRecordForNormalization = {
+  id?: string;
+  request?: { title?: string | null } | null;
+  help_offer_request?:
+    | { help_offer?: { title?: string | null } | Array<{ title?: string | null }> | null }
+    | Array<{ help_offer?: { title?: string | null } | Array<{ title?: string | null }> | null }>
+    | null;
+  direct_request?: { title?: string | null } | Array<{ title?: string | null }> | null;
+};
 
 function normalizeSessionRecord<
   T extends {
@@ -296,6 +310,11 @@ export async function getSessionById(id: string) {
     return { data: null, error: relationError };
   }
 
+  const helpOfferRequest = getNestedRelationValue<HelpOfferTitleRelation>(
+    helpOfferRequestResult.data as HelpOfferTitleRelation | HelpOfferTitleRelation[] | null | undefined
+  );
+  const helpOffer = getNestedRelationValue(helpOfferRequest?.help_offer);
+
   return {
     data: {
       ...baseSession,
@@ -304,7 +323,7 @@ export async function getSessionById(id: string) {
       request: requestResult.data ?? null,
       help_offer_request: helpOfferRequestResult.data ?? null,
       direct_request: directRequestResult.data ?? null,
-      title: requestResult.data?.title ?? helpOfferRequestResult.data?.help_offer?.title ?? directRequestResult.data?.title ?? "Session",
+      title: requestResult.data?.title ?? helpOffer?.title ?? directRequestResult.data?.title ?? "Session",
     },
     error: null,
   };
@@ -347,9 +366,12 @@ export async function getSessionsByUser(user_id: string) {
     .or(`helper_id.eq.${user_id},requester_id.eq.${user_id}`)
     .order("scheduled_at", { ascending: false });
   logSessionsQuery("getSessionsByUser result", { session, user, payload, error: result.error });
+  const normalizedUserSessions = ((result.data ?? []) as SessionRecordForNormalization[]).map((item) =>
+    normalizeSessionRecord(item)
+  );
   return {
     ...result,
-    data: result.data?.map((item) => normalizeSessionRecord(item)) ?? null,
+    data: normalizedUserSessions,
   };
 }
 
@@ -380,9 +402,12 @@ export async function getSessionsByStatus(user_id: string, status: SessionStatus
     .eq("status", status)
     .order("scheduled_at", { ascending: true });
   logSessionsQuery("getSessionsByStatus result", { session, user, payload, error: result.error });
+  const normalizedStatusSessions = ((result.data ?? []) as SessionRecordForNormalization[]).map((item) =>
+    normalizeSessionRecord(item)
+  );
   return {
     ...result,
-    data: result.data?.map((item) => normalizeSessionRecord(item)) ?? null,
+    data: normalizedStatusSessions,
   };
 }
 
@@ -436,6 +461,7 @@ export async function updateSessionStatus(id: string, status: SessionStatus) {
     const { data: rpcData, error: rpcError } = await supabase.rpc("complete_session", {
       p_session_id: id,
     });
+    const rpcResult = rpcData as CompleteSessionRpcResult;
 
     logSessionsQuery("updateSessionStatus complete_session rpc result", {
       session,
@@ -447,8 +473,8 @@ export async function updateSessionStatus(id: string, status: SessionStatus) {
     if (rpcError) {
       return { data: null, error: rpcError };
     }
-    if (rpcData?.error) {
-      const rawMsg: string = rpcData.error;
+    if (rpcResult?.error) {
+      const rawMsg = rpcResult.error;
       const friendlyMsg =
         rawMsg === "Requester does not have enough tokens"
           ? "The requester doesn't have enough tokens to pay for this session."
