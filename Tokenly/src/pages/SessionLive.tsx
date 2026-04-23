@@ -56,6 +56,14 @@ function mergeSessionFiles(previousFiles: FileAttachment[], nextFiles: FileAttac
   );
 }
 
+function createClientFileId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 const defaultChecklistItems: ChecklistItem[] = [
   { id: "1", text: "Confirm goals and expected outcomes", completed: false },
   { id: "2", text: "Work through key blockers together", completed: false },
@@ -382,34 +390,38 @@ const SessionLivePage: React.FC = () => {
     }
 
 
-    const { data: inserted, error: dbError } = await supabase
+    const fileId = createClientFileId();
+    const createdAt = new Date().toISOString();
+    const fileRecord = {
+      id: fileId,
+      session_id: sessionId,
+      uploader_id: currentUserId,
+      file_name: file.name,
+      file_url: data.url,
+      file_size_bytes: file.size,
+      file_type: file.type,
+      path: data.path,
+      created_at: createdAt,
+    };
+
+    const { error: dbError } = await supabase
       .from("session_files")
-      .insert({
-        session_id: sessionId,
-        uploader_id: currentUserId,
-        file_name: file.name,
-        file_url: data.url,
-        file_size_bytes: file.size,
-        file_type: file.type, 
-        path: data.path,
-        created_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
+      .insert(fileRecord);
 
     if (dbError) {
       console.error(" DB insert failed:", dbError);
+      await deleteSessionFile(data.path);
       return;
     }
     const uploadedFile: FileAttachment = {
-      id: inserted.id,
-      name: inserted.file_name,
-      size: inserted.file_size_bytes,
-      type: inserted.file_type,
+      id: fileRecord.id,
+      name: fileRecord.file_name,
+      size: fileRecord.file_size_bytes,
+      type: fileRecord.file_type,
       uploadedBy: currentUserName,
-      uploadedAt: new Date(inserted.created_at),
-      url: inserted.file_url,
-      path: inserted.path,
+      uploadedAt: new Date(fileRecord.created_at),
+      url: fileRecord.file_url,
+      path: fileRecord.path,
     };
 
     setFiles((prev) => mergeSessionFiles(prev, [uploadedFile]));

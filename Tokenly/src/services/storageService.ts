@@ -9,10 +9,11 @@ export async function uploadSessionFile(
   uploader_id: string,
   file: File
 ) {
-  const path = `${session_id}/${uploader_id}/${Date.now()}_${file.name}`;
+  const safeName = file.name.replace(/[^\w.-]+/g, "_");
+  const path = `${session_id}/${uploader_id}/${Date.now()}_${safeName}`;
   const { data, error } = await supabase.storage
     .from(SESSION_FILES_BUCKET)
-    .upload(path, file);
+    .upload(path, file, { contentType: file.type || undefined });
 
   if (error) return { data: null, error };
 
