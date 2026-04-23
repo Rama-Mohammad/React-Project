@@ -549,7 +549,7 @@ export default function Dashboard() {
 
   return (
     <div className="relative min-h-full overflow-x-hidden overflow-y-visible bg-transparent text-slate-900">
-      <main className="relative mx-auto w-full max-w-[1600px] px-4 py-12 sm:px-6 lg:px-8">
+      <main className="relative mx-auto w-full max-w-400 px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid gap-5 xl:grid-cols-[17.5rem_minmax(0,1fr)]">
           <DashboardSidebar
             activeSection={activeSection}

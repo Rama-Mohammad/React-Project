@@ -112,11 +112,27 @@ const SessionsPage: React.FC = () => {
           directRequestValue?.credit_cost ??
           0;
 
-        const requestId = s.request?.id || s.request_id || undefined;
+        let requestId: string | undefined;
+        let linkPath: string = '';
+
+        if (s.request) {
+          requestId = s.request.id;
+          linkPath = `/requests/${s.request.id}`;
+        } else if (helpOfferValue) {
+          requestId = helpOfferValue.id;
+          linkPath = `/offers/${helpOfferValue.id}`;
+        } else if (directRequestValue) {
+          requestId = directRequestValue.id;
+          linkPath = `/requests/${directRequestValue.id}`;
+        } else if (s.request_id) {
+          requestId = s.request_id;
+          linkPath = `/requests/${s.request_id}`;
+        }
 
         return {
           id: s.id,
           requestId,
+          linkPath,
           title,
           category,
           status: s.status,
@@ -249,7 +265,7 @@ const SessionsPage: React.FC = () => {
     return "bg-slate-100 text-slate-600";
   };
 
-  const handleViewRequest = (requestId: string) => navigate(`/requests/${requestId}`);
+  const handleViewRequest = (linkPath: string) => navigate(linkPath);
   const handleJoin = (sessionId: string) => navigate(`/session/${sessionId}`);
 
   const handleMarkComplete = (sessionId: string) => {
@@ -545,11 +561,16 @@ const SessionsPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
-                            onClick={() => session.requestId && handleViewRequest(session.requestId)}
-                            disabled={!session.requestId}
-                            className="rounded-lg border border-indigo-300/90 bg-transparent px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-50/70 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400 disabled:hover:bg-transparent"
+                            onClick={() => {
+                              if (session.linkPath) {
+                                handleViewRequest(session.linkPath);
+                              } else {
+                                setActionError("No details available for this session.");
+                              }
+                            }}
+                            className="rounded-lg border border-indigo-300/90 bg-transparent px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-50/70"
                           >
-                            View Request
+                            View Details
                           </button>
 
                           {session.status === "upcoming" ? (

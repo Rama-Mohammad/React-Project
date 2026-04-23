@@ -166,7 +166,7 @@ const SessionLivePage: React.FC = () => {
       setSessionData(sessionData);
 
       const isHelper = sessionData.helper_id === userData.user.id;
-      const initiatorId = [sessionData.helper_id, sessionData.requester_id].sort()[0];
+      const initiatorId = sessionData.helper_id; // Helper initiates the call
 
       setCurrentUserId(userData.user.id);
       setCurrentUserName(
@@ -486,7 +486,7 @@ console.log(" ADDING FILE TO STATE", inserted);
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-indigo-500">Live Session</p>
             <h1 className="break-all text-base font-semibold text-slate-900 sm:text-lg">
-              {sessionData?.request?.title ?? "Session"}
+              {sessionData?.title ?? "Session"}
             </h1>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/70 px-3 py-1.5 text-xs font-medium text-indigo-700">

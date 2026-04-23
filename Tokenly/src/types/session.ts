@@ -32,6 +32,7 @@ export interface Session {
   createdAt?: Date;
   updatedAt?: Date;
   requestId?: string;
+  linkPath?: string;
 }
 
 export interface Message {
